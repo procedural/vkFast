@@ -37,29 +37,30 @@ typedef struct gpu_storage_info_t {
 typedef struct gpu_storage_t {
   uint64_t           id;
   gpu_storage_info_t info;
+  uint64_t           info_alignment;
   union
   {
-    void     * mapped_void_ptr;
-    uint8_t  * ptr;
-    int8_t   * as_i8;
-    uint8_t  * as_u8;
-    int16_t  * as_i16;
-    uint16_t * as_u16;
-    int32_t  * as_i32;
-    uint32_t * as_u32;
-    float    * as_f32;
-    struct
+    void              * mapped_void_ptr;
+    volatile uint8_t  * ptr;
+    volatile int8_t   * as_i8;
+    volatile uint8_t  * as_u8;
+    volatile int16_t  * as_i16;
+    volatile uint16_t * as_u16;
+    volatile int32_t  * as_i32;
+    volatile uint32_t * as_u32;
+    volatile float    * as_f32;
+    volatile struct
     {
       union { float x; float u; };
       union { float y; float v; };
     } * as_vec2;
-    struct
+    volatile struct
     {
       union { float x; float r; };
       union { float y; float g; };
       union { float z; float b; };
     } * as_vec3;
-    struct
+    volatile struct
     {
       union { float x; float r; };
       union { float y; float g; };
@@ -90,6 +91,8 @@ void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug
 int vfWindowLoop();
 void vfExit(int exit_code);
 gpu_storage_t vfStorageCreateFromStruct(gpu_storage_info_t storage, const char * optional_file, int optional_line);
+gpu_storage_t vfStorageCreateFromStructCpuReadback(gpu_storage_info_t storage, const char * optional_file, int optional_line);
+uint64_t vfStorageCreateFromStructGpuOnly(gpu_storage_info_t storage, const char * optional_file, int optional_line);
 uint64_t vfTextureCreateFromStruct(gpu_texture_info_t texture, const char * optional_file, int optional_line);
 uint64_t vfSamplerCreateFromStruct(gpu_sampler_info_t sampler, const char * optional_file, int optional_line);
 uint64_t vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optional_file, int optional_line);

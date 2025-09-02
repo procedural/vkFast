@@ -293,6 +293,18 @@ gpu_storage_t vfStorageCreateFromStruct(gpu_storage_info_t storage, const char *
   return out;
 }
 
+gpu_storage_t vfStorageCreateFromStructCpuReadback(gpu_storage_info_t storage, const char * optional_file, int optional_line) {
+  gpu_storage_t out = {0};
+
+  return out;
+}
+
+uint64_t vfStorageCreateFromStructGpuOnly(gpu_storage_info_t storage, const char * optional_file, int optional_line) {
+  uint64_t out = -1;
+
+  return out;
+}
+
 uint64_t vfTextureCreateFromStruct(gpu_texture_info_t texture, const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
