@@ -8,7 +8,7 @@
 #define countof(x) (sizeof(x) / sizeof((x)[0]))
 
 int main() {
-  vfWindow1920x1080(NULL, 1, "Hello Triangle", 1, FF, LL);
+  vfWindowFullscreen(NULL, 1, 1920, 1080, "Hello Triangle", 1, FF, LL);
   
   gpu_storage_info_t mesh_info = {0};
   mesh_info.optionalVertexCount = 3;

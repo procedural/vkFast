@@ -12,6 +12,10 @@ const int TODO = 1;
 
 typedef struct vkfast_global_state {
   int                isDebugMode;
+
+  int                screenWidth;
+  int                screenHeight;
+
   void *             windowHandle;
   int                windowMsaaSamples;
   
@@ -62,7 +66,7 @@ void red2Crash(const char * error, const char * functionName, RedHandleGpu optio
   red32Exit(1);
 }
 
-void vfWindow1920x1080(void * window_handle, int enable_debug_mode, const char * window_title, int msaa_samples, const char * optionalFile, int optionalLine) {
+void vfWindowFullscreen(void * window_handle, int enable_debug_mode, int screen_width, int screen_height, const char * window_title, int msaa_samples, const char * optionalFile, int optionalLine) {
   if (enable_debug_mode) {
     red32OutputDebugString ("[vkFast] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
     red32ConsolePrint      ("[vkFast] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
@@ -74,6 +78,8 @@ void vfWindow1920x1080(void * window_handle, int enable_debug_mode, const char *
   g_vkfast = defaults;
 
   g_vkfast.isDebugMode = enable_debug_mode;
+  g_vkfast.screenWidth = screen_width;
+  g_vkfast.screenHeight = screen_height;
   g_vkfast.windowHandle = window_handle;
   g_vkfast.windowMsaaSamples = msaa_samples;
 

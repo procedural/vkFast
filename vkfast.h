@@ -86,7 +86,7 @@ typedef struct gpu_cmd_t {
 
 // PROTOTYPES //////////////////////////////////////////////////////////////////
 
-void vfWindow1920x1080(void * optional_existing_window_handle, int enable_debug_mode, const char * window_title, int msaa_samples, const char * optional_file, int optional_line);
+void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug_mode, int screen_width, int screen_height, const char * window_title, int msaa_samples, const char * optional_file, int optional_line);
 int vfWindowLoop();
 void vfExit(int exit_code);
 gpu_storage_t vfStorageCreateFromStruct(gpu_storage_info_t storage, const char * optional_file, int optional_line);
