@@ -34,20 +34,12 @@ typedef struct gpu_storage_info_t {
   uint64_t optionalVertexCount; // Optional property to fill for gpu_cmd_t::count
 } gpu_storage_info_t;
 
-typedef struct gpu_texture_info_t {
-  int TODO;
-} gpu_texture_info_t;
-
-typedef struct gpu_sampler_info_t {
-  int TODO;
-} gpu_sampler_info_t;
-
 typedef struct gpu_storage_t {
   uint64_t           id;
   gpu_storage_info_t info;
   union
   {
-    void     * void_ptr;
+    void     * mapped_void_ptr;
     uint8_t  * ptr;
     int8_t   * as_i8;
     uint8_t  * as_u8;
@@ -75,21 +67,15 @@ typedef struct gpu_storage_t {
       union { float w; float a; };
     } * as_vec4;
   };
-  Red2Array cpuArray;
-  Red2Array gpuArray;
 } gpu_storage_t;
 
-typedef struct gpu_texture_t {
-  uint64_t           id;
-  gpu_texture_info_t info;
-  Red2Image          image;
-} gpu_texture_t;
+typedef struct gpu_texture_info_t {
+  int TODO;
+} gpu_texture_info_t;
 
-typedef struct gpu_sampler_t {
-  uint64_t           id;
-  gpu_sampler_info_t info;
-  RedHandleSampler   sampler;
-} gpu_sampler_t;
+typedef struct gpu_sampler_info_t {
+  int TODO;
+} gpu_sampler_info_t;
 
 typedef struct gpu_cmd_t {
   uint64_t count;
@@ -100,23 +86,24 @@ typedef struct gpu_cmd_t {
 
 // PROTOTYPES //////////////////////////////////////////////////////////////////
 
-void vfWindow1920x1080(int enable_debug_mode, const char * window_title, int msaa_samples, const char * optional_file, int optional_line);
+void vfWindow1920x1080(void * optional_existing_window_handle, int enable_debug_mode, const char * window_title, int msaa_samples, const char * optional_file, int optional_line);
 int vfWindowLoop();
 void vfExit(int exit_code);
 gpu_storage_t vfStorageCreateFromStruct(gpu_storage_info_t storage, const char * optional_file, int optional_line);
-gpu_texture_t vfTextureCreateFromStruct(gpu_texture_info_t texture, const char * optional_file, int optional_line);
-gpu_sampler_t vfSamplerCreateFromStruct(gpu_sampler_info_t sampler, const char * optional_file, int optional_line);
-gpu_texture_t vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optional_file, int optional_line);
-gpu_texture_t vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optional_file, int optional_line);
-void vfTextureSetPixels(uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, RedFormat format, const void * data, const char * optional_file, int optional_line);
-void vfTextureGetPixels(uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, RedFormat format, void * out_pixels, const char * optional_file, int optional_line);
-void vfTextureSaveToBmp(uint64_t texture_id, int texture_layer, int mip_level, int width, int height, const char * bmp_filepath, const char * optional_file, int optional_line);
+uint64_t vfTextureCreateFromStruct(gpu_texture_info_t texture, const char * optional_file, int optional_line);
+uint64_t vfSamplerCreateFromStruct(gpu_sampler_info_t sampler, const char * optional_file, int optional_line);
+uint64_t vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optional_file, int optional_line);
+uint64_t vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optional_file, int optional_line);
 uint64_t vfProgramCreateFromFileVertProgram(const char * shader_filepath, const char * optional_file, int optional_line);
 uint64_t vfProgramCreateFromFileFragProgram(const char * shader_filepath, const char * optional_file, int optional_line);
 uint64_t vfProgramCreateFromStringVertProgram(const char * shader_string, const char * optional_file, int optional_line);
 uint64_t vfProgramCreateFromStringFragProgram(const char * shader_string, const char * optional_file, int optional_line);
 uint64_t vfProgramPipelineCreate(uint64_t vert_program, uint64_t frag_program, const char * optional_file, int optional_line);
 uint64_t vfBatchBegin(const char * optional_file, int optional_line);
+void vfBatchStorageCopyFromCpuToGpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line);
+void vfBatchStorageCopyFromGpuToCpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line);
+void vfBatchTexturePixelsCopyFromCpuToGpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_source_storage_id, const char * optional_file, int optional_line);
+void vfBatchTexturePixelsCopyFromGpuToCpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_target_storage_id, const char * optional_file, int optional_line);
 void vfBatchBindStorage(uint64_t batch_id, int storage_ids_count, const uint64_t * storage_ids, const char * optional_file, int optional_line);
 void vfBatchBindTexture(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line);
 void vfBatchBindCubemap(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line);

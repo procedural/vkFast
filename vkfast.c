@@ -62,7 +62,7 @@ void red2Crash(const char * error, const char * functionName, RedHandleGpu optio
   red32Exit(1);
 }
 
-void vfWindow1920x1080(int enable_debug_mode, const char * window_title, int msaa_samples, const char * optionalFile, int optionalLine) {
+void vfWindow1920x1080(void * window_handle, int enable_debug_mode, const char * window_title, int msaa_samples, const char * optionalFile, int optionalLine) {
   if (enable_debug_mode) {
     red32OutputDebugString ("[vkFast] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
     red32ConsolePrint      ("[vkFast] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
@@ -74,8 +74,12 @@ void vfWindow1920x1080(int enable_debug_mode, const char * window_title, int msa
   g_vkfast = defaults;
 
   g_vkfast.isDebugMode = enable_debug_mode;
-  g_vkfast.windowHandle = red32WindowCreate(window_title);
+  g_vkfast.windowHandle = window_handle;
   g_vkfast.windowMsaaSamples = msaa_samples;
+
+  if (g_vkfast.windowHandle == NULL) {
+    g_vkfast.windowHandle = red32WindowCreate(window_title);
+  }
 
   np(redCreateContext,
     "malloc", red32MemoryCalloc,
@@ -279,44 +283,32 @@ void vfExit(int exit_code) {
 
 gpu_storage_t vfStorageCreateFromStruct(gpu_storage_info_t storage, const char * optionalFile, int optionalLine) {
   gpu_storage_t out = {0};
-  out.info = storage;
 
   return out;
 }
 
-gpu_texture_t vfTextureCreateFromStruct(gpu_texture_info_t texture, const char * optionalFile, int optionalLine) {
-  gpu_texture_t out = {0};
-  out.info = texture;
+uint64_t vfTextureCreateFromStruct(gpu_texture_info_t texture, const char * optionalFile, int optionalLine) {
+  uint64_t out = -1;
 
   return out;
 }
 
-gpu_sampler_t vfSamplerCreateFromStruct(gpu_sampler_info_t sampler, const char * optionalFile, int optionalLine) {
-  gpu_sampler_t out = {0};
-  out.info = sampler;
+uint64_t vfSamplerCreateFromStruct(gpu_sampler_info_t sampler, const char * optionalFile, int optionalLine) {
+  uint64_t out = -1;
 
   return out;
 }
 
-gpu_texture_t vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optionalFile, int optionalLine) {
-  gpu_texture_t out = {0};
+uint64_t vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optionalFile, int optionalLine) {
+  uint64_t out = -1;
 
   return out;
 }
 
-gpu_texture_t vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optionalFile, int optionalLine) {
-  gpu_texture_t out = {0};
+uint64_t vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optionalFile, int optionalLine) {
+  uint64_t out = -1;
 
   return out;
-}
-
-void vfTextureSetPixels(uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, RedFormat format, const void * data, const char * optionalFile, int optionalLine) {
-}
-
-void vfTextureGetPixels(uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, RedFormat format, void * out_pixels, const char * optionalFile, int optionalLine) {
-}
-
-void vfTextureSaveToBmp(uint64_t texture_id, int texture_layer, int mip_level, int width, int height, const char * bmp_filepath, const char * optionalFile, int optionalLine) {
 }
 
 uint64_t vfProgramCreateFromFileVertProgram(const char * shader_filepath, const char * optionalFile, int optionalLine) {
@@ -353,6 +345,18 @@ uint64_t vfBatchBegin(const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
   return out;
+}
+
+void vfBatchStorageCopyFromCpuToGpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line) {
+}
+
+void vfBatchStorageCopyFromGpuToCpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line) {
+}
+
+void vfBatchTexturePixelsCopyFromCpuToGpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_source_storage_id, const char * optional_file, int optional_line) {
+}
+
+void vfBatchTexturePixelsCopyFromGpuToCpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_target_storage_id, const char * optional_file, int optional_line) {
 }
 
 void vfBatchBindStorage(uint64_t batch_id, int storage_ids_count, const uint64_t * storage_ids, const char * optionalFile, int optionalLine) {
