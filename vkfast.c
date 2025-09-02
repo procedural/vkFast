@@ -218,7 +218,7 @@ void vfWindow1920x1080(int enable_debug_mode, const char * window_title, int msa
 
     g_vkfast.specificMemoryTypesCpuVisible[0] = 3;
     g_vkfast.specificMemoryTypesReadback[0]   = 4; // The cpu cached one
-  } else if (g_vkfast.gpuInfo->gpuVendorId == 32902/*IntelUHDGraphics*/) {
+  } else if (g_vkfast.gpuInfo->gpuVendorId == 32902/*Intel UHD Graphics 730*/) {
     unsigned      memoryTypesCount = 0;
     RedMemoryType memoryTypes[32]  = {0};
     unsigned      memoryHeapsCount = 0;
