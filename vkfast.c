@@ -389,6 +389,9 @@ void vfBatchBindCubemap(uint64_t batch_id, int texture_ids_count, const uint64_t
 void vfBatchBindSampler(uint64_t batch_id, int sampler_ids_count, const uint64_t * sampler_ids, const char * optionalFile, int optionalLine) {
 }
 
+void vfBatchBindRWTexture(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line) {
+}
+
 void vfBatchBindProgramPipeline(uint64_t batch_id, uint64_t program_pipeline_id, const char * optionalFile, int optionalLine) {
 }
 
