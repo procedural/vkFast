@@ -30,7 +30,8 @@ int main() {
   uint64_t copy = vfBatchBegin(FF, LL);
   vfBatchStorageCopyFromCpuToGpu(copy, mesh.id, FF, LL);
   vfBatchEnd(copy, FF, LL);
-  vfBatchExecute(1, &copy, FF, LL);
+  uint64_t async = vfAsyncBatchExecute(1, &copy, FF, LL);
+  vfAsyncWaitToFinish(async);
 
   gpu_cmd_t cmd[1] = {0};
   cmd[0].count = mesh.info.optionalVertexCount;

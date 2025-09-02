@@ -409,3 +409,9 @@ void vfBatchEnd(uint64_t batch_id, const char * optionalFile, int optionalLine) 
 
 void vfBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optionalFile, int optionalLine) {
 }
+
+uint64_t vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optional_file, int optional_line) {
+}
+
+void vfAsyncWaitToFinish(uint64_t async_id) {
+}
