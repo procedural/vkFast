@@ -290,128 +290,161 @@ void vfExit(int exit_code) {
 gpu_storage_t vfStorageCreateFromStruct(gpu_storage_info_t storage, const char * optionalFile, int optionalLine) {
   gpu_storage_t out = {0};
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
-gpu_storage_t vfStorageCreateFromStructCpuReadback(gpu_storage_info_t storage, const char * optional_file, int optional_line) {
+gpu_storage_t vfStorageCreateFromStructCpuReadback(gpu_storage_info_t storage, const char * optionalFile, int optionalLine) {
   gpu_storage_t out = {0};
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
-uint64_t vfStorageCreateFromStructGpuOnly(gpu_storage_info_t storage, const char * optional_file, int optional_line) {
+uint64_t vfStorageCreateFromStructGpuOnly(gpu_storage_info_t storage, const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
 uint64_t vfTextureCreateFromStruct(gpu_texture_info_t texture, const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
 uint64_t vfSamplerCreateFromStruct(gpu_sampler_info_t sampler, const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
 uint64_t vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
 uint64_t vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
 uint64_t vfProgramCreateFromFileVertProgram(const char * shader_filepath, const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
 uint64_t vfProgramCreateFromFileFragProgram(const char * shader_filepath, const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
 uint64_t vfProgramCreateFromStringVertProgram(const char * shader_string, const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
 uint64_t vfProgramCreateFromStringFragProgram(const char * shader_string, const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
 uint64_t vfProgramPipelineCreate(uint64_t vert_program, uint64_t frag_program, const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
 uint64_t vfBatchBegin(const char * optionalFile, int optionalLine) {
   uint64_t out = -1;
 
+  REDGPU_2_EXPECT(TODO && 0);
   return out;
 }
 
-void vfBatchStorageCopyFromCpuToGpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line) {
+void vfBatchStorageCopyFromCpuToGpu(uint64_t batch_id, uint64_t storage_id, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
-void vfBatchStorageCopyFromGpuToCpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line) {
+void vfBatchStorageCopyFromGpuToCpu(uint64_t batch_id, uint64_t storage_id, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
-void vfBatchTexturePixelsCopyFromCpuToGpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_source_storage_id, const char * optional_file, int optional_line) {
+void vfBatchTexturePixelsCopyFromCpuToGpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_source_storage_id, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
-void vfBatchTexturePixelsCopyFromGpuToCpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_target_storage_id, const char * optional_file, int optional_line) {
+void vfBatchTexturePixelsCopyFromGpuToCpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_target_storage_id, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
 void vfBatchBindStorage(uint64_t batch_id, int storage_ids_count, const uint64_t * storage_ids, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
 void vfBatchBindTexture(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
 void vfBatchBindCubemap(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
 void vfBatchBindSampler(uint64_t batch_id, int sampler_ids_count, const uint64_t * sampler_ids, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
-void vfBatchBindRWTexture(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line) {
+void vfBatchBindRWTexture(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
 void vfBatchBindProgramPipeline(uint64_t batch_id, uint64_t program_pipeline_id, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
 void vfBatchClear(uint64_t batch_id, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
 void vfBatchDraw(uint64_t batch_id, uint64_t gpu_cmd_count, const gpu_cmd_t * gpu_cmd, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
 void vfBatchFire(uint64_t batch_id, uint64_t count, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
 void vfBatchEnd(uint64_t batch_id, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
 void vfBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
 
-uint64_t vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optional_file, int optional_line) {
+uint64_t vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optionalFile, int optionalLine) {
+  uint64_t out = -1;
+
+  REDGPU_2_EXPECT(TODO && 0);
+  return out;
 }
 
-void vfAsyncWaitToFinish(uint64_t async_id) {
+void vfAsyncWaitToFinish(uint64_t async_id, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
 }
