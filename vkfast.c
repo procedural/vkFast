@@ -20,7 +20,6 @@ typedef struct vkfast_global_state {
   int                windowMsaaSamples;
   
   RedContext         context;
-  int                gpuIndex;
   const RedGpuInfo * gpuInfo;
 
   RedHandleGpu       gpu;
@@ -66,7 +65,7 @@ void red2Crash(const char * error, const char * functionName, RedHandleGpu optio
   red32Exit(1);
 }
 
-void vfWindowFullscreen(void * window_handle, int enable_debug_mode, int screen_width, int screen_height, const char * window_title, int msaa_samples, const char * optionalFile, int optionalLine) {
+void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug_mode, int screen_width, int screen_height, const char * window_title, int msaa_samples, const char * optionalFile, int optionalLine) {
   if (enable_debug_mode) {
     red32OutputDebugString ("[vkFast] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
     red32ConsolePrint      ("[vkFast] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
@@ -74,19 +73,11 @@ void vfWindowFullscreen(void * window_handle, int enable_debug_mode, int screen_
 
   REDGPU_2_EXPECT(TODO && msaa_samples == 1);
 
-  vkfast_global_state defaults = {0};
-  g_vkfast = defaults;
-
-  g_vkfast.isDebugMode = enable_debug_mode;
-  g_vkfast.screenWidth = screen_width;
-  g_vkfast.screenHeight = screen_height;
-  g_vkfast.windowHandle = window_handle;
-  g_vkfast.windowMsaaSamples = msaa_samples;
-
-  if (g_vkfast.windowHandle == NULL) {
-    g_vkfast.windowHandle = red32WindowCreate(window_title);
+  if (optional_existing_window_handle == NULL) {
+    optional_existing_window_handle = red32WindowCreate(window_title);
   }
 
+  RedContext context = NULL;
   np(redCreateContext,
     "malloc", red32MemoryCalloc,
     "free", red32MemoryFree,
@@ -101,39 +92,39 @@ void vfWindowFullscreen(void * window_handle, int enable_debug_mode, int screen_
     "optionalEngineName", NULL,
     "optionalEngineVersion", 0,
     "optionalSettings", NULL,
-    "outContext", &g_vkfast.context,
+    "outContext", &context,
     "outStatuses", NULL,
     "optionalFile", __FILE__,
     "optionalLine", __LINE__,
     "optionalUserData", NULL
   );
 
-  REDGPU_2_EXPECT(g_vkfast.context != NULL);
-  REDGPU_2_EXPECT(g_vkfast.context->gpusCount > 0);
+  REDGPU_2_EXPECT(context != NULL);
+  REDGPU_2_EXPECT(context->gpusCount > 0);
 
-  g_vkfast.gpuInfo = &g_vkfast.context->gpus[g_vkfast.gpuIndex];
+  const RedGpuInfo * gpuInfo = &context->gpus[0]; // NOTE(Constantine): Always picking the first available GPU.
 
-  REDGPU_2_EXPECT(g_vkfast.gpuInfo->queuesCount > 0);
+  REDGPU_2_EXPECT(gpuInfo->queuesCount > 0);
 
-  if (g_vkfast.isDebugMode) {
+  if (enable_debug_mode == 1) {
     red32OutputDebugString("[vkFast] Your GPU name: ");
-    red32OutputDebugString(g_vkfast.gpuInfo->gpuName);
+    red32OutputDebugString(gpuInfo->gpuName);
     red32OutputDebugString("\n");
 
     red32ConsolePrint("[vkFast] Your GPU name: ");
-    red32ConsolePrint(g_vkfast.gpuInfo->gpuName);
+    red32ConsolePrint(gpuInfo->gpuName);
     red32ConsolePrint("\n");
   }
 
-  if (g_vkfast.gpuInfo->gpuVendorId == 4318/*NVIDIA*/) {
+  if (gpuInfo->gpuVendorId == 4318/*NVIDIA*/) {
     np(red2ExpectMinimumGuarantees,
-      "gpuInfo", g_vkfast.gpuInfo,
+      "gpuInfo", gpuInfo,
       "optionalFile", __FILE__,
       "optionalLine", __LINE__
     );
-  } else if (g_vkfast.gpuInfo->gpuVendorId == 32902/*Intel UHD Graphics 730*/) {
+  } else if (gpuInfo->gpuVendorId == 32902/*Intel UHD Graphics 730*/) {
     np(red2ExpectMinimumGuaranteesIntelUHDGraphics730,
-      "gpuInfo", g_vkfast.gpuInfo,
+      "gpuInfo", gpuInfo,
       "optionalFile", __FILE__,
       "optionalLine", __LINE__
     );
@@ -142,24 +133,27 @@ void vfWindowFullscreen(void * window_handle, int enable_debug_mode, int screen_
   }
 
   np(red2ExpectAllMemoryToBeCoherent,
-    "gpuInfo", g_vkfast.gpuInfo,
+    "gpuInfo", gpuInfo,
     "optionalFile", __FILE__,
     "optionalLine", __LINE__
   );
   
   np(red2ExpectMinimumImageFormatsLimitsAndFeatures, 
-    "gpuInfo", g_vkfast.gpuInfo,
+    "gpuInfo", gpuInfo,
     "optionalFile", __FILE__,
     "optionalLine", __LINE__
   );
 
-  g_vkfast.gpu                  = g_vkfast.gpuInfo->gpu;
-  g_vkfast.mainQueueFamilyIndex = g_vkfast.gpuInfo->queuesFamilyIndex[0];
-  g_vkfast.mainQueue            = g_vkfast.gpuInfo->queues[0];
+  RedHandleGpu   gpu                  = gpuInfo->gpu;;
+  unsigned       mainQueueFamilyIndex = gpuInfo->queuesFamilyIndex[0];
+  RedHandleQueue mainQueue            = gpuInfo->queues[0];
 
-  unsigned specificMemoryTypeCPUVisible = -1;
-  unsigned specificMemoryTypeReadback   = -1;
-  if (g_vkfast.gpuInfo->gpuVendorId == 4318/*NVIDIA*/) { // Tested on RTX 2060 and Windows 10.
+  unsigned specificMemoryTypesCpuVisibleCount = 0;
+  unsigned specificMemoryTypesCpuVisible[32]  = {0};
+  unsigned specificMemoryTypesReadbackCount   = 0;
+  unsigned specificMemoryTypesReadback[32]    = {0};
+
+  if (gpuInfo->gpuVendorId == 4318/*NVIDIA*/) { // Tested on RTX 2060 and Windows 10.
     unsigned      memoryTypesCount = 0;
     RedMemoryType memoryTypes[32]  = {0};
     unsigned      memoryHeapsCount = 0;
@@ -214,7 +208,7 @@ void vfWindowFullscreen(void * window_handle, int enable_debug_mode, int screen_
     memoryHeaps[2].isGpuVram        = 1;
 
     np(red2ExpectMemoryTypes,
-      "gpuInfo", g_vkfast.gpuInfo,
+      "gpuInfo", gpuInfo,
       "expectedMemoryHeapsCount", memoryHeapsCount,
       "expectedMemoryHeaps", memoryHeaps,
       "expectedMemoryTypesCount", memoryTypesCount,
@@ -223,12 +217,12 @@ void vfWindowFullscreen(void * window_handle, int enable_debug_mode, int screen_
       "optionalLine", __LINE__
     );
 
-    g_vkfast.specificMemoryTypesCpuVisibleCount = 1;
-    g_vkfast.specificMemoryTypesReadbackCount   = 1;
+    specificMemoryTypesCpuVisibleCount = 1;
+    specificMemoryTypesReadbackCount   = 1;
 
-    g_vkfast.specificMemoryTypesCpuVisible[0] = 3;
-    g_vkfast.specificMemoryTypesReadback[0]   = 4; // The cpu cached one
-  } else if (g_vkfast.gpuInfo->gpuVendorId == 32902/*Intel UHD Graphics 730*/) {
+    specificMemoryTypesCpuVisible[0] = 3;
+    specificMemoryTypesReadback[0]   = 4; // The cpu cached one
+  } else if (gpuInfo->gpuVendorId == 32902/*Intel UHD Graphics 730*/) {
     unsigned      memoryTypesCount = 0;
     RedMemoryType memoryTypes[32]  = {0};
     unsigned      memoryHeapsCount = 0;
@@ -259,7 +253,7 @@ void vfWindowFullscreen(void * window_handle, int enable_debug_mode, int screen_
     memoryHeaps[0].isGpuVram        = 1;
 
     np(red2ExpectMemoryTypes,
-      "gpuInfo", g_vkfast.gpuInfo,
+      "gpuInfo", gpuInfo,
       "expectedMemoryHeapsCount", memoryHeapsCount,
       "expectedMemoryHeaps", memoryHeaps,
       "expectedMemoryTypesCount", memoryTypesCount,
@@ -268,13 +262,38 @@ void vfWindowFullscreen(void * window_handle, int enable_debug_mode, int screen_
       "optionalLine", __LINE__
     );
 
-    g_vkfast.specificMemoryTypesCpuVisibleCount = 1;
-    g_vkfast.specificMemoryTypesReadbackCount   = 1;
+    specificMemoryTypesCpuVisibleCount = 1;
+    specificMemoryTypesReadbackCount   = 1;
 
-    g_vkfast.specificMemoryTypesCpuVisible[0] = 1;
-    g_vkfast.specificMemoryTypesReadback[0]   = 2; // The cpu cached one
+    specificMemoryTypesCpuVisible[0] = 1;
+    specificMemoryTypesReadback[0]   = 2; // The cpu cached one
   } else {
     REDGPU_2_EXPECT(!"Unsupported by vkFast GPU, recompile your program with vfWindow1920x1080()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
+  }
+
+  // Set all global state to 0
+  vkfast_global_state defaults = {0};
+  g_vkfast = defaults;
+
+  // Filling
+  vkfast_global_state;
+  g_vkfast.isDebugMode = enable_debug_mode;
+  g_vkfast.screenWidth = screen_width;
+  g_vkfast.screenHeight = screen_height;
+  g_vkfast.windowHandle = optional_existing_window_handle;
+  g_vkfast.windowMsaaSamples = msaa_samples;
+  g_vkfast.context = context;
+  g_vkfast.gpuInfo = gpuInfo;
+  g_vkfast.gpu = gpu;
+  g_vkfast.mainQueueFamilyIndex = mainQueueFamilyIndex;
+  g_vkfast.mainQueue = mainQueue;
+  g_vkfast.specificMemoryTypesCpuVisibleCount = specificMemoryTypesCpuVisibleCount;
+  for (int i = 0; i < 32; i += 1) {
+    g_vkfast.specificMemoryTypesCpuVisible[i] = specificMemoryTypesCpuVisible[i];
+  }
+  g_vkfast.specificMemoryTypesReadbackCount = specificMemoryTypesReadbackCount;
+  for (int i = 0; i < 32; i += 1) {
+    g_vkfast.specificMemoryTypesReadback[i] = specificMemoryTypesReadback[i];
   }
 }
 
@@ -288,93 +307,93 @@ void vfExit(int exit_code) {
 }
 
 gpu_storage_t vfStorageCreateFromStruct(gpu_storage_info_t storage, const char * optionalFile, int optionalLine) {
-  gpu_storage_t out = {0};
-
   REDGPU_2_EXPECT(TODO && 0);
+
+  gpu_storage_t out = {0};
   return out;
 }
 
 gpu_storage_t vfStorageCreateFromStructCpuReadback(gpu_storage_info_t storage, const char * optionalFile, int optionalLine) {
-  gpu_storage_t out = {0};
-
   REDGPU_2_EXPECT(TODO && 0);
+
+  gpu_storage_t out = {0};
   return out;
 }
 
 uint64_t vfStorageCreateFromStructGpuOnly(gpu_storage_info_t storage, const char * optionalFile, int optionalLine) {
-  uint64_t out = -1;
-
   REDGPU_2_EXPECT(TODO && 0);
+
+  uint64_t out = -1;
   return out;
 }
 
 uint64_t vfTextureCreateFromStruct(gpu_texture_info_t texture, const char * optionalFile, int optionalLine) {
-  uint64_t out = -1;
-
   REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
   return out;
 }
 
 uint64_t vfSamplerCreateFromStruct(gpu_sampler_info_t sampler, const char * optionalFile, int optionalLine) {
-  uint64_t out = -1;
-
   REDGPU_2_EXPECT(TODO && 0);
+
+  uint64_t out = -1;
   return out;
 }
 
 uint64_t vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optionalFile, int optionalLine) {
-  uint64_t out = -1;
-
   REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
   return out;
 }
 
 uint64_t vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optionalFile, int optionalLine) {
-  uint64_t out = -1;
-
   REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
   return out;
 }
 
 uint64_t vfProgramCreateFromFileVertProgram(const char * shader_filepath, const char * optionalFile, int optionalLine) {
-  uint64_t out = -1;
-
   REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
   return out;
 }
 
 uint64_t vfProgramCreateFromFileFragProgram(const char * shader_filepath, const char * optionalFile, int optionalLine) {
-  uint64_t out = -1;
-
   REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
   return out;
 }
 
 uint64_t vfProgramCreateFromStringVertProgram(const char * shader_string, const char * optionalFile, int optionalLine) {
-  uint64_t out = -1;
-
   REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
   return out;
 }
 
 uint64_t vfProgramCreateFromStringFragProgram(const char * shader_string, const char * optionalFile, int optionalLine) {
-  uint64_t out = -1;
-
   REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
   return out;
 }
 
 uint64_t vfProgramPipelineCreate(uint64_t vert_program, uint64_t frag_program, const char * optionalFile, int optionalLine) {
-  uint64_t out = -1;
-
   REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
   return out;
 }
 
 uint64_t vfBatchBegin(const char * optionalFile, int optionalLine) {
-  uint64_t out = -1;
-
   REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
   return out;
 }
 
@@ -443,9 +462,9 @@ void vfBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const 
 }
 
 uint64_t vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optionalFile, int optionalLine) {
-  uint64_t out = -1;
-
   REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
   return out;
 }
 
