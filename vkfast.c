@@ -10,6 +10,24 @@
 
 const int TODO = 1;
 
+typedef struct vkfast_string_t {
+  char * items;
+  size_t count;
+  size_t capacity;
+  size_t alignment;
+} vkfast_string_t;
+
+typedef struct vkfast_storage_internal_t {
+  int TODO;
+} vkfast_storage_internal_t;
+
+typedef struct vkfast_storage_internal_array_t {
+  vkfast_storage_internal_t * items;
+  size_t                      count;
+  size_t                      capacity;
+  size_t                      alignment;
+} vkfast_storage_internal_array_t;
+
 typedef struct vkfast_global_state {
   int                isDebugMode;
 
@@ -26,10 +44,11 @@ typedef struct vkfast_global_state {
   unsigned           mainQueueFamilyIndex;
   RedHandleQueue     mainQueue;
 
-  unsigned           specificMemoryTypesCpuVisibleCount;
-  unsigned           specificMemoryTypesCpuVisible[32];
-  unsigned           specificMemoryTypesReadbackCount;
-  unsigned           specificMemoryTypesReadback[32];
+  unsigned           specificMemoryTypesGpuVram;
+  unsigned           specificMemoryTypesCpuVisible;
+  unsigned           specificMemoryTypesReadback;
+
+  vkfast_storage_internal_array_t storages;
 } vkfast_global_state;
 
 vkfast_global_state g_vkfast;
@@ -110,10 +129,12 @@ void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug
     red32OutputDebugString("[vkFast] Your GPU name: ");
     red32OutputDebugString(gpuInfo->gpuName);
     red32OutputDebugString("\n");
+    red32OutputDebugString("[vkFast] For extra debug information, recompile redgpu.c with REDGPU_COMPILE_SWITCH 3" "\n");
 
     red32ConsolePrint("[vkFast] Your GPU name: ");
     red32ConsolePrint(gpuInfo->gpuName);
     red32ConsolePrint("\n");
+    red32ConsolePrint("[vkFast] For extra debug information, recompile redgpu.c with REDGPU_COMPILE_SWITCH 3" "\n");
   }
 
   if (gpuInfo->gpuVendorId == 4318/*NVIDIA*/) {
@@ -148,10 +169,9 @@ void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug
   unsigned       mainQueueFamilyIndex = gpuInfo->queuesFamilyIndex[0];
   RedHandleQueue mainQueue            = gpuInfo->queues[0];
 
-  unsigned specificMemoryTypesCpuVisibleCount = 0;
-  unsigned specificMemoryTypesCpuVisible[32]  = {0};
-  unsigned specificMemoryTypesReadbackCount   = 0;
-  unsigned specificMemoryTypesReadback[32]    = {0};
+  unsigned specificMemoryTypesGpuVram    = -1;
+  unsigned specificMemoryTypesCpuVisible = -1;
+  unsigned specificMemoryTypesReadback   = -1;
 
   if (gpuInfo->gpuVendorId == 4318/*NVIDIA*/) { // Tested on RTX 2060 and Windows 10.
     unsigned      memoryTypesCount = 0;
@@ -217,11 +237,10 @@ void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug
       "optionalLine", __LINE__
     );
 
-    specificMemoryTypesCpuVisibleCount = 1;
-    specificMemoryTypesReadbackCount   = 1;
+    specificMemoryTypesGpuVram    = 1;
+    specificMemoryTypesCpuVisible = 3;
+    specificMemoryTypesReadback   = 4; // The cpu cached one
 
-    specificMemoryTypesCpuVisible[0] = 3;
-    specificMemoryTypesReadback[0]   = 4; // The cpu cached one
   } else if (gpuInfo->gpuVendorId == 32902/*Intel UHD Graphics 730*/) {
     unsigned      memoryTypesCount = 0;
     RedMemoryType memoryTypes[32]  = {0};
@@ -262,11 +281,10 @@ void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug
       "optionalLine", __LINE__
     );
 
-    specificMemoryTypesCpuVisibleCount = 1;
-    specificMemoryTypesReadbackCount   = 1;
+    specificMemoryTypesGpuVram    = 0;
+    specificMemoryTypesCpuVisible = 1;
+    specificMemoryTypesReadback   = 2; // The cpu cached one
 
-    specificMemoryTypesCpuVisible[0] = 1;
-    specificMemoryTypesReadback[0]   = 2; // The cpu cached one
   } else {
     REDGPU_2_EXPECT(!"Unsupported by vkFast GPU, recompile your program with vfWindow1920x1080()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
   }
@@ -287,14 +305,9 @@ void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug
   g_vkfast.gpu = gpu;
   g_vkfast.mainQueueFamilyIndex = mainQueueFamilyIndex;
   g_vkfast.mainQueue = mainQueue;
-  g_vkfast.specificMemoryTypesCpuVisibleCount = specificMemoryTypesCpuVisibleCount;
-  for (int i = 0; i < 32; i += 1) {
-    g_vkfast.specificMemoryTypesCpuVisible[i] = specificMemoryTypesCpuVisible[i];
-  }
-  g_vkfast.specificMemoryTypesReadbackCount = specificMemoryTypesReadbackCount;
-  for (int i = 0; i < 32; i += 1) {
-    g_vkfast.specificMemoryTypesReadback[i] = specificMemoryTypesReadback[i];
-  }
+  g_vkfast.specificMemoryTypesGpuVram = specificMemoryTypesGpuVram;
+  g_vkfast.specificMemoryTypesCpuVisible = specificMemoryTypesCpuVisible;
+  g_vkfast.specificMemoryTypesReadback = specificMemoryTypesReadback;
 }
 
 int vfWindowLoop() {
@@ -316,6 +329,7 @@ gpu_storage_t vfStorageCreateFromStruct(gpu_storage_info_t storage, const char *
 gpu_storage_t vfStorageCreateFromStructCpuReadback(gpu_storage_info_t storage, const char * optionalFile, int optionalLine) {
   REDGPU_2_EXPECT(TODO && 0);
 
+  // Filling
   gpu_storage_t out = {0};
   return out;
 }
