@@ -430,6 +430,10 @@ void vfBatchFire(uint64_t batch_id, uint64_t count, const char * optionalFile, i
   REDGPU_2_EXPECT(TODO && 0);
 }
 
+void vfBatchMemoryBarrier(uint64_t batch_id, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
+}
+
 void vfBatchEnd(uint64_t batch_id, const char * optionalFile, int optionalLine) {
   REDGPU_2_EXPECT(TODO && 0);
 }

@@ -116,6 +116,7 @@ void vfBatchBindProgramPipeline(uint64_t batch_id, uint64_t program_pipeline_id,
 void vfBatchClear(uint64_t batch_id, const char * optional_file, int optional_line);
 void vfBatchDraw(uint64_t batch_id, uint64_t gpu_cmd_count, const gpu_cmd_t * gpu_cmd, const char * optional_file, int optional_line);
 void vfBatchFire(uint64_t batch_id, uint64_t count, const char * optional_file, int optional_line);
+void vfBatchMemoryBarrier(uint64_t batch_id, const char * optional_file, int optional_line);
 void vfBatchEnd(uint64_t batch_id, const char * optional_file, int optional_line);
 void vfBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optional_file, int optional_line);
 uint64_t vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optional_file, int optional_line);
