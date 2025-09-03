@@ -46,12 +46,21 @@ typedef struct vkfast_global_state {
 
   unsigned           specificMemoryTypesGpuVram;
   unsigned           specificMemoryTypesCpuVisible;
-  unsigned           specificMemoryTypesReadback;
+  unsigned           specificMemoryTypesCpuReadback;
+
+  Red2Memory         memoryGpuVram_512mb;
+  Red2Memory         memoryCpuVisible_512mb;
+  Red2Memory         memoryCpuReadback_512mb;
 
   vkfast_storage_internal_array_t storages;
 } vkfast_global_state;
 
 vkfast_global_state g_vkfast;
+
+static void vfInternalPrint(const char * string) {
+  red32OutputDebugString(string);
+  red32ConsolePrint(string);
+}
 
 void red2Crash(const char * error, const char * functionName, RedHandleGpu optionalGpuHandle, const char * optionalFile, int optionalLine) {
   struct StringArray {
@@ -86,8 +95,7 @@ void red2Crash(const char * error, const char * functionName, RedHandleGpu optio
 
 void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug_mode, int screen_width, int screen_height, const char * window_title, int msaa_samples, const char * optionalFile, int optionalLine) {
   if (enable_debug_mode) {
-    red32OutputDebugString ("[vkFast] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
-    red32ConsolePrint      ("[vkFast] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
+    vfInternalPrint("[vkFast][Debug] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
   }
 
   REDGPU_2_EXPECT(TODO && msaa_samples == 1);
@@ -123,18 +131,57 @@ void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug
 
   const RedGpuInfo * gpuInfo = &context->gpus[0]; // NOTE(Constantine): Always picking the first available GPU.
 
+  if (enable_debug_mode == 1) {
+    vfInternalPrint("[vkFast][Debug] Your GPU name: ");
+    vfInternalPrint(gpuInfo->gpuName);
+    vfInternalPrint("\n");
+    vfInternalPrint("[vkFast][Debug] For extra debug information, recompile redgpu.c with REDGPU_COMPILE_SWITCH 3" "\n");
+  }
+
   REDGPU_2_EXPECT(gpuInfo->queuesCount > 0);
 
   if (enable_debug_mode == 1) {
-    red32OutputDebugString("[vkFast] Your GPU name: ");
-    red32OutputDebugString(gpuInfo->gpuName);
-    red32OutputDebugString("\n");
-    red32OutputDebugString("[vkFast] For extra debug information, recompile redgpu.c with REDGPU_COMPILE_SWITCH 3" "\n");
+    if (gpuInfo->supportsMemoryGetBudget == 1) {
+      RedMemoryBudget memoryBudget = {0};
+      memoryBudget.setTo1000237000 = 1000237000;
+      memoryBudget.setTo0          = 0;
+      np(redMemoryGetBudget,
+        "context", context,
+        "gpu", gpuInfo->gpu,
+        "outMemoryBudget", &memoryBudget,
+        "outStatuses", NULL,
+        "optionalFile", __FILE__,
+        "optionalLine", __LINE__,
+        "optionalUserData", NULL
+      );
 
-    red32ConsolePrint("[vkFast] Your GPU name: ");
-    red32ConsolePrint(gpuInfo->gpuName);
-    red32ConsolePrint("\n");
-    red32ConsolePrint("[vkFast] For extra debug information, recompile redgpu.c with REDGPU_COMPILE_SWITCH 3" "\n");
+      // To free
+      char * numberString = (char *)red32MemoryCalloc(4096);
+
+      vfInternalPrint("[vkFast][Debug] gpuInfo->memoryHeaps current process heap budget:" "\n");
+      for (unsigned i = 0; i < gpuInfo->memoryHeapsCount; i += 1) {
+        vfInternalPrint("[vkFast][Debug]   [");
+        red32Uint64ToChars(i, numberString);
+        vfInternalPrint(numberString);
+        vfInternalPrint("]: ");
+        red32Uint64ToChars(memoryBudget.memoryHeapsBudget[i], numberString);
+        vfInternalPrint(numberString);
+        vfInternalPrint("\n");
+      }
+
+      vfInternalPrint("[vkFast][Debug] gpuInfo->memoryHeaps current process estimated heap usage:" "\n");
+      for (unsigned i = 0; i < gpuInfo->memoryHeapsCount; i += 1) {
+        vfInternalPrint("[vkFast][Debug]   [");
+        red32Uint64ToChars(i, numberString);
+        vfInternalPrint(numberString);
+        vfInternalPrint("]: ");
+        red32Uint64ToChars(memoryBudget.memoryHeapsUsage[i], numberString);
+        vfInternalPrint(numberString);
+        vfInternalPrint("\n");
+      }
+
+      red32MemoryFree(numberString);
+    }
   }
 
   if (gpuInfo->gpuVendorId == 4318/*NVIDIA*/) {
@@ -150,7 +197,7 @@ void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug
       "optionalLine", __LINE__
     );
   } else {
-    REDGPU_2_EXPECT(!"Unsupported by vkFast GPU, recompile your program with vfWindow1920x1080()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
+    REDGPU_2_EXPECT(!"Unsupported by vkFast GPU, recompile your program with vfWindowFullscreen()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
   }
 
   np(red2ExpectAllMemoryToBeCoherent,
@@ -169,124 +216,172 @@ void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug
   unsigned       mainQueueFamilyIndex = gpuInfo->queuesFamilyIndex[0];
   RedHandleQueue mainQueue            = gpuInfo->queues[0];
 
-  unsigned specificMemoryTypesGpuVram    = -1;
-  unsigned specificMemoryTypesCpuVisible = -1;
-  unsigned specificMemoryTypesReadback   = -1;
+  unsigned specificMemoryTypesGpuVram     = -1;
+  unsigned specificMemoryTypesCpuVisible  = -1;
+  unsigned specificMemoryTypesCpuReadback = -1;
+  {
+    if (gpuInfo->gpuVendorId == 4318/*NVIDIA*/) { // Tested on RTX 2060 and Windows 10.
+      unsigned      memoryTypesCount = 0;
+      RedMemoryType memoryTypes[32]  = {0};
+      unsigned      memoryHeapsCount = 0;
+      RedMemoryHeap memoryHeaps[32]  = {0};
 
-  if (gpuInfo->gpuVendorId == 4318/*NVIDIA*/) { // Tested on RTX 2060 and Windows 10.
-    unsigned      memoryTypesCount = 0;
-    RedMemoryType memoryTypes[32]  = {0};
-    unsigned      memoryHeapsCount = 0;
-    RedMemoryHeap memoryHeaps[32]  = {0};
+      memoryTypesCount = 6;
+      memoryHeapsCount = 3;
 
-    memoryTypesCount = 6;
-    memoryHeapsCount = 3;
+      memoryTypes[0].memoryHeapIndex = 1;
+      memoryTypes[0].isGpuVram       = 0;
+      memoryTypes[0].isCpuMappable   = 0;
+      memoryTypes[0].isCpuCoherent   = 0;
+      memoryTypes[0].isCpuCached     = 0;
 
-    memoryTypes[0].memoryHeapIndex = 1;
-    memoryTypes[0].isGpuVram       = 0;
-    memoryTypes[0].isCpuMappable   = 0;
-    memoryTypes[0].isCpuCoherent   = 0;
-    memoryTypes[0].isCpuCached     = 0;
+      memoryTypes[1].memoryHeapIndex = 0;
+      memoryTypes[1].isGpuVram       = 1;
+      memoryTypes[1].isCpuMappable   = 0;
+      memoryTypes[1].isCpuCoherent   = 0;
+      memoryTypes[1].isCpuCached     = 0;
 
-    memoryTypes[1].memoryHeapIndex = 0;
-    memoryTypes[1].isGpuVram       = 1;
-    memoryTypes[1].isCpuMappable   = 0;
-    memoryTypes[1].isCpuCoherent   = 0;
-    memoryTypes[1].isCpuCached     = 0;
+      memoryTypes[2].memoryHeapIndex = 0;
+      memoryTypes[2].isGpuVram       = 1;
+      memoryTypes[2].isCpuMappable   = 0;
+      memoryTypes[2].isCpuCoherent   = 0;
+      memoryTypes[2].isCpuCached     = 0;
 
-    memoryTypes[2].memoryHeapIndex = 0;
-    memoryTypes[2].isGpuVram       = 1;
-    memoryTypes[2].isCpuMappable   = 0;
-    memoryTypes[2].isCpuCoherent   = 0;
-    memoryTypes[2].isCpuCached     = 0;
+      memoryTypes[3].memoryHeapIndex = 1;
+      memoryTypes[3].isGpuVram       = 0;
+      memoryTypes[3].isCpuMappable   = 1;
+      memoryTypes[3].isCpuCoherent   = 1;
+      memoryTypes[3].isCpuCached     = 0;
 
-    memoryTypes[3].memoryHeapIndex = 1;
-    memoryTypes[3].isGpuVram       = 0;
-    memoryTypes[3].isCpuMappable   = 1;
-    memoryTypes[3].isCpuCoherent   = 1;
-    memoryTypes[3].isCpuCached     = 0;
+      memoryTypes[4].memoryHeapIndex = 1;
+      memoryTypes[4].isGpuVram       = 0;
+      memoryTypes[4].isCpuMappable   = 1;
+      memoryTypes[4].isCpuCoherent   = 1;
+      memoryTypes[4].isCpuCached     = 1;
 
-    memoryTypes[4].memoryHeapIndex = 1;
-    memoryTypes[4].isGpuVram       = 0;
-    memoryTypes[4].isCpuMappable   = 1;
-    memoryTypes[4].isCpuCoherent   = 1;
-    memoryTypes[4].isCpuCached     = 1;
+      memoryTypes[5].memoryHeapIndex = 2;
+      memoryTypes[5].isGpuVram       = 1;
+      memoryTypes[5].isCpuMappable   = 1;
+      memoryTypes[5].isCpuCoherent   = 1;
+      memoryTypes[5].isCpuCached     = 0;
 
-    memoryTypes[5].memoryHeapIndex = 2;
-    memoryTypes[5].isGpuVram       = 1;
-    memoryTypes[5].isCpuMappable   = 1;
-    memoryTypes[5].isCpuCoherent   = 1;
-    memoryTypes[5].isCpuCached     = 0;
+      memoryHeaps[0].memoryBytesCount = 6000000000;
+      memoryHeaps[0].isGpuVram        = 1;
 
-    memoryHeaps[0].memoryBytesCount = 6000000000;
-    memoryHeaps[0].isGpuVram        = 1;
+      memoryHeaps[1].memoryBytesCount = 2000000000;
+      memoryHeaps[1].isGpuVram        = 0;
 
-    memoryHeaps[1].memoryBytesCount = 2000000000;
-    memoryHeaps[1].isGpuVram        = 0;
+      memoryHeaps[2].memoryBytesCount = 200000000;
+      memoryHeaps[2].isGpuVram        = 1;
 
-    memoryHeaps[2].memoryBytesCount = 200000000;
-    memoryHeaps[2].isGpuVram        = 1;
+      np(red2ExpectMemoryTypes,
+        "gpuInfo", gpuInfo,
+        "expectedMemoryHeapsCount", memoryHeapsCount,
+        "expectedMemoryHeaps", memoryHeaps,
+        "expectedMemoryTypesCount", memoryTypesCount,
+        "expectedMemoryTypes", memoryTypes,
+        "optionalFile", __FILE__,
+        "optionalLine", __LINE__
+      );
 
-    np(red2ExpectMemoryTypes,
-      "gpuInfo", gpuInfo,
-      "expectedMemoryHeapsCount", memoryHeapsCount,
-      "expectedMemoryHeaps", memoryHeaps,
-      "expectedMemoryTypesCount", memoryTypesCount,
-      "expectedMemoryTypes", memoryTypes,
+      specificMemoryTypesGpuVram     = 1;
+      specificMemoryTypesCpuVisible  = 3;
+      specificMemoryTypesCpuReadback = 4; // The cpu cached one
+
+    } else if (gpuInfo->gpuVendorId == 32902/*Intel UHD Graphics 730*/) {
+      unsigned      memoryTypesCount = 0;
+      RedMemoryType memoryTypes[32]  = {0};
+      unsigned      memoryHeapsCount = 0;
+      RedMemoryHeap memoryHeaps[32]  = {0};
+
+      memoryTypesCount = 3;
+      memoryHeapsCount = 1;
+
+      memoryTypes[0].memoryHeapIndex = 0;
+      memoryTypes[0].isGpuVram       = 1;
+      memoryTypes[0].isCpuMappable   = 0;
+      memoryTypes[0].isCpuCoherent   = 0;
+      memoryTypes[0].isCpuCached     = 0;
+
+      memoryTypes[1].memoryHeapIndex = 0;
+      memoryTypes[1].isGpuVram       = 1;
+      memoryTypes[1].isCpuMappable   = 1;
+      memoryTypes[1].isCpuCoherent   = 1;
+      memoryTypes[1].isCpuCached     = 0;
+
+      memoryTypes[2].memoryHeapIndex = 0;
+      memoryTypes[2].isGpuVram       = 1;
+      memoryTypes[2].isCpuMappable   = 1;
+      memoryTypes[2].isCpuCoherent   = 1;
+      memoryTypes[2].isCpuCached     = 1;
+
+      memoryHeaps[0].memoryBytesCount = 2000000000;
+      memoryHeaps[0].isGpuVram        = 1;
+
+      np(red2ExpectMemoryTypes,
+        "gpuInfo", gpuInfo,
+        "expectedMemoryHeapsCount", memoryHeapsCount,
+        "expectedMemoryHeaps", memoryHeaps,
+        "expectedMemoryTypesCount", memoryTypesCount,
+        "expectedMemoryTypes", memoryTypes,
+        "optionalFile", __FILE__,
+        "optionalLine", __LINE__
+      );
+
+      specificMemoryTypesGpuVram     = 0;
+      specificMemoryTypesCpuVisible  = 1;
+      specificMemoryTypesCpuReadback = 2; // The cpu cached one
+
+    } else {
+      REDGPU_2_EXPECT(!"Unsupported by vkFast GPU, recompile your program with vfWindowFullscreen()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
+    }
+  }
+
+  Red2Memory memoryGpuVram_512mb     = {0};
+  Red2Memory memoryCpuVisible_512mb  = {0};
+  Red2Memory memoryCpuReadback_512mb = {0};
+  {
+    np(red2MemoryAllocate,
+      "context", context,
+      "gpu", gpu,
+      "handleName", "vkFast_memoryGpuVram_512mb",
+      "bytesCount", 512 * 1024 * 1024, // Based on REDGPU 2 guarantees
+      "memoryTypeIndex", specificMemoryTypesGpuVram,
+      "memoryBitflags", 0,
+      "outMemory", &memoryGpuVram_512mb,
+      "outStatuses", NULL,
       "optionalFile", __FILE__,
-      "optionalLine", __LINE__
+      "optionalLine", __LINE__,
+      "optionalUserData", NULL
     );
 
-    specificMemoryTypesGpuVram    = 1;
-    specificMemoryTypesCpuVisible = 3;
-    specificMemoryTypesReadback   = 4; // The cpu cached one
-
-  } else if (gpuInfo->gpuVendorId == 32902/*Intel UHD Graphics 730*/) {
-    unsigned      memoryTypesCount = 0;
-    RedMemoryType memoryTypes[32]  = {0};
-    unsigned      memoryHeapsCount = 0;
-    RedMemoryHeap memoryHeaps[32]  = {0};
-
-    memoryTypesCount = 3;
-    memoryHeapsCount = 1;
-
-    memoryTypes[0].memoryHeapIndex = 0;
-    memoryTypes[0].isGpuVram       = 1;
-    memoryTypes[0].isCpuMappable   = 0;
-    memoryTypes[0].isCpuCoherent   = 0;
-    memoryTypes[0].isCpuCached     = 0;
-
-    memoryTypes[1].memoryHeapIndex = 0;
-    memoryTypes[1].isGpuVram       = 1;
-    memoryTypes[1].isCpuMappable   = 1;
-    memoryTypes[1].isCpuCoherent   = 1;
-    memoryTypes[1].isCpuCached     = 0;
-
-    memoryTypes[2].memoryHeapIndex = 0;
-    memoryTypes[2].isGpuVram       = 1;
-    memoryTypes[2].isCpuMappable   = 1;
-    memoryTypes[2].isCpuCoherent   = 1;
-    memoryTypes[2].isCpuCached     = 1;
-
-    memoryHeaps[0].memoryBytesCount = 2000000000;
-    memoryHeaps[0].isGpuVram        = 1;
-
-    np(red2ExpectMemoryTypes,
-      "gpuInfo", gpuInfo,
-      "expectedMemoryHeapsCount", memoryHeapsCount,
-      "expectedMemoryHeaps", memoryHeaps,
-      "expectedMemoryTypesCount", memoryTypesCount,
-      "expectedMemoryTypes", memoryTypes,
+    np(red2MemoryAllocate,
+      "context", context,
+      "gpu", gpu,
+      "handleName", "vkFast_memoryCpuVisible_512mb",
+      "bytesCount", 512 * 1024 * 1024, // Based on REDGPU 2 guarantees
+      "memoryTypeIndex", specificMemoryTypesCpuVisible,
+      "memoryBitflags", 0,
+      "outMemory", &memoryCpuVisible_512mb,
+      "outStatuses", NULL,
       "optionalFile", __FILE__,
-      "optionalLine", __LINE__
+      "optionalLine", __LINE__,
+      "optionalUserData", NULL
     );
 
-    specificMemoryTypesGpuVram    = 0;
-    specificMemoryTypesCpuVisible = 1;
-    specificMemoryTypesReadback   = 2; // The cpu cached one
-
-  } else {
-    REDGPU_2_EXPECT(!"Unsupported by vkFast GPU, recompile your program with vfWindow1920x1080()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
+    np(red2MemoryAllocate,
+      "context", context,
+      "gpu", gpu,
+      "handleName", "vkFast_memoryCpuReadback_512mb",
+      "bytesCount", 512 * 1024 * 1024, // Based on REDGPU 2 guarantees
+      "memoryTypeIndex", specificMemoryTypesCpuReadback,
+      "memoryBitflags", 0,
+      "outMemory", &memoryCpuReadback_512mb,
+      "outStatuses", NULL,
+      "optionalFile", __FILE__,
+      "optionalLine", __LINE__,
+      "optionalUserData", NULL
+    );
   }
 
   // Set all global state to 0
@@ -307,7 +402,10 @@ void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug
   g_vkfast.mainQueue = mainQueue;
   g_vkfast.specificMemoryTypesGpuVram = specificMemoryTypesGpuVram;
   g_vkfast.specificMemoryTypesCpuVisible = specificMemoryTypesCpuVisible;
-  g_vkfast.specificMemoryTypesReadback = specificMemoryTypesReadback;
+  g_vkfast.specificMemoryTypesCpuReadback = specificMemoryTypesCpuReadback;
+  g_vkfast.memoryGpuVram_512mb = memoryGpuVram_512mb;
+  g_vkfast.memoryCpuVisible_512mb = memoryCpuVisible_512mb;
+  g_vkfast.memoryCpuReadback_512mb = memoryCpuReadback_512mb;
 }
 
 int vfWindowLoop() {
