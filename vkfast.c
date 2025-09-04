@@ -481,6 +481,13 @@ uint64_t vfProgramCreateFromFileFragProgram(const char * shader_filepath, const 
   return out;
 }
 
+uint64_t vfProgramCreateFromFileCompProgram(const char * shader_filepath, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
+  return out;
+}
+
 uint64_t vfProgramCreateFromStringVertProgram(const char * shader_string, const char * optionalFile, int optionalLine) {
   REDGPU_2_EXPECT(TODO && 0);
   
@@ -495,7 +502,21 @@ uint64_t vfProgramCreateFromStringFragProgram(const char * shader_string, const 
   return out;
 }
 
+uint64_t vfProgramCreateFromStringCompProgram(const char * shader_string, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
+  return out;
+}
+
 uint64_t vfProgramPipelineCreate(uint64_t vert_program, uint64_t frag_program, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
+  
+  uint64_t out = -1;
+  return out;
+}
+
+uint64_t vfProgramPipelineCreateCompute(uint64_t comp_program, const char * optionalFile, int optionalLine) {
   REDGPU_2_EXPECT(TODO && 0);
   
   uint64_t out = -1;
@@ -549,6 +570,10 @@ void vfBatchBindProgramPipeline(uint64_t batch_id, uint64_t program_pipeline_id,
   REDGPU_2_EXPECT(TODO && 0);
 }
 
+void vfBatchBindProgramPipelineCompute(uint64_t batch_id, uint64_t program_pipeline_compute_id, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
+}
+
 void vfBatchClear(uint64_t batch_id, const char * optionalFile, int optionalLine) {
   REDGPU_2_EXPECT(TODO && 0);
 }
@@ -558,6 +583,10 @@ void vfBatchDraw(uint64_t batch_id, uint64_t gpu_cmd_count, const gpu_cmd_t * gp
 }
 
 void vfBatchFire(uint64_t batch_id, uint64_t count, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(TODO && 0);
+}
+
+void vfBatchCompute(uint64_t batch_id, unsigned workgroups_count_x, unsigned workgroups_count_y, unsigned workgroups_count_z, const char * optionalFile, int optionalLine) {
   REDGPU_2_EXPECT(TODO && 0);
 }
 

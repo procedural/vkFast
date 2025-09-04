@@ -99,9 +99,12 @@ uint64_t vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, 
 uint64_t vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optional_file, int optional_line);
 uint64_t vfProgramCreateFromFileVertProgram(const char * shader_filepath, const char * optional_file, int optional_line);
 uint64_t vfProgramCreateFromFileFragProgram(const char * shader_filepath, const char * optional_file, int optional_line);
+uint64_t vfProgramCreateFromFileCompProgram(const char * shader_filepath, const char * optional_file, int optional_line);
 uint64_t vfProgramCreateFromStringVertProgram(const char * shader_string, const char * optional_file, int optional_line);
 uint64_t vfProgramCreateFromStringFragProgram(const char * shader_string, const char * optional_file, int optional_line);
+uint64_t vfProgramCreateFromStringCompProgram(const char * shader_string, const char * optional_file, int optional_line);
 uint64_t vfProgramPipelineCreate(uint64_t vert_program, uint64_t frag_program, const char * optional_file, int optional_line);
+uint64_t vfProgramPipelineCreateCompute(uint64_t comp_program, const char * optional_file, int optional_line);
 uint64_t vfBatchBegin(const char * optional_file, int optional_line);
 void vfBatchStorageCopyFromCpuToGpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line);
 void vfBatchStorageCopyFromGpuToCpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line);
@@ -113,9 +116,11 @@ void vfBatchBindCubemap(uint64_t batch_id, int texture_ids_count, const uint64_t
 void vfBatchBindSampler(uint64_t batch_id, int sampler_ids_count, const uint64_t * sampler_ids, const char * optional_file, int optional_line); // HLSL: Sampler
 void vfBatchBindRWTexture(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line); // HLSL: RWTexture2DArray
 void vfBatchBindProgramPipeline(uint64_t batch_id, uint64_t program_pipeline_id, const char * optional_file, int optional_line);
+void vfBatchBindProgramPipelineCompute(uint64_t batch_id, uint64_t program_pipeline_compute_id, const char * optional_file, int optional_line);
 void vfBatchClear(uint64_t batch_id, const char * optional_file, int optional_line);
 void vfBatchDraw(uint64_t batch_id, uint64_t gpu_cmd_count, const gpu_cmd_t * gpu_cmd, const char * optional_file, int optional_line);
 void vfBatchFire(uint64_t batch_id, uint64_t count, const char * optional_file, int optional_line);
+void vfBatchCompute(uint64_t batch_id, unsigned workgroups_count_x, unsigned workgroups_count_y, unsigned workgroups_count_z, const char * optional_file, int optional_line);
 void vfBatchMemoryBarrier(uint64_t batch_id, const char * optional_file, int optional_line);
 void vfBatchEnd(uint64_t batch_id, const char * optional_file, int optional_line);
 void vfBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optional_file, int optional_line);
