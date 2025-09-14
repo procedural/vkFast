@@ -18,7 +18,7 @@
 #define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_VISIBLE_512MB     (512 * 1024 * 1024)
 #define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB    (512 * 1024 * 1024)
 
-typedef struct vkfast_global_state_context_t {
+typedef struct vf_global_state_context_t {
   int                isDebugMode;
 
   void *             windowHandle;
@@ -53,19 +53,28 @@ typedef struct vkfast_global_state_context_t {
   Red2Array          memoryCpuReadback_memory_and_array;
   void *             memoryCpuReadback_mapped_void_ptr;
   uint64_t           memoryCpuReadback_memory_suballocations_offset;
-} vkfast_global_state_context_t;
+} vf_global_state_context_t;
 
-vkfast_global_state_context_t * g_vkfast; // NOTE(Constantine): Every time vkfast_global_state_context is accessed in vf* functions, that is not thread-safe.
+vf_global_state_context_t * g_vkfast; // NOTE(Constantine): Every time vf_global_state_context is accessed in vf* functions, that is not thread-safe.
 
-typedef enum vkfast_handle_id_t {
+typedef struct vf_handle_storage_t {
+  gpu_storage_info_t   info;
+  uint64_t             alignment;
+  void *               mappedVoidPointer;
+  RedStructMemberArray arrayRangeInfo;
+} vf_handle_storage_t;
+
+typedef enum vf_handle_id_t {
   VF_HANDLE_ID_INVALID = 0,
-} vkfast_handle_id_t;
+  VF_HANDLE_ID_STORAGE = 1,
+} vf_handle_id_t;
 
-typedef struct vkfast_handle_t {
-  vkfast_handle_id_t vkfast_handle_id;
+typedef struct vf_handle_t {
+  vf_handle_id_t handle_id;
   union {
+    struct vf_handle_storage_t storage;
   };
-} vkfast_handle_t;
+} vf_handle_t;
 
 static void vfInternalPrint(const char * string) {
   red32OutputDebugString(string);
@@ -114,7 +123,7 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
     vfInternalPrint("[vkFast][Debug] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
   }
 
-  g_vkfast = (vkfast_global_state_context_t *)red32MemoryCalloc(sizeof(vkfast_global_state_context_t));
+  g_vkfast = (vf_global_state_context_t *)red32MemoryCalloc(sizeof(vf_global_state_context_t));
   REDGPU_2_EXPECT(g_vkfast != NULL);
 
   uint64_t internalMemoryAllocationSizeGpuVramArrays = VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_VRAM_ARRAYS_512MB;
@@ -123,10 +132,10 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
   uint64_t internalMemoryAllocationSizeCpuReadback   = VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB;
   if (optional_parameters != NULL) {
     if (optional_parameters->internal_memory_allocation_sizes != NULL) {
-      internalMemoryAllocationSizeGpuVramArrays = optional_parameters->internal_memory_allocation_sizes->bytesCountForMemoryGpuVramArrays;
-      internalMemoryAllocationSizeGpuVramImages = optional_parameters->internal_memory_allocation_sizes->bytesCountForMemoryGpuVramImages;
-      internalMemoryAllocationSizeCpuVisible    = optional_parameters->internal_memory_allocation_sizes->bytesCountForMemoryCpuVisible;
-      internalMemoryAllocationSizeCpuReadback   = optional_parameters->internal_memory_allocation_sizes->bytesCountForMemoryCpuReadback;
+      internalMemoryAllocationSizeGpuVramArrays = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_gpu_vram_arrays;
+      internalMemoryAllocationSizeGpuVramImages = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_gpu_vram_images;
+      internalMemoryAllocationSizeCpuVisible    = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_cpu_visible;
+      internalMemoryAllocationSizeCpuReadback   = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_cpu_readback;
     }
   }
 
@@ -497,7 +506,7 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
   }
 
   // Filling
-  vkfast_global_state_context_t;
+  vf_global_state_context_t;
   g_vkfast->isDebugMode = enable_debug_mode;
   g_vkfast->windowHandle = NULL;
   g_vkfast->screenWidth = 0;
@@ -526,8 +535,8 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
 
 GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t * ids, const char * optionalFile, int optionalLine) {
   for (uint64_t i = 0; i < ids_count; i += 1) {
-    vkfast_handle_t * handle = (vkfast_handle_t *)(void *)ids[i];
-    if (handle->vkfast_handle_id == VF_HANDLE_ID_INVALID) {
+    vf_handle_t * handle = (vf_handle_t *)(void *)ids[i];
+    if (handle->handle_id == VF_HANDLE_ID_INVALID) {
       continue;
     }
   }
@@ -630,7 +639,7 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t
   );
 
   for (uint64_t i = 0; i < ids_count; i += 1) {
-    vkfast_handle_t * handle = (vkfast_handle_t *)(void *)ids[i];
+    vf_handle_t * handle = (vf_handle_t *)(void *)ids[i];
     red32MemoryFree(handle);
   }
 }
@@ -642,12 +651,13 @@ GPU_API_PRE void GPU_API_POST vfWindowFullscreen(void * optional_existing_window
   if (window_handle == NULL) {
     window_handle = red32WindowCreate(window_title);
   }
+
+  // TODO: if already have redgpu window resources, destroy them and create them again here.
+
   g_vkfast->windowHandle = window_handle;
   g_vkfast->screenWidth = screen_width;
   g_vkfast->screenHeight = screen_height;
   g_vkfast->msaaSamples = msaa_samples;
-
-  // TODO: if already have redgpu window resources, destroy them and create them again here.
 }
 
 GPU_API_PRE int GPU_API_POST vfWindowLoop() {
@@ -656,4 +666,86 @@ GPU_API_PRE int GPU_API_POST vfWindowLoop() {
 
 GPU_API_PRE void GPU_API_POST vfExit(int exit_code) {
   red32Exit(exit_code);
+}
+
+GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t * storage_info, gpu_storage_t * out_storage, const char * optionalFile, int optionalLine) {
+  // NOTE(Constantine):
+  // This procedure is not thread-safe since it modifies global g_vkfast->*_memory_suballocations_offset values.
+
+  uint64_t             alignment         = 0;
+  RedStructMemberArray arrayRangeInfo    = {0};
+  void *               mappedVoidPointer = NULL;
+  {
+    // NOTE(Constantine): Storage range mapping.
+
+    if (storage_info->storage_type == GPU_STORAGE_TYPE_GPU_ONLY) {
+      
+      alignment = g_vkfast->gpuInfo->minArrayRORWStructMemberRangeBytesAlignment;
+
+      arrayRangeInfo.array                = g_vkfast->memoryGpuVramForArrays_array.array.handle;
+      arrayRangeInfo.arrayRangeBytesFirst = g_vkfast->memoryGpuVramForArrays_memory_suballocations_offset;
+      arrayRangeInfo.arrayRangeBytesCount = storage_info->bytes_count + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_info->bytes_count, alignment);
+      g_vkfast->memoryGpuVramForArrays_memory_suballocations_offset += arrayRangeInfo.arrayRangeBytesCount;
+
+    } else if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_UPLOAD) {
+    
+      alignment = g_vkfast->gpuInfo->minMemoryAllocateBytesAlignment;
+
+      arrayRangeInfo.array                = g_vkfast->memoryCpuUpload_memory_and_array.array.handle;
+      arrayRangeInfo.arrayRangeBytesFirst = g_vkfast->memoryCpuUpload_memory_suballocations_offset;
+      arrayRangeInfo.arrayRangeBytesCount = storage_info->bytes_count + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_info->bytes_count, alignment);
+      g_vkfast->memoryCpuUpload_memory_suballocations_offset += arrayRangeInfo.arrayRangeBytesCount;
+
+    } else if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_READBACK) {
+    
+      alignment = g_vkfast->gpuInfo->minMemoryAllocateBytesAlignment;
+
+      arrayRangeInfo.array                = g_vkfast->memoryCpuReadback_memory_and_array.array.handle;
+      arrayRangeInfo.arrayRangeBytesFirst = g_vkfast->memoryCpuReadback_memory_suballocations_offset;
+      arrayRangeInfo.arrayRangeBytesCount = storage_info->bytes_count + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_info->bytes_count, alignment);
+      g_vkfast->memoryCpuReadback_memory_suballocations_offset += arrayRangeInfo.arrayRangeBytesCount;
+
+    } else {
+      REDGPU_2_EXPECT(!"[vkFast Internal][" __FUNCTION__ "] Unreachable enum value.");
+    }
+
+    // NOTE(Constantine): Pointer mapping.
+
+    if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_UPLOAD) {
+    
+      mappedVoidPointer = g_vkfast->memoryCpuUpload_mapped_void_ptr;
+      
+      uint8_t * ptr = (uint8_t *)g_vkfast->memoryCpuUpload_mapped_void_ptr;
+      ptr += arrayRangeInfo.arrayRangeBytesCount;
+      g_vkfast->memoryCpuUpload_mapped_void_ptr = (void *)ptr;
+
+    } else if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_READBACK) {
+    
+      mappedVoidPointer = g_vkfast->memoryCpuReadback_mapped_void_ptr;
+      
+      uint8_t * ptr = (uint8_t *)g_vkfast->memoryCpuReadback_mapped_void_ptr;
+      ptr += arrayRangeInfo.arrayRangeBytesCount;
+      g_vkfast->memoryCpuReadback_mapped_void_ptr = (void *)ptr;
+
+    }
+  }
+
+  vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
+  REDGPU_2_EXPECT(handle != NULL);
+
+  // Filling
+  vf_handle_t;
+  vf_handle_storage_t;
+  handle->handle_id                 = VF_HANDLE_ID_STORAGE;
+  handle->storage.info              = storage_info[0];
+  handle->storage.alignment         = alignment;
+  handle->storage.mappedVoidPointer = mappedVoidPointer;
+  handle->storage.arrayRangeInfo    = arrayRangeInfo;
+
+  // Filling
+  gpu_storage_t;
+  out_storage->id              = (uint64_t)(void *)handle;
+  out_storage->info            = storage_info[0];
+  out_storage->alignment       = alignment;
+  out_storage->mapped_void_ptr = mappedVoidPointer;
 }

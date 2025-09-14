@@ -30,10 +30,10 @@ extern "C" {
 // TYPES ///////////////////////////////////////////////////////////////////////
 
 typedef struct gpu_internal_memory_allocation_sizes_t {
-  uint64_t bytesCountForMemoryGpuVramArrays;
-  uint64_t bytesCountForMemoryGpuVramImages;
-  uint64_t bytesCountForMemoryCpuVisible;
-  uint64_t bytesCountForMemoryCpuReadback;
+  uint64_t bytes_count_for_memory_gpu_vram_arrays;
+  uint64_t bytes_count_for_memory_gpu_vram_images;
+  uint64_t bytes_count_for_memory_cpu_visible;
+  uint64_t bytes_count_for_memory_cpu_readback;
 } gpu_internal_memory_allocation_sizes_t;
 
 typedef struct gpu_context_optional_parameters_t {
@@ -49,14 +49,14 @@ typedef enum gpu_storage_type_t {
 
 typedef struct gpu_storage_info_t {
   gpu_storage_type_t storage_type;
-  uint64_t           bytesCount;
-  uint64_t           optionalVertexCount; // Optional property to fill for gpu_cmd_t::count
-  const char *       optionalDebugName;
+  uint64_t           bytes_count;
+  uint64_t           optional_vertex_count; // Optional property to fill for gpu_cmd_t::count
 } gpu_storage_info_t;
 
 typedef struct gpu_storage_t {
   uint64_t           id;
   gpu_storage_info_t info;
+  uint64_t           alignment;
   union
   {
     void              * mapped_void_ptr;
@@ -129,17 +129,17 @@ GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromStruct(const gpu_texture_in
 GPU_API_PRE uint64_t GPU_API_POST vfSamplerCreateFromStruct(const gpu_sampler_info_t * sampler_info, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromFileVertProgram(const char * shader_filepath, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromFileFragProgram(const char * shader_filepath, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromFileCompProgram(const char * shader_filepath, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryVertProgram(const char * shader_binary, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFragProgram(const char * shader_binary, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompProgram(const char * shader_binary, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileVertProgram(const char * shader_binary_filepath, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileFragProgram(const char * shader_binary_filepath, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileCompProgram(const char * shader_binary_filepath, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryVertProgram(void * shader_binary, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFragProgram(void * shader_binary, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompProgram(void * shader_binary, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreate(uint64_t vert_program, uint64_t frag_program, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(uint64_t comp_program, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromCpuToGpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromGpuToCpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromCpuToGpu(uint64_t batch_id, uint64_t from_cpu_storage_id, uint64_t to_gpu_storage_id, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromGpuToCpu(uint64_t batch_id, uint64_t from_gpu_storage_id, uint64_t to_cpu_storage_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchTexturePixelsCopyFromCpuToGpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_source_storage_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchTexturePixelsCopyFromGpuToCpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_target_storage_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchBindStorage(uint64_t batch_id, int storage_ids_count, const uint64_t * storage_ids, const char * optional_file, int optional_line); // HLSL: RWByteAddressBuffer

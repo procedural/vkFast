@@ -12,8 +12,8 @@ int main() {
   vfWindowFullscreen(NULL, "Hello Triangle", 1920, 1080, 1, FF, LL);
   
   gpu_storage_info_t mesh_info = {0};
-  mesh_info.optionalVertexCount = 3;
-  mesh_info.bytesCount = mesh_info.optionalVertexCount * 3*sizeof(float);
+  mesh_info.optional_vertex_count = 3;
+  mesh_info.bytes_count = mesh_info.optional_vertex_count * 3*sizeof(float);
   gpu_storage_t mesh = {0};
   vfStorageCreateFromStruct(&mesh_info, &mesh, FF, LL);
   
@@ -36,7 +36,7 @@ int main() {
   vfAsyncWaitToFinish(async, FF, LL);
 
   gpu_cmd_t cmd[1] = {0};
-  cmd[0].count = mesh.info.optionalVertexCount;
+  cmd[0].count = mesh.info.optional_vertex_count;
   cmd[0].instance_count = 1;
   
   const char * vs_str =
