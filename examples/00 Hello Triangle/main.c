@@ -8,12 +8,14 @@
 #define countof(x) (sizeof(x) / sizeof((x)[0]))
 
 int main() {
-  vfWindowFullscreen(NULL, 1, 1920, 1080, "Hello Triangle", 1, FF, LL);
+  vfContextInit(1, FF, LL);
+  vfWindowFullscreen(NULL, "Hello Triangle", 1920, 1080, 1, FF, LL);
   
   gpu_storage_info_t mesh_info = {0};
   mesh_info.optionalVertexCount = 3;
   mesh_info.bytesCount = mesh_info.optionalVertexCount * 3*sizeof(float);
-  gpu_storage_t mesh = vfStorageCreateFromStruct(mesh_info, FF, LL);
+  gpu_storage_t mesh = {0};
+  vfStorageCreateFromStruct(&mesh_info, &mesh, FF, LL);
   
   mesh.as_vec3[0].x = -0.5f;
   mesh.as_vec3[0].y = -0.5f;
@@ -72,5 +74,6 @@ int main() {
     vfBatchExecute(1, &batch, FF, LL);
   }
   
+  vfContextDeinit(0, NULL, FF, LL);
   vfExit(0);
 }

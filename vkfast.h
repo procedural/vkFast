@@ -30,14 +30,16 @@ extern "C" {
 // TYPES ///////////////////////////////////////////////////////////////////////
 
 typedef struct gpu_storage_info_t {
-  uint64_t bytesCount;
-  uint64_t optionalVertexCount; // Optional property to fill for gpu_cmd_t::count
+  int          isCpuReadbackBuffer;
+  int          isGpuOnly;
+  uint64_t     bytesCount;
+  uint64_t     optionalVertexCount; // Optional property to fill for gpu_cmd_t::count
+  const char * optionalDebugName;
 } gpu_storage_info_t;
 
 typedef struct gpu_storage_t {
   uint64_t           id;
   gpu_storage_info_t info;
-  uint64_t           info_alignment;
   union
   {
     void              * mapped_void_ptr;
@@ -70,6 +72,11 @@ typedef struct gpu_storage_t {
   };
 } gpu_storage_t;
 
+typedef struct gpu_storage_gpu_only_t {
+  uint64_t           id;
+  gpu_storage_info_t info;
+} gpu_storage_gpu_only_t;
+
 typedef struct gpu_texture_info_t {
   int TODO;
 } gpu_texture_info_t;
@@ -85,47 +92,56 @@ typedef struct gpu_cmd_t {
   uint64_t instance_first;
 } gpu_cmd_t;
 
+#ifndef VF_API_PRE
+#define VF_API_PRE
+#endif
+
+#ifndef VF_API_POST
+#define VF_API_POST
+#endif
+
 // PROTOTYPES //////////////////////////////////////////////////////////////////
 
-void vfWindowFullscreen(void * optional_existing_window_handle, int enable_debug_mode, int screen_width, int screen_height, const char * window_title, int msaa_samples, const char * optional_file, int optional_line);
-int vfWindowLoop();
-void vfExit(int exit_code);
-gpu_storage_t vfStorageCreateFromStruct(gpu_storage_info_t storage, const char * optional_file, int optional_line);
-gpu_storage_t vfStorageCreateFromStructCpuReadback(gpu_storage_info_t storage, const char * optional_file, int optional_line);
-uint64_t vfStorageCreateFromStructGpuOnly(gpu_storage_info_t storage, const char * optional_file, int optional_line);
-uint64_t vfTextureCreateFromStruct(gpu_texture_info_t texture, const char * optional_file, int optional_line);
-uint64_t vfSamplerCreateFromStruct(gpu_sampler_info_t sampler, const char * optional_file, int optional_line);
-uint64_t vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optional_file, int optional_line);
-uint64_t vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optional_file, int optional_line);
-uint64_t vfProgramCreateFromFileVertProgram(const char * shader_filepath, const char * optional_file, int optional_line);
-uint64_t vfProgramCreateFromFileFragProgram(const char * shader_filepath, const char * optional_file, int optional_line);
-uint64_t vfProgramCreateFromFileCompProgram(const char * shader_filepath, const char * optional_file, int optional_line);
-uint64_t vfProgramCreateFromStringVertProgram(const char * shader_string, const char * optional_file, int optional_line);
-uint64_t vfProgramCreateFromStringFragProgram(const char * shader_string, const char * optional_file, int optional_line);
-uint64_t vfProgramCreateFromStringCompProgram(const char * shader_string, const char * optional_file, int optional_line);
-uint64_t vfProgramPipelineCreate(uint64_t vert_program, uint64_t frag_program, const char * optional_file, int optional_line);
-uint64_t vfProgramPipelineCreateCompute(uint64_t comp_program, const char * optional_file, int optional_line);
-uint64_t vfBatchBegin(const char * optional_file, int optional_line);
-void vfBatchStorageCopyFromCpuToGpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line);
-void vfBatchStorageCopyFromGpuToCpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line);
-void vfBatchTexturePixelsCopyFromCpuToGpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_source_storage_id, const char * optional_file, int optional_line);
-void vfBatchTexturePixelsCopyFromGpuToCpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_target_storage_id, const char * optional_file, int optional_line);
-void vfBatchBindStorage(uint64_t batch_id, int storage_ids_count, const uint64_t * storage_ids, const char * optional_file, int optional_line); // HLSL: RWByteAddressBuffer
-void vfBatchBindTexture(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line); // HLSL: Texture2DArray
-void vfBatchBindCubemap(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line); // HLSL: TextureCubeArray<float4>
-void vfBatchBindSampler(uint64_t batch_id, int sampler_ids_count, const uint64_t * sampler_ids, const char * optional_file, int optional_line); // HLSL: Sampler
-void vfBatchBindRWTexture(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line); // HLSL: RWTexture2DArray
-void vfBatchBindProgramPipeline(uint64_t batch_id, uint64_t program_pipeline_id, const char * optional_file, int optional_line);
-void vfBatchBindProgramPipelineCompute(uint64_t batch_id, uint64_t program_pipeline_compute_id, const char * optional_file, int optional_line);
-void vfBatchClear(uint64_t batch_id, const char * optional_file, int optional_line);
-void vfBatchDraw(uint64_t batch_id, uint64_t gpu_cmd_count, const gpu_cmd_t * gpu_cmd, const char * optional_file, int optional_line);
-void vfBatchFire(uint64_t batch_id, uint64_t count, const char * optional_file, int optional_line);
-void vfBatchCompute(uint64_t batch_id, unsigned workgroups_count_x, unsigned workgroups_count_y, unsigned workgroups_count_z, const char * optional_file, int optional_line);
-void vfBatchMemoryBarrier(uint64_t batch_id, const char * optional_file, int optional_line);
-void vfBatchEnd(uint64_t batch_id, const char * optional_file, int optional_line);
-void vfBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optional_file, int optional_line);
-uint64_t vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optional_file, int optional_line);
-void vfAsyncWaitToFinish(uint64_t async_id, const char * optionalFile, int optionalLine);
+VF_API_PRE void VF_API_POST vfContextInit(int enable_debug_mode, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t * ids, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfWindowFullscreen(void * optional_existing_window_handle, const char * window_title, int screen_width, int screen_height, int msaa_samples, const char * optional_file, int optional_line);
+VF_API_PRE int VF_API_POST vfWindowLoop();
+VF_API_PRE void VF_API_POST vfExit(int exit_code);
+VF_API_PRE void VF_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t * storage_info, gpu_storage_t * out_storage, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfTextureCreateFromStruct(const gpu_texture_info_t * texture_info, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfSamplerCreateFromStruct(const gpu_sampler_info_t * sampler_info, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfProgramCreateFromFileVertProgram(const char * shader_filepath, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfProgramCreateFromFileFragProgram(const char * shader_filepath, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfProgramCreateFromFileCompProgram(const char * shader_filepath, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfProgramCreateFromBinaryVertProgram(const char * shader_binary, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfProgramCreateFromBinaryFragProgram(const char * shader_binary, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfProgramCreateFromBinaryCompProgram(const char * shader_binary, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfProgramPipelineCreate(uint64_t vert_program, uint64_t frag_program, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfProgramPipelineCreateCompute(uint64_t comp_program, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfBatchBegin(const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchStorageCopyFromCpuToGpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchStorageCopyFromGpuToCpu(uint64_t batch_id, uint64_t storage_id, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchTexturePixelsCopyFromCpuToGpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_source_storage_id, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchTexturePixelsCopyFromGpuToCpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_target_storage_id, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchBindStorage(uint64_t batch_id, int storage_ids_count, const uint64_t * storage_ids, const char * optional_file, int optional_line); // HLSL: RWByteAddressBuffer
+VF_API_PRE void VF_API_POST vfBatchBindTexture(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line); // HLSL: Texture2DArray
+VF_API_PRE void VF_API_POST vfBatchBindCubemap(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line); // HLSL: TextureCubeArray<float4>
+VF_API_PRE void VF_API_POST vfBatchBindSampler(uint64_t batch_id, int sampler_ids_count, const uint64_t * sampler_ids, const char * optional_file, int optional_line); // HLSL: Sampler
+VF_API_PRE void VF_API_POST vfBatchBindRWTexture(uint64_t batch_id, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line); // HLSL: RWTexture2DArray
+VF_API_PRE void VF_API_POST vfBatchBindProgramPipeline(uint64_t batch_id, uint64_t program_pipeline_id, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchBindProgramPipelineCompute(uint64_t batch_id, uint64_t program_pipeline_compute_id, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchClear(uint64_t batch_id, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchDraw(uint64_t batch_id, uint64_t gpu_cmd_count, const gpu_cmd_t * gpu_cmd, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchFire(uint64_t batch_id, uint64_t count, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchCompute(uint64_t batch_id, unsigned workgroups_count_x, unsigned workgroups_count_y, unsigned workgroups_count_z, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchMemoryBarrier(uint64_t batch_id, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchCpuReadbackBarrier(uint64_t batch_id, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchEnd(uint64_t batch_id, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optional_file, int optional_line);
+VF_API_PRE uint64_t VF_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfAsyncWaitToFinish(uint64_t async_id, const char * optionalFile, int optionalLine);
 
 #ifdef __cplusplus
 }
