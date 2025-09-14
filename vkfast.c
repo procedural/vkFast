@@ -1,6 +1,6 @@
 #ifdef _WIN32
-#define VF_API_PRE __declspec(dllexport)
-#define VF_API_POST
+#define GPU_API_PRE __declspec(dllexport)
+#define GPU_API_POST
 #endif
 
 #include "vkfast.h"
@@ -109,7 +109,7 @@ static RedBool32 vfRedGpuDebugCallback(RedDebugCallbackSeverity severity, RedDeb
   return 0;
 }
 
-VF_API_PRE void VF_API_POST vfContextInit(int enable_debug_mode, const gpu_context_optional_parameters_t * optional_parameters, const char * optionalFile, int optionalLine) {
+GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_context_optional_parameters_t * optional_parameters, const char * optionalFile, int optionalLine) {
   if (enable_debug_mode) {
     vfInternalPrint("[vkFast][Debug] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
   }
@@ -524,7 +524,7 @@ VF_API_PRE void VF_API_POST vfContextInit(int enable_debug_mode, const gpu_conte
   g_vkfast->memoryCpuReadback_memory_suballocations_offset = 0;
 }
 
-VF_API_PRE void VF_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t * ids, const char * optionalFile, int optionalLine) {
+GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t * ids, const char * optionalFile, int optionalLine) {
   for (uint64_t i = 0; i < ids_count; i += 1) {
     vkfast_handle_t * handle = (vkfast_handle_t *)(void *)ids[i];
     if (handle->vkfast_handle_id == VF_HANDLE_ID_INVALID) {
@@ -635,7 +635,7 @@ VF_API_PRE void VF_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t *
   }
 }
 
-VF_API_PRE void VF_API_POST vfWindowFullscreen(void * optional_existing_window_handle, const char * window_title, int screen_width, int screen_height, int msaa_samples, const char * optionalFile, int optionalLine) {
+GPU_API_PRE void GPU_API_POST vfWindowFullscreen(void * optional_existing_window_handle, const char * window_title, int screen_width, int screen_height, int msaa_samples, const char * optionalFile, int optionalLine) {
   REDGPU_2_EXPECT(msaa_samples == 1 || !"TODO");
 
   void * window_handle = optional_existing_window_handle;
@@ -650,10 +650,10 @@ VF_API_PRE void VF_API_POST vfWindowFullscreen(void * optional_existing_window_h
   // TODO: if already have redgpu window resources, destroy them and create them again here.
 }
 
-VF_API_PRE int VF_API_POST vfWindowLoop() {
+GPU_API_PRE int GPU_API_POST vfWindowLoop() {
   return red32WindowLoop();
 }
 
-void vfExit(int exit_code) {
+GPU_API_PRE void GPU_API_POST vfExit(int exit_code) {
   red32Exit(exit_code);
 }
