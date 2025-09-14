@@ -467,6 +467,8 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
       "optionalLine", optionalLine,
       "optionalUserData", NULL
     );
+    REDGPU_2_EXPECTWG(memoryCpuUpload_mapped_void_ptr != NULL);
+    REDGPU_2_EXPECTWG(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)memoryCpuUpload_mapped_void_ptr, gpuInfo->minMemoryAllocateBytesAlignment));
   }
   {
     np(red2CreateArray,
@@ -503,6 +505,8 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
       "optionalLine", optionalLine,
       "optionalUserData", NULL
     );
+    REDGPU_2_EXPECTWG(memoryCpuReadback_mapped_void_ptr != NULL);
+    REDGPU_2_EXPECTWG(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)memoryCpuReadback_mapped_void_ptr, gpuInfo->minMemoryAllocateBytesAlignment));
   }
 
   // Filling

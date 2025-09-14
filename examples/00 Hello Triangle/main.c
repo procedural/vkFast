@@ -12,10 +12,14 @@ int main() {
   vfWindowFullscreen(NULL, "Hello Triangle", 1920, 1080, 1, FF, LL);
   
   gpu_storage_info_t mesh_info = {0};
+  mesh_info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
   mesh_info.optional_vertex_count = 3;
   mesh_info.bytes_count = mesh_info.optional_vertex_count * 3*sizeof(float);
   gpu_storage_t mesh = {0};
+  gpu_storage_t mesh_gpu = {0};
   vfStorageCreateFromStruct(&mesh_info, &mesh, FF, LL);
+  mesh_info.storage_type = GPU_STORAGE_TYPE_GPU_ONLY;
+  vfStorageCreateFromStruct(&mesh_info, &mesh_gpu, FF, LL);
   
   mesh.as_vec3[0].x = -0.5f;
   mesh.as_vec3[0].y = -0.5f;
@@ -30,7 +34,7 @@ int main() {
   mesh.as_vec3[2].z =  0.0f;
   
   uint64_t copy = vfBatchBegin(FF, LL);
-  vfBatchStorageCopyFromCpuToGpu(copy, mesh.id, FF, LL);
+  vfBatchStorageCopyFromCpuToGpu(copy, mesh.id, mesh_gpu.id, FF, LL);
   vfBatchEnd(copy, FF, LL);
   uint64_t async = vfAsyncBatchExecute(1, &copy, FF, LL);
   vfAsyncWaitToFinish(async, FF, LL);
@@ -62,7 +66,7 @@ int main() {
   uint64_t fs = vfProgramCreateFromStringFragProgram(fs_str, FF, LL);
   uint64_t pp = vfProgramPipelineCreate(vs, fs, FF, LL);
   
-  uint64_t state_storages[1] = {mesh.id};
+  uint64_t state_storages[1] = {mesh_gpu.id};
   
   while (vfWindowLoop()) {
     uint64_t batch = vfBatchBegin(FF, LL);
