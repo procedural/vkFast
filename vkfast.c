@@ -64,15 +64,21 @@ typedef struct vf_handle_storage_t {
   RedStructMemberArray arrayRangeInfo;
 } vf_handle_storage_t;
 
+typedef struct vf_handle_texture_t {
+  gpu_texture_info_t info;
+} vf_handle_texture_t;
+
 typedef enum vf_handle_id_t {
   VF_HANDLE_ID_INVALID = 0,
   VF_HANDLE_ID_STORAGE = 1,
+  VF_HANDLE_ID_TEXTURE = 2,
 } vf_handle_id_t;
 
 typedef struct vf_handle_t {
   vf_handle_id_t handle_id;
   union {
-    struct vf_handle_storage_t storage;
+    vf_handle_storage_t storage;
+    vf_handle_texture_t texture;
   };
 } vf_handle_t;
 
@@ -678,6 +684,7 @@ GPU_API_PRE void GPU_API_POST vfExit(int exit_code) {
 GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t * storage_info, gpu_storage_t * out_storage, const char * optionalFile, int optionalLine) {
   // NOTE(Constantine):
   // This procedure is not thread-safe since it modifies global g_vkfast->*_memory_suballocations_offset values.
+  // This procedure doesn't do anything CPU heavy, it just calculates some pointer offsets, so it's cheap to call it from one thread only.
 
   RedHandleGpu gpu = g_vkfast->gpu;
 
@@ -763,4 +770,19 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
   out_storage->info            = storage_info[0];
   out_storage->alignment       = alignment;
   out_storage->mapped_void_ptr = mappedVoidPointer;
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromStruct(const gpu_texture_info_t * texture_info, const char * optionalFile, int optionalLine) {
+  RedHandleGpu gpu = g_vkfast->gpu;
+
+  vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
+  REDGPU_2_EXPECTWG(handle != NULL);
+
+  // Filling
+  vf_handle_t;
+  vf_handle_texture_t;
+  handle->handle_id    = VF_HANDLE_ID_TEXTURE;
+  handle->texture.info = texture_info[0];
+
+  return (uint64_t)(void *)handle;
 }
