@@ -13,10 +13,10 @@
 #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
 #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
 
-#define VKFAST_INTERNAL_MEMORY_ALLOCATE_CPU_VISIBLE_512MB     (512 * 1024 * 1024)
-#define VKFAST_INTERNAL_MEMORY_ALLOCATE_CPU_READBACK_512MB    (512 * 1024 * 1024)
-#define VKFAST_INTERNAL_MEMORY_ALLOCATE_GPU_VRAM_ARRAYS_512MB (512 * 1024 * 1024)
-#define VKFAST_INTERNAL_MEMORY_ALLOCATE_GPU_VRAM_IMAGES_512MB (512 * 1024 * 1024)
+#define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_VRAM_ARRAYS_512MB (512 * 1024 * 1024)
+#define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_VRAM_IMAGES_512MB (512 * 1024 * 1024)
+#define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_VISIBLE_512MB     (512 * 1024 * 1024)
+#define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB    (512 * 1024 * 1024)
 
 typedef struct vkfast_global_state_context_t {
   int                isDebugMode;
@@ -109,13 +109,26 @@ static RedBool32 vfRedGpuDebugCallback(RedDebugCallbackSeverity severity, RedDeb
   return 0;
 }
 
-VF_API_PRE void VF_API_POST vfContextInit(int enable_debug_mode, const char * optionalFile, int optionalLine) {
+VF_API_PRE void VF_API_POST vfContextInit(int enable_debug_mode, const gpu_context_optional_parameters_t * optional_parameters, const char * optionalFile, int optionalLine) {
   if (enable_debug_mode) {
     vfInternalPrint("[vkFast][Debug] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
   }
 
   g_vkfast = (vkfast_global_state_context_t *)red32MemoryCalloc(sizeof(vkfast_global_state_context_t));
   REDGPU_2_EXPECT(g_vkfast != NULL);
+
+  uint64_t internalMemoryAllocationSizeGpuVramArrays = VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_VRAM_ARRAYS_512MB;
+  uint64_t internalMemoryAllocationSizeGpuVramImages = VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_VRAM_IMAGES_512MB;
+  uint64_t internalMemoryAllocationSizeCpuVisible    = VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_VISIBLE_512MB;
+  uint64_t internalMemoryAllocationSizeCpuReadback   = VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB;
+  if (optional_parameters != NULL) {
+    if (optional_parameters->internal_memory_allocation_sizes != NULL) {
+      internalMemoryAllocationSizeGpuVramArrays = optional_parameters->internal_memory_allocation_sizes->bytesCountForMemoryGpuVramArrays;
+      internalMemoryAllocationSizeGpuVramImages = optional_parameters->internal_memory_allocation_sizes->bytesCountForMemoryGpuVramImages;
+      internalMemoryAllocationSizeCpuVisible    = optional_parameters->internal_memory_allocation_sizes->bytesCountForMemoryCpuVisible;
+      internalMemoryAllocationSizeCpuReadback   = optional_parameters->internal_memory_allocation_sizes->bytesCountForMemoryCpuReadback;
+    }
+  }
 
   RedContext context = NULL;
   np(redCreateContext,
@@ -362,7 +375,7 @@ VF_API_PRE void VF_API_POST vfContextInit(int enable_debug_mode, const char * op
       "context", context,
       "gpu", gpu,
       "handleName", "vkFast_memoryGpuVramForArrays_memory",
-      "bytesCount", VKFAST_INTERNAL_MEMORY_ALLOCATE_GPU_VRAM_ARRAYS_512MB,
+      "bytesCount", internalMemoryAllocationSizeGpuVramArrays,
       "memoryTypeIndex", specificMemoryTypesGpuVram,
       "memoryBitflags", 0,
       "outMemory", &memoryGpuVramForArrays_memory,
@@ -377,7 +390,7 @@ VF_API_PRE void VF_API_POST vfContextInit(int enable_debug_mode, const char * op
       "gpu", gpu,
       "handleName", "vkFast_memoryGpuVramForArrays_array",
       "type", RED_ARRAY_TYPE_ARRAY_RW,
-      "bytesCount", VKFAST_INTERNAL_MEMORY_ALLOCATE_GPU_VRAM_ARRAYS_512MB,
+      "bytesCount", internalMemoryAllocationSizeGpuVramArrays,
       "structuredBufferElementBytesCount", 0,
       "initialAccess", 0,
       "initialQueueFamilyIndex", -1,
@@ -400,7 +413,7 @@ VF_API_PRE void VF_API_POST vfContextInit(int enable_debug_mode, const char * op
       "context", context,
       "gpu", gpu,
       "handleName", "vkFast_memoryGpuVramForImages_memory",
-      "bytesCount", VKFAST_INTERNAL_MEMORY_ALLOCATE_GPU_VRAM_IMAGES_512MB,
+      "bytesCount", internalMemoryAllocationSizeGpuVramImages,
       "memoryTypeIndex", specificMemoryTypesGpuVram,
       "memoryBitflags", 0,
       "outMemory", &memoryGpuVramForImages_memory,
@@ -416,7 +429,7 @@ VF_API_PRE void VF_API_POST vfContextInit(int enable_debug_mode, const char * op
       "gpu", gpu,
       "handleName", "vkFast_memoryCpuUpload_memory_and_array",
       "type", RED_ARRAY_TYPE_ARRAY_RO,
-      "bytesCount", VKFAST_INTERNAL_MEMORY_ALLOCATE_CPU_VISIBLE_512MB,
+      "bytesCount", internalMemoryAllocationSizeCpuVisible,
       "structuredBufferElementBytesCount", 0,
       "initialAccess", RED_ACCESS_BITFLAG_COPY_R,
       "initialQueueFamilyIndex", -1,
@@ -452,7 +465,7 @@ VF_API_PRE void VF_API_POST vfContextInit(int enable_debug_mode, const char * op
       "gpu", gpu,
       "handleName", "vkFast_memoryCpuReadback_memory_and_array",
       "type", RED_ARRAY_TYPE_ARRAY_RW,
-      "bytesCount", VKFAST_INTERNAL_MEMORY_ALLOCATE_CPU_READBACK_512MB,
+      "bytesCount", internalMemoryAllocationSizeCpuReadback,
       "structuredBufferElementBytesCount", 0,
       "initialAccess", RED_ACCESS_BITFLAG_COPY_W,
       "initialQueueFamilyIndex", -1,

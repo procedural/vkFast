@@ -29,6 +29,17 @@ extern "C" {
 
 // TYPES ///////////////////////////////////////////////////////////////////////
 
+typedef struct gpu_internal_memory_allocation_sizes_t {
+  uint64_t bytesCountForMemoryGpuVramArrays;
+  uint64_t bytesCountForMemoryGpuVramImages;
+  uint64_t bytesCountForMemoryCpuVisible;
+  uint64_t bytesCountForMemoryCpuReadback;
+} gpu_internal_memory_allocation_sizes_t;
+
+typedef struct gpu_context_optional_parameters_t {
+  gpu_internal_memory_allocation_sizes_t * internal_memory_allocation_sizes;
+} gpu_context_optional_parameters_t;
+
 typedef struct gpu_storage_info_t {
   int          isCpuReadbackBuffer;
   int          isGpuOnly;
@@ -102,7 +113,7 @@ typedef struct gpu_cmd_t {
 
 // PROTOTYPES //////////////////////////////////////////////////////////////////
 
-VF_API_PRE void VF_API_POST vfContextInit(int enable_debug_mode, const char * optional_file, int optional_line);
+VF_API_PRE void VF_API_POST vfContextInit(int enable_debug_mode, const gpu_context_optional_parameters_t * optional_parameters, const char * optional_file, int optional_line);
 VF_API_PRE void VF_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t * ids, const char * optional_file, int optional_line);
 VF_API_PRE void VF_API_POST vfWindowFullscreen(void * optional_existing_window_handle, const char * window_title, int screen_width, int screen_height, int msaa_samples, const char * optional_file, int optional_line);
 VF_API_PRE int VF_API_POST vfWindowLoop();
