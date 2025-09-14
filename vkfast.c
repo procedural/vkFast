@@ -646,6 +646,9 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t
     vf_handle_t * handle = (vf_handle_t *)(void *)ids[i];
     red32MemoryFree(handle);
   }
+
+  red32MemoryFree(g_vkfast);
+  g_vkfast = NULL;
 }
 
 GPU_API_PRE void GPU_API_POST vfWindowFullscreen(void * optional_existing_window_handle, const char * window_title, int screen_width, int screen_height, int msaa_samples, const char * optionalFile, int optionalLine) {
