@@ -232,7 +232,7 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
       "optionalLine", optionalLine
     );
   } else {
-    REDGPU_2_EXPECT(!"Unsupported by vkFast GPU, recompile your program with vfWindowFullscreen()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
+    REDGPU_2_EXPECT(!"Unsupported by vkFast GPU, recompile your program with vfContextInit()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
   }
 
   np(red2ExpectAllMemoryToBeCoherent,
@@ -368,7 +368,7 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
       specificMemoryTypesCpuReadback = 2; // NOTE(Constantine): The cpu cached one.
 
     } else {
-      REDGPU_2_EXPECTWG(!"Unsupported by vkFast GPU, recompile your program with vfWindowFullscreen()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
+      REDGPU_2_EXPECTWG(!"Unsupported by vkFast GPU, recompile your program with vfContextInit()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
     }
   }
 
@@ -676,6 +676,8 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
   // NOTE(Constantine):
   // This procedure is not thread-safe since it modifies global g_vkfast->*_memory_suballocations_offset values.
 
+  RedHandleGpu gpu = g_vkfast->gpu;
+
   uint64_t             alignment         = 0;
   RedStructMemberArray arrayRangeInfo    = {0};
   void *               mappedVoidPointer = NULL;
@@ -691,6 +693,8 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
       arrayRangeInfo.arrayRangeBytesCount = storage_info->bytes_count + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_info->bytes_count, alignment);
       g_vkfast->memoryGpuVramForArrays_memory_suballocations_offset += arrayRangeInfo.arrayRangeBytesCount;
 
+      REDGPU_2_EXPECTWG(g_vkfast->memoryGpuVramForArrays_memory_suballocations_offset <= g_vkfast->memoryGpuVramForArrays_array.array.memoryBytesCount);
+
     } else if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_UPLOAD) {
     
       alignment = g_vkfast->gpuInfo->minMemoryAllocateBytesAlignment;
@@ -700,6 +704,8 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
       arrayRangeInfo.arrayRangeBytesCount = storage_info->bytes_count + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_info->bytes_count, alignment);
       g_vkfast->memoryCpuUpload_memory_suballocations_offset += arrayRangeInfo.arrayRangeBytesCount;
 
+      REDGPU_2_EXPECTWG(g_vkfast->memoryCpuUpload_memory_suballocations_offset <= g_vkfast->memoryCpuUpload_memory_and_array.array.memoryBytesCount);
+
     } else if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_READBACK) {
     
       alignment = g_vkfast->gpuInfo->minMemoryAllocateBytesAlignment;
@@ -708,6 +714,8 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
       arrayRangeInfo.arrayRangeBytesFirst = g_vkfast->memoryCpuReadback_memory_suballocations_offset;
       arrayRangeInfo.arrayRangeBytesCount = storage_info->bytes_count + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_info->bytes_count, alignment);
       g_vkfast->memoryCpuReadback_memory_suballocations_offset += arrayRangeInfo.arrayRangeBytesCount;
+
+      REDGPU_2_EXPECTWG(g_vkfast->memoryCpuReadback_memory_suballocations_offset <= g_vkfast->memoryCpuReadback_memory_and_array.array.memoryBytesCount);
 
     } else {
       REDGPU_2_EXPECT(!"[vkFast Internal][" __FUNCTION__ "] Unreachable enum value.");
@@ -735,7 +743,7 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
   }
 
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
-  REDGPU_2_EXPECT(handle != NULL);
+  REDGPU_2_EXPECTWG(handle != NULL);
 
   // Filling
   vf_handle_t;
