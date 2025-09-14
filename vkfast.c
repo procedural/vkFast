@@ -66,6 +66,8 @@ typedef struct vf_handle_storage_t {
 
 typedef struct vf_handle_texture_t {
   gpu_texture_info_t info;
+  Red2Image          image;
+  RedHandleTexture   texture;
 } vf_handle_texture_t;
 
 typedef enum vf_handle_id_t {
@@ -549,6 +551,29 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t
     if (handle->handle_id == VF_HANDLE_ID_INVALID) {
       continue;
     }
+
+    if (handle->handle_id == VF_HANDLE_ID_TEXTURE) {
+      np(red2DestroyHandle,
+        "context", g_vkfast->context,
+        "gpu", g_vkfast->gpu,
+        "handleType", RED_HANDLE_TYPE_TEXTURE,
+        "handle", handle->texture.texture,
+        "optionalHandle2", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      np(red2DestroyHandle,
+        "context", g_vkfast->context,
+        "gpu", g_vkfast->gpu,
+        "handleType", RED_HANDLE_TYPE_IMAGE,
+        "handle", handle->texture.image.image.handle,
+        "optionalHandle2", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+    }
   }
 
   np(red2DestroyHandle,
@@ -775,14 +800,66 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
 GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromStruct(const gpu_texture_info_t * texture_info, const char * optionalFile, int optionalLine) {
   RedHandleGpu gpu = g_vkfast->gpu;
 
+  Red2Image image = {0};
+  Red2Memory * memorys[] = {&g_vkfast->memoryGpuVramForImages_memory};
+  np(red2CreateImage,
+    "context", g_vkfast->context,
+    "gpu", g_vkfast->gpu,
+    "handleName", texture_info->optional_debug_name,
+    "dimensions", RED_IMAGE_DIMENSIONS_2D,
+    "format", texture_info->format,
+    "width", texture_info->w,
+    "height", texture_info->h,
+    "depth", 1,
+    "levelsCount", texture_info->mipmap_levels_count,
+    "layersCount", texture_info->count,
+    "multisampleCount", RED_MULTISAMPLE_COUNT_BITFLAG_1,
+    "restrictToAccess", 0,
+    "initialAccess", 0,
+    "initialQueueFamilyIndex", g_vkfast->mainQueueFamilyIndex,
+    "dedicate", 0,
+    "dedicateMemoryTypeIndex", 0,
+    "dedicateMemoryBitflags", 0,
+    "suballocateFromMemoryOnFirstMatchPointersCount", _countof(memorys),
+    "suballocateFromMemoryOnFirstMatchPointers", memorys,
+    "outImage", &image,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  RedHandleTexture texture = NULL;
+  np(redCreateTexture,
+    "context", g_vkfast->context,
+    "gpu", g_vkfast->gpu,
+    "handleName", texture_info->optional_debug_name,
+    "image", image.image.handle,
+    "parts", RED_IMAGE_PART_BITFLAG_COLOR,
+    "dimensions", RED_TEXTURE_DIMENSIONS_2D_LAYERED,
+    "format", texture_info->format,
+    "levelsFirst", 0,
+    "levelsCount", texture_info->mipmap_levels_count,
+    "layersFirst", 0,
+    "layersCount", texture_info->count,
+    "restrictToAccess", 0,
+    "outTexture", &texture,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
   REDGPU_2_EXPECTWG(handle != NULL);
 
   // Filling
   vf_handle_t;
   vf_handle_texture_t;
-  handle->handle_id    = VF_HANDLE_ID_TEXTURE;
-  handle->texture.info = texture_info[0];
+  handle->handle_id       = VF_HANDLE_ID_TEXTURE;
+  handle->texture.info    = texture_info[0];
+  handle->texture.image   = image;
+  handle->texture.texture = texture;
 
   return (uint64_t)(void *)handle;
 }

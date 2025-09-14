@@ -95,7 +95,13 @@ typedef struct gpu_storage_gpu_only_t {
 } gpu_storage_gpu_only_t;
 
 typedef struct gpu_texture_info_t {
-  int TODO;
+  int       w;
+  int       h;
+  int       count;
+  RedFormat format;
+  int       mipmap_levels_count;
+  int       is_cubemap;
+  char      optional_debug_name[512];
 } gpu_texture_info_t;
 
 typedef struct gpu_sampler_info_t {
