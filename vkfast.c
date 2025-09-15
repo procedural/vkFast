@@ -18,6 +18,10 @@
 #define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_VISIBLE_512MB     (512 * 1024 * 1024)
 #define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB    (512 * 1024 * 1024)
 
+#ifndef _countof
+#define _countof(x) (sizeof(x) / sizeof((x)[0]))
+#endif
+
 typedef struct vf_global_state_context_t {
   int                isDebugMode;
 
@@ -1344,7 +1348,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(const gpu_batch_bindings_info_t *
   handle->batch.calls         = calls;
   handle->batch.addresses     = addresses;
   handle->batch.structsMemory = structsMemory;
-  handle->batch.currentStruct = {0};
+  handle->batch.currentStruct = REDGPU_32_STRUCT(Red2Struct, 0);
   handle->batch.currentProcedureParameters = NULL;
 
   return (uint64_t)(void *)handle;
