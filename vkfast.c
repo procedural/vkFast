@@ -1479,24 +1479,6 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(uint64_t batch_id, int s
     "optionalUserData", NULL
   );
   batch->batch.currentStruct = structure;
-
-  np(redCallSetStructsMemory,
-    "address", batch->batch.addresses.redCallSetStructsMemory,
-    "calls", batch->batch.calls.handle,
-    "structsMemory", batch->batch.structsMemory,
-    "structsMemorySamplers", NULL // TODO: Separate structs memory for samplers.
-  );
-
-  npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
-    "calls", batch->batch.calls.handle,
-    "procedureType", RED_PROCEDURE_TYPE_COMPUTE, // TODO(Constantine): Should handle graphics procedures too.
-    "procedureParameters", batch->batch.currentProcedureParameters,
-    "procedureParametersDeclarationStructsDeclarationsFirst", 0,
-    "structsCount", 1, // TODO(Constantine): Multiple structs, not just one?
-    "structs", &structure.handle,
-    "setTo0", 0,
-    "setTo00", 0
-  );
 }
 
 GPU_API_PRE void GPU_API_POST vfBatchBindStorage(uint64_t batch_id, int slot, int storage_ids_count, const uint64_t * storage_ids, const char * optionalFile, int optionalLine) {
@@ -1541,6 +1523,31 @@ GPU_API_PRE void GPU_API_POST vfBatchBindStorage(uint64_t batch_id, int slot, in
 
   red32MemoryFree(arrays);
   arrays = NULL;
+}
+
+GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(uint64_t batch_id, const char * optionalFile, int optionalLine) {
+  RedHandleGpu gpu = g_vkfast->gpu;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
+  REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
+
+  np(redCallSetStructsMemory,
+    "address", batch->batch.addresses.redCallSetStructsMemory,
+    "calls", batch->batch.calls.handle,
+    "structsMemory", batch->batch.structsMemory,
+    "structsMemorySamplers", NULL // TODO: Separate structs memory for samplers.
+  );
+
+  npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
+    "calls", batch->batch.calls.handle,
+    "procedureType", RED_PROCEDURE_TYPE_COMPUTE, // TODO(Constantine): Should handle graphics procedures too.
+    "procedureParameters", batch->batch.currentProcedureParameters,
+    "procedureParametersDeclarationStructsDeclarationsFirst", 0,
+    "structsCount", 1, // TODO(Constantine): Multiple structs, not just one?
+    "structs", &batch->batch.currentStruct.handle,
+    "setTo0", 0,
+    "setTo00", 0
+  );
 }
 
 GPU_API_PRE void GPU_API_POST vfBatchCompute(uint64_t batch_id, unsigned workgroups_count_x, unsigned workgroups_count_y, unsigned workgroups_count_z, const char * optionalFile, int optionalLine) {

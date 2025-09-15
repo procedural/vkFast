@@ -89,6 +89,7 @@ int main() {
   vfBatchBindNewBindingsSet(batch, countof(slots), slots, FF, LL);
   vfBatchBindStorage(batch, 0, 1, &storage_input_gpu.id, FF, LL);
   vfBatchBindStorage(batch, 1, 1, &storage_output_gpu.id, FF, LL);
+  vfBatchBindNewBindingsEnd(batch, FF, LL);
   vfBatchCompute(batch, 1, 1, 1, FF, LL);
   vfBatchMemoryBarrier(batch, FF, LL);
   vfBatchStorageCopyFromGpuToCpu(batch, storage_output_gpu.id, storage_output_cpu.id, FF, LL);
