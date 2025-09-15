@@ -105,8 +105,41 @@ typedef struct gpu_texture_info_t {
 } gpu_texture_info_t;
 
 typedef struct gpu_sampler_info_t {
-  int TODO;
+  RedSamplerFiltering filteringMag;
+  RedSamplerFiltering filteringMin;
+  RedSamplerFilteringMip filteringMip;
+  RedSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateU;
+  RedSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateV;
+  RedSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateW;
+  float mipLodBias;
+  RedBool32 enableAnisotropy;
+  float maxAnisotropy;
+  RedBool32 enableCompare;
+  RedCompareOp compareOp;
+  float minLod;
+  float maxLod;
+  char optional_debug_name[512];
 } gpu_sampler_info_t;
+
+typedef struct gpu_program_info_t {
+  uint64_t program_binary_bytes_count;
+  void *   program_binary;
+  char     optional_debug_name[512];
+} gpu_program_info_t;
+
+typedef struct gpu_program_pipeline_info_t {
+  uint64_t                           vert_program;
+  uint64_t                           frag_program;
+  Red2ProcedureParametersDeclaration parameters;
+  RedProcedureState                  state;
+  char                               optional_debug_name[512];
+} gpu_program_pipeline_info_t;
+
+typedef struct gpu_program_pipeline_comp_info_t {
+  uint64_t                           comp_program;
+  Red2ProcedureParametersDeclaration parameters;
+  char                               optional_debug_name[512];
+} gpu_program_pipeline_comp_info_t;
 
 typedef struct gpu_cmd_t {
   uint64_t count;
@@ -138,11 +171,11 @@ GPU_API_PRE uint64_t GPU_API_POST vfCubemapCreateFromBmp(int width, int height, 
 GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileVertProgram(const char * shader_binary_filepath, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileFragProgram(const char * shader_binary_filepath, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileCompProgram(const char * shader_binary_filepath, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryVertProgram(void * shader_binary, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFragProgram(void * shader_binary, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompProgram(void * shader_binary, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreate(uint64_t vert_program, uint64_t frag_program, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(uint64_t comp_program, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryVertProgram(const gpu_program_info_t * program_info, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFragProgram(const gpu_program_info_t * program_info, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompProgram(const gpu_program_info_t * program_info, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreate(const gpu_program_pipeline_info_t * program_pipeline_info, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(const gpu_program_pipeline_comp_info_t * program_pipeline_comp_info, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromCpuToGpu(uint64_t batch_id, uint64_t from_cpu_storage_id, uint64_t to_gpu_storage_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromGpuToCpu(uint64_t batch_id, uint64_t from_gpu_storage_id, uint64_t to_cpu_storage_id, const char * optional_file, int optional_line);

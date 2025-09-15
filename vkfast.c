@@ -70,17 +70,57 @@ typedef struct vf_handle_texture_t {
   RedHandleTexture   texture;
 } vf_handle_texture_t;
 
+typedef struct vf_handle_sampler_t {
+  gpu_sampler_info_t info;
+  RedHandleSampler   sampler;
+} vf_handle_sampler_t;
+
+typedef enum vf_gpu_code_type_t {
+  VF_GPU_CODE_TYPE_INVALID  = 0,
+  VF_GPU_CODE_TYPE_VERTEX   = 1,
+  VF_GPU_CODE_TYPE_FRAGMENT = 2,
+  VF_GPU_CODE_TYPE_COMPUTE  = 3,
+} vf_gpu_code_type_t;
+
+typedef struct vf_handle_gpu_code_t {
+  gpu_program_info_t info;        // NOTE(Constantine): Program binary is a stale pointer, do not use.
+  vf_gpu_code_type_t gpuCodeType;
+  RedHandleGpuCode   gpuCode;
+} vf_handle_gpu_code_t;
+
+typedef enum vf_procedure_type_t {
+  VF_PROCEDURE_TYPE_INVALID  = 0,
+  VF_PROCEDURE_TYPE_GRAPHICS = 1,
+  VF_PROCEDURE_TYPE_COMPUTE  = 2,
+} vf_procedure_type_t;
+
+typedef struct vf_handle_procedure_t {
+  union {
+    gpu_program_pipeline_info_t      infoGraphics;
+    gpu_program_pipeline_comp_info_t infoCompute;
+  };
+  vf_procedure_type_t          procedureType;
+  RedHandleProcedureParameters procedureParameters;
+  RedHandleProcedure           procedure;
+} vf_handle_procedure_t;
+
 typedef enum vf_handle_id_t {
-  VF_HANDLE_ID_INVALID = 0,
-  VF_HANDLE_ID_STORAGE = 1,
-  VF_HANDLE_ID_TEXTURE = 2,
+  VF_HANDLE_ID_INVALID   = 0,
+  VF_HANDLE_ID_STORAGE   = 1,
+  VF_HANDLE_ID_TEXTURE   = 2,
+  VF_HANDLE_ID_SAMPLER   = 3,
+  VF_HANDLE_ID_GPU_CODE  = 4,
+  VF_HANDLE_ID_PROCEDURE = 5,
 } vf_handle_id_t;
 
 typedef struct vf_handle_t {
   vf_handle_id_t handle_id;
   union {
-    vf_handle_storage_t storage;
-    vf_handle_texture_t texture;
+    vf_handle_storage_t   storage;
+    vf_handle_texture_t   texture;
+    vf_handle_sampler_t   sampler;
+    vf_handle_gpu_code_t  gpuCode;
+    vf_handle_procedure_t procedure;
   };
 } vf_handle_t;
 
@@ -573,6 +613,59 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t
         "optionalLine", optionalLine,
         "optionalUserData", NULL
       );
+      continue;
+    }
+
+    if (handle->handle_id == VF_HANDLE_ID_SAMPLER) {
+      np(red2DestroyHandle,
+        "context", g_vkfast->context,
+        "gpu", g_vkfast->gpu,
+        "handleType", RED_HANDLE_TYPE_SAMPLER,
+        "handle", handle->sampler.sampler,
+        "optionalHandle2", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      continue;
+    }
+
+    if (handle->handle_id == VF_HANDLE_ID_GPU_CODE) {
+      np(red2DestroyHandle,
+        "context", g_vkfast->context,
+        "gpu", g_vkfast->gpu,
+        "handleType", RED_HANDLE_TYPE_GPU_CODE,
+        "handle", handle->gpuCode.gpuCode,
+        "optionalHandle2", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      continue;
+    }
+
+    if (handle->handle_id == VF_HANDLE_ID_PROCEDURE) {
+      np(red2DestroyHandle,
+        "context", g_vkfast->context,
+        "gpu", g_vkfast->gpu,
+        "handleType", RED_HANDLE_TYPE_PROCEDURE_PARAMETERS,
+        "handle", handle->procedure.procedureParameters,
+        "optionalHandle2", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      np(red2DestroyHandle,
+        "context", g_vkfast->context,
+        "gpu", g_vkfast->gpu,
+        "handleType", RED_HANDLE_TYPE_PROCEDURE,
+        "handle", handle->procedure.procedure,
+        "optionalHandle2", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      continue;
     }
   }
 
@@ -683,7 +776,7 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t
 }
 
 GPU_API_PRE void GPU_API_POST vfWindowFullscreen(void * optional_existing_window_handle, const char * window_title, int screen_width, int screen_height, int msaa_samples, const char * optionalFile, int optionalLine) {
-  REDGPU_2_EXPECT(msaa_samples == 1 || !"TODO");
+  REDGPU_2_EXPECT(msaa_samples == 1 || !"TODO: MSAA");
 
   void * window_handle = optional_existing_window_handle;
   if (window_handle == NULL) {
@@ -800,6 +893,9 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
 GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromStruct(const gpu_texture_info_t * texture_info, const char * optionalFile, int optionalLine) {
   RedHandleGpu gpu = g_vkfast->gpu;
 
+  REDGPU_2_EXPECTWG(texture_info->count > 0);
+  REDGPU_2_EXPECTWG(texture_info->mipmap_levels_count > 0);
+
   Red2Image image = {0};
   Red2Memory * memorys[] = {&g_vkfast->memoryGpuVramForImages_memory};
   np(red2CreateImage,
@@ -860,6 +956,298 @@ GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromStruct(const gpu_texture_in
   handle->texture.info    = texture_info[0];
   handle->texture.image   = image;
   handle->texture.texture = texture;
+
+  return (uint64_t)(void *)handle;
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfSamplerCreateFromStruct(const gpu_sampler_info_t * sampler_info, const char * optionalFile, int optionalLine) {
+  RedHandleGpu gpu = g_vkfast->gpu;
+
+  RedHandleSampler sampler = NULL;
+  np(redCreateSampler,
+    "context", g_vkfast->context,
+    "gpu", g_vkfast->gpu,
+    "handleName", sampler_info->optional_debug_name,
+    "filteringMag", sampler_info->filteringMag,
+    "filteringMin", sampler_info->filteringMin,
+    "filteringMip", sampler_info->filteringMip,
+    "behaviorOutsideTextureCoordinateU", sampler_info->behaviorOutsideTextureCoordinateU,
+    "behaviorOutsideTextureCoordinateV", sampler_info->behaviorOutsideTextureCoordinateV,
+    "behaviorOutsideTextureCoordinateW", sampler_info->behaviorOutsideTextureCoordinateW,
+    "mipLodBias", sampler_info->mipLodBias,
+    "enableAnisotropy", sampler_info->enableAnisotropy,
+    "maxAnisotropy", sampler_info->maxAnisotropy,
+    "enableCompare", sampler_info->enableCompare,
+    "compareOp", sampler_info->compareOp,
+    "minLod", sampler_info->minLod,
+    "maxLod", sampler_info->maxLod,
+    "outSampler", &sampler,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
+  REDGPU_2_EXPECTWG(handle != NULL);
+
+  // Filling
+  vf_handle_t;
+  vf_handle_sampler_t;
+  handle->handle_id       = VF_HANDLE_ID_SAMPLER;
+  handle->sampler.info    = sampler_info[0];
+  handle->sampler.sampler = sampler;
+
+  return (uint64_t)(void *)handle;
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(!"TODO");
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(!"TODO");
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileVertProgram(const char * shader_binary_filepath, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(!"TODO");
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileFragProgram(const char * shader_binary_filepath, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(!"TODO");
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileCompProgram(const char * shader_binary_filepath, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(!"TODO");
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryVertProgram(const gpu_program_info_t * program_info, const char * optionalFile, int optionalLine) {
+  RedHandleGpu gpu = g_vkfast->gpu;
+
+  RedHandleGpuCode gpuCode = NULL;
+  np(redCreateGpuCode,
+    "context", g_vkfast->context,
+    "gpu", g_vkfast->gpu,
+    "handleName", program_info->optional_debug_name,
+    "irBytesCount", program_info->program_binary_bytes_count,
+    "ir", (const void *)program_info->program_binary,
+    "outGpuCode", &gpuCode,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
+  REDGPU_2_EXPECTWG(handle != NULL);
+
+  // Filling
+  vf_handle_t;
+  vf_handle_gpu_code_t;
+  handle->handle_id           = VF_HANDLE_ID_GPU_CODE;
+  handle->gpuCode.info        = program_info[0];
+  handle->gpuCode.gpuCodeType = VF_GPU_CODE_TYPE_VERTEX;
+  handle->gpuCode.gpuCode     = gpuCode;
+
+  return (uint64_t)(void *)handle;
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFragProgram(const gpu_program_info_t * program_info, const char * optionalFile, int optionalLine) {
+  RedHandleGpu gpu = g_vkfast->gpu;
+
+  RedHandleGpuCode gpuCode = NULL;
+  np(redCreateGpuCode,
+    "context", g_vkfast->context,
+    "gpu", g_vkfast->gpu,
+    "handleName", program_info->optional_debug_name,
+    "irBytesCount", program_info->program_binary_bytes_count,
+    "ir", (const void *)program_info->program_binary,
+    "outGpuCode", &gpuCode,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
+  REDGPU_2_EXPECTWG(handle != NULL);
+
+  // Filling
+  vf_handle_t;
+  vf_handle_gpu_code_t;
+  handle->handle_id           = VF_HANDLE_ID_GPU_CODE;
+  handle->gpuCode.info        = program_info[0];
+  handle->gpuCode.gpuCodeType = VF_GPU_CODE_TYPE_FRAGMENT;
+  handle->gpuCode.gpuCode     = gpuCode;
+
+  return (uint64_t)(void *)handle;
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompProgram(const gpu_program_info_t * program_info, const char * optionalFile, int optionalLine) {
+  RedHandleGpu gpu = g_vkfast->gpu;
+
+  RedHandleGpuCode gpuCode = NULL;
+  np(redCreateGpuCode,
+    "context", g_vkfast->context,
+    "gpu", g_vkfast->gpu,
+    "handleName", program_info->optional_debug_name,
+    "irBytesCount", program_info->program_binary_bytes_count,
+    "ir", (const void *)program_info->program_binary,
+    "outGpuCode", &gpuCode,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
+  REDGPU_2_EXPECTWG(handle != NULL);
+
+  vf_handle_t;
+  vf_handle_gpu_code_t;
+  handle->handle_id           = VF_HANDLE_ID_GPU_CODE;
+  handle->gpuCode.info        = program_info[0];
+  handle->gpuCode.gpuCodeType = VF_GPU_CODE_TYPE_COMPUTE;
+  handle->gpuCode.gpuCode     = gpuCode;
+
+  return (uint64_t)(void *)handle;
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreate(const gpu_program_pipeline_info_t * program_pipeline_info, const char * optionalFile, int optionalLine) {
+  RedHandleGpu gpu = g_vkfast->gpu;
+
+  vf_handle_t * gpuCodeVert = (vf_handle_t *)(void *)program_pipeline_info->vert_program;
+  vf_handle_t * gpuCodeFrag = (vf_handle_t *)(void *)program_pipeline_info->frag_program;
+  REDGPU_2_EXPECTWG(gpuCodeVert->handle_id == VF_HANDLE_ID_GPU_CODE);
+  REDGPU_2_EXPECTWG(gpuCodeFrag->handle_id == VF_HANDLE_ID_GPU_CODE);
+  REDGPU_2_EXPECTWG(gpuCodeVert->gpuCode.gpuCodeType == VF_GPU_CODE_TYPE_VERTEX);
+  REDGPU_2_EXPECTWG(gpuCodeFrag->gpuCode.gpuCodeType == VF_GPU_CODE_TYPE_FRAGMENT);
+
+  RedHandleProcedureParameters procedureParameters = NULL;
+  np(red2CreateProcedureParameters,
+    "context", g_vkfast->context,
+    "gpu", g_vkfast->gpu,
+    "handleName", program_pipeline_info->optional_debug_name,
+    "procedureParametersDeclaration", &program_pipeline_info->parameters,
+    "outProcedureParameters", &procedureParameters,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  RedOutputDeclarationMembers outputDeclarationMembers = {0};
+  outputDeclarationMembers.depthStencilEnable                        = 1;
+  outputDeclarationMembers.depthStencilFormat                        = RED_FORMAT_DEPTH_32_FLOAT;
+  outputDeclarationMembers.depthStencilMultisampleCount              = RED_MULTISAMPLE_COUNT_BITFLAG_1;
+  outputDeclarationMembers.depthStencilDepthSetProcedureOutputOp     = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilDepthEndProcedureOutputOp     = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilStencilSetProcedureOutputOp   = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilStencilEndProcedureOutputOp   = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilSharesMemoryWithAnotherMember = 0;
+  outputDeclarationMembers.colorsCount                               = 1;
+  outputDeclarationMembers.colorsFormat[0]                           = RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1;
+  outputDeclarationMembers.colorsFormat[1]                           = RED_FORMAT_UNDEFINED;
+  outputDeclarationMembers.colorsFormat[2]                           = RED_FORMAT_UNDEFINED;
+  outputDeclarationMembers.colorsFormat[3]                           = RED_FORMAT_UNDEFINED;
+  outputDeclarationMembers.colorsFormat[4]                           = RED_FORMAT_UNDEFINED;
+  outputDeclarationMembers.colorsFormat[5]                           = RED_FORMAT_UNDEFINED;
+  outputDeclarationMembers.colorsFormat[6]                           = RED_FORMAT_UNDEFINED;
+  outputDeclarationMembers.colorsFormat[7]                           = RED_FORMAT_UNDEFINED;
+  for (int i = 0; i < 8; i += 1) {
+    outputDeclarationMembers.colorsMultisampleCount[i]               = RED_MULTISAMPLE_COUNT_BITFLAG_1;
+    outputDeclarationMembers.colorsSetProcedureOutputOp[i]           = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
+    outputDeclarationMembers.colorsEndProcedureOutputOp[i]           = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
+    outputDeclarationMembers.colorsSharesMemoryWithAnotherMember[i]  = 0;
+  }
+  RedHandleProcedure procedure = NULL;
+  np(red2CreateProcedure,
+    "context", g_vkfast->context,
+    "gpu", g_vkfast->gpu,
+    "handleName", program_pipeline_info->optional_debug_name,
+    "procedureCache", NULL,
+    "outputDeclarationMembers", &outputDeclarationMembers,
+    "outputDeclarationMembersResolveSources", NULL, // TODO: MSAA
+    "dependencyByRegion", 0,
+    "dependencyByRegionAllowUsageAliasOrderBarriers", 0,
+    "procedureParameters", procedureParameters,
+    "gpuCodeVertexMainProcedureName", "main",
+    "gpuCodeVertex", gpuCodeVert->gpuCode.gpuCode,
+    "gpuCodeFragmentMainProcedureName", "main",
+    "gpuCodeFragment", gpuCodeFrag->gpuCode.gpuCode,
+    "state", &program_pipeline_info->state,
+    "stateExtension", NULL,
+    "deriveBase", 0,
+    "deriveFrom", NULL,
+    "outProcedure", &procedure,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
+  REDGPU_2_EXPECTWG(handle != NULL);
+
+  // Filling
+  vf_handle_t;
+  vf_handle_procedure_t;
+  handle->handle_id                     = VF_HANDLE_ID_PROCEDURE;
+  handle->procedure.infoGraphics        = program_pipeline_info[0];
+  handle->procedure.procedureType       = VF_PROCEDURE_TYPE_GRAPHICS;
+  handle->procedure.procedureParameters = procedureParameters;
+  handle->procedure.procedure           = procedure;
+
+  return (uint64_t)(void *)handle;
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(const gpu_program_pipeline_comp_info_t * program_pipeline_comp_info, const char * optionalFile, int optionalLine) {
+  RedHandleGpu gpu = g_vkfast->gpu;
+
+  vf_handle_t * gpuCodeComp = (vf_handle_t *)(void *)program_pipeline_comp_info->comp_program;
+  REDGPU_2_EXPECTWG(gpuCodeComp->handle_id == VF_HANDLE_ID_GPU_CODE);
+  REDGPU_2_EXPECTWG(gpuCodeComp->gpuCode.gpuCodeType == VF_GPU_CODE_TYPE_COMPUTE);
+
+  RedHandleProcedureParameters procedureParameters = NULL;
+  np(red2CreateProcedureParameters,
+    "context", g_vkfast->context,
+    "gpu", g_vkfast->gpu,
+    "handleName", program_pipeline_comp_info->optional_debug_name,
+    "procedureParametersDeclaration", &program_pipeline_comp_info->parameters,
+    "outProcedureParameters", &procedureParameters,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  RedHandleProcedure procedure = NULL;
+  np(redCreateProcedureCompute,
+    "context", g_vkfast->context,
+    "gpu", g_vkfast->gpu,
+    "handleName", program_pipeline_comp_info->optional_debug_name,
+    "procedureCache", NULL,
+    "procedureParameters", procedureParameters,
+    "gpuCodeMainProcedureName", "main",
+    "gpuCode", gpuCodeComp->gpuCode.gpuCode,
+    "outProcedure", &procedure,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
+  REDGPU_2_EXPECTWG(handle != NULL);
+
+  // Filling
+  vf_handle_t;
+  vf_handle_procedure_t;
+  handle->handle_id                     = VF_HANDLE_ID_PROCEDURE;
+  handle->procedure.infoCompute         = program_pipeline_comp_info[0];
+  handle->procedure.procedureType       = VF_PROCEDURE_TYPE_COMPUTE;
+  handle->procedure.procedureParameters = procedureParameters;
+  handle->procedure.procedure           = procedure;
 
   return (uint64_t)(void *)handle;
 }
