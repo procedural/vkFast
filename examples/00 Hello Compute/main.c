@@ -59,7 +59,7 @@ int main() {
   gpu_program_pipeline_comp_info_t pp_info = {0};
   pp_info.comp_program                        = cs;
   pp_info.parameters.variablesSlot            = 0;
-  pp_info.parameters.variablesVisibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE;
+  pp_info.parameters.variablesVisibleToStages = 0;
   pp_info.parameters.variablesBytesCount      = 0;
   RedStructDeclarationMember slot0 = {0};
   slot0.slot            = 0;
