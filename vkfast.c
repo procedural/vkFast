@@ -844,6 +844,9 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
       
       alignment = g_vkfast->gpuInfo->minArrayRORWStructMemberRangeBytesAlignment;
 
+      // NOTE(Constantine): Aligns start address.
+      g_vkfast->memoryGpuVramForArrays_memory_suballocations_offset += REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(g_vkfast->memoryGpuVramForArrays_memory_suballocations_offset, alignment);
+
       arrayRangeInfo.array                = g_vkfast->memoryGpuVramForArrays_array.array.handle;
       arrayRangeInfo.arrayRangeBytesFirst = g_vkfast->memoryGpuVramForArrays_memory_suballocations_offset;
       arrayRangeInfo.arrayRangeBytesCount = storage_info->bytes_count + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_info->bytes_count, alignment);
@@ -855,6 +858,9 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
     
       alignment = g_vkfast->gpuInfo->minMemoryAllocateBytesAlignment;
 
+      // NOTE(Constantine): Aligns start address.
+      g_vkfast->memoryCpuUpload_memory_suballocations_offset += REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(g_vkfast->memoryCpuUpload_memory_suballocations_offset, alignment);
+
       arrayRangeInfo.array                = g_vkfast->memoryCpuUpload_memory_and_array.array.handle;
       arrayRangeInfo.arrayRangeBytesFirst = g_vkfast->memoryCpuUpload_memory_suballocations_offset;
       arrayRangeInfo.arrayRangeBytesCount = storage_info->bytes_count + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_info->bytes_count, alignment);
@@ -865,6 +871,9 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
     } else if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_READBACK) {
     
       alignment = g_vkfast->gpuInfo->minMemoryAllocateBytesAlignment;
+
+      // NOTE(Constantine): Aligns start address.
+      g_vkfast->memoryCpuReadback_memory_suballocations_offset += REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(g_vkfast->memoryCpuReadback_memory_suballocations_offset, alignment);
 
       arrayRangeInfo.array                = g_vkfast->memoryCpuReadback_memory_and_array.array.handle;
       arrayRangeInfo.arrayRangeBytesFirst = g_vkfast->memoryCpuReadback_memory_suballocations_offset;
@@ -1369,7 +1378,7 @@ GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromCpuToGpu(uint64_t batch_id, 
   RedCopyArrayRange range = {0};
   range.arrayRBytesFirst  = from_cpu_storage->storage.arrayRangeInfo.arrayRangeBytesFirst;
   range.arrayWBytesFirst  = to_gpu_storage->storage.arrayRangeInfo.arrayRangeBytesFirst;
-  range.bytesCount        = from_cpu_storage->storage.arrayRangeInfo.arrayRangeBytesCount;
+  range.bytesCount        = from_cpu_storage->storage.info.bytes_count;
   npfp(redCallCopyArrayToArray, batch->batch.addresses.redCallCopyArrayToArray,
     "calls", batch->batch.calls.handle,
     "arrayR", from_cpu_storage->storage.arrayRangeInfo.array,
@@ -1394,7 +1403,7 @@ GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromGpuToCpu(uint64_t batch_id, 
   RedCopyArrayRange range = {0};
   range.arrayRBytesFirst  = from_gpu_storage->storage.arrayRangeInfo.arrayRangeBytesFirst;
   range.arrayWBytesFirst  = to_cpu_storage->storage.arrayRangeInfo.arrayRangeBytesFirst;
-  range.bytesCount        = from_gpu_storage->storage.arrayRangeInfo.arrayRangeBytesCount;
+  range.bytesCount        = from_gpu_storage->storage.info.bytes_count;
   npfp(redCallCopyArrayToArray, batch->batch.addresses.redCallCopyArrayToArray,
     "calls", batch->batch.calls.handle,
     "arrayR", from_gpu_storage->storage.arrayRangeInfo.array,
