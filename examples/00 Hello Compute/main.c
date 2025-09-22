@@ -35,7 +35,7 @@ int main() {
   storage_input_cpu.as_vec4[1].z = 42;
   storage_input_cpu.as_vec4[1].w = 108;
     
-  uint64_t copy = vfBatchBegin(NULL, NULL, FF, LL);
+  uint64_t copy = vfBatchBegin(0, NULL, NULL, FF, LL);
   vfBatchStorageCopyFromCpuToGpu(copy, storage_input_cpu.id, storage_input_gpu.id, FF, LL);
   vfBatchEnd(copy, FF, LL);
   uint64_t async = vfAsyncBatchExecute(1, &copy, FF, LL);
@@ -81,22 +81,24 @@ int main() {
   pp_info.parameters.structsDeclarations[0].structDeclarationMembersArrayRO      = NULL;
   uint64_t pp = vfProgramPipelineCreateCompute(&pp_info, FF, LL);
   
-  gpu_batch_bindings_info_t bindings_info = {0};
-  bindings_info.maxNewBindingsSetsCount = 1;
-  bindings_info.maxArrayRORWCount       = 2;
-  uint64_t batch = vfBatchBegin(&bindings_info, NULL, FF, LL);
-  vfBatchBindProgramPipelineCompute(batch, pp, FF, LL);
-  vfBatchBindNewBindingsSet(batch, countof(slots), slots, FF, LL);
-  vfBatchBindStorage(batch, 0, 1, &storage_input_gpu.id, FF, LL);
-  vfBatchBindStorage(batch, 1, 1, &storage_output_gpu.id, FF, LL);
-  vfBatchBindNewBindingsEnd(batch, FF, LL);
-  vfBatchCompute(batch, 1, 1, 1, FF, LL);
-  vfBatchMemoryBarrier(batch, FF, LL);
-  vfBatchStorageCopyFromGpuToCpu(batch, storage_output_gpu.id, storage_output_cpu.id, FF, LL);
-  vfBatchCpuReadbackBarrier(batch, FF, LL);
-  vfBatchEnd(batch, FF, LL);
+  uint64_t batch = 0;
 
   while (vfWindowLoop()) {
+    gpu_batch_bindings_info_t bindings_info = {0};
+    bindings_info.maxNewBindingsSetsCount = 1;
+    bindings_info.maxArrayRORWCount       = 2;
+    batch = vfBatchBegin(batch, &bindings_info, NULL, FF, LL);
+    vfBatchBindProgramPipelineCompute(batch, pp, FF, LL);
+    vfBatchBindNewBindingsSet(batch, countof(slots), slots, FF, LL);
+    vfBatchBindStorage(batch, 0, 1, &storage_input_gpu.id, FF, LL);
+    vfBatchBindStorage(batch, 1, 1, &storage_output_gpu.id, FF, LL);
+    vfBatchBindNewBindingsEnd(batch, FF, LL);
+    vfBatchCompute(batch, 1, 1, 1, FF, LL);
+    vfBatchMemoryBarrier(batch, FF, LL);
+    vfBatchStorageCopyFromGpuToCpu(batch, storage_output_gpu.id, storage_output_cpu.id, FF, LL);
+    vfBatchCpuReadbackBarrier(batch, FF, LL);
+    vfBatchEnd(batch, FF, LL);
+
     uint64_t wait = vfAsyncBatchExecute(1, &batch, FF, LL);
     vfAsyncWaitToFinish(wait, FF, LL);
 
@@ -109,6 +111,16 @@ int main() {
     );
   }
   
-  vfContextDeinit(0, NULL, FF, LL);
+  uint64_t ids[] = {
+    storage_input_cpu.id,
+    storage_input_gpu.id,
+    copy,
+    storage_output_cpu.id,
+    storage_output_gpu.id,
+    cs,
+    pp,
+    batch,
+  };
+  vfContextDeinit(countof(ids), ids, FF, LL);
   vfExit(0);
 }

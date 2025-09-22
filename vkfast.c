@@ -688,6 +688,16 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t
       np(red2DestroyHandle,
         "context", g_vkfast->context,
         "gpu", g_vkfast->gpu,
+        "handleType", RED_HANDLE_TYPE_STRUCTS_MEMORY,
+        "handle", handle->batch.structsMemory,
+        "optionalHandle2", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      np(red2DestroyHandle,
+        "context", g_vkfast->context,
+        "gpu", g_vkfast->gpu,
         "handleType", RED_HANDLE_TYPE_CALLS,
         "handle", handle->batch.calls.handle,
         "optionalHandle2", handle->batch.calls.memory,
@@ -813,7 +823,7 @@ GPU_API_PRE void GPU_API_POST vfWindowFullscreen(void * optional_existing_window
     window_handle = red32WindowCreate(window_title);
   }
 
-  // TODO(Constantine): If already have redgpu window resources, destroy them and create them again here.
+  // TODO: If already have redgpu window resources, destroy them and create them again here.
 
   g_vkfast->windowHandle = window_handle;
   g_vkfast->screenWidth = screen_width;
@@ -937,6 +947,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromStruct(const gpu_texture_in
   REDGPU_2_EXPECTWG(texture_info->count > 0);
   REDGPU_2_EXPECTWG(texture_info->mipmap_levels_count > 0);
 
+  // To destroy
   Red2Image image = {0};
   Red2Memory * memorys[] = {&g_vkfast->memoryGpuVramForImages_memory};
   np(red2CreateImage,
@@ -965,6 +976,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromStruct(const gpu_texture_in
     "optionalUserData", NULL
   );
 
+  // To destroy
   RedHandleTexture texture = NULL;
   np(redCreateTexture,
     "context", g_vkfast->context,
@@ -986,6 +998,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromStruct(const gpu_texture_in
     "optionalUserData", NULL
   );
 
+  // To free
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
   REDGPU_2_EXPECTWG(handle != NULL);
 
@@ -1003,6 +1016,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromStruct(const gpu_texture_in
 GPU_API_PRE uint64_t GPU_API_POST vfSamplerCreateFromStruct(const gpu_sampler_info_t * sampler_info, const char * optionalFile, int optionalLine) {
   RedHandleGpu gpu = g_vkfast->gpu;
 
+  // To destroy
   RedHandleSampler sampler = NULL;
   np(redCreateSampler,
     "context", g_vkfast->context,
@@ -1028,6 +1042,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfSamplerCreateFromStruct(const gpu_sampler_in
     "optionalUserData", NULL
   );
 
+  // To free
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
   REDGPU_2_EXPECTWG(handle != NULL);
 
@@ -1041,29 +1056,10 @@ GPU_API_PRE uint64_t GPU_API_POST vfSamplerCreateFromStruct(const gpu_sampler_in
   return (uint64_t)(void *)handle;
 }
 
-GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optionalFile, int optionalLine) {
-  REDGPU_2_EXPECT(!"TODO"); return -1;
-}
-
-GPU_API_PRE uint64_t GPU_API_POST vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optionalFile, int optionalLine) {
-  REDGPU_2_EXPECT(!"TODO"); return -1;
-}
-
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileVertProgram(const char * shader_binary_filepath, const char * optionalFile, int optionalLine) {
-  REDGPU_2_EXPECT(!"TODO"); return -1;
-}
-
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileFragProgram(const char * shader_binary_filepath, const char * optionalFile, int optionalLine) {
-  REDGPU_2_EXPECT(!"TODO"); return -1;
-}
-
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileCompProgram(const char * shader_binary_filepath, const char * optionalFile, int optionalLine) {
-  REDGPU_2_EXPECT(!"TODO"); return -1;
-}
-
 GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryVertProgram(const gpu_program_info_t * program_info, const char * optionalFile, int optionalLine) {
   RedHandleGpu gpu = g_vkfast->gpu;
 
+  // To destroy
   RedHandleGpuCode gpuCode = NULL;
   np(redCreateGpuCode,
     "context", g_vkfast->context,
@@ -1078,6 +1074,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryVertProgram(const gpu
     "optionalUserData", NULL
   );
 
+  // To free
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
   REDGPU_2_EXPECTWG(handle != NULL);
 
@@ -1095,6 +1092,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryVertProgram(const gpu
 GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFragProgram(const gpu_program_info_t * program_info, const char * optionalFile, int optionalLine) {
   RedHandleGpu gpu = g_vkfast->gpu;
 
+  // To destroy
   RedHandleGpuCode gpuCode = NULL;
   np(redCreateGpuCode,
     "context", g_vkfast->context,
@@ -1109,6 +1107,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFragProgram(const gpu
     "optionalUserData", NULL
   );
 
+  // To free
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
   REDGPU_2_EXPECTWG(handle != NULL);
 
@@ -1126,6 +1125,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFragProgram(const gpu
 GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompProgram(const gpu_program_info_t * program_info, const char * optionalFile, int optionalLine) {
   RedHandleGpu gpu = g_vkfast->gpu;
 
+  // To destroy
   RedHandleGpuCode gpuCode = NULL;
   np(redCreateGpuCode,
     "context", g_vkfast->context,
@@ -1140,6 +1140,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompProgram(const gpu
     "optionalUserData", NULL
   );
 
+  // To free
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
   REDGPU_2_EXPECTWG(handle != NULL);
 
@@ -1163,6 +1164,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreate(const gpu_program_pipe
   REDGPU_2_EXPECTWG(gpuCodeVert->gpuCode.gpuCodeType == VF_GPU_CODE_TYPE_VERTEX);
   REDGPU_2_EXPECTWG(gpuCodeFrag->gpuCode.gpuCodeType == VF_GPU_CODE_TYPE_FRAGMENT);
 
+  // To destroy
   RedHandleProcedureParameters procedureParameters = NULL;
   np(red2CreateProcedureParameters,
     "context", g_vkfast->context,
@@ -1200,6 +1202,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreate(const gpu_program_pipe
     outputDeclarationMembers.colorsEndProcedureOutputOp[i]           = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
     outputDeclarationMembers.colorsSharesMemoryWithAnotherMember[i]  = 0;
   }
+  // To destroy
   RedHandleProcedure procedure = NULL;
   np(red2CreateProcedure,
     "context", g_vkfast->context,
@@ -1207,7 +1210,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreate(const gpu_program_pipe
     "handleName", program_pipeline_info->optional_debug_name,
     "procedureCache", NULL,
     "outputDeclarationMembers", &outputDeclarationMembers,
-    "outputDeclarationMembersResolveSources", NULL, // TODO: MSAA
+    "outputDeclarationMembersResolveSources", NULL, // TODO: MSAA.
     "dependencyByRegion", 0,
     "dependencyByRegionAllowUsageAliasOrderBarriers", 0,
     "procedureParameters", procedureParameters,
@@ -1226,6 +1229,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreate(const gpu_program_pipe
     "optionalUserData", NULL
   );
 
+  // To free
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
   REDGPU_2_EXPECTWG(handle != NULL);
 
@@ -1248,6 +1252,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(const gpu_progr
   REDGPU_2_EXPECTWG(gpuCodeComp->handle_id == VF_HANDLE_ID_GPU_CODE);
   REDGPU_2_EXPECTWG(gpuCodeComp->gpuCode.gpuCodeType == VF_GPU_CODE_TYPE_COMPUTE);
 
+  // To destroy
   RedHandleProcedureParameters procedureParameters = NULL;
   np(red2CreateProcedureParameters,
     "context", g_vkfast->context,
@@ -1261,6 +1266,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(const gpu_progr
     "optionalUserData", NULL
   );
 
+  // To destroy
   RedHandleProcedure procedure = NULL;
   np(redCreateProcedureCompute,
     "context", g_vkfast->context,
@@ -1277,6 +1283,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(const gpu_progr
     "optionalUserData", NULL
   );
 
+  // To free
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
   REDGPU_2_EXPECTWG(handle != NULL);
 
@@ -1292,84 +1299,103 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(const gpu_progr
   return (uint64_t)(void *)handle;
 }
 
-GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(const gpu_batch_bindings_info_t * batch_bindings_info, const char * optional_debug_name, const char * optionalFile, int optionalLine) {
+GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(uint64_t existing_batch_id, const gpu_batch_bindings_info_t * batch_bindings_info, const char * optional_debug_name, const char * optionalFile, int optionalLine) {
   RedHandleGpu gpu = g_vkfast->gpu;
 
-  RedCalls calls = {0};
-  np(redCreateCallsReusable,
-    "context", g_vkfast->context,
-    "gpu", g_vkfast->gpu,
-    "handleName", optional_debug_name,
-    "queueFamilyIndex", g_vkfast->mainQueueFamilyIndex,
-    "outCalls", &calls,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
-  
-  RedCallProceduresAndAddresses addresses = {0};
-  np(redGetCallProceduresAndAddresses,
-    "context", g_vkfast->context,
-    "gpu", g_vkfast->gpu,
-    "outCallProceduresAndAddresses", &addresses,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
+  vf_handle_t * handle = (vf_handle_t *)(void *)existing_batch_id;
 
-  RedHandleStructsMemory structsMemory = 0;
-  if (batch_bindings_info != NULL) {
-    np(redStructsMemoryAllocate,
+  if (handle == NULL) {
+    // To destroy
+    RedCalls calls = {0};
+    np(redCreateCallsReusable,
       "context", g_vkfast->context,
       "gpu", g_vkfast->gpu,
       "handleName", optional_debug_name,
-      "maxStructsCount", batch_bindings_info->maxNewBindingsSetsCount,
-      "maxStructsMembersOfTypeArrayROConstantCount", batch_bindings_info->maxArrayROConstantCount,
-      "maxStructsMembersOfTypeArrayROOrArrayRWCount", batch_bindings_info->maxArrayRORWCount,
-      "maxStructsMembersOfTypeTextureROCount", batch_bindings_info->maxTextureROCount,
-      "maxStructsMembersOfTypeTextureRWCount", batch_bindings_info->maxTextureRWCount,
-      "outStructsMemory", &structsMemory,
+      "queueFamilyIndex", g_vkfast->mainQueueFamilyIndex,
+      "outCalls", &calls,
       "outStatuses", NULL,
       "optionalFile", optionalFile,
       "optionalLine", optionalLine,
       "optionalUserData", NULL
     );
+  
+    RedCallProceduresAndAddresses addresses = {0};
+    np(redGetCallProceduresAndAddresses,
+      "context", g_vkfast->context,
+      "gpu", g_vkfast->gpu,
+      "outCallProceduresAndAddresses", &addresses,
+      "outStatuses", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+
+    // To destroy
+    RedHandleStructsMemory structsMemory = 0;
+    if (batch_bindings_info != NULL) {
+      np(redStructsMemoryAllocate,
+        "context", g_vkfast->context,
+        "gpu", g_vkfast->gpu,
+        "handleName", optional_debug_name,
+        "maxStructsCount", batch_bindings_info->maxNewBindingsSetsCount,
+        "maxStructsMembersOfTypeArrayROConstantCount", batch_bindings_info->maxArrayROConstantCount,
+        "maxStructsMembersOfTypeArrayROOrArrayRWCount", batch_bindings_info->maxArrayRORWCount,
+        "maxStructsMembersOfTypeTextureROCount", batch_bindings_info->maxTextureROCount,
+        "maxStructsMembersOfTypeTextureRWCount", batch_bindings_info->maxTextureRWCount,
+        "outStructsMemory", &structsMemory,
+        "outStatuses", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+    }
+
+    // To free
+    handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
+    REDGPU_2_EXPECTWG(handle != NULL);
+
+    // Filling
+    vf_handle_t;
+    vf_handle_batch_t;
+    handle->handle_id           = VF_HANDLE_ID_BATCH;
+    handle->batch.calls         = calls;
+    handle->batch.addresses     = addresses;
+    handle->batch.structsMemory = structsMemory;
+    handle->batch.currentStruct = REDGPU_32_STRUCT(Red2Struct, 0);
+    handle->batch.currentProcedureParameters = NULL;
   }
 
   np(redCallsSet,
     "context", g_vkfast->context,
     "gpu", g_vkfast->gpu,
-    "calls", calls.handle,
-    "callsMemory", calls.memory,
-    "callsReusable", calls.reusable,
+    "calls", handle->batch.calls.handle,
+    "callsMemory", handle->batch.calls.memory,
+    "callsReusable", handle->batch.calls.reusable,
     "outStatuses", NULL,
     "optionalFile", optionalFile,
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
 
-  // NOTE(Constantine): Oh God, I hope this call doesn't copy descriptors from structsMemory like redCallSetProcedureParametersStructs() :D
-  np(redCallSetStructsMemory,
-    "address", addresses.redCallSetStructsMemory,
-    "calls", calls.handle,
-    "structsMemory", structsMemory,
-    "structsMemorySamplers", NULL // TODO: Separate structs memory for samplers.
-  );
+  if (handle->batch.structsMemory != NULL) {
+    np(redStructsMemoryReset,
+      "context", g_vkfast->context,
+      "gpu", g_vkfast->gpu,
+      "structsMemory", handle->batch.structsMemory,
+      "outStatuses", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
 
-  vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
-  REDGPU_2_EXPECTWG(handle != NULL);
-
-  // Filling
-  vf_handle_t;
-  vf_handle_batch_t;
-  handle->handle_id           = VF_HANDLE_ID_BATCH;
-  handle->batch.calls         = calls;
-  handle->batch.addresses     = addresses;
-  handle->batch.structsMemory = structsMemory;
-  handle->batch.currentStruct = REDGPU_32_STRUCT(Red2Struct, 0);
-  handle->batch.currentProcedureParameters = NULL;
+    // NOTE(Constantine): Oh God, I hope this call doesn't copy descriptors from structsMemory like redCallSetProcedureParametersStructs() :D
+    np(redCallSetStructsMemory,
+      "address", handle->batch.addresses.redCallSetStructsMemory,
+      "calls", handle->batch.calls.handle,
+      "structsMemory", handle->batch.structsMemory,
+      "structsMemorySamplers", NULL // TODO: Separate structs memory for samplers.
+    );
+  }
 
   return (uint64_t)(void *)handle;
 }
@@ -1449,21 +1475,6 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(uint64_t batch_id, int s
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
-  if (batch->batch.currentStruct.handleDeclaration != NULL) {
-    np(red2DestroyHandle,
-      "context", g_vkfast->context,
-      "gpu", g_vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_STRUCT_DECLARATION,
-      "handle", batch->batch.currentStruct.handleDeclaration,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-    batch->batch.currentStruct.handleDeclaration = NULL;
-  }
-  batch->batch.currentStruct.handle = NULL;
-
   REDGPU_2_EXPECTWG(batch->batch.structsMemory != NULL || !"vfBatchBegin()::batch_bindings_info was likely set to NULL?");
 
   Red2Struct structure = {0};
@@ -1504,6 +1515,8 @@ GPU_API_PRE void GPU_API_POST vfBatchBindStorage(uint64_t batch_id, int slot, in
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
+  REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was vfBatchBindNewBindingsSet() called previously?");
+
   // To free
   RedStructMemberArray * arrays = (RedStructMemberArray *)red32MemoryCalloc(storage_ids_count * sizeof(RedStructMemberArray));
   REDGPU_2_EXPECTWG(arrays != NULL);
@@ -1514,8 +1527,6 @@ GPU_API_PRE void GPU_API_POST vfBatchBindStorage(uint64_t batch_id, int slot, in
 
     arrays[i] = storage->storage.arrayRangeInfo;
   }
-
-  REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was vfBatchBindNewBindingsSet() called previously?");
 
   RedStructMember member = {0};
   member.setTo35   = 35;
@@ -1550,14 +1561,37 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(uint64_t batch_id, const
 
   npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
     "calls", batch->batch.calls.handle,
-    "procedureType", RED_PROCEDURE_TYPE_COMPUTE, // TODO(Constantine): Should handle graphics procedures too.
+    "procedureType", RED_PROCEDURE_TYPE_DRAW,
     "procedureParameters", batch->batch.currentProcedureParameters,
     "procedureParametersDeclarationStructsDeclarationsFirst", 0,
-    "structsCount", 1, // TODO(Constantine): Multiple structs, not just one?
+    "structsCount", 1, // NOTE(Constantine): Only one struct for now.
     "structs", &batch->batch.currentStruct.handle,
     "setTo0", 0,
     "setTo00", 0
   );
+  npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
+    "calls", batch->batch.calls.handle,
+    "procedureType", RED_PROCEDURE_TYPE_COMPUTE,
+    "procedureParameters", batch->batch.currentProcedureParameters,
+    "procedureParametersDeclarationStructsDeclarationsFirst", 0,
+    "structsCount", 1, // NOTE(Constantine): Only one struct for now.
+    "structs", &batch->batch.currentStruct.handle,
+    "setTo0", 0,
+    "setTo00", 0
+  );
+
+  np(red2DestroyHandle,
+    "context", g_vkfast->context,
+    "gpu", g_vkfast->gpu,
+    "handleType", RED_HANDLE_TYPE_STRUCT_DECLARATION,
+    "handle", batch->batch.currentStruct.handleDeclaration,
+    "optionalHandle2", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+  batch->batch.currentStruct.handleDeclaration = NULL;
+  batch->batch.currentStruct.handle = NULL;
 }
 
 GPU_API_PRE void GPU_API_POST vfBatchCompute(uint64_t batch_id, unsigned workgroups_count_x, unsigned workgroups_count_y, unsigned workgroups_count_z, const char * optionalFile, int optionalLine) {
@@ -1615,20 +1649,8 @@ GPU_API_PRE void GPU_API_POST vfBatchEnd(uint64_t batch_id, const char * optiona
     "optionalUserData", NULL
   );
 
-  if (batch->batch.currentStruct.handleDeclaration != NULL) {
-    np(red2DestroyHandle,
-      "context", g_vkfast->context,
-      "gpu", g_vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_STRUCT_DECLARATION,
-      "handle", batch->batch.currentStruct.handleDeclaration,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-    batch->batch.currentStruct.handleDeclaration = NULL;
-  }
   batch->batch.currentStruct.handle = NULL;
+  batch->batch.currentStruct.handleDeclaration = NULL;
   batch->batch.currentProcedureParameters = NULL;
 }
 
@@ -1646,6 +1668,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, 
     calls[i] = batch->batch.calls.handle;
   }
 
+  // To destroy
   RedHandleCpuSignal cpuSignal = NULL;
   np(redCreateCpuSignal,
     "context", g_vkfast->context,
