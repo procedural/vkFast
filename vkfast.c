@@ -59,24 +59,22 @@ typedef struct vf_global_state_context_t {
   uint64_t           memoryCpuReadback_memory_suballocations_offset;
 } vf_global_state_context_t;
 
-vf_global_state_context_t * g_vkfast; // NOTE(Constantine): Every time vf_global_state_context is accessed in vf* functions, that is not thread-safe.
+vf_global_state_context_t * g_vkfast; // NOTE(Constantine): Every time vf_global_state_context_t values are modified in a vf* function, that function is not thread-safe.
 
 typedef struct vf_handle_storage_t {
   gpu_storage_info_t   info;
-  uint64_t             alignment;
-  void *               mappedVoidPointer;
-  RedStructMemberArray arrayRangeInfo;
+  RedStructMemberArray arrayRangeInfo; // NOTE(Constantine): Kept for GPU copy calls.
 } vf_handle_storage_t;
 
 typedef struct vf_handle_texture_t {
   gpu_texture_info_t info;
-  Red2Image          image;
-  RedHandleTexture   texture;
+  Red2Image          image;   // NOTE(Constantine): Kept to be destroyed.
+  RedHandleTexture   texture; // NOTE(Constantine): Kept to be destroyed.
 } vf_handle_texture_t;
 
 typedef struct vf_handle_sampler_t {
   gpu_sampler_info_t info;
-  RedHandleSampler   sampler;
+  RedHandleSampler   sampler; // NOTE(Constantine): Kept to be destroyed.
 } vf_handle_sampler_t;
 
 typedef enum vf_gpu_code_type_t {
@@ -89,13 +87,13 @@ typedef enum vf_gpu_code_type_t {
 typedef struct vf_handle_gpu_code_t {
   gpu_program_info_t info;        // NOTE(Constantine): Program binary is a stale pointer, do not use.
   vf_gpu_code_type_t gpuCodeType;
-  RedHandleGpuCode   gpuCode;
+  RedHandleGpuCode   gpuCode;     // NOTE(Constantine): Kept to be destroyed.
 } vf_handle_gpu_code_t;
 
 typedef enum vf_procedure_type_t {
-  VF_PROCEDURE_TYPE_INVALID  = 0,
-  VF_PROCEDURE_TYPE_GRAPHICS = 1,
-  VF_PROCEDURE_TYPE_COMPUTE  = 2,
+  VF_PROCEDURE_TYPE_INVALID = 0,
+  VF_PROCEDURE_TYPE_DRAW    = 1,
+  VF_PROCEDURE_TYPE_COMPUTE = 2,
 } vf_procedure_type_t;
 
 typedef struct vf_handle_procedure_t {
@@ -112,8 +110,8 @@ typedef struct vf_handle_batch_t {
   RedCalls                      calls;
   RedCallProceduresAndAddresses addresses;
   RedHandleStructsMemory        structsMemory;
-  Red2Struct                    currentStruct;              // TODO(Constantine): Multiple structs, not just one?
-  RedHandleProcedureParameters  currentProcedureParameters; // TODO(Constantine): Separate parameters for graphics and compute procedures?
+  Red2Struct                    currentStruct;              // NOTE(Constantine): Only one struct for now.
+  RedHandleProcedureParameters  currentProcedureParameters; // NOTE(Constantine): Same parameters for both graphics and compute procedures.
 } vf_handle_batch_t;
 
 typedef enum vf_handle_id_t {
@@ -151,12 +149,14 @@ void red2Crash(const char * error, const char * functionName, RedHandleGpu optio
     size_t alignment;
   };
 
+  // To free
   struct StringArray str = {0};
 
+  // To free
   char * optionalLineStr = (char *)red32MemoryCalloc(4096);
   red32IntToChars(optionalLine, optionalLineStr);
 
-  REDGPU_32_DYNAMIC_ARRAY_STRING_JOIN(str, "[REDGPU 2][Crash][");
+  REDGPU_32_DYNAMIC_ARRAY_STRING_JOIN(str, "[vkFast][Crash][");
   REDGPU_32_DYNAMIC_ARRAY_STRING_JOIN(str, optionalFile);
   REDGPU_32_DYNAMIC_ARRAY_STRING_JOIN(str, ":");
   REDGPU_32_DYNAMIC_ARRAY_STRING_JOIN(str, optionalLineStr);
@@ -175,6 +175,7 @@ void red2Crash(const char * error, const char * functionName, RedHandleGpu optio
 }
 
 static RedBool32 vfRedGpuDebugCallback(RedDebugCallbackSeverity severity, RedDebugCallbackTypeBitflags types, const RedDebugCallbackData * data, RedContext context) {
+  vfInternalPrint("[vkFast][Debug callback] ");
   vfInternalPrint(data->message);
   red32Exit(1);
   return 0;
@@ -185,6 +186,7 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
     vfInternalPrint("[vkFast][Debug] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
   }
 
+  // To free
   g_vkfast = (vf_global_state_context_t *)red32MemoryCalloc(sizeof(vf_global_state_context_t));
   REDGPU_2_EXPECT(g_vkfast != NULL);
 
@@ -232,7 +234,7 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
     vfInternalPrint("[vkFast][Debug] Your GPU name: ");
     vfInternalPrint(gpuInfo->gpuName);
     vfInternalPrint("\n");
-    vfInternalPrint("[vkFast][Debug] For extra debug information, recompile redgpu.c with REDGPU_COMPILE_SWITCH 3" "\n");
+    vfInternalPrint("[vkFast][Debug] For extra debug information, recompile redgpu.c as redgpu.cpp with REDGPU_COMPILE_SWITCH 3" "\n");
   }
 
   REDGPU_2_EXPECT(gpuInfo->queuesCount > 0);
@@ -463,7 +465,7 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
       "type", RED_ARRAY_TYPE_ARRAY_RW,
       "bytesCount", internalMemoryAllocationSizeGpuVramArrays,
       "structuredBufferElementBytesCount", 0,
-      "initialAccess", 0,
+      "restrictToAccess", 0,
       "initialQueueFamilyIndex", -1,
       "maxAllowedOverallocationBytesCount", 0,
       "dedicate", 0,
@@ -502,7 +504,7 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
       "type", RED_ARRAY_TYPE_ARRAY_RO,
       "bytesCount", internalMemoryAllocationSizeCpuVisible,
       "structuredBufferElementBytesCount", 0,
-      "initialAccess", RED_ACCESS_BITFLAG_COPY_R,
+      "restrictToAccess", RED_ACCESS_BITFLAG_COPY_R,
       "initialQueueFamilyIndex", -1,
       "maxAllowedOverallocationBytesCount", 0, // NOTE(Constantine): Intel UHD Graphics 730 on Windows 10 aligns CPU visible allocations to 64 bytes.
       "dedicate", 0,
@@ -530,7 +532,7 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
       "optionalUserData", NULL
     );
     REDGPU_2_EXPECTWG(memoryCpuUpload_mapped_void_ptr != NULL);
-    REDGPU_2_EXPECTWG(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)memoryCpuUpload_mapped_void_ptr, gpuInfo->minMemoryAllocateBytesAlignment));
+    REDGPU_2_EXPECTWG(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)memoryCpuUpload_mapped_void_ptr, gpuInfo->minMemoryAllocateBytesAlignment)); // NOTE(Constantine): Start address is guaranteed to be aligned.
   }
   {
     np(red2CreateArray,
@@ -540,7 +542,7 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
       "type", RED_ARRAY_TYPE_ARRAY_RW,
       "bytesCount", internalMemoryAllocationSizeCpuReadback,
       "structuredBufferElementBytesCount", 0,
-      "initialAccess", RED_ACCESS_BITFLAG_COPY_W,
+      "restrictToAccess", RED_ACCESS_BITFLAG_CPU_RW,
       "initialQueueFamilyIndex", -1,
       "maxAllowedOverallocationBytesCount", 0, // NOTE(Constantine): Intel UHD Graphics 730 on Windows 10 aligns CPU visible allocations to 64 bytes.
       "dedicate", 0,
@@ -568,7 +570,7 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
       "optionalUserData", NULL
     );
     REDGPU_2_EXPECTWG(memoryCpuReadback_mapped_void_ptr != NULL);
-    REDGPU_2_EXPECTWG(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)memoryCpuReadback_mapped_void_ptr, gpuInfo->minMemoryAllocateBytesAlignment));
+    REDGPU_2_EXPECTWG(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)memoryCpuReadback_mapped_void_ptr, gpuInfo->minMemoryAllocateBytesAlignment)); // NOTE(Constantine): Start address is guaranteed to be aligned.
   }
 
   // Filling
@@ -796,7 +798,7 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t
 
   for (uint64_t i = 0; i < ids_count; i += 1) {
     vf_handle_t * handle = (vf_handle_t *)(void *)ids[i];
-    red32MemoryFree(handle);
+    red32MemoryFree(handle); // NOTE(Constantine): Internally, all handles must be allocated.
   }
 
   red32MemoryFree(g_vkfast);
@@ -804,14 +806,14 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t
 }
 
 GPU_API_PRE void GPU_API_POST vfWindowFullscreen(void * optional_existing_window_handle, const char * window_title, int screen_width, int screen_height, int msaa_samples, const char * optionalFile, int optionalLine) {
-  REDGPU_2_EXPECT(msaa_samples == 1 || !"TODO: MSAA");
+  REDGPU_2_EXPECT(msaa_samples == 1 || !"[vkFast][TODO] MSAA > 1.");
 
   void * window_handle = optional_existing_window_handle;
   if (window_handle == NULL) {
     window_handle = red32WindowCreate(window_title);
   }
 
-  // TODO: if already have redgpu window resources, destroy them and create them again here.
+  // TODO(Constantine): If already have redgpu window resources, destroy them and create them again here.
 
   g_vkfast->windowHandle = window_handle;
   g_vkfast->screenWidth = screen_width;
@@ -830,9 +832,12 @@ GPU_API_PRE void GPU_API_POST vfExit(int exit_code) {
 GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t * storage_info, gpu_storage_t * out_storage, const char * optionalFile, int optionalLine) {
   // NOTE(Constantine):
   // This procedure is not thread-safe since it modifies global g_vkfast->*_memory_suballocations_offset values.
-  // This procedure doesn't do anything CPU heavy, it just calculates some pointer offsets, so it's cheap to call it from one thread only.
+  // This procedure doesn't do anything CPU heavy, it just calculates some pointer offsets, so it's cheap to call it
+  // from one thread only or with an external mutex lock.
 
   RedHandleGpu gpu = g_vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(storage_info->storage_type != GPU_STORAGE_TYPE_NONE);
 
   uint64_t             alignment         = 0;
   RedStructMemberArray arrayRangeInfo    = {0};
@@ -856,7 +861,7 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
 
     } else if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_UPLOAD) {
     
-      alignment = g_vkfast->gpuInfo->minMemoryAllocateBytesAlignment;
+      alignment = g_vkfast->gpuInfo->minMemoryAllocateBytesAlignment; // NOTE(Constantine): Can't be placed into a struct, so picking only one alignment.
 
       // NOTE(Constantine): Aligns start address.
       g_vkfast->memoryCpuUpload_memory_suballocations_offset += REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(g_vkfast->memoryCpuUpload_memory_suballocations_offset, alignment);
@@ -870,7 +875,7 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
 
     } else if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_READBACK) {
     
-      alignment = g_vkfast->gpuInfo->minMemoryAllocateBytesAlignment;
+      alignment = g_vkfast->gpuInfo->minMemoryAllocateBytesAlignment; // NOTE(Constantine): Can't be placed into a struct, so picking only one alignment.
 
       // NOTE(Constantine): Aligns start address.
       g_vkfast->memoryCpuReadback_memory_suballocations_offset += REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(g_vkfast->memoryCpuReadback_memory_suballocations_offset, alignment);
@@ -890,34 +895,33 @@ GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t
 
     if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_UPLOAD) {
     
-      mappedVoidPointer = g_vkfast->memoryCpuUpload_mapped_void_ptr;
+      mappedVoidPointer = g_vkfast->memoryCpuUpload_mapped_void_ptr; // NOTE(Constantine): Start address is guaranteed to be aligned.
       
       uint8_t * ptr = (uint8_t *)g_vkfast->memoryCpuUpload_mapped_void_ptr;
-      ptr += arrayRangeInfo.arrayRangeBytesCount;
+      ptr += arrayRangeInfo.arrayRangeBytesCount + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(arrayRangeInfo.arrayRangeBytesCount, alignment);
       g_vkfast->memoryCpuUpload_mapped_void_ptr = (void *)ptr;
 
     } else if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_READBACK) {
     
-      mappedVoidPointer = g_vkfast->memoryCpuReadback_mapped_void_ptr;
+      mappedVoidPointer = g_vkfast->memoryCpuReadback_mapped_void_ptr; // NOTE(Constantine): Start address is guaranteed to be aligned.
       
       uint8_t * ptr = (uint8_t *)g_vkfast->memoryCpuReadback_mapped_void_ptr;
-      ptr += arrayRangeInfo.arrayRangeBytesCount;
+      ptr += arrayRangeInfo.arrayRangeBytesCount + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(arrayRangeInfo.arrayRangeBytesCount, alignment);
       g_vkfast->memoryCpuReadback_mapped_void_ptr = (void *)ptr;
 
     }
   }
 
+  // To free
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
   REDGPU_2_EXPECTWG(handle != NULL);
 
   // Filling
   vf_handle_t;
   vf_handle_storage_t;
-  handle->handle_id                 = VF_HANDLE_ID_STORAGE;
-  handle->storage.info              = storage_info[0];
-  handle->storage.alignment         = alignment;
-  handle->storage.mappedVoidPointer = mappedVoidPointer;
-  handle->storage.arrayRangeInfo    = arrayRangeInfo;
+  handle->handle_id              = VF_HANDLE_ID_STORAGE;
+  handle->storage.info           = storage_info[0];
+  handle->storage.arrayRangeInfo = arrayRangeInfo;
 
   // Filling
   gpu_storage_t;
@@ -948,7 +952,6 @@ GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromStruct(const gpu_texture_in
     "layersCount", texture_info->count,
     "multisampleCount", RED_MULTISAMPLE_COUNT_BITFLAG_1,
     "restrictToAccess", 0,
-    "initialAccess", 0,
     "initialQueueFamilyIndex", g_vkfast->mainQueueFamilyIndex,
     "dedicate", 0,
     "dedicateMemoryTypeIndex", 0,
@@ -1231,7 +1234,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreate(const gpu_program_pipe
   vf_handle_procedure_t;
   handle->handle_id                     = VF_HANDLE_ID_PROCEDURE;
   handle->procedure.infoGraphics        = program_pipeline_info[0];
-  handle->procedure.procedureType       = VF_PROCEDURE_TYPE_GRAPHICS;
+  handle->procedure.procedureType       = VF_PROCEDURE_TYPE_DRAW;
   handle->procedure.procedureParameters = procedureParameters;
   handle->procedure.procedure           = procedure;
 
@@ -1347,6 +1350,14 @@ GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(const gpu_batch_bindings_info_t *
     "optionalUserData", NULL
   );
 
+  // NOTE(Constantine): Oh God, I hope this call doesn't copy descriptors from structsMemory like redCallSetProcedureParametersStructs() :D
+  np(redCallSetStructsMemory,
+    "address", addresses.redCallSetStructsMemory,
+    "calls", calls.handle,
+    "structsMemory", structsMemory,
+    "structsMemorySamplers", NULL // TODO: Separate structs memory for samplers.
+  );
+
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
   REDGPU_2_EXPECTWG(handle != NULL);
 
@@ -1429,13 +1440,6 @@ GPU_API_PRE void GPU_API_POST vfBatchBindProgramPipelineCompute(uint64_t batch_i
     "procedure", program_pipeline_compute->procedure.procedure
   );
 
-  np(redCallSetProcedureParameters,
-    "address", batch->batch.addresses.redCallSetProcedureParameters,
-    "calls", batch->batch.calls.handle,
-    "procedureType", RED_PROCEDURE_TYPE_COMPUTE,
-    "procedureParameters", program_pipeline_compute->procedure.procedureParameters
-  );
-
   batch->batch.currentProcedureParameters = program_pipeline_compute->procedure.procedureParameters;
 }
 
@@ -1479,6 +1483,19 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(uint64_t batch_id, int s
     "optionalUserData", NULL
   );
   batch->batch.currentStruct = structure;
+
+  np(redCallSetProcedureParameters,
+    "address", batch->batch.addresses.redCallSetProcedureParameters,
+    "calls", batch->batch.calls.handle,
+    "procedureType", RED_PROCEDURE_TYPE_DRAW,
+    "procedureParameters", batch->batch.currentProcedureParameters
+  );
+  np(redCallSetProcedureParameters,
+    "address", batch->batch.addresses.redCallSetProcedureParameters,
+    "calls", batch->batch.calls.handle,
+    "procedureType", RED_PROCEDURE_TYPE_COMPUTE,
+    "procedureParameters", batch->batch.currentProcedureParameters
+  );
 }
 
 GPU_API_PRE void GPU_API_POST vfBatchBindStorage(uint64_t batch_id, int slot, int storage_ids_count, const uint64_t * storage_ids, const char * optionalFile, int optionalLine) {
@@ -1530,13 +1547,6 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(uint64_t batch_id, const
 
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
-
-  np(redCallSetStructsMemory,
-    "address", batch->batch.addresses.redCallSetStructsMemory,
-    "calls", batch->batch.calls.handle,
-    "structsMemory", batch->batch.structsMemory,
-    "structsMemorySamplers", NULL // TODO: Separate structs memory for samplers.
-  );
 
   npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
     "calls", batch->batch.calls.handle,
