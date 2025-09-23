@@ -12,7 +12,7 @@ int main() {
   const int window_h = 1080;
 
   vfContextInit(1, NULL, FF, LL);
-  vfWindowFullscreen(NULL, "[vkFast] Hello Compute", window_w, window_h, 1, FF, LL);
+  vfWindowFullscreen(NULL, "[vkFast] Hello Compute", window_w, window_h, FF, LL);
 
   gpu_storage_info_t storage_info = {0};
   storage_info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;

@@ -23,7 +23,6 @@ typedef struct vf_global_state_context_t {
   void *             windowHandle;
   int                screenWidth;
   int                screenHeight;
-  int                msaaSamples;
   
   RedContext         context;
   const RedGpuInfo * gpuInfo;
@@ -538,7 +537,6 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
   g_vkfast->windowHandle = NULL;
   g_vkfast->screenWidth = 0;
   g_vkfast->screenHeight = 0;
-  g_vkfast->msaaSamples = 0;
   g_vkfast->context = context;
   g_vkfast->gpuInfo = gpuInfo;
   g_vkfast->gpu = gpu;
@@ -736,20 +734,15 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t
   g_vkfast = NULL;
 }
 
-GPU_API_PRE void GPU_API_POST vfWindowFullscreen(void * optional_existing_window_handle, const char * window_title, int screen_width, int screen_height, int msaa_samples, const char * optionalFile, int optionalLine) {
-  REDGPU_2_EXPECT(msaa_samples == 1 || !"[vkFast][TODO] MSAA > 1.");
-
+GPU_API_PRE void GPU_API_POST vfWindowFullscreen(void * optional_existing_window_handle, const char * window_title, int screen_width, int screen_height, const char * optionalFile, int optionalLine) {
   void * window_handle = optional_existing_window_handle;
   if (window_handle == NULL) {
     window_handle = red32WindowCreate(window_title);
   }
 
-  // TODO: If already have redgpu window resources, destroy them and create them again here.
-
   g_vkfast->windowHandle = window_handle;
   g_vkfast->screenWidth = screen_width;
   g_vkfast->screenHeight = screen_height;
-  g_vkfast->msaaSamples = msaa_samples;
 }
 
 GPU_API_PRE int GPU_API_POST vfWindowLoop() {
@@ -1061,7 +1054,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(uint64_t existing_batch_id, const
       "address", handle->batch.addresses.redCallSetStructsMemory,
       "calls", handle->batch.calls.handle,
       "structsMemory", handle->batch.structsMemory,
-      "structsMemorySamplers", NULL // TODO: Separate structs memory for samplers.
+      "structsMemorySamplers", NULL
     );
   }
 
@@ -1168,8 +1161,8 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(uint64_t batch_id, int s
     "structsMemory", batch->batch.structsMemory,
     "structDeclarationMembersCount", slots_count,
     "structDeclarationMembers", slots,
-    "structDeclarationMembersArrayROCount", 0, // TODO: Array ROs.
-    "structDeclarationMembersArrayRO", NULL,   // TODO: Array ROs.
+    "structDeclarationMembersArrayROCount", 0,
+    "structDeclarationMembersArrayRO", NULL,
     "outStruct", &structure,
     "outStatuses", NULL,
     "optionalFile", optionalFile,
@@ -1367,7 +1360,7 @@ GPU_API_PRE void GPU_API_POST vfBatchEnd(uint64_t batch_id, const char * optiona
   batch->batch.currentProcedureParameters = NULL;
 }
 
-GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, int copy_swapchain_storage_and_present_to_window, const char * optionalFile, int optionalLine) {
+GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, int copy_swapchain_storage_and_present_it_to_window, const char * optionalFile, int optionalLine) {
   RedHandleGpu gpu = g_vkfast->gpu;
 
   // To free

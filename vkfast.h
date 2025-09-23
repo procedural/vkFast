@@ -38,6 +38,7 @@ typedef struct gpu_internal_memory_allocation_sizes_t {
 
 typedef struct gpu_context_optional_parameters_t {
   gpu_internal_memory_allocation_sizes_t * internal_memory_allocation_sizes;
+  uint64_t                                 max_swapchain_storage_size_bytes_count;
 } gpu_context_optional_parameters_t;
 
 typedef enum gpu_storage_type_t {
@@ -125,7 +126,7 @@ typedef struct gpu_batch_bindings_info_t {
 
 GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_context_optional_parameters_t * optional_parameters, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t * ids, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfWindowFullscreen(void * optional_existing_window_handle, const char * window_title, int screen_width, int screen_height, int msaa_samples, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfWindowFullscreen(void * optional_existing_window_handle, const char * window_title, int screen_width, int screen_height, const char * optional_file, int optional_line);
 GPU_API_PRE int GPU_API_POST vfWindowLoop();
 GPU_API_PRE void GPU_API_POST vfExit(int exit_code);
 GPU_API_PRE void GPU_API_POST vfStorageCreate(const gpu_storage_info_t * storage_info, gpu_storage_t * out_storage, const char * optional_file, int optional_line);
@@ -145,7 +146,7 @@ GPU_API_PRE void GPU_API_POST vfBatchCompute(uint64_t batch_id, unsigned workgro
 GPU_API_PRE void GPU_API_POST vfBatchBarrierMemory(uint64_t batch_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchBarrierCpuReadback(uint64_t batch_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchEnd(uint64_t batch_id, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, int copy_swapchain_storage_and_present_to_window, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, int copy_swapchain_storage_and_present_it_to_window, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(uint64_t async_id, const char * optional_file, int optional_line);
 
 #ifdef __cplusplus
