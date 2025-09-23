@@ -50,7 +50,6 @@ typedef enum gpu_storage_type_t {
 typedef struct gpu_storage_info_t {
   gpu_storage_type_t storage_type;
   uint64_t           bytes_count;
-  uint64_t           optional_vertex_count; // Optional property to fill for gpu_cmd_t::count
 } gpu_storage_info_t;
 
 typedef struct gpu_storage_t {
@@ -94,67 +93,25 @@ typedef struct gpu_storage_gpu_only_t {
   gpu_storage_info_t info;
 } gpu_storage_gpu_only_t;
 
-typedef struct gpu_texture_info_t {
-  int       w;
-  int       h;
-  int       count;
-  RedFormat format;
-  int       mipmap_levels_count;
-  int       is_cubemap;
-  char      optional_debug_name[512];
-} gpu_texture_info_t;
-
-typedef struct gpu_sampler_info_t {
-  RedSamplerFiltering filteringMag;
-  RedSamplerFiltering filteringMin;
-  RedSamplerFilteringMip filteringMip;
-  RedSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateU;
-  RedSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateV;
-  RedSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateW;
-  float mipLodBias;
-  RedBool32 enableAnisotropy;
-  float maxAnisotropy;
-  RedBool32 enableCompare;
-  RedCompareOp compareOp;
-  float minLod;
-  float maxLod;
-  char optional_debug_name[512];
-} gpu_sampler_info_t;
-
 typedef struct gpu_program_info_t {
   uint64_t     program_binary_bytes_count;
   const void * program_binary;
-  char         optional_debug_name[512];
+  const char * optional_debug_name;
 } gpu_program_info_t;
 
-typedef struct gpu_program_pipeline_info_t {
-  uint64_t                           vert_program;
-  uint64_t                           frag_program;
-  Red2ProcedureParametersDeclaration parameters;
-  RedProcedureState                  state;
-  char                               optional_debug_name[512];
-} gpu_program_pipeline_info_t;
-
-typedef struct gpu_program_pipeline_comp_info_t {
-  uint64_t                           comp_program;
-  Red2ProcedureParametersDeclaration parameters;
-  char                               optional_debug_name[512];
-} gpu_program_pipeline_comp_info_t;
+typedef struct gpu_program_pipeline_compute_info_t {
+  uint64_t                           compute_program;
+  unsigned                           variables_slot;
+  unsigned                           variables_bytes_count;
+  unsigned                           struct_members_count;
+  const RedStructDeclarationMember * struct_members;
+  const char *                       optional_debug_name;
+} gpu_program_pipeline_compute_info_t;
 
 typedef struct gpu_batch_bindings_info_t {
-  int maxNewBindingsSetsCount;
-  int maxArrayROConstantCount;
-  int maxArrayRORWCount;
-  int maxTextureROCount;
-  int maxTextureRWCount;  
+  int max_new_bindings_sets_count;
+  int max_storage_binds_count;
 } gpu_batch_bindings_info_t;
-
-typedef struct gpu_cmd_t {
-  uint64_t count;
-  uint64_t instance_count;
-  uint64_t first;
-  uint64_t instance_first;
-} gpu_cmd_t;
 
 #ifndef GPU_API_PRE
 #define GPU_API_PRE
@@ -171,42 +128,24 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(uint64_t ids_count, const uint64_t
 GPU_API_PRE void GPU_API_POST vfWindowFullscreen(void * optional_existing_window_handle, const char * window_title, int screen_width, int screen_height, int msaa_samples, const char * optional_file, int optional_line);
 GPU_API_PRE int GPU_API_POST vfWindowLoop();
 GPU_API_PRE void GPU_API_POST vfExit(int exit_code);
-GPU_API_PRE void GPU_API_POST vfStorageCreateFromStruct(const gpu_storage_info_t * storage_info, gpu_storage_t * out_storage, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromStruct(const gpu_texture_info_t * texture_info, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfSamplerCreateFromStruct(const gpu_sampler_info_t * sampler_info, const char * optional_file, int optional_line);
-//GPU_API_PRE uint64_t GPU_API_POST vfTextureCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** texture_paths, const char * optional_file, int optional_line);
-//GPU_API_PRE uint64_t GPU_API_POST vfCubemapCreateFromBmp(int width, int height, int generate_mip_levels, int texture_count, const char ** pos_x_texture_paths, const char ** neg_x_texture_paths, const char ** pos_y_texture_paths, const char ** neg_y_texture_paths, const char ** pos_z_texture_paths, const char ** neg_z_texture_paths, const char * optional_file, int optional_line);
-//GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileVertProgram(const char * shader_binary_filepath, const char * optional_file, int optional_line);
-//GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileFragProgram(const char * shader_binary_filepath, const char * optional_file, int optional_line);
-//GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFileCompProgram(const char * shader_binary_filepath, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryVertProgram(const gpu_program_info_t * program_info, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryFragProgram(const gpu_program_info_t * program_info, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompProgram(const gpu_program_info_t * program_info, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreate(const gpu_program_pipeline_info_t * program_pipeline_info, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(const gpu_program_pipeline_comp_info_t * program_pipeline_comp_info, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfStorageCreate(const gpu_storage_info_t * storage_info, gpu_storage_t * out_storage, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfStorageGetRaw(uint64_t storage_id, RedStructMemberArray * out_storage_raw, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompute(const gpu_program_info_t * program_info, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(const gpu_program_pipeline_compute_info_t * program_pipeline_compute_info, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(uint64_t existing_batch_id, const gpu_batch_bindings_info_t * batch_bindings_info, const char * optional_debug_name, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromCpuToGpu(uint64_t batch_id, uint64_t from_cpu_storage_id, uint64_t to_gpu_storage_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromGpuToCpu(uint64_t batch_id, uint64_t from_gpu_storage_id, uint64_t to_cpu_storage_id, const char * optional_file, int optional_line);
-//GPU_API_PRE void GPU_API_POST vfBatchTexturePixelsCopyFromCpuToGpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_source_storage_id, const char * optional_file, int optional_line);
-//GPU_API_PRE void GPU_API_POST vfBatchTexturePixelsCopyFromGpuToCpu(uint64_t batch_id, uint64_t texture_id, int texture_layer, int mip_level, int x, int y, int width, int height, uint64_t copy_target_storage_id, const char * optional_file, int optional_line);
-//GPU_API_PRE void GPU_API_POST vfBatchBindProgramPipeline(uint64_t batch_id, uint64_t program_pipeline_id, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfBatchStorageCopyRaw(uint64_t batch_id, RedHandleArray from_storage_raw, RedHandleArray to_storage_raw, const RedCopyArrayRange * range, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchBindProgramPipelineCompute(uint64_t batch_id, uint64_t program_pipeline_compute_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(uint64_t batch_id, int slots_count, const RedStructDeclarationMember * slots, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchBindStorage(uint64_t batch_id, int slot, int storage_ids_count, const uint64_t * storage_ids, const char * optional_file, int optional_line); // HLSL: RWByteAddressBuffer
-//GPU_API_PRE void GPU_API_POST vfBatchBindTexture(uint64_t batch_id, int slot, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line); // HLSL: Texture2DArray
-//GPU_API_PRE void GPU_API_POST vfBatchBindCubemap(uint64_t batch_id, int slot, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line); // HLSL: TextureCubeArray<float4>
-//GPU_API_PRE void GPU_API_POST vfBatchBindSampler(uint64_t batch_id, int slot, int sampler_ids_count, const uint64_t * sampler_ids, const char * optional_file, int optional_line); // HLSL: Sampler
-//GPU_API_PRE void GPU_API_POST vfBatchBindRWTexture(uint64_t batch_id, int slot, int texture_ids_count, const uint64_t * texture_ids, const char * optional_file, int optional_line); // HLSL: RWTexture2DArray
-//GPU_API_PRE void GPU_API_POST vfBatchClear(uint64_t batch_id, const char * optional_file, int optional_line);
-//GPU_API_PRE void GPU_API_POST vfBatchDraw(uint64_t batch_id, uint64_t gpu_cmd_count, const gpu_cmd_t * gpu_cmd, const char * optional_file, int optional_line);
-//GPU_API_PRE void GPU_API_POST vfBatchFire(uint64_t batch_id, uint64_t count, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfBatchBindStorageRaw(uint64_t batch_id, int slot, int storage_raw_count, const RedStructMemberArray * storage_raw, const char * optional_file, int optional_line); // HLSL: RWByteAddressBuffer
 GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(uint64_t batch_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchCompute(uint64_t batch_id, unsigned workgroups_count_x, unsigned workgroups_count_y, unsigned workgroups_count_z, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchMemoryBarrier(uint64_t batch_id, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchCpuReadbackBarrier(uint64_t batch_id, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfBatchBarrierMemory(uint64_t batch_id, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfBatchBarrierCpuReadback(uint64_t batch_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchEnd(uint64_t batch_id, const char * optional_file, int optional_line);
-//GPU_API_PRE void GPU_API_POST vfBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, int do_swap_to_next_frame, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(uint64_t async_id, const char * optional_file, int optional_line);
 
 #ifdef __cplusplus
