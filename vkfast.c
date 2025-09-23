@@ -921,6 +921,12 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(const gpu_progr
   REDGPU_2_EXPECTWG(gpuCodeCompute->handle_id == VF_HANDLE_ID_GPU_CODE);
   REDGPU_2_EXPECTWG(gpuCodeCompute->gpuCode.gpuCodeType == VF_GPU_CODE_TYPE_COMPUTE);
 
+  if (program_pipeline_compute_info->variables_bytes_count > 0) {
+    for (unsigned i = 0; i < program_pipeline_compute_info->struct_members_count; i += 1) {
+      REDGPU_2_EXPECTWG(program_pipeline_compute_info->variables_slot != program_pipeline_compute_info->struct_members[i].slot);
+    }
+  }
+
   Red2ProcedureParametersDeclaration parameters = {0};
   parameters.variablesSlot            = program_pipeline_compute_info->variables_slot;
   parameters.variablesVisibleToStages = program_pipeline_compute_info->variables_bytes_count == 0 ? 0 : RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE;
@@ -1332,6 +1338,22 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(uint64_t batch_id, const
   );
   batch->batch.currentStruct.handleDeclaration = NULL;
   batch->batch.currentStruct.handle = NULL;
+}
+
+GPU_API_PRE void GPU_API_POST vfBatchBindVariablesCopy(uint64_t batch_id, unsigned variables_bytes_count, const void * variables, const char * optionalFile, int optionalLine) {
+  vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
+  vkfast_state_t * vkfast = batch->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+  REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
+
+  npfp(redCallSetProcedureParametersVariables, batch->batch.addresses.redCallSetProcedureParametersVariables,
+    "calls", batch->batch.calls.handle,
+    "procedureParameters", batch->batch.currentProcedureParameters,
+    "visibleToStages", RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE,
+    "variablesBytesFirst", 0,
+    "dataBytesCount", variables_bytes_count,
+    "data", variables
+  );
 }
 
 GPU_API_PRE void GPU_API_POST vfBatchCompute(uint64_t batch_id, unsigned workgroups_count_x, unsigned workgroups_count_y, unsigned workgroups_count_z, const char * optionalFile, int optionalLine) {

@@ -67,8 +67,8 @@ int main() {
   const RedStructDeclarationMember slots[] = {slot0, slot1};
   gpu_program_pipeline_compute_info_t pp_info = {0};
   pp_info.compute_program       = cs;
-  pp_info.variables_slot        = 0;
-  pp_info.variables_bytes_count = 0;
+  pp_info.variables_slot        = 2;
+  pp_info.variables_bytes_count = 1 * 4*sizeof(float);
   pp_info.struct_members_count  = countof(slots);
   pp_info.struct_members        = slots;
   uint64_t pp = vfProgramPipelineCreateCompute(&pp_info, FF, LL);
@@ -85,6 +85,12 @@ int main() {
     vfBatchBindStorage(batch, 0, 1, &storage_input_gpu.id, FF, LL);
     vfBatchBindStorage(batch, 1, 1, &storage_output_gpu.id, FF, LL);
     vfBatchBindNewBindingsEnd(batch, FF, LL);
+    float salt[4] = {0};
+    salt[0] = 0;
+    salt[1] = -1;
+    salt[2] = -7;
+    salt[3] = 6;
+    vfBatchBindVariablesCopy(batch, sizeof(salt), salt, FF, LL);
     vfBatchCompute(batch, 1, 1, 1, FF, LL);
     vfBatchBarrierMemory(batch, FF, LL);
     vfBatchStorageCopyFromGpuToCpu(batch, storage_output_gpu.id, storage_output_cpu.id, FF, LL);
@@ -94,7 +100,7 @@ int main() {
     uint64_t wait = vfAsyncBatchExecute(1, &batch, 1, FF, LL);
     vfAsyncWaitToFinish(wait, FF, LL);
 
-    // NOTE(Constantine): Expected result: 20 31 57 124"
+    // NOTE(Constantine): Expected result: 20 30 50 130 (20 31 57 124 + salt)"
     printf("Result: %f %f %f %f\n",
       storage_output_cpu.as_vec4[0].x,
       storage_output_cpu.as_vec4[0].y,
