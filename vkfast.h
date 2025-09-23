@@ -146,6 +146,7 @@ GPU_API_PRE void GPU_API_POST vfBatchCompute(uint64_t batch_id, unsigned workgro
 GPU_API_PRE void GPU_API_POST vfBatchBarrierMemory(uint64_t batch_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchBarrierCpuReadback(uint64_t batch_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchEnd(uint64_t batch_id, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfBatchGetRaw(uint64_t batch_id, RedCalls * out_batch_raw, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, int copy_swapchain_storage_and_present_it_to_window, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(uint64_t async_id, const char * optional_file, int optional_line);
 

@@ -1360,6 +1360,15 @@ GPU_API_PRE void GPU_API_POST vfBatchEnd(uint64_t batch_id, const char * optiona
   batch->batch.currentProcedureParameters = NULL;
 }
 
+GPU_API_PRE void GPU_API_POST vfBatchGetRaw(uint64_t batch_id, RedCalls * out_batch_raw, const char * optionalFile, int optionalLine) {
+  RedHandleGpu gpu = g_vkfast->gpu;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
+  REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
+
+  out_batch_raw[0] = batch->batch.calls;
+}
+
 GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, int copy_swapchain_storage_and_present_it_to_window, const char * optionalFile, int optionalLine) {
   RedHandleGpu gpu = g_vkfast->gpu;
 
