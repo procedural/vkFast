@@ -1165,7 +1165,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindStorage(uint64_t batch_id, int slot, in
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
-  REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was vfBatchBindNewBindingsSet() called previously?");
+  REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was vfBatchBindNewBindingsSet() ever called previously?");
 
   // To free
   RedStructMemberArray * arrays = (RedStructMemberArray *)red32MemoryCalloc(storage_ids_count * sizeof(RedStructMemberArray));
@@ -1209,7 +1209,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindStorageRaw(uint64_t batch_id, int slot,
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
-  REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was vfBatchBindNewBindingsSet() called previously?");
+  REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was vfBatchBindNewBindingsSet() ever called previously?");
 
   RedStructMember member = {0};
   member.setTo35   = 35;
@@ -1366,6 +1366,10 @@ GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, 
 
   RedHandleGpu gpu = g_vkfast->gpu;
 
+  if (copy_swapchain_storage_and_present_it_to_window != 0) {
+    REDGPU_2_EXPECTWG(g_vkfast->windowHandle != NULL || !"Was vfWindowFullscreen() ever called previously?");
+  }
+
   // To free
   RedHandleCalls * calls = (RedHandleCalls *)red32MemoryCalloc(batch_ids_count * sizeof(RedHandleCalls));
   REDGPU_2_EXPECTWG(calls != NULL);
@@ -1391,22 +1395,32 @@ GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, 
     "optionalUserData", NULL
   );
 
-  RedGpuTimeline timeline = {0};
-  timeline.setTo4                            = 4;
-  timeline.setTo0                            = 0;
-  timeline.waitForAndUnsignalGpuSignalsCount = 0;
-  timeline.waitForAndUnsignalGpuSignals      = NULL;
-  timeline.setTo65536                        = NULL;
-  timeline.callsCount                        = batch_ids_count;
-  timeline.calls                             = calls;
-  timeline.signalGpuSignalsCount             = 0;
-  timeline.signalGpuSignals                  = NULL;
+  RedGpuTimeline timelines[2] = {0};
+  timelines[0].setTo4                            = 4;
+  timelines[0].setTo0                            = 0;
+  timelines[0].waitForAndUnsignalGpuSignalsCount = 0;
+  timelines[0].waitForAndUnsignalGpuSignals      = NULL;
+  timelines[0].setTo65536                        = NULL;
+  timelines[0].callsCount                        = batch_ids_count;
+  timelines[0].calls                             = calls;
+  timelines[0].signalGpuSignalsCount             = 0;
+  timelines[0].signalGpuSignals                  = NULL;
+  // Swapchain timeline:
+  timelines[1].setTo4                            = 4;
+  timelines[1].setTo0                            = 0;
+  timelines[1].waitForAndUnsignalGpuSignalsCount = 0;    // TODO
+  timelines[1].waitForAndUnsignalGpuSignals      = NULL; // TODO
+  timelines[1].setTo65536                        = NULL; // TODO
+  timelines[1].callsCount                        = 0;    // TODO
+  timelines[1].calls                             = NULL; // TODO
+  timelines[1].signalGpuSignalsCount             = 0;    // TODO
+  timelines[1].signalGpuSignals                  = NULL; // TODO
   np(redQueueSubmit,
     "context", g_vkfast->context,
     "gpu", g_vkfast->gpu,
     "queue", g_vkfast->mainQueue,
-    "timelinesCount", 1,
-    "timelines", &timeline,
+    "timelinesCount", copy_swapchain_storage_and_present_it_to_window == 0 ? 1 : 2,
+    "timelines", timelines,
     "signalCpuSignal", cpuSignal,
     "outStatuses", NULL,
     "optionalFile", optionalFile,
