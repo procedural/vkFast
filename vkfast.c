@@ -159,9 +159,16 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
     vfInternalPrint("[vkFast][Debug] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
   }
 
-  // To free
-  vkfast_state_t * vkfast = (vkfast_state_t *)red32MemoryCalloc(sizeof(vkfast_state_t));
-  REDGPU_2_EXPECT(vkfast != NULL);
+  vkfast_state_t * vkfast = NULL;
+  if (optional_parameters != NULL) {
+    vkfast = (vkfast_state_t *)optional_parameters->optional_external_vkfast_state_ptr;
+  }
+
+  if (vkfast == NULL) {
+    // To free
+    vkfast = (vkfast_state_t *)red32MemoryCalloc(sizeof(vkfast_state_t));
+    REDGPU_2_EXPECT(vkfast != NULL);
+  }
 
   uint64_t internalMemoryAllocationSizeGpuVramArrays = VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_VRAM_ARRAYS_512MB;
   uint64_t internalMemoryAllocationSizeCpuVisible    = VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_VISIBLE_512MB;
@@ -174,27 +181,29 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
     }
   }
 
-  RedContext context = NULL;
-  np(redCreateContext,
-    "malloc", red32MemoryCalloc,
-    "free", red32MemoryFree,
-    "optionalMallocTagged", NULL,
-    "optionalFreeTagged", NULL,
-    "debugCallback", enable_debug_mode == 1 ? vfRedGpuDebugCallback : NULL,
-    "sdkVersion", RED_SDK_VERSION_1_0_135,
-    "sdkExtensionsCount", 0,
-    "sdkExtensions", NULL,
-    "optionalProgramName", NULL,
-    "optionalProgramVersion", 0,
-    "optionalEngineName", NULL,
-    "optionalEngineVersion", 0,
-    "optionalSettings", NULL,
-    "outContext", &context,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
+  RedContext context = vkfast->context;
+  if (context == NULL) {
+    np(redCreateContext,
+      "malloc", red32MemoryCalloc,
+      "free", red32MemoryFree,
+      "optionalMallocTagged", NULL,
+      "optionalFreeTagged", NULL,
+      "debugCallback", enable_debug_mode == 1 ? vfRedGpuDebugCallback : NULL,
+      "sdkVersion", RED_SDK_VERSION_1_0_135,
+      "sdkExtensionsCount", 0,
+      "sdkExtensions", NULL,
+      "optionalProgramName", NULL,
+      "optionalProgramVersion", 0,
+      "optionalEngineName", NULL,
+      "optionalEngineVersion", 0,
+      "optionalSettings", NULL,
+      "outContext", &context,
+      "outStatuses", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+  }
 
   REDGPU_2_EXPECT(context != NULL);
   REDGPU_2_EXPECT(context->gpusCount > 0);

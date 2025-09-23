@@ -38,6 +38,7 @@ typedef struct gpu_internal_memory_allocation_sizes_t {
 typedef struct gpu_context_optional_parameters_t {
   gpu_internal_memory_allocation_sizes_t * internal_memory_allocation_sizes;
   uint64_t                                 max_swapchain_storage_size_bytes_count;
+  void *                                   optional_external_vkfast_state_ptr;
 } gpu_context_optional_parameters_t;
 
 typedef enum gpu_storage_type_t {
