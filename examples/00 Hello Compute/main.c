@@ -76,7 +76,7 @@ int main() {
   uint64_t batch = 0;
 
   while (vfWindowLoop()) {
-    gpu_batch_bindings_info_t bindings_info = {0};
+    gpu_batch_info_t bindings_info = {0};
     bindings_info.max_new_bindings_sets_count = 1;
     bindings_info.max_storage_binds_count     = 2;
     batch = vfBatchBegin(batch, &bindings_info, NULL, FF, LL);
@@ -113,6 +113,7 @@ int main() {
     pp,
     batch,
   };
-  vfContextDeinit(countof(ids), ids, FF, LL);
+  vfIdDestroy(countof(ids), ids, FF, LL);
+  vfContextDeinit(FF, LL);
   vfExit(0);
 }
