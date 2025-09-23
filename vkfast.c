@@ -17,6 +17,7 @@
 #define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_VRAM_ARRAYS_512MB (512 * 1024 * 1024)
 #define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_VISIBLE_512MB     (512 * 1024 * 1024)
 #define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB    (512 * 1024 * 1024)
+#define VKFAST_INTERNAL_DEFAULT_MAX_SWAPCHAIN_STORAGE_SIZE_BYTES_COUNT       (4096 * 4096 * 4)
 
 vkfast_state_t * g_vkfast; // NOTE(Constantine): Every time vkfast_state_t values are modified in a vf* function, that function is not thread-safe.
 
@@ -471,8 +472,28 @@ GPU_API_PRE void GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_con
   vkfast->memoryCpuReadback_memory_and_array = memoryCpuReadback_memory_and_array;
   vkfast->memoryCpuReadback_mapped_void_ptr = memoryCpuReadback_mapped_void_ptr;
   vkfast->memoryCpuReadback_memory_suballocations_offset = 0;
+  vkfast->swapchainStorage = REDGPU_32_STRUCT(gpu_storage_t, 0);
 
   g_vkfast = vkfast;
+
+  // Swapchain storage
+  gpu_storage_t swapchainStorage = {0};
+  {
+    uint64_t max_swapchain_storage_size_bytes_count = 0;
+    if (optional_parameters != NULL) {
+      max_swapchain_storage_size_bytes_count = optional_parameters->max_swapchain_storage_size_bytes_count;
+    }
+    if (max_swapchain_storage_size_bytes_count == 0) {
+      max_swapchain_storage_size_bytes_count = VKFAST_INTERNAL_DEFAULT_MAX_SWAPCHAIN_STORAGE_SIZE_BYTES_COUNT;
+    }
+
+    gpu_storage_info_t storage_info = {0};
+    storage_info.storage_type = GPU_STORAGE_TYPE_GPU_ONLY;
+    storage_info.bytes_count  = max_swapchain_storage_size_bytes_count;
+    storage_info.optional_external_vkfast_state_ptr = vkfast;
+    vfStorageCreate(&storage_info, &swapchainStorage, optionalFile, optionalLine);
+  }
+  vkfast->swapchainStorage = swapchainStorage;
 }
 
 GPU_API_PRE void GPU_API_POST vfIdDestroy(uint64_t ids_count, const uint64_t * ids, const char * optionalFile, int optionalLine) {
@@ -553,6 +574,8 @@ GPU_API_PRE void GPU_API_POST vfIdDestroy(uint64_t ids_count, const uint64_t * i
 
 GPU_API_PRE void GPU_API_POST vfContextDeinit(const char * optionalFile, int optionalLine) {
   vkfast_state_t * vkfast = g_vkfast;
+
+  vfIdDestroy(1, &vkfast->swapchainStorage.id, optionalFile, optionalLine);
 
   np(red2DestroyHandle,
     "context", vkfast->context,

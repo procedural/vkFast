@@ -42,8 +42,9 @@ typedef struct vkfast_state_t {
   Red2Array          memoryCpuReadback_memory_and_array;
   void *             memoryCpuReadback_mapped_void_ptr;
   uint64_t           memoryCpuReadback_memory_suballocations_offset;
-} vkfast_state_t;
 
+  gpu_storage_t      swapchainStorage;
+} vkfast_state_t;
 
 typedef struct vf_handle_storage_t {
   gpu_storage_info_t   info;           // NOTE(Constantine): Optional debug name is a stale pointer, do not use.
