@@ -1399,9 +1399,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, 
     return 0;
   }
 
-  vf_handle_t * first_batch = (vf_handle_t *)(void *)batch_ids[0];
-  vkfast_state_t * vkfast = first_batch->vkfast;
-  RedHandleGpu gpu = vkfast->gpu;
+  RedHandleGpu gpu = g_vkfast->gpu;
 
   // To free
   RedHandleCalls * calls = (RedHandleCalls *)red32MemoryCalloc(batch_ids_count * sizeof(RedHandleCalls));
@@ -1439,9 +1437,9 @@ GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, 
   timeline.signalGpuSignalsCount             = 0;
   timeline.signalGpuSignals                  = NULL;
   np(redQueueSubmit,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "queue", vkfast->mainQueue,
+    "context", g_vkfast->context,
+    "gpu", g_vkfast->gpu,
+    "queue", g_vkfast->mainQueue,
     "timelinesCount", 1,
     "timelines", &timeline,
     "signalCpuSignal", cpuSignal,
