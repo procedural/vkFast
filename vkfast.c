@@ -1148,12 +1148,6 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(uint64_t batch_id, int s
   np(redCallSetProcedureParameters,
     "address", batch->batch.addresses.redCallSetProcedureParameters,
     "calls", batch->batch.calls.handle,
-    "procedureType", RED_PROCEDURE_TYPE_DRAW,
-    "procedureParameters", batch->batch.currentProcedureParameters
-  );
-  np(redCallSetProcedureParameters,
-    "address", batch->batch.addresses.redCallSetProcedureParameters,
-    "calls", batch->batch.calls.handle,
     "procedureType", RED_PROCEDURE_TYPE_COMPUTE,
     "procedureParameters", batch->batch.currentProcedureParameters
   );
@@ -1239,16 +1233,6 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(uint64_t batch_id, const
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
-  npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
-    "calls", batch->batch.calls.handle,
-    "procedureType", RED_PROCEDURE_TYPE_DRAW,
-    "procedureParameters", batch->batch.currentProcedureParameters,
-    "procedureParametersDeclarationStructsDeclarationsFirst", 0,
-    "structsCount", 1, // NOTE(Constantine): Only one struct for now.
-    "structs", &batch->batch.currentStruct.handle,
-    "setTo0", 0,
-    "setTo00", 0
-  );
   npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
     "calls", batch->batch.calls.handle,
     "procedureType", RED_PROCEDURE_TYPE_COMPUTE,
