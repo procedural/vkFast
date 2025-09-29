@@ -1344,6 +1344,8 @@ GPU_API_PRE void GPU_API_POST vfBatchGetRaw(uint64_t batch_id, RedCalls * out_ba
 }
 
 GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(uint64_t batch_ids_count, const uint64_t * batch_ids, int copy_swapchain_storage_and_present_it_to_window, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(copy_swapchain_storage_and_present_it_to_window == 0 || !"TODO: Swapchain.");
+  
   if (batch_ids_count == 0) {
     return 0;
   }
