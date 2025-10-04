@@ -120,6 +120,7 @@ int main() {
       storage_output_cpu.as_vec4[0].w
     );
 
+    unsigned char * pixels = &pix->pixels[0][0][0];
     // Clear pixels:
     for (int y = 0; y < window_h; y += 1) {
       for (int x = 0; x < window_w; x += 1) {
@@ -130,7 +131,6 @@ int main() {
       }
     }
     // Draw pixels:
-    unsigned char * pixels = &pix->pixels[0][0][0];
     for (int y = 0; y < window_h; y += 1) {
       for (int x = 0; x < window_w; x += 1) {
         // NOTE(Constantine):
