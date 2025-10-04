@@ -5,6 +5,14 @@
 #include <shellscalingapi.h>   // For SetProcessDpiAwareness
 #pragma comment(lib, "shcore") // For SetProcessDpiAwareness
 
+#ifdef _WIN32
+#define GLFW_INCLUDE_NONE
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include "glfw-3.4.bin.WIN64/include/GLFW/glfw3.h" // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
+#include "glfw-3.4.bin.WIN64/include/GLFW/glfw3native.h" // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
+#pragma comment(lib, "../glfw-3.4.bin.WIN64/lib-vc2019/glfw3_mt.lib") // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
+#endif
+
 #define countof(x) (sizeof(x) / sizeof((x)[0]))
 
 #define FF __FILE__
@@ -16,8 +24,18 @@ int main() {
   #define window_w 1920
   #define window_h 1080
 
+  glfwInit();
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  GLFWmonitor * monitor = glfwGetPrimaryMonitor();
+  const GLFWvidmode * mode = glfwGetVideoMode(monitor);
+  REDGPU_2_EXPECTFL(mode->width == window_w);
+  REDGPU_2_EXPECTFL(mode->height == window_h);
+  GLFWwindow * window = glfwCreateWindow(window_w, window_h, "[vkFast] GLFW Test", monitor, NULL);
+  void * window_handle = (void *)glfwGetWin32Window(window);
+
   gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
-  vfWindowFullscreen(ctx, NULL, "[vkFast] Hello Compute", window_w, window_h, FF, LL);
+  vfWindowFullscreen(ctx, window_handle, "[vkFast] GLFW Test", window_w, window_h, FF, LL);
 
   gpu_storage_info_t storage_info = {0};
   storage_info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
@@ -120,6 +138,11 @@ int main() {
       storage_output_cpu.as_vec4[0].w
     );
 
+    double mouse_x = 0;
+    double mouse_y = 0;
+    glfwGetCursorPos(window, &mouse_x, &mouse_y);
+
+    unsigned char * pixels = &pix->pixels[0][0][0];
     // Clear pixels:
     for (int y = 0; y < window_h; y += 1) {
       for (int x = 0; x < window_w; x += 1) {
@@ -130,7 +153,6 @@ int main() {
       }
     }
     // Draw pixels:
-    unsigned char * pixels = &pix->pixels[0][0][0];
     for (int y = 0; y < window_h; y += 1) {
       for (int x = 0; x < window_w; x += 1) {
         // NOTE(Constantine):
@@ -146,12 +168,12 @@ int main() {
           pixels[y * window_w * 4 + x * 4 + 1] = 255;
           pixels[y * window_w * 4 + x * 4 + 2] = 0;
           pixels[y * window_w * 4 + x * 4 + 3] = 255;
-        } else if (y == window_h-1) {
+        } else if (y == (window_h-1) - mouse_y) {
           pixels[y * window_w * 4 + x * 4 + 0] = 0;
           pixels[y * window_w * 4 + x * 4 + 1] = 0;
           pixels[y * window_w * 4 + x * 4 + 2] = 255;
           pixels[y * window_w * 4 + x * 4 + 3] = 255;
-        } else if (x == window_w-1) {
+        } else if (x == mouse_x) {
           pixels[y * window_w * 4 + x * 4 + 0] = 255;
           pixels[y * window_w * 4 + x * 4 + 1] = 255;
           pixels[y * window_w * 4 + x * 4 + 2] = 255;
