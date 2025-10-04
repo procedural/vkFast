@@ -105,7 +105,9 @@ int main() {
   struct Pixels * pix = (struct Pixels *)red32MemoryCalloc(sizeof(struct Pixels));
   REDGPU_2_EXPECTFL(pix != NULL);
 
-  while (vfWindowLoop(ctx)) {
+  while (glfwWindowShouldClose(window) == 0) {
+    glfwPollEvents();
+
     gpu_batch_info_t bindings_info = {0};
     bindings_info.max_new_bindings_sets_count = 1;
     bindings_info.max_storage_binds_count     = 2;
