@@ -105,8 +105,8 @@ typedef struct gpu_program_pipeline_compute_info_t {
 } gpu_program_pipeline_compute_info_t;
 
 typedef struct gpu_batch_info_t {
-  int    max_new_bindings_sets_count;
-  int    max_storage_binds_count;
+  int max_new_bindings_sets_count;
+  int max_storage_binds_count;
 } gpu_batch_info_t;
 
 #ifndef GPU_API_PRE
