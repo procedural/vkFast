@@ -42,8 +42,6 @@ typedef struct vkfast_state_t {
   Red2Array          memoryCpuReadback_memory_and_array;
   void *             memoryCpuReadback_mapped_void_ptr;
   uint64_t           memoryCpuReadback_memory_suballocations_offset;
-
-  gpu_storage_t      swapchainStorage;
 } vkfast_state_t;
 
 typedef struct vf_handle_storage_t {
