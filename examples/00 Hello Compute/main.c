@@ -2,14 +2,19 @@
 
 #include <stdio.h> // For printf
 
+#include <shellscalingapi.h>   // For SetProcessDpiAwareness
+#pragma comment(lib, "shcore") // For SetProcessDpiAwareness
+
 #define countof(x) (sizeof(x) / sizeof((x)[0]))
 
 #define FF __FILE__
 #define LL __LINE__
 
 int main() {
-  const int window_w = 1920;
-  const int window_h = 1080;
+  SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+
+  #define window_w 1920
+  #define window_h 1080
 
   gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
   vfWindowFullscreen(ctx, NULL, "[vkFast] Hello Compute", window_w, window_h, FF, LL);
@@ -75,6 +80,13 @@ int main() {
   
   uint64_t batch = 0;
 
+  struct Pixels {
+    unsigned char pixels[window_h][window_w][4];
+  };
+  // To free
+  struct Pixels * pix = (struct Pixels *)red32MemoryCalloc(sizeof(struct Pixels));
+  REDGPU_2_EXPECTFL(pix != NULL);
+
   while (vfWindowLoop(ctx)) {
     gpu_batch_info_t bindings_info = {0};
     bindings_info.max_new_bindings_sets_count = 1;
@@ -107,8 +119,42 @@ int main() {
       storage_output_cpu.as_vec4[0].z,
       storage_output_cpu.as_vec4[0].w
     );
+
+    unsigned char * pixels = &pix->pixels[0][0][0];
+    for (int y = 0; y < window_h; y += 1) {
+      for (int x = 0; x < window_w; x += 1) {
+        // NOTE(Constantine):
+        // The automatic DPI scaling is disabled with SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE), but
+        // with DPI scaling, 1920x1080 screen resolution with a desktop scaling of, say, 1.25 is equal to 1536x864 (draw coords: 1535x863).
+        if (y == 0) {
+          pixels[y * window_w * 4 + x * 4 + 0] = (unsigned char)255;
+          pixels[y * window_w * 4 + x * 4 + 1] = (unsigned char)0;
+          pixels[y * window_w * 4 + x * 4 + 2] = (unsigned char)0;
+          pixels[y * window_w * 4 + x * 4 + 3] = (unsigned char)255;
+        } else if (x == 0) {
+          pixels[y * window_w * 4 + x * 4 + 0] = (unsigned char)0;
+          pixels[y * window_w * 4 + x * 4 + 1] = (unsigned char)255;
+          pixels[y * window_w * 4 + x * 4 + 2] = (unsigned char)0;
+          pixels[y * window_w * 4 + x * 4 + 3] = (unsigned char)255;
+        } else if (y == window_h-1) {
+          pixels[y * window_w * 4 + x * 4 + 0] = (unsigned char)0;
+          pixels[y * window_w * 4 + x * 4 + 1] = (unsigned char)0;
+          pixels[y * window_w * 4 + x * 4 + 2] = (unsigned char)255;
+          pixels[y * window_w * 4 + x * 4 + 3] = (unsigned char)255;
+        } else if (x == window_w-1) {
+          pixels[y * window_w * 4 + x * 4 + 0] = (unsigned char)255;
+          pixels[y * window_w * 4 + x * 4 + 1] = (unsigned char)255;
+          pixels[y * window_w * 4 + x * 4 + 2] = (unsigned char)255;
+          pixels[y * window_w * 4 + x * 4 + 3] = (unsigned char)255;
+        }
+      }
+    }
+    vfDrawPixels(ctx, pix->pixels, FF, LL);
   }
   
+  red32MemoryFree(pix);
+  pix = NULL;
+
   uint64_t ids[] = {
     storage_input_cpu.id,
     storage_input_gpu.id,

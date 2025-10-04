@@ -7,16 +7,16 @@
 #include "C:/RedGpuSDK/redgpu_32.h"
 #include "C:/RedGpuSDK/redgpu_wsi.h"
 
+#ifdef _WIN32
+#include <Windows.h> // For HDC
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct vkfast_state_t {
   int                isDebugMode;
-
-  void *             windowHandle;
-  int                screenWidth;
-  int                screenHeight;
   
   RedContext         context;
   const RedGpuInfo * gpuInfo;
@@ -42,6 +42,13 @@ typedef struct vkfast_state_t {
   Red2Array          memoryCpuReadback_memory_and_array;
   void *             memoryCpuReadback_mapped_void_ptr;
   uint64_t           memoryCpuReadback_memory_suballocations_offset;
+
+  void *             windowHandle;
+  int                screenWidth;
+  int                screenHeight;
+#ifdef _WIN32
+  HDC                hDC;
+#endif
 } vkfast_state_t;
 
 typedef struct vf_handle_storage_t {

@@ -14,6 +14,17 @@
 #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
 #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
 
+#ifdef _WIN32
+#include <Windows.h> // For wglCreateContext, wglMakeCurrent, etc.
+#pragma comment(lib, "opengl32")
+#else
+#error
+#endif
+#ifdef __cplusplus
+extern "C"
+#endif
+void glDrawPixels(int width, int height, unsigned GL_RGBA_0x1908, unsigned GL_UNSIGNED_BYTE_0x1401, const void * pixels);
+
 #define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_VRAM_ARRAYS_512MB (512 * 1024 * 1024)
 #define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_VISIBLE_512MB     (512 * 1024 * 1024)
 #define VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB    (512 * 1024 * 1024)
@@ -443,9 +454,6 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
   // Filling
   vkfast_state_t;
   vkfast->isDebugMode = enable_debug_mode;
-  vkfast->windowHandle = NULL;
-  vkfast->screenWidth = 0;
-  vkfast->screenHeight = 0;
   vkfast->context = context;
   vkfast->gpuInfo = gpuInfo;
   vkfast->gpu = gpu;
@@ -463,6 +471,10 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
   vkfast->memoryCpuReadback_memory_and_array = memoryCpuReadback_memory_and_array;
   vkfast->memoryCpuReadback_mapped_void_ptr = memoryCpuReadback_mapped_void_ptr;
   vkfast->memoryCpuReadback_memory_suballocations_offset = 0;
+  vkfast->windowHandle = NULL;
+  vkfast->screenWidth = 0;
+  vkfast->screenHeight = 0;
+  vkfast->hDC = 0;
 
   return (gpu_handle_context_t)(void *)vkfast;
 }
@@ -642,14 +654,56 @@ GPU_API_PRE void GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, v
   if (window_handle == NULL) {
     window_handle = red32WindowCreate(window_title);
   }
+  REDGPU_2_EXPECT(window_handle != NULL);
+
+  // OpenGL context init
+  HDC hDC = GetDC((HWND)window_handle);
+
+  // https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setpixelformat#examples
+  PIXELFORMATDESCRIPTOR pfd = {
+    sizeof(PIXELFORMATDESCRIPTOR),   // size of this pfd
+    1,                     // version number
+    PFD_DRAW_TO_WINDOW |   // support window
+    PFD_SUPPORT_OPENGL |   // support OpenGL
+    PFD_DOUBLEBUFFER,      // double buffered
+    PFD_TYPE_RGBA,         // RGBA type
+    24,                    // 24-bit color depth
+    0, 0, 0, 0, 0, 0,      // color bits ignored
+    0,                     // no alpha buffer
+    0,                     // shift bit ignored
+    0,                     // no accumulation buffer
+    0, 0, 0, 0,            // accum bits ignored
+    32,                    // 32-bit z-buffer
+    0,                     // no stencil buffer
+    0,                     // no auxiliary buffer
+    PFD_MAIN_PLANE,        // main layer
+    0,                     // reserved
+    0, 0, 0                // layer masks ignored
+  };
+  int iPixelFormat = 0;
+  iPixelFormat = ChoosePixelFormat(hDC, &pfd);
+  REDGPU_2_EXPECT(SetPixelFormat(hDC, iPixelFormat, &pfd));
+
+  HGLRC hRC = wglCreateContext(hDC);
+  REDGPU_2_EXPECT(wglMakeCurrent(hDC, hRC));
+
+  REDGPU_2_EXPECT(ShowWindow((HWND)window_handle, SW_SHOW));
 
   vkfast->windowHandle = window_handle;
   vkfast->screenWidth = screen_width;
   vkfast->screenHeight = screen_height;
+  vkfast->hDC = hDC;
 }
 
 GPU_API_PRE int GPU_API_POST vfWindowLoop(gpu_handle_context_t context) {
   return red32WindowLoop();
+}
+
+GPU_API_PRE void GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, const char * optionalFile, int optionalLine) {
+  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
+  
+  glDrawPixels(vkfast->screenWidth, vkfast->screenHeight, /*GL_RGBA*/ 0x1908, /*GL_UNSIGNED_BYTE*/ 0x1401, pixels);
+  REDGPU_2_EXPECT(SwapBuffers(vkfast->hDC));
 }
 
 GPU_API_PRE void GPU_API_POST vfExit(int exit_code) {
