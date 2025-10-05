@@ -37,6 +37,11 @@ int main() {
   gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
   vfWindowFullscreen(ctx, window_handle, "[vkFast] GLFW Test", window_w, window_h, FF, LL);
 
+  int windowMonitorArea[4] = {0};
+  vfWindowGetMonitorAreaRectangle(ctx, windowMonitorArea, FF, LL);
+  REDGPU_2_EXPECTFL(windowMonitorArea[2] == window_w);
+  REDGPU_2_EXPECTFL(windowMonitorArea[3] == window_h);
+
   gpu_storage_info_t storage_info = {0};
   storage_info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
   storage_info.bytes_count  = 2 * 4*sizeof(float);
@@ -107,7 +112,6 @@ int main() {
 
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
-
     gpu_batch_info_t bindings_info = {0};
     bindings_info.max_new_bindings_sets_count = 1;
     bindings_info.max_storage_binds_count     = 2;
@@ -139,6 +143,10 @@ int main() {
       storage_output_cpu.as_vec4[0].z,
       storage_output_cpu.as_vec4[0].w
     );
+    REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].x == 20);
+    REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].y == 30);
+    REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].z == 50);
+    REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].w == 130);
 
     double mouse_x = 0;
     double mouse_y = 0;
