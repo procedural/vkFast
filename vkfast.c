@@ -648,6 +648,22 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
   red32MemoryFree(vkfast);
 }
 
+GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, const char * optionalFile, int optionalLine) {
+  // https://learn.microsoft.com/ru-ru/windows/win32/api/winuser/nf-winuser-monitorfrompoint
+  POINT point = {0};
+  HMONITOR hmonitor = MonitorFromPoint(point, MONITOR_DEFAULTTONEAREST);
+
+  // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmonitorinfoa
+  MONITORINFO monitorInfo = {0};
+  monitorInfo.cbSize = sizeof(MONITORINFO);
+  REDGPU_2_EXPECT(GetMonitorInfoA(hmonitor, &monitorInfo));
+
+  out4ints[0] = monitorInfo.rcMonitor.left;
+  out4ints[1] = monitorInfo.rcMonitor.top;
+  out4ints[2] = monitorInfo.rcMonitor.right;
+  out4ints[3] = monitorInfo.rcMonitor.bottom;
+}
+
 GPU_API_PRE void GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, const char * optionalFile, int optionalLine) {
   vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
   
@@ -694,23 +710,6 @@ GPU_API_PRE void GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, v
   vkfast->screenWidth = screen_width;
   vkfast->screenHeight = screen_height;
   vkfast->hDC = hDC;
-}
-
-GPU_API_PRE void GPU_API_POST vfWindowGetMonitorAreaRectangle(gpu_handle_context_t context, int * out4ints, const char * optionalFile, int optionalLine) {
-  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
-
-  // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-monitorfromwindow
-  HMONITOR hmonitor = MonitorFromWindow((HWND)vkfast->windowHandle, MONITOR_DEFAULTTONEAREST);
-
-  // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmonitorinfoa
-  MONITORINFO monitorInfo = {0};
-  monitorInfo.cbSize = sizeof(MONITORINFO);
-  REDGPU_2_EXPECT(GetMonitorInfoA(hmonitor, &monitorInfo));
-
-  out4ints[0] = monitorInfo.rcMonitor.left;
-  out4ints[1] = monitorInfo.rcMonitor.top;
-  out4ints[2] = monitorInfo.rcMonitor.right;
-  out4ints[3] = monitorInfo.rcMonitor.bottom;
 }
 
 GPU_API_PRE int GPU_API_POST vfWindowLoop(gpu_handle_context_t context) {

@@ -122,8 +122,8 @@ typedef struct gpu_batch_info_t {
 GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_context_optional_parameters_t * optional_parameters, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfIdDestroy(gpu_handle_context_t context, uint64_t ids_count, const uint64_t * ids, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfWindowGetMonitorAreaRectangle(gpu_handle_context_t context, int * out4ints, const char * optional_file, int optional_line);
 GPU_API_PRE int  GPU_API_POST vfWindowLoop(gpu_handle_context_t context);
 GPU_API_PRE void GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfExit(int exit_code);

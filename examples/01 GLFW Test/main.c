@@ -24,6 +24,11 @@ int main() {
   #define window_w 1920
   #define window_h 1080
 
+  int windowMonitorArea[4] = {0};
+  vfGetMainMonitorAreaRectangle(windowMonitorArea, FF, LL);
+  REDGPU_2_EXPECTFL(windowMonitorArea[2] == window_w);
+  REDGPU_2_EXPECTFL(windowMonitorArea[3] == window_h);
+
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
@@ -36,11 +41,6 @@ int main() {
 
   gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
   vfWindowFullscreen(ctx, window_handle, "[vkFast] GLFW Test", window_w, window_h, FF, LL);
-
-  int windowMonitorArea[4] = {0};
-  vfWindowGetMonitorAreaRectangle(ctx, windowMonitorArea, FF, LL);
-  REDGPU_2_EXPECTFL(windowMonitorArea[2] == window_w);
-  REDGPU_2_EXPECTFL(windowMonitorArea[3] == window_h);
 
   gpu_storage_info_t storage_info = {0};
   storage_info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;

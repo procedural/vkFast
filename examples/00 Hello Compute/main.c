@@ -16,13 +16,13 @@ int main() {
   #define window_w 1920
   #define window_h 1080
 
-  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
-  vfWindowFullscreen(ctx, NULL, "[vkFast] Hello Compute", window_w, window_h, FF, LL);
-
   int windowMonitorArea[4] = {0};
-  vfWindowGetMonitorAreaRectangle(ctx, windowMonitorArea, FF, LL);
+  vfGetMainMonitorAreaRectangle(windowMonitorArea, FF, LL);
   REDGPU_2_EXPECTFL(windowMonitorArea[2] == window_w);
   REDGPU_2_EXPECTFL(windowMonitorArea[3] == window_h);
+
+  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
+  vfWindowFullscreen(ctx, NULL, "[vkFast] Hello Compute", window_w, window_h, FF, LL);
 
   gpu_storage_info_t storage_info = {0};
   storage_info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
