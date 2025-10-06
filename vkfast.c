@@ -1141,6 +1141,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(gpu_handle_context_t con
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
   REDGPU_2_EXPECTWG(batch->batch.structsMemory != NULL || !"vfBatchBegin()::batch_bindings_info was likely set to NULL?");
+  REDGPU_2_EXPECTWG(batch->batch.currentProcedureParameters != NULL || !"Was vfBatchBindProgramPipelineCompute() ever called previously?");
 
   Red2Struct structure = {0};
   np(red2StructsMemorySuballocateStruct,
@@ -1278,6 +1279,8 @@ GPU_API_PRE void GPU_API_POST vfBatchBindVariablesCopy(gpu_handle_context_t cont
   vkfast_state_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
+
+  REDGPU_2_EXPECTWG(batch->batch.currentProcedureParameters != NULL || !"Was vfBatchBindProgramPipelineCompute() ever called previously?");
 
   npfp(redCallSetProcedureParametersVariables, batch->batch.addresses.redCallSetProcedureParametersVariables,
     "calls", batch->batch.calls.handle,
