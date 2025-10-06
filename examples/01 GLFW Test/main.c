@@ -82,17 +82,16 @@ int main() {
   cs_info.program_binary             = g_main;
   uint64_t cs = vfProgramCreateFromBinaryCompute(ctx, &cs_info, FF, LL);
 
-  RedStructDeclarationMember slot0 = {0};
-  slot0.slot            = 0;
-  slot0.type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
-  slot0.count           = 1;
-  slot0.visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE;
-  RedStructDeclarationMember slot1 = {0};
-  slot1.slot            = 1;
-  slot1.type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
-  slot1.count           = 1;
-  slot1.visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE;
-  const RedStructDeclarationMember slots[] = {slot0, slot1};
+  RedStructDeclarationMember slots[2] = {0};
+  slots[0].slot            = 0;
+  slots[0].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
+  slots[0].count           = 1;
+  slots[0].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE;
+
+  slots[1].slot            = 1;
+  slots[1].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
+  slots[1].count           = 1;
+  slots[1].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE;
   gpu_program_pipeline_compute_info_t pp_info = {0};
   pp_info.compute_program       = cs;
   pp_info.variables_slot        = 2;
