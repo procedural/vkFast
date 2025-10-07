@@ -11,7 +11,6 @@
 #endif
 #include "C:/RedGpuSDK/misc/np/np.h"
 #include "C:/RedGpuSDK/misc/np/np_redgpu.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
 #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
 
 #ifdef _WIN32
@@ -646,6 +645,14 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
   );
 
   red32MemoryFree(vkfast);
+}
+
+GPU_API_PRE RedContext GPU_API_POST vfContextGetRaw(gpu_handle_context_t context, const char * optionalFile, int optionalLine) {
+  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
+
+  REDGPU_2_EXPECT(vkfast != NULL);
+
+  return vkfast->context;
 }
 
 GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, const char * optionalFile, int optionalLine) {

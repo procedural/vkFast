@@ -5,7 +5,6 @@
 // https://github.com/redgpu/redgpu2
 #include "C:/RedGpuSDK/redgpu_2.h"
 #include "C:/RedGpuSDK/redgpu_32.h"
-#include "C:/RedGpuSDK/redgpu_wsi.h"
 
 #ifdef _WIN32
 #include <Windows.h> // For HDC
