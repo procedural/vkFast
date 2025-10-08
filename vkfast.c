@@ -82,7 +82,7 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
     optional_pointer_to_custom_vf_handle_context = optional_parameters->optional_pointer_to_custom_vf_handle_context;
   }
 
-  vf_handle_context_t * vkfast = optional_pointer_to_custom_vf_handle_context;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)optional_pointer_to_custom_vf_handle_context;
   if (vkfast == NULL) {
     // To free
     vkfast = (vf_handle_context_t *)red32MemoryCalloc(sizeof(vf_handle_context_t));
