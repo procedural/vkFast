@@ -14,13 +14,22 @@
 extern "C" {
 #endif
 
+#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_VRAM_ARRAYS_512MB (512 * 1024 * 1024)
+#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_VISIBLE_512MB     (512 * 1024 * 1024)
+#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB    (512 * 1024 * 1024)
+
 typedef struct vf_handle_context_t {
+  int                doNotDestroyRawContext;
+  int                doNotFreeHandle;
+
   int                isDebugMode;
   
   RedContext         context;
   const RedGpuInfo * gpuInfo;
 
+  unsigned           gpuIndex;
   RedHandleGpu       gpu;
+  unsigned           mainQueueIndex;
   unsigned           mainQueueFamilyIndex;
   RedHandleQueue     mainQueue;
 
@@ -35,11 +44,13 @@ typedef struct vf_handle_context_t {
   uint64_t           memoryGpuVramForArrays_memory_suballocations_offset;
 
   Red2Array          memoryCpuUpload_memory_and_array;
-  void *             memoryCpuUpload_mapped_void_ptr;
+  void *             memoryCpuUpload_mapped_void_ptr_original;
+  void *             memoryCpuUpload_mapped_void_ptr_offset;
   uint64_t           memoryCpuUpload_memory_suballocations_offset;
 
   Red2Array          memoryCpuReadback_memory_and_array;
-  void *             memoryCpuReadback_mapped_void_ptr;
+  void *             memoryCpuReadback_mapped_void_ptr_original;
+  void *             memoryCpuReadback_mapped_void_ptr_offset;
   uint64_t           memoryCpuReadback_memory_suballocations_offset;
 
   void *             windowHandle;

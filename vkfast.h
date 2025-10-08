@@ -38,6 +38,7 @@ typedef struct gpu_internal_memory_allocation_sizes_t {
 
 typedef struct gpu_context_optional_parameters_t {
   gpu_internal_memory_allocation_sizes_t * internal_memory_allocation_sizes;
+  void *                                   optional_pointer_to_custom_vf_handle_context;
 } gpu_context_optional_parameters_t;
 
 typedef enum gpu_storage_type_t {
@@ -121,7 +122,8 @@ typedef struct gpu_batch_info_t {
 GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_context_optional_parameters_t * optional_parameters, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, const char * optional_file, int optional_line);
 GPU_API_PRE RedContext GPU_API_POST vfContextGetRaw(gpu_handle_context_t context, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfIdDestroy(gpu_handle_context_t context, uint64_t ids_count, const uint64_t * ids, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfContextResetAndInvalidateAllStorages(gpu_handle_context_t context, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfIdDestroy(uint64_t ids_count, const uint64_t * ids, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, const char * optional_file, int optional_line);
 GPU_API_PRE int  GPU_API_POST vfWindowLoop(gpu_handle_context_t context);
