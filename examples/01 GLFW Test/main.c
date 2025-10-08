@@ -206,7 +206,7 @@ int main() {
     pp,
     batch,
   };
-  vfIdDestroy(ctx, countof(ids), ids, FF, LL);
+  vfIdDestroy(countof(ids), ids, FF, LL);
   vfContextDeinit(ctx, FF, LL);
   vfExit(0);
 }
