@@ -89,8 +89,8 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
     REDGPU_2_EXPECT(vkfast != NULL);
   }
 
-  uint64_t internalMemoryAllocationSizeGpuVramArrays = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_VRAM_ARRAYS_512MB;
-  uint64_t internalMemoryAllocationSizeCpuVisible    = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_VISIBLE_512MB;
+  uint64_t internalMemoryAllocationSizeGpuVramArrays = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_ONLY_512MB;
+  uint64_t internalMemoryAllocationSizeCpuVisible    = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_UPLOAD_512MB;
   uint64_t internalMemoryAllocationSizeCpuReadback   = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB;
   if (optional_parameters != NULL) {
     if (optional_parameters->internal_memory_allocation_sizes != NULL) {
