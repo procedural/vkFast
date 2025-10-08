@@ -31,9 +31,9 @@ extern "C" {
 typedef struct gpu_type_handle_context_t * gpu_handle_context_t;
 
 typedef struct gpu_internal_memory_allocation_sizes_t {
-  uint64_t bytes_count_for_memory_gpu_vram_arrays;
-  uint64_t bytes_count_for_memory_cpu_visible;
-  uint64_t bytes_count_for_memory_cpu_readback;
+  uint64_t bytes_count_for_memory_storages_type_gpu_only;
+  uint64_t bytes_count_for_memory_storages_type_cpu_upload;
+  uint64_t bytes_count_for_memory_storages_type_cpu_readback;
 } gpu_internal_memory_allocation_sizes_t;
 
 typedef struct gpu_context_optional_parameters_t {

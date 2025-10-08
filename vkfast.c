@@ -94,9 +94,9 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
   uint64_t internalMemoryAllocationSizeCpuReadback   = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB;
   if (optional_parameters != NULL) {
     if (optional_parameters->internal_memory_allocation_sizes != NULL) {
-      internalMemoryAllocationSizeGpuVramArrays = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_gpu_vram_arrays;
-      internalMemoryAllocationSizeCpuVisible    = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_cpu_visible;
-      internalMemoryAllocationSizeCpuReadback   = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_cpu_readback;
+      internalMemoryAllocationSizeGpuVramArrays = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_storages_type_gpu_only;
+      internalMemoryAllocationSizeCpuVisible    = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_storages_type_cpu_upload;
+      internalMemoryAllocationSizeCpuReadback   = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_storages_type_cpu_readback;
     }
   }
 

@@ -18,9 +18,9 @@ int main() {
   vfctx2.context                = vfContextGetRaw(ctx, FF, LL);
   // Custom initialization of ctx2.
   gpu_internal_memory_allocation_sizes_t ctx2allocsizes = {0};
-  ctx2allocsizes.bytes_count_for_memory_gpu_vram_arrays = (64 * 1024 * 1024);
-  ctx2allocsizes.bytes_count_for_memory_cpu_visible     = 0;
-  ctx2allocsizes.bytes_count_for_memory_cpu_readback    = (64 * 1024 * 1024);
+  ctx2allocsizes.bytes_count_for_memory_storages_type_gpu_only     = (64 * 1024 * 1024);
+  ctx2allocsizes.bytes_count_for_memory_storages_type_cpu_upload   = 0;
+  ctx2allocsizes.bytes_count_for_memory_storages_type_cpu_readback = (64 * 1024 * 1024);
   gpu_context_optional_parameters_t ctx2params = {0};
   ctx2params.internal_memory_allocation_sizes             = &ctx2allocsizes;
   ctx2params.optional_pointer_to_custom_vf_handle_context = (void *)&vfctx2;
