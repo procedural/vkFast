@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-typedef struct vkfast_state_t {
+typedef struct vf_handle_context_t {
   int                isDebugMode;
   
   RedContext         context;
@@ -48,7 +48,7 @@ typedef struct vkfast_state_t {
 #ifdef _WIN32
   HDC                hDC;
 #endif
-} vkfast_state_t;
+} vf_handle_context_t;
 
 typedef struct vf_handle_storage_t {
   gpu_storage_info_t   info;           // NOTE(Constantine): Optional debug name is a stale pointer, do not use.
@@ -97,8 +97,8 @@ typedef enum vf_handle_id_t {
 } vf_handle_id_t;
 
 typedef struct vf_handle_t {
-  vkfast_state_t * vkfast;
-  vf_handle_id_t   handle_id;
+  vf_handle_context_t * vkfast;
+  vf_handle_id_t        handle_id;
   union {
     vf_handle_storage_t   storage;
     vf_handle_gpu_code_t  gpuCode;

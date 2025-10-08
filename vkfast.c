@@ -81,7 +81,7 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
   }
 
   // To free
-  vkfast_state_t * vkfast = (vkfast_state_t *)red32MemoryCalloc(sizeof(vkfast_state_t));
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)red32MemoryCalloc(sizeof(vf_handle_context_t));
   REDGPU_2_EXPECT(vkfast != NULL);
 
   uint64_t internalMemoryAllocationSizeGpuVramArrays = VKFAST_INTERNAL_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_VRAM_ARRAYS_512MB;
@@ -452,7 +452,7 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
   }
 
   // Filling
-  vkfast_state_t;
+  vf_handle_context_t;
   vkfast->isDebugMode = enable_debug_mode;
   vkfast->context = context;
   vkfast->gpuInfo = gpuInfo;
@@ -556,7 +556,7 @@ GPU_API_PRE void GPU_API_POST vfIdDestroy(gpu_handle_context_t context, uint64_t
 }
 
 GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, const char * optionalFile, int optionalLine) {
-  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   np(red2DestroyHandle,
     "context", vkfast->context,
@@ -648,7 +648,7 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
 }
 
 GPU_API_PRE RedContext GPU_API_POST vfContextGetRaw(gpu_handle_context_t context, const char * optionalFile, int optionalLine) {
-  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   REDGPU_2_EXPECT(vkfast != NULL);
 
@@ -672,7 +672,7 @@ GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, cons
 }
 
 GPU_API_PRE void GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, const char * optionalFile, int optionalLine) {
-  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   
   void * window_handle = optional_external_window_handle;
   if (window_handle == NULL) {
@@ -724,7 +724,7 @@ GPU_API_PRE int GPU_API_POST vfWindowLoop(gpu_handle_context_t context) {
 }
 
 GPU_API_PRE void GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, const char * optionalFile, int optionalLine) {
-  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   
   glDrawPixels(vkfast->screenWidth, vkfast->screenHeight, /*GL_RGBA*/ 0x1908, /*GL_UNSIGNED_BYTE*/ 0x1401, pixels);
   REDGPU_2_EXPECT(SwapBuffers(vkfast->hDC));
@@ -735,7 +735,7 @@ GPU_API_PRE void GPU_API_POST vfExit(int exit_code) {
 }
 
 GPU_API_PRE void GPU_API_POST vfStorageCreate(gpu_handle_context_t context, const gpu_storage_info_t * storage_info, gpu_storage_t * out_storage, const char * optionalFile, int optionalLine) {
-  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
 
@@ -836,7 +836,7 @@ GPU_API_PRE void GPU_API_POST vfStorageCreate(gpu_handle_context_t context, cons
 
 GPU_API_PRE void GPU_API_POST vfStorageGetRaw(gpu_handle_context_t context, uint64_t storage_id, RedStructMemberArray * out_storage_raw, const char * optionalFile, int optionalLine) {
   vf_handle_t * storage = (vf_handle_t *)(void *)storage_id;
-  vkfast_state_t * vkfast = storage->vkfast;
+  vf_handle_context_t * vkfast = storage->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(storage->handle_id == VF_HANDLE_ID_STORAGE);
 
@@ -844,7 +844,7 @@ GPU_API_PRE void GPU_API_POST vfStorageGetRaw(gpu_handle_context_t context, uint
 }
 
 GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompute(gpu_handle_context_t context, const gpu_program_info_t * program_info, const char * optionalFile, int optionalLine) {
-  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
 
@@ -879,7 +879,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompute(gpu_handle_co
 }
 
 GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_context_t context, const gpu_program_pipeline_compute_info_t * program_pipeline_compute_info, const char * optionalFile, int optionalLine) {
-  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   
   RedHandleGpu gpu = vkfast->gpu;
 
@@ -954,7 +954,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_cont
 GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(gpu_handle_context_t context, uint64_t existing_batch_id, const gpu_batch_info_t * batch_info, const char * optional_debug_name, const char * optionalFile, int optionalLine) {
   vf_handle_t * handle = (vf_handle_t *)(void *)existing_batch_id;
   
-  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
 
@@ -1059,7 +1059,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(gpu_handle_context_t context, uin
 
 GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromCpuToGpu(gpu_handle_context_t context, uint64_t batch_id, uint64_t from_cpu_storage_id, uint64_t to_gpu_storage_id, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
   
@@ -1084,7 +1084,7 @@ GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromCpuToGpu(gpu_handle_context_
 
 GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromGpuToCpu(gpu_handle_context_t context, uint64_t batch_id, uint64_t from_gpu_storage_id, uint64_t to_cpu_storage_id, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
   
@@ -1109,7 +1109,7 @@ GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromGpuToCpu(gpu_handle_context_
 
 GPU_API_PRE void GPU_API_POST vfBatchStorageCopyRaw(gpu_handle_context_t context, uint64_t batch_id, RedHandleArray from_storage_raw, RedHandleArray to_storage_raw, const RedCopyArrayRange * range, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
@@ -1124,7 +1124,7 @@ GPU_API_PRE void GPU_API_POST vfBatchStorageCopyRaw(gpu_handle_context_t context
 
 GPU_API_PRE void GPU_API_POST vfBatchBindProgramPipelineCompute(gpu_handle_context_t context, uint64_t batch_id, uint64_t program_pipeline_compute_id, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
@@ -1143,7 +1143,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindProgramPipelineCompute(gpu_handle_conte
 
 GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(gpu_handle_context_t context, uint64_t batch_id, int slots_count, const RedStructDeclarationMember * slots, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
@@ -1178,7 +1178,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(gpu_handle_context_t con
 
 GPU_API_PRE void GPU_API_POST vfBatchBindStorage(gpu_handle_context_t context, uint64_t batch_id, int slot, int storage_ids_count, const uint64_t * storage_ids, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
@@ -1222,7 +1222,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindStorage(gpu_handle_context_t context, u
 
 GPU_API_PRE void GPU_API_POST vfBatchBindStorageRaw(gpu_handle_context_t context, uint64_t batch_id, int slot, int storage_raw_count, const RedStructMemberArray * storage_raw, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
@@ -1252,7 +1252,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindStorageRaw(gpu_handle_context_t context
 
 GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(gpu_handle_context_t context, uint64_t batch_id, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
@@ -1283,7 +1283,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(gpu_handle_context_t con
 
 GPU_API_PRE void GPU_API_POST vfBatchBindVariablesCopy(gpu_handle_context_t context, uint64_t batch_id, unsigned variables_bytes_count, const void * variables, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
@@ -1301,7 +1301,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindVariablesCopy(gpu_handle_context_t cont
 
 GPU_API_PRE void GPU_API_POST vfBatchCompute(gpu_handle_context_t context, uint64_t batch_id, unsigned workgroups_count_x, unsigned workgroups_count_y, unsigned workgroups_count_z, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
@@ -1315,7 +1315,7 @@ GPU_API_PRE void GPU_API_POST vfBatchCompute(gpu_handle_context_t context, uint6
 
 GPU_API_PRE void GPU_API_POST vfBatchBarrierMemory(gpu_handle_context_t context, uint64_t batch_id, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
@@ -1327,7 +1327,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBarrierMemory(gpu_handle_context_t context,
 
 GPU_API_PRE void GPU_API_POST vfBatchBarrierCpuReadback(gpu_handle_context_t context, uint64_t batch_id, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
@@ -1339,7 +1339,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBarrierCpuReadback(gpu_handle_context_t con
 
 GPU_API_PRE void GPU_API_POST vfBatchEnd(gpu_handle_context_t context, uint64_t batch_id, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
@@ -1361,7 +1361,7 @@ GPU_API_PRE void GPU_API_POST vfBatchEnd(gpu_handle_context_t context, uint64_t 
 
 GPU_API_PRE void GPU_API_POST vfBatchGetRaw(gpu_handle_context_t context, uint64_t batch_id, RedCalls * out_batch_raw, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vkfast_state_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
@@ -1373,7 +1373,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(gpu_handle_context_t conte
     return 0;
   }
 
-  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
 
@@ -1436,7 +1436,7 @@ GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(gpu_handle_context_t context, 
     return;
   }
 
-  vkfast_state_t * vkfast = (vkfast_state_t *)(void *)context;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleCpuSignal cpuSignal = (RedHandleCpuSignal)(void *)async_id;
 
