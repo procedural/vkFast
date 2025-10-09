@@ -99,7 +99,7 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
   uint64_t internalMemoryAllocationSizeGpuVramArrays           = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_ONLY_512MB;
   uint64_t internalMemoryAllocationSizeCpuVisible              = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_UPLOAD_512MB;
   uint64_t internalMemoryAllocationSizeCpuReadback             = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB;
-  uint64_t internalMemoryAllocationSizeCpuVisiblePresentPixels = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_CPU_UPLOAD_288MB;
+  uint64_t internalMemoryAllocationSizeCpuVisiblePresentPixels = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_PIXELS_CPU_UPLOAD_288MB;
   if (optional_parameters != NULL) {
     if (optional_parameters->internal_memory_allocation_sizes != NULL) {
       internalMemoryAllocationSizeGpuVramArrays           = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_storages_type_gpu_only;
@@ -976,6 +976,8 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, const char * o
   REDGPU_2_EXPECTWG(presentCopyCalls.memory != NULL);
 
   if (vkfast->presentPixelsCpuUpload_memory_and_array.array.handle == NULL) {
+    REDGPU_2_EXPECTWG(vkfast->presentPixelsCpuUpload_memory_allocation_size > 0);
+
     np(red2CreateArray,
       "context", vkfast->context,
       "gpu", vkfast->gpu,

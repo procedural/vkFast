@@ -42,7 +42,7 @@ int main() {
   ctx2allocsizes.bytes_count_for_memory_storages_type_gpu_only         = 0;
   ctx2allocsizes.bytes_count_for_memory_storages_type_cpu_upload       = 0;
   ctx2allocsizes.bytes_count_for_memory_storages_type_cpu_readback     = 0;
-  ctx2allocsizes.bytes_count_for_memory_present_pixels_type_cpu_upload = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_CPU_UPLOAD_288MB;
+  ctx2allocsizes.bytes_count_for_memory_present_pixels_type_cpu_upload = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_PIXELS_CPU_UPLOAD_288MB;
   gpu_context_optional_parameters_t ctx2params = {0};
   ctx2params.internal_memory_allocation_sizes             = &ctx2allocsizes;
   ctx2params.optional_pointer_to_custom_vf_handle_context = (void *)&vfctx2;
