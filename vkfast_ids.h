@@ -3,6 +3,7 @@
 // Sources:
 // https://github.com/redgpu/redgpu
 // https://github.com/redgpu/redgpu2
+#include "C:/RedGpuSDK/redgpu.h"
 #include "C:/RedGpuSDK/redgpu_2.h"
 #include "C:/RedGpuSDK/redgpu_32.h"
 #include "C:/RedGpuSDK/redgpu_wsi.h"
@@ -11,9 +12,10 @@
 extern "C" {
 #endif
 
-#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_ONLY_512MB     (512 * 1024 * 1024)
-#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_UPLOAD_512MB   (512 * 1024 * 1024)
-#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB (512 * 1024 * 1024)
+#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_ONLY_512MB           (512 * 1024 * 1024)
+#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_UPLOAD_512MB         (512 * 1024 * 1024)
+#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB       (512 * 1024 * 1024)
+#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_CPU_UPLOAD_288MB (288 * 1024 * 1024)
 
 typedef struct vf_handle_context_t {
   int                doNotDestroyRawContext;
@@ -62,7 +64,9 @@ typedef struct vf_handle_context_t {
   RedHandleImage     presentImages[3];
   RedHandleGpuSignal presentGpuSignal;
   RedCalls           presentCopyCalls;
-  gpu_storage_t      presentPixelsStorageCpuUpload;
+  uint64_t           presentPixelsCpuUpload_memory_allocation_size;
+  Red2Array          presentPixelsCpuUpload_memory_and_array;
+  void *             presentPixelsCpuUpload_void_ptr_original;
 } vf_handle_context_t;
 
 typedef struct vf_handle_storage_t {

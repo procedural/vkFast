@@ -32,6 +32,7 @@ typedef struct gpu_internal_memory_allocation_sizes_t {
   uint64_t bytes_count_for_memory_storages_type_gpu_only;
   uint64_t bytes_count_for_memory_storages_type_cpu_upload;
   uint64_t bytes_count_for_memory_storages_type_cpu_readback;
+  uint64_t bytes_count_for_memory_present_pixels_type_cpu_upload;
 } gpu_internal_memory_allocation_sizes_t;
 
 typedef struct gpu_context_optional_parameters_t {

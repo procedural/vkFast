@@ -96,14 +96,16 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
     REDGPU_2_EXPECT(vkfast != NULL);
   }
 
-  uint64_t internalMemoryAllocationSizeGpuVramArrays = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_ONLY_512MB;
-  uint64_t internalMemoryAllocationSizeCpuVisible    = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_UPLOAD_512MB;
-  uint64_t internalMemoryAllocationSizeCpuReadback   = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB;
+  uint64_t internalMemoryAllocationSizeGpuVramArrays           = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_ONLY_512MB;
+  uint64_t internalMemoryAllocationSizeCpuVisible              = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_UPLOAD_512MB;
+  uint64_t internalMemoryAllocationSizeCpuReadback             = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB;
+  uint64_t internalMemoryAllocationSizeCpuVisiblePresentPixels = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_CPU_UPLOAD_288MB;
   if (optional_parameters != NULL) {
     if (optional_parameters->internal_memory_allocation_sizes != NULL) {
-      internalMemoryAllocationSizeGpuVramArrays = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_storages_type_gpu_only;
-      internalMemoryAllocationSizeCpuVisible    = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_storages_type_cpu_upload;
-      internalMemoryAllocationSizeCpuReadback   = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_storages_type_cpu_readback;
+      internalMemoryAllocationSizeGpuVramArrays           = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_storages_type_gpu_only;
+      internalMemoryAllocationSizeCpuVisible              = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_storages_type_cpu_upload;
+      internalMemoryAllocationSizeCpuReadback             = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_storages_type_cpu_readback;
+      internalMemoryAllocationSizeCpuVisiblePresentPixels = optional_parameters->internal_memory_allocation_sizes->bytes_count_for_memory_present_pixels_type_cpu_upload;
     }
   }
 
@@ -505,7 +507,9 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
   vkfast->presentImages[2] = NULL;
   vkfast->presentGpuSignal = NULL;
   vkfast->presentCopyCalls = REDGPU_32_STRUCT(RedCalls, 0);
-  vkfast->presentPixelsStorageCpuUpload = REDGPU_32_STRUCT(gpu_storage_t, 0);
+  vkfast->presentPixelsCpuUpload_memory_allocation_size = internalMemoryAllocationSizeCpuVisiblePresentPixels;
+  vkfast->presentPixelsCpuUpload_memory_and_array = REDGPU_32_STRUCT(Red2Array, 0);
+  vkfast->presentPixelsCpuUpload_void_ptr_original = NULL;
 
   return (gpu_handle_context_t)(void *)vkfast;
 }
@@ -596,7 +600,36 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
 
   // NOTE(Constantine): WSI.
   {
-    vfIdDestroy(1, &vkfast->presentPixelsStorageCpuUpload.id, optionalFile, optionalLine);
+    if (vkfast->presentPixelsCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory != NULL) {
+      np(redMemoryUnmap,
+        "context", vkfast->context,
+        "gpu", vkfast->gpu,
+        "mappableMemory", vkfast->presentPixelsCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+    }
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_ARRAY,
+      "handle", vkfast->presentPixelsCpuUpload_memory_and_array.array.handle,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_MEMORY,
+      "handle", vkfast->presentPixelsCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
 
     np(red2DestroyHandle,
       "context", vkfast->context,
@@ -784,7 +817,6 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, const char * o
   RedHandlePresent present = NULL;
   RedHandleImage presentImages[3] = {0};
   RedHandleGpuSignal presentGpuSignal = NULL;
-  gpu_storage_t presentPixelsStorageCpuUpload = {0};
 
   if (vkfast->surface == NULL) {
     #ifdef _WIN32
@@ -834,21 +866,18 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, const char * o
     "optionalUserData", NULL
   );
   // printf("[vkFast][DEBUG PRINTF] surfaceCurrentPropertiesAndPresentLimits.currentSurfaceWidth/Height: %d, %d\n", surfaceCurrentPropertiesAndPresentLimits.currentSurfaceWidth, surfaceCurrentPropertiesAndPresentLimits.currentSurfaceHeight);
-  if (surfaceCurrentPropertiesAndPresentLimits.currentSurfaceWidth == 0 && surfaceCurrentPropertiesAndPresentLimits.currentSurfaceHeight == 0) {
-    return 1; // NOTE(Constantine): The window is minimized then. Tested on Windows 10.
+  if (surfaceCurrentPropertiesAndPresentLimits.currentSurfaceWidth == 0 || surfaceCurrentPropertiesAndPresentLimits.currentSurfaceHeight == 0) {
+    return 1; // NOTE(Constantine): The window is minimized or of unwatchable size (resized to 0 in width or 0 in height) then. Tested on Windows 10.
   }
   if (surfaceCurrentPropertiesAndPresentLimits.currentSurfaceWidth != -1 && surfaceCurrentPropertiesAndPresentLimits.currentSurfaceHeight != -1) {
     vkfast->screenWidth  = surfaceCurrentPropertiesAndPresentLimits.currentSurfaceWidth;
     vkfast->screenHeight = surfaceCurrentPropertiesAndPresentLimits.currentSurfaceHeight;
   }
 
-  // NOTE(Constantine): WSI destroy before the rebuild.
+  // NOTE(Constantine):
+  // WSI destroy before the rebuild (except for present pixels CPU upload resources,
+  // since they're pre-allocated for the worst case window resolution of 8kx8k, currently).
   {
-    if (vkfast->presentPixelsStorageCpuUpload.id != 0) {
-      vfIdDestroy(1, &vkfast->presentPixelsStorageCpuUpload.id, optionalFile, optionalLine);
-      vkfast->presentPixelsStorageCpuUpload = REDGPU_32_STRUCT(gpu_storage_t, 0);
-    }
-
     if (vkfast->presentCopyCalls.handle != NULL) {
       np(red2DestroyHandle,
         "context", vkfast->context,
@@ -946,10 +975,44 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, const char * o
   REDGPU_2_EXPECTWG(presentCopyCalls.handle != NULL);
   REDGPU_2_EXPECTWG(presentCopyCalls.memory != NULL);
 
-  gpu_storage_info_t storage_info = {0};
-  storage_info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
-  storage_info.bytes_count = sizeof(unsigned char) * 4 * vkfast->screenHeight * vkfast->screenWidth;
-  vfStorageCreate(context, &storage_info, &presentPixelsStorageCpuUpload, optionalFile, optionalLine);
+  if (vkfast->presentPixelsCpuUpload_memory_and_array.array.handle == NULL) {
+    np(red2CreateArray,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleName", "vkFast_presentPixelsCpuUpload_memory_and_array",
+      "type", RED_ARRAY_TYPE_ARRAY_RO,
+      "bytesCount", vkfast->presentPixelsCpuUpload_memory_allocation_size,
+      "structuredBufferElementBytesCount", 0,
+      "restrictToAccess", RED_ACCESS_BITFLAG_COPY_R,
+      "initialQueueFamilyIndex", -1,
+      "maxAllowedOverallocationBytesCount", 0, // NOTE(Constantine): Intel UHD Graphics 730 on Windows 10 aligns CPU visible allocations to 64 bytes.
+      "dedicate", 0,
+      "mappable", 1,
+      "dedicateOrMappableMemoryTypeIndex", vkfast->specificMemoryTypesCpuUpload,
+      "dedicateOrMappableMemoryBitflags", 0,
+      "suballocateFromMemoryOnFirstMatchPointersCount", 0,
+      "suballocateFromMemoryOnFirstMatchPointers", NULL,
+      "outArray", &vkfast->presentPixelsCpuUpload_memory_and_array,
+      "outStatuses", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    np(redMemoryMap,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "mappableMemory", vkfast->presentPixelsCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory,
+      "mappableMemoryBytesFirst", 0,
+      "mappableMemoryBytesCount", vkfast->presentPixelsCpuUpload_memory_and_array.array.memoryBytesCount,
+      "outVolatilePointer", &vkfast->presentPixelsCpuUpload_void_ptr_original,
+      "outStatuses", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    REDGPU_2_EXPECTWG(vkfast->presentPixelsCpuUpload_void_ptr_original != NULL);
+    REDGPU_2_EXPECTWG(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)vkfast->presentPixelsCpuUpload_void_ptr_original, vkfast->gpuInfo->minMemoryAllocateBytesAlignment)); // NOTE(Constantine): Start address is guaranteed to be aligned.
+  }
 
   vkfast->present = present;
   vkfast->presentImages[0] = presentImages[0];
@@ -957,7 +1020,6 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, const char * o
   vkfast->presentImages[2] = presentImages[2];
   vkfast->presentGpuSignal = presentGpuSignal;
   vkfast->presentCopyCalls = presentCopyCalls;
-  vkfast->presentPixelsStorageCpuUpload = presentPixelsStorageCpuUpload;
 
   return 0;
 }
@@ -1764,7 +1826,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixe
 
   if (copy_pixels != NULL) {
     // NOTE(Constantine): The reason we copy pixels here is because vkfast->screenWidth/Height were updated in a potential vfInternalRebuildPresent call above.
-    red32MemoryCopy(vkfast->presentPixelsStorageCpuUpload.mapped_void_ptr, copy_pixels, sizeof(unsigned char) * 4 * vkfast->screenHeight * vkfast->screenWidth);
+    red32MemoryCopy(vkfast->presentPixelsCpuUpload_void_ptr_original, copy_pixels, sizeof(unsigned char) * 4 * vkfast->screenHeight * vkfast->screenWidth);
   }
 
   {
@@ -1955,7 +2017,25 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixe
 GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
-  int isWindowMinimized = vfInternalAsyncDrawPixels(context, vkfast->presentPixelsStorageCpuUpload.id, pixels, optionalFile, optionalLine);
+  RedHandleGpu gpu = vkfast->gpu;
+
+  vf_handle_t presentPixelsHandle = {0};
+  uint64_t    presentPixels_storage_id = (uint64_t)(void *)&presentPixelsHandle;
+  {
+    // Filling
+    vf_handle_t;
+    vf_handle_storage_t;
+    presentPixelsHandle.vkfast    = vkfast;
+    presentPixelsHandle.handle_id = VF_HANDLE_ID_STORAGE;
+    presentPixelsHandle.storage.info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
+    presentPixelsHandle.storage.info.bytes_count = vkfast->presentPixelsCpuUpload_memory_allocation_size;
+    presentPixelsHandle.storage.arrayRangeInfo.array = vkfast->presentPixelsCpuUpload_memory_and_array.array.handle;
+    presentPixelsHandle.storage.arrayRangeInfo.arrayRangeBytesFirst = 0;
+    presentPixelsHandle.storage.arrayRangeInfo.arrayRangeBytesCount = vkfast->presentPixelsCpuUpload_memory_allocation_size;
+    REDGPU_2_EXPECTWG(presentPixelsHandle.storage.arrayRangeInfo.arrayRangeBytesCount <= REDGPU_2_EXPECTED_maxArrayRORWStructMemberRangeBytesCount_536870912);
+  }
+
+  int isWindowMinimized = vfInternalAsyncDrawPixels(context, presentPixels_storage_id, pixels, optionalFile, optionalLine);
   vfAsyncDrawWaitToFinish(context, optionalFile, optionalLine);
 
   return isWindowMinimized;
