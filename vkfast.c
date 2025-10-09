@@ -58,7 +58,17 @@ void red2Crash(const char * error, const char * functionName, RedHandleGpu optio
 }
 
 static RedBool32 vfRedGpuDebugCallback(RedDebugCallbackSeverity severity, RedDebugCallbackTypeBitflags types, const RedDebugCallbackData * data, RedContext context) {
-  if (strcmp(data->messageIdName, "VUID-VkDebugUtilsMessengerCallbackDataEXT-flags-zerobitmask") == 0) {
+  if (0 == strcmp(data->messageIdName, "VUID-VkDebugUtilsMessengerCallbackDataEXT-flags-zerobitmask")) {
+    return 0;
+  }
+  if (0 == strcmp(data->messageIdName, "RED_PROCEDURE_ID_redQueuePresent") &&
+      0 == strcmp(data->message,       "RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE"))
+  {
+    return 0;
+  }
+  if (0 == strcmp(data->messageIdName, "RED_PROCEDURE_ID_redPresentGetImageIndex") &&
+      0 == strcmp(data->message,       "RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE"))
+  {
     return 0;
   }
   vfInternalPrint("[vkFast][Debug callback] ");

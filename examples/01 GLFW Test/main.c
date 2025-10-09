@@ -27,7 +27,7 @@ int main() {
   GLFWwindow * window = glfwCreateWindow(700, 700, "[vkFast] GLFW Test", NULL, NULL);
   void * window_handle = (void *)glfwGetWin32Window(window);
 
-  gpu_handle_context_t ctx = vfContextInit(0, NULL, FF, LL);
+  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
   vfWindowFullscreen(ctx, window_handle, "[vkFast] GLFW Test", 700, 700, 0, FF, LL);
 
   gpu_storage_info_t storage_info = {0};
