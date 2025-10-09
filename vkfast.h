@@ -123,6 +123,7 @@ GPU_API_PRE void GPU_API_POST vfIdDestroy(uint64_t ids_count, const uint64_t * i
 GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, unsigned draw_queue_index, const char * optional_file, int optional_line);
 GPU_API_PRE int  GPU_API_POST vfWindowLoop(gpu_handle_context_t context);
+GPU_API_PRE int  GPU_API_POST vfWindowIsMinimized(gpu_handle_context_t context);
 GPU_API_PRE void GPU_API_POST vfWindowGetSize(gpu_handle_context_t context, int * out_window_width, int * out_window_height);
 GPU_API_PRE void GPU_API_POST vfExit(int exit_code);
 GPU_API_PRE void GPU_API_POST vfStorageCreate(gpu_handle_context_t context, const gpu_storage_info_t * storage_info, gpu_storage_t * out_storage, const char * optional_file, int optional_line);

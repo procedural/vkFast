@@ -93,10 +93,7 @@ int main() {
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
 
-    int window_w = 0;
-    int window_h = 0;
-    vfWindowGetSize(ctx, &window_w, &window_h); // NOTE(Constantine): Use vfWindowGetSize instead of glfwGetWindowSize, because Vulkan may lag behind win32 reported window size.
-    if (window_w == 0 && window_h == 0) {
+    if (vfWindowIsMinimized(ctx)) {
       continue;
     }
 
@@ -137,6 +134,10 @@ int main() {
     REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].w == 130);
 
     // Now let's draw pixels
+
+    int window_w = 0;
+    int window_h = 0;
+    vfWindowGetSize(ctx, &window_w, &window_h);
 
     // To free
     unsigned char * pixels = (unsigned char *)red32MemoryCalloc(4 * window_h * window_w);

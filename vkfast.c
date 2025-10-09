@@ -987,6 +987,12 @@ GPU_API_PRE int GPU_API_POST vfWindowLoop(gpu_handle_context_t context) {
   return red32WindowLoop();
 }
 
+GPU_API_PRE int GPU_API_POST vfWindowIsMinimized(gpu_handle_context_t context) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  return (int)IsIconic((HWND)vkfast->windowHandle);
+}
+
 GPU_API_PRE void GPU_API_POST vfWindowGetSize(gpu_handle_context_t context, int * out_window_width, int * out_window_height) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
