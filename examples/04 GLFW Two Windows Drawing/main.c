@@ -57,6 +57,7 @@ int main() {
     gpu_handle_context_t ctxs[2] = {ctx1, ctx2};
 
     for (int i = 0; i < 2; i += 1) {
+      GLFWwindow * window = windows[i];
       gpu_handle_context_t ctx = ctxs[i];
 
       int window_w = 0;
@@ -69,7 +70,7 @@ int main() {
 
       double mouse_x = 0;
       double mouse_y = 0;
-      glfwGetCursorPos(windows[i], &mouse_x, &mouse_y);
+      glfwGetCursorPos(window, &mouse_x, &mouse_y);
 
       // Clear pixels:
       for (int y = 0; y < window_h; y += 1) {
