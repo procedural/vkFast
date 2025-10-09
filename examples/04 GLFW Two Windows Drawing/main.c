@@ -84,31 +84,26 @@ int main() {
       // Draw pixels:
       for (int y = 0; y < window_h; y += 1) {
         for (int x = 0; x < window_w; x += 1) {
-          // NOTE(Constantine):
-          // The automatic DPI scaling is disabled with SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE), but
-          // with DPI scaling, 1920x1080 screen resolution with a desktop scaling of, say, 1.25 is equal to 1536x864 (draw coords: 1535x863).
-          for (int i = -2; i < 2; i += 1) {
-            if (y == 0+i) {
-              pixels[y * window_w * 4 + x * 4 + 0] = 255;
-              pixels[y * window_w * 4 + x * 4 + 1] = 0;
-              pixels[y * window_w * 4 + x * 4 + 2] = 0;
-              pixels[y * window_w * 4 + x * 4 + 3] = 255;
-            } else if (x == 0+i) {
-              pixels[y * window_w * 4 + x * 4 + 0] = 0;
-              pixels[y * window_w * 4 + x * 4 + 1] = 255;
-              pixels[y * window_w * 4 + x * 4 + 2] = 0;
-              pixels[y * window_w * 4 + x * 4 + 3] = 255;
-            } else if (y == mouse_y+i) {
-              pixels[y * window_w * 4 + x * 4 + 0] = 0;
-              pixels[y * window_w * 4 + x * 4 + 1] = 0;
-              pixels[y * window_w * 4 + x * 4 + 2] = 255;
-              pixels[y * window_w * 4 + x * 4 + 3] = 255;
-            } else if (x == mouse_x+i) {
-              pixels[y * window_w * 4 + x * 4 + 0] = 255;
-              pixels[y * window_w * 4 + x * 4 + 1] = 255;
-              pixels[y * window_w * 4 + x * 4 + 2] = 255;
-              pixels[y * window_w * 4 + x * 4 + 3] = 255;
-            }
+          if (y == 0-2 || y == 0-1 || y == 0+0 || y == 0+1 || y == 0+2) {
+            pixels[y * window_w * 4 + x * 4 + 0] = 255;
+            pixels[y * window_w * 4 + x * 4 + 1] = 0;
+            pixels[y * window_w * 4 + x * 4 + 2] = 0;
+            pixels[y * window_w * 4 + x * 4 + 3] = 255;
+          } else if (x == 0-2 || x == 0-1 || x == 0+0 || x == 0+1 || x == 0+2) {
+            pixels[y * window_w * 4 + x * 4 + 0] = 0;
+            pixels[y * window_w * 4 + x * 4 + 1] = 255;
+            pixels[y * window_w * 4 + x * 4 + 2] = 0;
+            pixels[y * window_w * 4 + x * 4 + 3] = 255;
+          } else if (y == mouse_y-2 || y == mouse_y-1 || y == mouse_y+0 || y == mouse_y+1 || y == mouse_y+2) {
+            pixels[y * window_w * 4 + x * 4 + 0] = 0;
+            pixels[y * window_w * 4 + x * 4 + 1] = 0;
+            pixels[y * window_w * 4 + x * 4 + 2] = 255;
+            pixels[y * window_w * 4 + x * 4 + 3] = 255;
+          } else if (x == mouse_x-2 || x == mouse_x-1 || x == mouse_x+0 || x == mouse_x+1 || x == mouse_x+2) {
+            pixels[y * window_w * 4 + x * 4 + 0] = 255;
+            pixels[y * window_w * 4 + x * 4 + 1] = 255;
+            pixels[y * window_w * 4 + x * 4 + 2] = 255;
+            pixels[y * window_w * 4 + x * 4 + 3] = 255;
           }
         }
       }
