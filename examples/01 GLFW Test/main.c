@@ -21,26 +21,14 @@
 int main() {
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 
-  #define window_w 1920
-  #define window_h 1080
-
-  int windowMonitorArea[4] = {0};
-  vfGetMainMonitorAreaRectangle(windowMonitorArea, FF, LL);
-  REDGPU_2_EXPECTFL(windowMonitorArea[2] == window_w);
-  REDGPU_2_EXPECTFL(windowMonitorArea[3] == window_h);
-
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-  GLFWmonitor * monitor = glfwGetPrimaryMonitor();
-  const GLFWvidmode * mode = glfwGetVideoMode(monitor);
-  REDGPU_2_EXPECTFL(mode->width == window_w);
-  REDGPU_2_EXPECTFL(mode->height == window_h);
-  GLFWwindow * window = glfwCreateWindow(window_w, window_h, "[vkFast] GLFW Test", monitor, NULL);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+  GLFWwindow * window = glfwCreateWindow(700, 700, "[vkFast] GLFW Test", NULL, NULL);
   void * window_handle = (void *)glfwGetWin32Window(window);
 
-  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
-  vfWindowFullscreen(ctx, window_handle, "[vkFast] GLFW Test", window_w, window_h, FF, LL);
+  gpu_handle_context_t ctx = vfContextInit(0, NULL, FF, LL);
+  vfWindowFullscreen(ctx, window_handle, "[vkFast] GLFW Test", 700, 700, 0, FF, LL);
 
   gpu_storage_info_t storage_info = {0};
   storage_info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
@@ -102,15 +90,16 @@ int main() {
   
   uint64_t batch = 0;
 
-  struct Pixels {
-    unsigned char pixels[window_h][window_w][4];
-  };
-  // To free
-  struct Pixels * pix = (struct Pixels *)red32MemoryCalloc(sizeof(struct Pixels));
-  REDGPU_2_EXPECTFL(pix != NULL);
-
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
+
+    int window_w = 0;
+    int window_h = 0;
+    vfWindowGetSize(ctx, &window_w, &window_h); // NOTE(Constantine): Use vfWindowGetSize instead of glfwGetWindowSize, because Vulkan may lag behind win32 reported window size.
+    if (window_w == 0 && window_h == 0) {
+      continue;
+    }
+
     gpu_batch_info_t bindings_info = {0};
     bindings_info.max_new_bindings_sets_count = 1;
     bindings_info.max_storage_binds_count     = 2;
@@ -147,11 +136,16 @@ int main() {
     REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].z == 50);
     REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].w == 130);
 
+    // Now let's draw pixels
+
+    // To free
+    unsigned char * pixels = (unsigned char *)red32MemoryCalloc(4 * window_h * window_w);
+    REDGPU_2_EXPECTFL(pixels != NULL);
+
     double mouse_x = 0;
     double mouse_y = 0;
     glfwGetCursorPos(window, &mouse_x, &mouse_y);
 
-    unsigned char * pixels = &pix->pixels[0][0][0];
     // Clear pixels:
     for (int y = 0; y < window_h; y += 1) {
       for (int x = 0; x < window_w; x += 1) {
@@ -177,7 +171,7 @@ int main() {
           pixels[y * window_w * 4 + x * 4 + 1] = 255;
           pixels[y * window_w * 4 + x * 4 + 2] = 0;
           pixels[y * window_w * 4 + x * 4 + 3] = 255;
-        } else if (y == (window_h-1) - mouse_y) {
+        } else if (y == mouse_y) {
           pixels[y * window_w * 4 + x * 4 + 0] = 0;
           pixels[y * window_w * 4 + x * 4 + 1] = 0;
           pixels[y * window_w * 4 + x * 4 + 2] = 255;
@@ -190,11 +184,12 @@ int main() {
         }
       }
     }
-    vfDrawPixels(ctx, pix->pixels, FF, LL);
+
+    vfDrawPixels(ctx, pixels, FF, LL);
+
+    red32MemoryFree(pixels);
+    pixels = NULL;
   }
-  
-  red32MemoryFree(pix);
-  pix = NULL;
 
   uint64_t ids[] = {
     storage_input_cpu.id,

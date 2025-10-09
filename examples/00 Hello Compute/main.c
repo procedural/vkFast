@@ -22,7 +22,7 @@ int main() {
   REDGPU_2_EXPECTFL(windowMonitorArea[3] == window_h);
 
   gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
-  vfWindowFullscreen(ctx, NULL, "[vkFast] Hello Compute", window_w, window_h, FF, LL);
+  vfWindowFullscreen(ctx, NULL, "[vkFast] Hello Compute", window_w, window_h, 0, FF, LL);
 
   gpu_storage_info_t storage_info = {0};
   storage_info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
@@ -127,6 +127,8 @@ int main() {
     REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].y == 30);
     REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].z == 50);
     REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].w == 130);
+
+    // Now let's draw pixels
 
     unsigned char * pixels = &pix->pixels[0][0][0];
     // Clear pixels:

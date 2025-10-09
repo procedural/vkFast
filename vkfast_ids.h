@@ -5,10 +5,7 @@
 // https://github.com/redgpu/redgpu2
 #include "C:/RedGpuSDK/redgpu_2.h"
 #include "C:/RedGpuSDK/redgpu_32.h"
-
-#ifdef _WIN32
-#include <Windows.h> // For HDC
-#endif
+#include "C:/RedGpuSDK/redgpu_wsi.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,12 +50,19 @@ typedef struct vf_handle_context_t {
   void *             memoryCpuReadback_mapped_void_ptr_offset;
   uint64_t           memoryCpuReadback_memory_suballocations_offset;
 
+  // WSI
+
   void *             windowHandle;
   int                screenWidth;
   int                screenHeight;
-#ifdef _WIN32
-  HDC                hDC;
-#endif
+
+  unsigned           presentQueueIndex;
+  RedHandleSurface   surface;
+  RedHandlePresent   present;
+  RedHandleImage     presentImages[3];
+  RedHandleGpuSignal presentGpuSignal;
+  RedCalls           presentCopyCalls;
+  gpu_storage_t      presentPixelsStorageCpuUpload;
 } vf_handle_context_t;
 
 typedef struct vf_handle_storage_t {
