@@ -61,7 +61,11 @@ int main() {
       GLFWwindow * window = windows[i];
       gpu_handle_context_t ctx = ctxs[i];
 
-      if (vfWindowIsMinimized(ctx)) {
+      int os_window_w = 0;
+      int os_window_h = 0;
+      glfwGetWindowSize(window, &os_window_w, &os_window_h);
+
+      if (vfWindowIsMinimized(ctx) || os_window_w == 0 || os_window_h == 0) {
         continue;
       }
 
