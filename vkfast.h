@@ -1,19 +1,3 @@
-// LICENSE
-// 
-// Constantine Tarasenkov (iamvfx@gmail.com), 2025.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 #pragma once
 
 // Sources:
@@ -153,9 +137,10 @@ GPU_API_PRE void GPU_API_POST vfBatchEnd(gpu_handle_context_t context, uint64_t 
 GPU_API_PRE void GPU_API_POST vfBatchGetRaw(gpu_handle_context_t context, uint64_t batch_id, RedCalls * out_batch_raw, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(gpu_handle_context_t context, uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(gpu_handle_context_t context, uint64_t async_id, const char * optional_file, int optional_line);
-GPU_API_PRE int  GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, RedHandleCpuSignal optional_pixels_copy_is_finished_cpu_signal, const char * optional_file, int optional_line);
-GPU_API_PRE int  GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, RedHandleCpuSignal optional_pixels_copy_is_finished_cpu_signal, const char * optional_file, int optional_line);
+GPU_API_PRE int  GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, int * out_optional_submitted_cpu_signal_index, const char * optional_file, int optional_line);
+GPU_API_PRE int  GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, int * out_optional_submitted_cpu_signal_index, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfAsyncDrawWaitToFinish(gpu_handle_context_t context, const char * optional_file, int optional_line);
+GPU_API_PRE RedHandleCpuSignal * GPU_API_POST vfAsyncDrawGetCpuSignals(gpu_handle_context_t context);
 
 #ifdef __cplusplus
 }
