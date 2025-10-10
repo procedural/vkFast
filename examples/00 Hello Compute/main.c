@@ -169,7 +169,7 @@ int main() {
         }
       }
     }
-    vfDrawPixels(ctx, pix->pixels, FF, LL);
+    vfDrawPixels(ctx, pix->pixels, NULL, FF, LL);
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
   }
   

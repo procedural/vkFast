@@ -12,11 +12,6 @@
 extern "C" {
 #endif
 
-#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_ONLY_512MB                  (512 * 1024 * 1024)
-#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_UPLOAD_512MB                (512 * 1024 * 1024)
-#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_CPU_READBACK_512MB              (512 * 1024 * 1024)
-#define VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_PIXELS_CPU_UPLOAD_288MB (288 * 1024 * 1024)
-
 typedef struct vf_handle_context_t {
   int                doNotDestroyRawContext;
   int                doNotFreeHandle;
@@ -62,8 +57,8 @@ typedef struct vf_handle_context_t {
   RedHandleSurface   surface;
   RedHandlePresent   present;
   RedHandleImage     presentImages[3];
-  RedHandleGpuSignal presentGpuSignal;
-  RedCalls           presentCopyCalls;
+  RedHandleGpuSignal presentGpuSignals[3];
+  RedCalls           presentCopyCalls[3];
   uint64_t           presentPixelsCpuUpload_memory_allocation_size;
   Red2Array          presentPixelsCpuUpload_memory_and_array;
   void *             presentPixelsCpuUpload_void_ptr_original;
