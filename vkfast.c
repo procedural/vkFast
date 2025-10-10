@@ -975,9 +975,7 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, const char * o
   REDGPU_2_EXPECTWG(presentCopyCalls.handle != NULL);
   REDGPU_2_EXPECTWG(presentCopyCalls.memory != NULL);
 
-  if (vkfast->presentPixelsCpuUpload_memory_and_array.array.handle == NULL) {
-    REDGPU_2_EXPECTWG(vkfast->presentPixelsCpuUpload_memory_allocation_size > 0);
-
+  if (vkfast->presentPixelsCpuUpload_memory_and_array.array.handle == NULL && vkfast->presentPixelsCpuUpload_memory_allocation_size > 0) {
     np(red2CreateArray,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
@@ -2027,7 +2025,7 @@ GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const vo
     // Filling
     vf_handle_t;
     vf_handle_storage_t;
-    presentPixelsHandle.vkfast    = vkfast;
+    presentPixelsHandle.vkfast = vkfast;
     presentPixelsHandle.handle_id = VF_HANDLE_ID_STORAGE;
     presentPixelsHandle.storage.info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
     presentPixelsHandle.storage.info.bytes_count = vkfast->presentPixelsCpuUpload_memory_allocation_size;
