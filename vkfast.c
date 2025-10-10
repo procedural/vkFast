@@ -1018,7 +1018,7 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, const char * o
       "gpu", vkfast->gpu,
       "handleName", "vkFast_present_cpuSignal",
       "createSignaled", 1,
-      "outGpuSignal", &vkfast->presentCpuSignals[i],
+      "outCpuSignal", &vkfast->presentCpuSignals[i],
       "outStatuses", NULL,
       "optionalFile", optionalFile,
       "optionalLine", optionalLine,
