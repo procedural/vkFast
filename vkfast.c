@@ -1906,7 +1906,7 @@ GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(gpu_handle_context_t context, 
   );
 }
 
-static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, const void * copy_pixels, int * out_optional_submitted_cpu_signal_index, const char * optionalFile, int optionalLine) {
+static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, const void * copy_pixels, int * out_optional_is_pixels_copy_finished_cpu_signal_index, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
@@ -1946,8 +1946,8 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixe
     "optionalUserData", NULL
   );
 
-  if (out_optional_submitted_cpu_signal_index != NULL) {
-    out_optional_submitted_cpu_signal_index[0] = presentImageIndex;
+  if (out_optional_is_pixels_copy_finished_cpu_signal_index != NULL) {
+    out_optional_is_pixels_copy_finished_cpu_signal_index[0] = presentImageIndex;
   }
 
   REDGPU_2_EXPECTWG(presentGetImageIndexStatuses.status == RED_STATUS_SUCCESS);
@@ -2202,7 +2202,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixe
   return isRebuilded;
 }
 
-GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, int * out_optional_submitted_cpu_signal_index, const char * optionalFile, int optionalLine) {
+GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, int * out_optional_is_pixels_copy_finished_cpu_signal_index, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
@@ -2223,12 +2223,12 @@ GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const vo
     REDGPU_2_EXPECTWG(presentPixels_handle.storage.arrayRangeInfo.arrayRangeBytesCount <= REDGPU_2_EXPECTED_maxArrayRORWStructMemberRangeBytesCount_536870912);
   }
 
-  int isRebuilded = vfInternalAsyncDrawPixels(context, presentPixels_storage_id, pixels, out_optional_submitted_cpu_signal_index, optionalFile, optionalLine);
+  int isRebuilded = vfInternalAsyncDrawPixels(context, presentPixels_storage_id, pixels, out_optional_is_pixels_copy_finished_cpu_signal_index, optionalFile, optionalLine);
   return isRebuilded;
 }
 
-GPU_API_PRE int GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, int * out_optional_submitted_cpu_signal_index, const char * optionalFile, int optionalLine) {
-  int isRebuilded = vfInternalAsyncDrawPixels(context, pixels_storage_id, NULL, out_optional_submitted_cpu_signal_index, optionalFile, optionalLine);
+GPU_API_PRE int GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, int * out_optional_is_pixels_copy_finished_cpu_signal_index, const char * optionalFile, int optionalLine) {
+  int isRebuilded = vfInternalAsyncDrawPixels(context, pixels_storage_id, NULL, out_optional_is_pixels_copy_finished_cpu_signal_index, optionalFile, optionalLine);
   return isRebuilded;
 }
 
