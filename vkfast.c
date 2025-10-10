@@ -912,8 +912,10 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, const char * o
     int isRebuilded = 0;
     return isRebuilded;
   }
-  if (surfaceCurrentPropertiesAndPresentLimits.currentSurfaceWidth != -1 && surfaceCurrentPropertiesAndPresentLimits.currentSurfaceHeight != -1) {
-    vkfast->screenWidth  = surfaceCurrentPropertiesAndPresentLimits.currentSurfaceWidth;
+  if (surfaceCurrentPropertiesAndPresentLimits.currentSurfaceWidth != -1) {
+    vkfast->screenWidth = surfaceCurrentPropertiesAndPresentLimits.currentSurfaceWidth;
+  }
+  if (surfaceCurrentPropertiesAndPresentLimits.currentSurfaceHeight != -1) {
     vkfast->screenHeight = surfaceCurrentPropertiesAndPresentLimits.currentSurfaceHeight;
   }
 
