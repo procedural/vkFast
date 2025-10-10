@@ -186,7 +186,7 @@ int main() {
       }
     }
 
-    vfDrawPixels(ctx, pixels, NULL, FF, LL);
+    vfDrawPixels(ctx, pixels, FF, LL);
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
 
     red32MemoryFree(pixels);
