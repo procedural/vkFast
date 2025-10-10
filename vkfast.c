@@ -2019,20 +2019,20 @@ GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const vo
 
   RedHandleGpu gpu = vkfast->gpu;
 
-  vf_handle_t presentPixelsHandle = {0};
-  uint64_t    presentPixels_storage_id = (uint64_t)(void *)&presentPixelsHandle;
+  vf_handle_t presentPixels_handle = {0};
+  uint64_t    presentPixels_storage_id = (uint64_t)(void *)&presentPixels_handle;
   {
     // Filling
     vf_handle_t;
     vf_handle_storage_t;
-    presentPixelsHandle.vkfast = vkfast;
-    presentPixelsHandle.handle_id = VF_HANDLE_ID_STORAGE;
-    presentPixelsHandle.storage.info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
-    presentPixelsHandle.storage.info.bytes_count = vkfast->presentPixelsCpuUpload_memory_allocation_size;
-    presentPixelsHandle.storage.arrayRangeInfo.array = vkfast->presentPixelsCpuUpload_memory_and_array.array.handle;
-    presentPixelsHandle.storage.arrayRangeInfo.arrayRangeBytesFirst = 0;
-    presentPixelsHandle.storage.arrayRangeInfo.arrayRangeBytesCount = vkfast->presentPixelsCpuUpload_memory_allocation_size;
-    REDGPU_2_EXPECTWG(presentPixelsHandle.storage.arrayRangeInfo.arrayRangeBytesCount <= REDGPU_2_EXPECTED_maxArrayRORWStructMemberRangeBytesCount_536870912);
+    presentPixels_handle.vkfast = vkfast;
+    presentPixels_handle.handle_id = VF_HANDLE_ID_STORAGE;
+    presentPixels_handle.storage.info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
+    presentPixels_handle.storage.info.bytes_count = vkfast->presentPixelsCpuUpload_memory_allocation_size;
+    presentPixels_handle.storage.arrayRangeInfo.array = vkfast->presentPixelsCpuUpload_memory_and_array.array.handle;
+    presentPixels_handle.storage.arrayRangeInfo.arrayRangeBytesFirst = 0;
+    presentPixels_handle.storage.arrayRangeInfo.arrayRangeBytesCount = vkfast->presentPixelsCpuUpload_memory_allocation_size;
+    REDGPU_2_EXPECTWG(presentPixels_handle.storage.arrayRangeInfo.arrayRangeBytesCount <= REDGPU_2_EXPECTED_maxArrayRORWStructMemberRangeBytesCount_536870912);
   }
 
   int isWindowMinimized = vfInternalAsyncDrawPixels(context, presentPixels_storage_id, pixels, optionalFile, optionalLine);
