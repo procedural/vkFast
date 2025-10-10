@@ -170,6 +170,7 @@ int main() {
       }
     }
     vfDrawPixels(ctx, pix->pixels, FF, LL);
+    vfAsyncDrawWaitToFinish(ctx, FF, LL);
   }
   
   red32MemoryFree(pix);

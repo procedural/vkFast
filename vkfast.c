@@ -2036,7 +2036,6 @@ GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const vo
   }
 
   int isWindowMinimized = vfInternalAsyncDrawPixels(context, presentPixels_storage_id, pixels, optionalFile, optionalLine);
-  vfAsyncDrawWaitToFinish(context, optionalFile, optionalLine);
 
   return isWindowMinimized;
 }
