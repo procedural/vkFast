@@ -35,7 +35,7 @@ void red2Crash(const char * error, const char * functionName, RedHandleGpu optio
   struct StringArray str = {0};
 
   // To free
-  char * optionalLineStr = (char *)red32MemoryCalloc(4096);
+  char optionalLineStr[4096] = {0};
   red32IntToChars(optionalLine, optionalLineStr);
 
   REDGPU_32_DYNAMIC_ARRAY_STRING_JOIN(str, "[vkFast][Crash][");
@@ -51,7 +51,6 @@ void red2Crash(const char * error, const char * functionName, RedHandleGpu optio
   vfInternalPrint(str.items);
   MessageBoxA(NULL, str.items, "[vkFast][Crash]", MB_OK);
 
-  red32MemoryFree(optionalLineStr);
   REDGPU_32_DYNAMIC_ARRAY_FREE(str);
 
   red32Exit(1);
@@ -167,8 +166,7 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
         "optionalUserData", NULL
       );
 
-      // To free
-      char * numberString = (char *)red32MemoryCalloc(4096);
+      char numberString[4096] = {0};
 
       vfInternalPrint("[vkFast][Debug] gpuInfo->memoryHeaps current process heap budget:" "\n");
       for (unsigned i = 0; i < gpuInfo->memoryHeapsCount; i += 1) {
@@ -191,8 +189,6 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
         vfInternalPrint(numberString);
         vfInternalPrint("\n");
       }
-
-      red32MemoryFree(numberString);
     }
   }
 
