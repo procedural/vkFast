@@ -31,6 +31,11 @@ typedef struct vf_handle_context_t {
   unsigned           specificMemoryTypesCpuUpload;
   unsigned           specificMemoryTypesCpuReadback;
 
+  uint64_t           memoryAllocationSizeGpuVram;
+  uint64_t           memoryAllocationSizeCpuUpload;
+  uint64_t           memoryAllocationSizeCpuReadback;
+  uint64_t           memoryAllocationSizeCpuUploadPresentPixels;
+
   // Memory
 
   Red2Memory         memoryGpuVramForArrays_memory;

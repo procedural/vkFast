@@ -481,6 +481,10 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
   vkfast->specificMemoryTypesGpuVram = specificMemoryTypesGpuVram;
   vkfast->specificMemoryTypesCpuUpload = specificMemoryTypesCpuUpload;
   vkfast->specificMemoryTypesCpuReadback = specificMemoryTypesCpuReadback;
+  vkfast->memoryAllocationSizeGpuVram = internalMemoryAllocationSizeGpuVramArrays;
+  vkfast->memoryAllocationSizeCpuUpload = internalMemoryAllocationSizeCpuVisible;
+  vkfast->memoryAllocationSizeCpuReadback = internalMemoryAllocationSizeCpuReadback;
+  vkfast->memoryAllocationSizeCpuUploadPresentPixels = internalMemoryAllocationSizeCpuVisiblePresentPixels;
   vkfast->memoryGpuVramForArrays_memory = memoryGpuVramForArrays_memory;
   vkfast->memoryGpuVramForArrays_array = memoryGpuVramForArrays_array;
   vkfast->memoryGpuVramForArrays_memory_suballocations_offset = 0;
