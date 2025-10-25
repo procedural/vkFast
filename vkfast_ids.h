@@ -100,8 +100,8 @@ typedef struct vf_handle_batch_t {
   RedCalls                      calls;
   RedCallProceduresAndAddresses addresses;
   RedHandleStructsMemory        structsMemory;
-  Red2Struct                    currentStruct;              // NOTE(Constantine): Only one struct for now.
-  RedHandleProcedureParameters  currentProcedureParameters; // NOTE(Constantine): Same parameters for both graphics and compute procedures.
+  Red2Struct                    currentStruct; // NOTE(Constantine): Only one struct for now.
+  RedHandleProcedureParameters  currentProcedureParametersCompute;
 } vf_handle_batch_t;
 
 typedef enum vf_handle_id_t {

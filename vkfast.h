@@ -1,10 +1,7 @@
 #pragma once
 
-// Sources:
-// https://github.com/redgpu/redgpu
-// https://github.com/redgpu/redgpu2
-#include "C:/RedGpuSDK/redgpu_2.h"
-#include "C:/RedGpuSDK/redgpu_32.h"
+#include "C:/RedGpuSDK/redgpu_2.h"  // Source: https://github.com/redgpu/redgpu
+#include "C:/RedGpuSDK/redgpu_32.h" // Source: https://github.com/redgpu/redgpu2
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,6 +71,13 @@ typedef struct gpu_storage_t {
       union { float z; float b; };
       union { float w; float a; };
     } * as_vec4;
+    volatile struct
+    {
+      union { uint8_t x; uint8_t r; };
+      union { uint8_t y; uint8_t g; };
+      union { uint8_t z; uint8_t b; };
+      union { uint8_t w; uint8_t a; };
+    } * as_vec4_u8;
   };
 } gpu_storage_t;
 

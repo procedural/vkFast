@@ -1254,6 +1254,8 @@ GPU_API_PRE void GPU_API_POST vfStorageCreate(gpu_handle_context_t context, cons
     }
   }
 
+  REDGPU_2_EXPECTWG(arrayRangeInfo.arrayRangeBytesCount <= vkfast->context->gpus[vkfast->gpuIndex].maxArrayRORWStructMemberRangeBytesCount);
+
   // To free
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
   REDGPU_2_EXPECTWG(handle != NULL);
@@ -1459,7 +1461,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(gpu_handle_context_t context, uin
     handle->batch.addresses     = addresses;
     handle->batch.structsMemory = structsMemory;
     handle->batch.currentStruct = REDGPU_32_STRUCT(Red2Struct, 0);
-    handle->batch.currentProcedureParameters = NULL;
+    handle->batch.currentProcedureParametersCompute = NULL;
   }
 
   np(redCallsSet,
@@ -1578,7 +1580,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindProgramPipelineCompute(gpu_handle_conte
     "procedure", program_pipeline_compute->procedure.procedure
   );
 
-  batch->batch.currentProcedureParameters = program_pipeline_compute->procedure.procedureParameters;
+  batch->batch.currentProcedureParametersCompute = program_pipeline_compute->procedure.procedureParameters;
 }
 
 GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(gpu_handle_context_t context, uint64_t batch_id, int slots_count, const RedStructDeclarationMember * slots, const char * optionalFile, int optionalLine) {
@@ -1588,7 +1590,9 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(gpu_handle_context_t con
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
   REDGPU_2_EXPECTWG(batch->batch.structsMemory != NULL || !"vfBatchBegin()::batch_bindings_info was likely set to NULL?");
-  REDGPU_2_EXPECTWG(batch->batch.currentProcedureParameters != NULL || !"Was vfBatchBindProgramPipelineCompute() ever called previously?");
+  if (batch->batch.currentProcedureParametersCompute == NULL) {
+    REDGPU_2_EXPECTWG(!"Was vfBatchBindProgramPipelineCompute() ever called previously?");
+  }
 
   Red2Struct structure = {0};
   np(red2StructsMemorySuballocateStruct,
@@ -1612,7 +1616,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(gpu_handle_context_t con
     "address", batch->batch.addresses.redCallSetProcedureParameters,
     "calls", batch->batch.calls.handle,
     "procedureType", RED_PROCEDURE_TYPE_COMPUTE,
-    "procedureParameters", batch->batch.currentProcedureParameters
+    "procedureParameters", batch->batch.currentProcedureParametersCompute
   );
 }
 
@@ -1699,7 +1703,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(gpu_handle_context_t con
   npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
     "calls", batch->batch.calls.handle,
     "procedureType", RED_PROCEDURE_TYPE_COMPUTE,
-    "procedureParameters", batch->batch.currentProcedureParameters,
+    "procedureParameters", batch->batch.currentProcedureParametersCompute,
     "procedureParametersDeclarationStructsDeclarationsFirst", 0,
     "structsCount", 1, // NOTE(Constantine): Only one struct for now.
     "structs", &batch->batch.currentStruct.handle,
@@ -1727,11 +1731,11 @@ GPU_API_PRE void GPU_API_POST vfBatchBindVariablesCopy(gpu_handle_context_t cont
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
-  REDGPU_2_EXPECTWG(batch->batch.currentProcedureParameters != NULL || !"Was vfBatchBindProgramPipelineCompute() ever called previously?");
+  REDGPU_2_EXPECTWG(batch->batch.currentProcedureParametersCompute != NULL || !"Was vfBatchBindProgramPipelineCompute() ever called previously?");
 
   npfp(redCallSetProcedureParametersVariables, batch->batch.addresses.redCallSetProcedureParametersVariables,
     "calls", batch->batch.calls.handle,
-    "procedureParameters", batch->batch.currentProcedureParameters,
+    "procedureParameters", batch->batch.currentProcedureParametersCompute,
     "visibleToStages", RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE,
     "variablesBytesFirst", 0,
     "dataBytesCount", variables_bytes_count,
@@ -1796,7 +1800,7 @@ GPU_API_PRE void GPU_API_POST vfBatchEnd(gpu_handle_context_t context, uint64_t 
 
   batch->batch.currentStruct.handle = NULL;
   batch->batch.currentStruct.handleDeclaration = NULL;
-  batch->batch.currentProcedureParameters = NULL;
+  batch->batch.currentProcedureParametersCompute = NULL;
 }
 
 GPU_API_PRE void GPU_API_POST vfBatchGetRaw(gpu_handle_context_t context, uint64_t batch_id, RedCalls * out_batch_raw, const char * optionalFile, int optionalLine) {
@@ -2218,7 +2222,7 @@ GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const vo
     presentPixels_handle.storage.arrayRangeInfo.array = vkfast->presentPixelsCpuUpload_memory_and_array.array.handle;
     presentPixels_handle.storage.arrayRangeInfo.arrayRangeBytesFirst = 0;
     presentPixels_handle.storage.arrayRangeInfo.arrayRangeBytesCount = vkfast->presentPixelsCpuUpload_memory_allocation_size;
-    REDGPU_2_EXPECTWG(presentPixels_handle.storage.arrayRangeInfo.arrayRangeBytesCount <= REDGPU_2_EXPECTED_maxArrayRORWStructMemberRangeBytesCount_536870912);
+    REDGPU_2_EXPECTWG(presentPixels_handle.storage.arrayRangeInfo.arrayRangeBytesCount <= vkfast->context->gpus[vkfast->gpuIndex].maxArrayRORWStructMemberRangeBytesCount);
   }
 
   int isRebuilded = vfInternalAsyncDrawPixels(context, presentPixels_storage_id, pixels, out_optional_is_pixels_copy_finished_cpu_signal_index, optionalFile, optionalLine);
