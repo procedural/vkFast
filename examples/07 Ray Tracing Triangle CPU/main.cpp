@@ -1,3 +1,5 @@
+// gcc -c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c && g++ main.cpp *.o
+
 #include "../../vkfast.h"
 
 #include <stdio.h> // For printf
@@ -67,7 +69,11 @@ vec3 colorTriangle(vec3 start, vec3 dir) {
 }
 
 int main() {
+#ifdef __MINGW32__
+  SetProcessDPIAware();
+#else
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+#endif
 
   #define window_w 1920
   #define window_h 1080

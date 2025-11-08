@@ -1234,7 +1234,11 @@ GPU_API_PRE void GPU_API_POST vfStorageCreate(gpu_handle_context_t context, cons
       REDGPU_2_EXPECTWG(vkfast->memoryCpuReadback_memory_suballocations_offset <= vkfast->memoryCpuReadback_memory_and_array.array.memoryBytesCount);
 
     } else {
+#ifdef __MINGW32__
+      REDGPU_2_EXPECT(!"[vkFast Internal] Unreachable enum value.");
+#else
       REDGPU_2_EXPECT(!"[vkFast Internal][" __FUNCTION__ "] Unreachable enum value.");
+#endif
     }
 
     // NOTE(Constantine): Pointer mapping.

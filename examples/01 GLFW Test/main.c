@@ -1,3 +1,5 @@
+// gcc main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3dll.a
+
 #include "../../vkfast.h"
 
 #include <stdio.h> // For printf
@@ -19,7 +21,11 @@
 #define LL __LINE__
 
 int main() {
+#ifdef __MINGW32__
+  SetProcessDPIAware();
+#else
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+#endif
 
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);

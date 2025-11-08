@@ -1,3 +1,5 @@
+// gcc main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c
+
 #include "../../vkfast.h"
 
 #include <stdio.h> // For printf
@@ -11,7 +13,11 @@
 #define LL __LINE__
 
 int main() {
+#ifdef __MINGW32__
+  SetProcessDPIAware();
+#else
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+#endif
 
   #define window_w 1920
   #define window_h 1080

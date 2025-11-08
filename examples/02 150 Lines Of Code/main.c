@@ -1,3 +1,5 @@
+// gcc main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c
+
 #include "../../vkfast.h"
 
 #include <stdio.h> // For printf
