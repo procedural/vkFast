@@ -73,10 +73,10 @@ vec3 colorTriangle(vec3 start, vec3 dir) {
 
   vec2 fetch = weights.x * uv0 + weights.y * uv1 + weights.z * uv2;
 
-  uint64_t fetch_index_r = (int)(fetch.y * (some_texture_h-1)) * some_texture_w * some_texture_channels_count + (int)(fetch.x * (some_texture_w-1)) * some_texture_channels_count + 0;
-  uint64_t fetch_index_g = (int)(fetch.y * (some_texture_h-1)) * some_texture_w * some_texture_channels_count + (int)(fetch.x * (some_texture_w-1)) * some_texture_channels_count + 1;
-  uint64_t fetch_index_b = (int)(fetch.y * (some_texture_h-1)) * some_texture_w * some_texture_channels_count + (int)(fetch.x * (some_texture_w-1)) * some_texture_channels_count + 2;
-  uint64_t fetch_index_a = (int)(fetch.y * (some_texture_h-1)) * some_texture_w * some_texture_channels_count + (int)(fetch.x * (some_texture_w-1)) * some_texture_channels_count + 3;
+  uint64_t fetch_index_r = (int)((/*flip y*/1.f-fetch.y) * (some_texture_h-1)) * some_texture_w * some_texture_channels_count + (int)(fetch.x * (some_texture_w-1)) * some_texture_channels_count + 0;
+  uint64_t fetch_index_g = (int)((/*flip y*/1.f-fetch.y) * (some_texture_h-1)) * some_texture_w * some_texture_channels_count + (int)(fetch.x * (some_texture_w-1)) * some_texture_channels_count + 1;
+  uint64_t fetch_index_b = (int)((/*flip y*/1.f-fetch.y) * (some_texture_h-1)) * some_texture_w * some_texture_channels_count + (int)(fetch.x * (some_texture_w-1)) * some_texture_channels_count + 2;
+  uint64_t fetch_index_a = (int)((/*flip y*/1.f-fetch.y) * (some_texture_h-1)) * some_texture_w * some_texture_channels_count + (int)(fetch.x * (some_texture_w-1)) * some_texture_channels_count + 3;
 
   REDGPU_2_EXPECTFL(fetch_index_r < (some_texture_w * some_texture_h * some_texture_channels_count));
   REDGPU_2_EXPECTFL(fetch_index_g < (some_texture_w * some_texture_h * some_texture_channels_count));
@@ -167,7 +167,7 @@ int main() {
       }
     }
 
-    time += 0.01f;
+    time += 0.2f; // NOTE(Constantine): Speeded up.
 
     vfDrawPixels(ctx, pix->pixels, NULL, FF, LL);
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
