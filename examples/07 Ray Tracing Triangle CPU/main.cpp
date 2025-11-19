@@ -1,4 +1,7 @@
-// gcc -c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c && g++ main.cpp *.o
+#if 0
+clang -c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c && clang++ main.cpp *.o
+exit
+#endif
 
 #include "../../vkfast.h"
 

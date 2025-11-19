@@ -1,3 +1,5 @@
 dxc/*
 x64/*
 glm/*
+*.o
+a.exe

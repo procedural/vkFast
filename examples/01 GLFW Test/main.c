@@ -1,4 +1,7 @@
-// gcc main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3dll.a
+#if 0
+clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3dll.a
+exit
+#endif
 
 #include "../../vkfast.h"
 
