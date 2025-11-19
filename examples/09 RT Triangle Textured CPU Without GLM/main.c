@@ -318,10 +318,12 @@ int main() {
     static float time = 0.f;
 
     // Draw pixels:
+    int y; // Great job, Visual Studio people :D https://www.reddit.com/r/C_Programming/comments/13v32z1/pragma_omp_parallel_for_not_compiling_when_it/
     #pragma omp parallel for
-    for (int y = 0; y < window_h; y += 1) {
+    for (y = 0; y < window_h; y += 1) {
+      int x;
       #pragma omp parallel for
-      for (int x = 0; x < window_w; x += 1) {
+      for (x = 0; x < window_w; x += 1) {
         vec2 fragCoord  = {(float)x, (float)y};
         vec2 resolution = {window_w, window_h};
 
