@@ -49,6 +49,7 @@ extern "C" {
 #endif
 
 GPU_API_PRE void GPU_API_POST vfeBanzaiGetPointer(const gpu_storage_t * storage, uint64_t bytes_first, gpu_extra_banzai_pointer_t * out_banzai_pointer, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfeBanzaiPointerGetRaw(const gpu_extra_banzai_pointer_t * banzai_pointer, RedStructMemberArray * out_banzai_pointer_raw, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfeBanzaiBatchPointerCopyFromCpuToGpu(gpu_handle_context_t context, uint64_t batch_id, const gpu_extra_banzai_pointer_t * from_cpu_pointer, const gpu_extra_banzai_pointer_t * to_gpu_pointer, uint64_t bytes_count, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfeBanzaiBatchPointerCopyFromGpuToCpu(gpu_handle_context_t context, uint64_t batch_id, const gpu_extra_banzai_pointer_t * from_gpu_pointer, const gpu_extra_banzai_pointer_t * to_cpu_pointer, uint64_t bytes_count, const char * optional_file, int optional_line);
 
