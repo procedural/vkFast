@@ -123,6 +123,7 @@ int main() {
   void * texture_mh = NULL;
   size_t texture_data_bytes_count = 0;
   void * texture_data = NULL;
+  // To close
   red32FileMap((const short unsigned int *)L"texture.ppm", &texture_fd, &texture_mh, &texture_data_bytes_count, &texture_data);
   REDGPU_2_EXPECTFL(texture_fd != NULL);
   REDGPU_2_EXPECTFL(texture_mh != NULL);
@@ -176,6 +177,12 @@ int main() {
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
   }
   
+  red32FileUnmap(texture_fd, texture_mh);
+  texture_fd = NULL;
+  texture_mh = NULL;
+  texture_data_bytes_count = 0;
+  texture_data = NULL;
+
   red32MemoryFree(pix);
   pix = NULL;
 
