@@ -280,6 +280,9 @@ int main() {
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
+  LARGE_INTEGER frequency = {0};
+  REDGPU_2_EXPECTFL(QueryPerformanceFrequency(&frequency) == TRUE); // Query the frequency (ticks per second)
+
   #define window_w 1920
   #define window_h 1080
 
@@ -327,7 +330,13 @@ int main() {
 
     static float time = 0.f;
 
+    LARGE_INTEGER t_start = {0};
+    QueryPerformanceCounter(&t_start);
+
     // Draw pixels:
+    vec3 eyePosition = makev3(3.f * sin(time), 0.f, 3.f * cos(time));
+    vec3 eyeLookAt = makev3(0.f, 0.f, 0.f);
+    mat3 eyeRayXform = computeEyeRayXform(eyePosition, eyeLookAt, 0.f);
     int y; // Great job, Visual Studio people :D https://www.reddit.com/r/C_Programming/comments/13v32z1/pragma_omp_parallel_for_not_compiling_when_it/
     #pragma omp parallel for
     for (y = 0; y < window_h; y += 1) {
@@ -338,9 +347,6 @@ int main() {
         vec2 resolution = {window_w, window_h};
 
         vec2 pixelPosition = v2df(v2a(makev2(-resolution.x, -resolution.y), v2mf(fragCoord, 2.f)), -resolution.y);
-        vec3 eyePosition = makev3(3.f * sin(time), 0.f, 3.f * cos(time));
-        vec3 eyeLookAt = makev3(0.f, 0.f, 0.f);
-        mat3 eyeRayXform = computeEyeRayXform(eyePosition, eyeLookAt, 0.f);
         vec3 v1 = makev3fromv2(pixelPosition, 2.f);
         vec3 v2 = m3mv3(eyeRayXform, v1);
         vec3 eyeRayDirection = v3normalize(v2);
@@ -352,6 +358,16 @@ int main() {
         pixels[y * window_w * 4 + x * 4 + 2] = outputColor.x * 255.f;
         pixels[y * window_w * 4 + x * 4 + 3] = outputColor.w * 255.f;
       }
+    }
+
+    LARGE_INTEGER t_end = {0};
+    QueryPerformanceCounter(&t_end);
+
+    {
+      LONGLONG elapsedTicks = t_end.QuadPart - t_start.QuadPart;
+      LONGLONG nanoseconds = (elapsedTicks * 1000000000LL) / frequency.QuadPart;
+      double milliseconds_fp = (double)(nanoseconds) / 1000000.0;
+      printf("Elapsed milliseconds: %f\n", milliseconds_fp);
     }
 
     time += 0.2f; // NOTE(Constantine): Speeded up.
