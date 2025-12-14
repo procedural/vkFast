@@ -1,0 +1,92 @@
+diff --git a/tiny_bvh.h b/tiny_bvh.h
+index 2a51c22..62fbbc7 100644
+--- a/tiny_bvh.h
++++ b/tiny_bvh.h
+@@ -909,7 +909,7 @@ public:
+ 	void Optimize( const uint32_t iterations = 25, bool extreme = false, bool stochastic = false );
+ 	uint32_t CombineLeafs( const uint32_t primCount, uint32_t& firstIdx, uint32_t nodeIdx = 0 );
+ 	void CombineLeafs( const uint32_t nodeIdx = 0 );
+-	int32_t Intersect( Ray& ray ) const;
++	int32_t Intersect( Ray& ray, float ct_tlas_camera_pos_x, float ct_tlas_camera_pos_y, float ct_tlas_camera_pos_z ) const;
+ 	bool IntersectSphere( const bvhvec3& pos, const float r ) const;
+ 	bool IsOccluded( const Ray& ray ) const;
+ 	void Intersect256Rays( Ray* first ) const;
+@@ -919,7 +919,7 @@ public:
+ 	void Build( uint32_t nodeIdx = 0, uint32_t depth = 0 );
+ 	void BuildFullSweep( uint32_t nodeIdx = 0, uint32_t depth = 0 );
+ 	bool IsOccludedTLAS( const Ray& ray ) const;
+-	int32_t IntersectTLAS( Ray& ray ) const;
++	int32_t IntersectTLAS( Ray& ray, float ct_tlas_camera_pos_x, float ct_tlas_camera_pos_y, float ct_tlas_camera_pos_z ) const;
+ 	void PrepareAVXBuild( const bvhvec4slice& vertices, const uint32_t* indices, const uint32_t primCount );
+ 	void BuildAVXSubtree( uint32_t nodeIdx = 0, uint32_t depth = 0 );
+ 	void PrepareHQBuild( const bvhvec4slice& vertices, const uint32_t* indices, const uint32_t prims );
+@@ -929,7 +929,7 @@ public:
+ 	void SplitFrag( const Fragment& orig, Fragment& left, Fragment& right, const bvhvec3& minDim, const uint32_t splitAxis, const float splitPos, bool& leftOK, bool& rightOK ) const;
+ protected:
+ 	template <bool posX, bool posY, bool posZ> int32_t Intersect( Ray& ray ) const;
+-	template <bool posX, bool posY, bool posZ> int32_t IntersectTLAS( Ray& ray ) const;
++	template <bool posX, bool posY, bool posZ> int32_t IntersectTLAS( Ray& ray, float ct_tlas_camera_pos_x, float ct_tlas_camera_pos_y, float ct_tlas_camera_pos_z ) const;
+ 	template <bool posX, bool posY, bool posZ> bool IsOccluded( const Ray& ray ) const;
+ 	template <bool posX, bool posY, bool posZ> bool IsOccludedTLAS( const Ray& ray ) const;
+ 	void BuildDefault( const bvhvec4* vertices, const uint32_t primCount );
+@@ -3179,7 +3179,7 @@ bool BVH::IntersectSphere( const bvhvec3& pos, const float r ) const
+ 	if (tmaxa >= tmina) dist1 = tmina; \
+ 	if (tmaxb >= tminb) dist2 = tminb;
+ 
+-int32_t BVH::Intersect( Ray& ray ) const
++int32_t BVH::Intersect( Ray& ray, float ct_tlas_camera_pos_x, float ct_tlas_camera_pos_y, float ct_tlas_camera_pos_z ) const
+ {
+ 	VALIDATE_RAY( ray );
+ 	if (!isTLAS())
+@@ -3196,11 +3196,11 @@ int32_t BVH::Intersect( Ray& ray ) const
+ 	{
+ 		const bool posX = ray.D.x >= 0, posY = ray.D.y >= 0, posZ = ray.D.z >= 0;
+ 		if (!posX) goto negx2;
+-		if (posY) { if (posZ) return IntersectTLAS<true, true, true>( ray ); else return IntersectTLAS<true, true, false>( ray ); }
+-		if (posZ) return IntersectTLAS<true, false, true>( ray ); else return IntersectTLAS<true, false, false>( ray );
++		if (posY) { if (posZ) return IntersectTLAS<true, true, true>( ray, ct_tlas_camera_pos_x, ct_tlas_camera_pos_y, ct_tlas_camera_pos_z ); else return IntersectTLAS<true, true, false>( ray, ct_tlas_camera_pos_x, ct_tlas_camera_pos_y, ct_tlas_camera_pos_z ); }
++		if (posZ) return IntersectTLAS<true, false, true>( ray, ct_tlas_camera_pos_x, ct_tlas_camera_pos_y, ct_tlas_camera_pos_z ); else return IntersectTLAS<true, false, false>( ray, ct_tlas_camera_pos_x, ct_tlas_camera_pos_y, ct_tlas_camera_pos_z );
+ 	negx2:
+-		if (posY) { if (posZ) return IntersectTLAS<false, true, true>( ray ); else return IntersectTLAS<false, true, false>( ray ); }
+-		if (posZ) return IntersectTLAS<false, false, true>( ray ); else return IntersectTLAS<false, false, false>( ray );
++		if (posY) { if (posZ) return IntersectTLAS<false, true, true>( ray, ct_tlas_camera_pos_x, ct_tlas_camera_pos_y, ct_tlas_camera_pos_z ); else return IntersectTLAS<false, true, false>( ray, ct_tlas_camera_pos_x, ct_tlas_camera_pos_y, ct_tlas_camera_pos_z ); }
++		if (posZ) return IntersectTLAS<false, false, true>( ray, ct_tlas_camera_pos_x, ct_tlas_camera_pos_y, ct_tlas_camera_pos_z ); else return IntersectTLAS<false, false, false>( ray, ct_tlas_camera_pos_x, ct_tlas_camera_pos_y, ct_tlas_camera_pos_z );
+ 	}
+ }
+ 
+@@ -3263,7 +3263,7 @@ template <bool posX, bool posY, bool posZ> int32_t BVH::Intersect( Ray& ray ) co
+ 	return (int32_t)cost; // cast to not break interface.
+ }
+ 
+-template <bool posX, bool posY, bool posZ> int32_t BVH::IntersectTLAS( Ray& ray ) const
++template <bool posX, bool posY, bool posZ> int32_t BVH::IntersectTLAS( Ray& ray, float ct_tlas_camera_pos_x, float ct_tlas_camera_pos_y, float ct_tlas_camera_pos_z ) const
+ {
+ 	BVHNode* node = &bvhNode[0], * stack[64];
+ 	uint32_t stackPtr = 0;
+@@ -3286,8 +3286,15 @@ template <bool posX, bool posY, bool posZ> int32_t BVH::IntersectTLAS( Ray& ray
+ 				if (!(inst.mask & ray.mask)) continue;
+ 				const BVHBase* blas = blasList[inst.blasIdx];
+ 				// 1. Transform ray with the inverse of the instance transform
+-				tmp.O = tinybvh_transform_point( ray.O, inst.invTransform );
+-				tmp.D = tinybvh_transform_vector( ray.D, inst.invTransform );
++        // NOTE(Constantine): ct_ modification.
++        bvhmat4 tmp_inst_invTransform = inst.invTransform;
++        {
++	        tmp_inst_invTransform[3]  += ct_tlas_camera_pos_x; // Translation X
++	        tmp_inst_invTransform[7]  += ct_tlas_camera_pos_y; // Translation Y
++	        tmp_inst_invTransform[11] += ct_tlas_camera_pos_z; // Translation Z
++        }
++				tmp.O = tinybvh_transform_point( ray.O, tmp_inst_invTransform );
++				tmp.D = tinybvh_transform_vector( ray.D, tmp_inst_invTransform );
+ 				tmp.instIdx = instIdx << (32 - INST_IDX_BITS);
+ 				tmp.hit = ray.hit;
+ 				tmp.rD = tinybvh_rcp( tmp.D );
+@@ -3301,7 +3308,7 @@ template <bool posX, bool posY, bool posZ> int32_t BVH::IntersectTLAS( Ray& ray
+ 				if (blas->layout == LAYOUT_BVH)
+ 				{
+ 					// regular (triangle) BVH traversal
+-					cost += ((BVH*)blas)->Intersect( tmp );
++					cost += ((BVH*)blas)->Intersect( tmp, ct_tlas_camera_pos_x, ct_tlas_camera_pos_y, ct_tlas_camera_pos_z );
+ 				}
+ 				else
+ 				{
