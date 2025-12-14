@@ -218,7 +218,7 @@ int main() {
     // NOTE(Constantine):
     // Camera quaternion rotation and translation.
     const float mouse_move_sensitivity = 0.0035f;
-    const float camera_move_speed = 0.05f;
+    const float camera_move_speed = 0.1f;
     {
       float mouse_move_x = (float)(mouse_x - mouse_x_prev) * mouse_move_sensitivity;
       float mouse_move_y = (float)(mouse_y - mouse_y_prev) * mouse_move_sensitivity;
@@ -262,13 +262,30 @@ int main() {
       camera_axis_z.y = dir_vec[1];
       camera_axis_z.z = dir_vec[2];
 
-      vec3Mulf(side_vec, side_vec, (key_r - key_l) * camera_move_speed);
-      vec3Mulf(  up_vec,   up_vec, (key_u - key_d) * camera_move_speed);
-      vec3Mulf( dir_vec,  dir_vec, (key_f - key_b) * camera_move_speed);
+      vec3Mulf(side_vec, side_vec, key_r - key_l);
+      vec3Mulf(  up_vec,   up_vec, key_u - key_d);
+      vec3Mulf( dir_vec,  dir_vec, key_f - key_b);
   
-      vec3Add(camera_pos, camera_pos, side_vec);
-      vec3Add(camera_pos, camera_pos,   up_vec);
-      vec3Add(camera_pos, camera_pos,  dir_vec);
+      float move_vec_normalized[3] = {0, 0, 0};
+
+      vec3Add(move_vec_normalized, move_vec_normalized, side_vec);
+      vec3Add(move_vec_normalized, move_vec_normalized,   up_vec);
+      vec3Add(move_vec_normalized, move_vec_normalized,  dir_vec);
+
+      float move_vec_len = sqrtf(
+        move_vec_normalized[0] * move_vec_normalized[0] +
+        move_vec_normalized[1] * move_vec_normalized[1] +
+        move_vec_normalized[2] * move_vec_normalized[2]
+      );
+      if (move_vec_len != 0) {
+        move_vec_normalized[0] /= move_vec_len;
+        move_vec_normalized[1] /= move_vec_len;
+        move_vec_normalized[2] /= move_vec_len;
+      }
+
+      vec3Mulf(move_vec_normalized, move_vec_normalized, camera_move_speed);
+
+      vec3Add(camera_pos, camera_pos, move_vec_normalized);
     }
 
     bvhvec3 up = camera_axis_y * aspect_ratio;
