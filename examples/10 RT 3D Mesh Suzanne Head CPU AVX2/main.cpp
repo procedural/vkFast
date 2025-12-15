@@ -44,14 +44,28 @@ void vec3Add(float * out, const float * v1, const float * v2) {
   out[2] = v1[2] + v2[2];
 }
 
-void quatFromAxisAngle(float * q, const float * axis, float angle_rad) {
+void vec3Cross(float * out, const float * v1, const float * v2) {
+  float v1x = v1[0];
+  float v1y = v1[1];
+  float v1z = v1[2];
+
+  float v2x = v2[0];
+  float v2y = v2[1];
+  float v2z = v2[2];
+
+  out[0] = (v1y * v2z) - (v2y * v1z);
+  out[1] = (v1z * v2x) - (v2z * v1x);
+  out[2] = (v1x * v2y) - (v2x * v1y);
+}
+
+void quatFromAxisAngle(float * out, const float * axis, float angle_rad) {
   float s = (float)sin(angle_rad / 2.f);
   float c = (float)cos(angle_rad / 2.f);
 
-  q[0] = axis[0] * s;
-  q[1] = axis[1] * s;
-  q[2] = axis[2] * s;
-  q[3] = c;
+  out[0] = axis[0] * s;
+  out[1] = axis[1] * s;
+  out[2] = axis[2] * s;
+  out[3] = c;
 }
 
 void quatMul(float * out, const float * q1, const float * q2) {
@@ -83,6 +97,18 @@ void quatRotateVec3(float * out, const float * v, const float * q) {
   out[0] = t2[0];
   out[1] = t2[1];
   out[2] = t2[2];
+}
+
+void quatRotateVec3Fast(float * out, const float * v, const float * q) {
+  // (cross(q.xyz, cross(q.xyz, v) + (v * q.w)) * 2.f) + v
+  float vc[3] = {v[0], v[1], v[2]};
+  vec3Cross(out, q, vc);
+  float t1[3];
+  vec3Mulf(t1, vc, q[3]);
+  vec3Add(out, out, t1);
+  vec3Cross(out, q, out);
+  vec3Mulf(out, out, 2.f);
+  vec3Add(out, out, vc);
 }
 
 int main() {
@@ -246,9 +272,9 @@ int main() {
       float side_vec[3] = {1, 0, 0};
       float   up_vec[3] = {0, 1, 0};
       float  dir_vec[3] = {0, 0, 1};
-      quatRotateVec3(side_vec, side_vec, camera_quat);
-      quatRotateVec3(  up_vec,   up_vec, camera_quat);
-      quatRotateVec3( dir_vec,  dir_vec, camera_quat);
+      quatRotateVec3Fast(side_vec, side_vec, camera_quat);
+      quatRotateVec3Fast(  up_vec,   up_vec, camera_quat);
+      quatRotateVec3Fast( dir_vec,  dir_vec, camera_quat);
 
       camera_axis_x.x = side_vec[0];
       camera_axis_x.y = side_vec[1];
