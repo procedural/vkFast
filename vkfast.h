@@ -143,6 +143,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(gpu_handle_context_t conte
 GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(gpu_handle_context_t context, uint64_t async_id, const char * optional_file, int optional_line);
 GPU_API_PRE int  GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, int * out_optional_is_pixels_copy_finished_cpu_signal_index, const char * optional_file, int optional_line);
 GPU_API_PRE int  GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, int * out_optional_is_pixels_copy_finished_cpu_signal_index, const char * optional_file, int optional_line);
+GPU_API_PRE int  GPU_API_POST vfAsyncDrawPixelsRaw(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, int * out_optional_is_pixels_copy_finished_cpu_signal_index, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfAsyncDrawWaitToFinish(gpu_handle_context_t context, const char * optional_file, int optional_line);
 GPU_API_PRE RedHandleCpuSignal * GPU_API_POST vfAsyncDrawGetCpuSignals(gpu_handle_context_t context);
 
