@@ -9,6 +9,21 @@
 #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
 #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
 
+GPU_API_PRE gpu_handle_context_t GPU_API_POST vfeBanzaiAllocateExtraMemory(gpu_handle_context_t derive_from_context, gpu_internal_memory_allocation_sizes_t * memory_allocation_sizes, const char * optionalFile, int optionalLine) {
+  // Donate raw context from derive_from_context to new_context.
+  vf_handle_context_t * new_context_handle = (vf_handle_context_t *)red32MemoryCalloc(sizeof(vf_handle_context_t));
+  REDGPU_2_EXPECT(new_context_handle != NULL);
+  new_context_handle->doNotDestroyRawContext = 1; // Since we donate raw context from derive_from_context.
+  new_context_handle->doNotFreeHandle        = 0; // Since we create new_context_handle on the heap.
+  new_context_handle->context                = vfContextGetRaw(derive_from_context, optionalFile, optionalLine);
+  // Custom initialization of new_context.
+  gpu_context_optional_parameters_t new_context_params = {0};
+  new_context_params.internal_memory_allocation_sizes             = memory_allocation_sizes;
+  new_context_params.optional_pointer_to_custom_vf_handle_context = (void *)new_context_handle;
+  gpu_handle_context_t new_context = vfContextInit(0, &new_context_params, optionalFile, optionalLine);
+  return new_context;
+}
+
 GPU_API_PRE void GPU_API_POST vfeBanzaiStoragesCreate(gpu_handle_context_t context, gpu_storage_t * out_storage_id_gpu_only, gpu_storage_t * out_storage_id_cpu_upload, gpu_storage_t * out_storage_id_cpu_readback, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
