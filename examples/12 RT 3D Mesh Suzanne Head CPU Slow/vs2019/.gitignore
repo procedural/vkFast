@@ -1,0 +1,11 @@
+.vs/*
+x64/*
+*.vcxproj.user
+main.exe
+main.exp
+main.lib
+main.obj
+redgpu.obj
+redgpu_2.obj
+redgpu_32.obj
+vkfast.obj
