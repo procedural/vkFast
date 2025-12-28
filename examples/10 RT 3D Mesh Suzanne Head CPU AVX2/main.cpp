@@ -161,7 +161,7 @@ int main() {
     vertex[i].w = 0;
   }
 
-  BVH bvh;
+  BVH8_CPU bvh;
   bvh.Build(vertex, vertex_count / 3);
 
   BVH tlas;
