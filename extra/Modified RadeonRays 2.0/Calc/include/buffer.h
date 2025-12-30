@@ -77,8 +77,8 @@ namespace Calc {
 
         std::atomic<uint64_t> m_fence_id;
 
-    private:
         Anvil::Buffer *m_anvil_buffer;
+    private:
         MappedMemory m_mapped_memory;
         bool m_created_internally;
     };

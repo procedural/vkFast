@@ -60,6 +60,11 @@
 
 #include <map>
 #include <vector>
+#include <string>
+
+// NOTE(Constantine): From the old versions of Vulkan headers.
+#define VK_DESCRIPTOR_TYPE_RANGE_SIZE 17
+#define VK_FORMAT_END_RANGE 248
 
 /* Defines various enums used by Vulkan API wrapper classes. */
 namespace Anvil
