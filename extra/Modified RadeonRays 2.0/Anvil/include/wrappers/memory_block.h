@@ -218,6 +218,11 @@ namespace Anvil
                    VkDeviceSize size,
                    const void*  data);
 
+        void close_gpu_memory_access ();
+        bool open_gpu_memory_access  (VkDeviceSize start_offset,
+                                      VkDeviceSize size);
+
+        void* m_gpu_data_ptr;
     private:
         /* Private functions */
         MemoryBlock           (const MemoryBlock&);
@@ -225,15 +230,12 @@ namespace Anvil
 
         virtual ~MemoryBlock();
 
-        void     close_gpu_memory_access     ();
         uint32_t get_device_memory_type_index(uint32_t     memory_type_bits,
                                               bool         mappable_memory_required,
-                                              bool         coherent_memory_required);
-        bool     open_gpu_memory_access      (VkDeviceSize start_offset,
-                                              VkDeviceSize size);
+                                              bool         coherent_memory_required,
+                                              bool         cached_memory_required);
 
         /* Private members */
-        void*                m_gpu_data_ptr;
         bool                 m_gpu_data_user_mapped;
         VkDeviceSize         m_gpu_data_user_size;
         VkDeviceSize         m_gpu_data_user_start_offset;
