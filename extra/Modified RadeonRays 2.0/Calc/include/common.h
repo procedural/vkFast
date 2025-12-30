@@ -42,7 +42,7 @@ namespace Calc
     extern void LogError( const char* in_assertion_text, const char* in_condition, const char* in_file_name, int in_line, const char* in_comment = nullptr );
     extern void Abort();
 
-#ifdef _DEBUG
+#ifdef VKFAST_EXTRA_RR2_DEBUG
     #define Assert(e)                if(!(e)) { LogError( "Assertion: %s in %s at %i\n", #e, __FILE__, __LINE__ ); Abort(); }
     #define AssertEx(e, comment)    if(!(e)) { LogError( "Assertion: %s in %s at %i - %s\n", #e, __FILE__, __LINE__, comment ); Abort(); }
 #else
@@ -56,7 +56,7 @@ namespace Calc
     template< class T, class S >
     inline T* Cast( S* in_pointer )
     {
-#ifdef _DEBUG
+#ifdef VKFAST_EXTRA_RR2_DEBUG
         T* to_return = dynamic_cast<T*>( in_pointer );
         Assert( nullptr != to_return );
         return to_return;
@@ -68,7 +68,7 @@ namespace Calc
     template< class T, class S >
     inline T* ConstCast( S const * in_pointer )
     {
-#ifdef _DEBUG
+#ifdef VKFAST_EXTRA_RR2_DEBUG
         T const * to_return = dynamic_cast<T const *>( in_pointer );
         Assert( nullptr != to_return );
         return const_cast<T*>(to_return);
