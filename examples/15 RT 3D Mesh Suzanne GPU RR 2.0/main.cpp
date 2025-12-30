@@ -479,6 +479,9 @@ int main() {
     profileEnd("frame");
   }
 
+  RadeonRays::IntersectionApi::Delete(api);
+  api = NULL;
+
   red32MemoryFree(pix);
   pix = NULL;
 
