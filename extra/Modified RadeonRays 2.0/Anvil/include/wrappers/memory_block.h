@@ -64,7 +64,8 @@ namespace Anvil
                      uint32_t       allowed_memory_bits,
                      VkDeviceSize   size,
                      bool           should_be_mappable,
-                     bool           should_be_coherent);
+                     bool           should_be_coherent,
+                     bool           should_be_cached);
 
         /** Constructor which should be used to create a memory block whose storage space is
          *  maintained by another MemoryBlock instance.
@@ -239,6 +240,7 @@ namespace Anvil
 
         uint32_t            m_allowed_memory_bits;
         Anvil::Device*      m_device_ptr;
+        bool                m_is_cached;
         bool                m_is_coherent;
         bool                m_is_mappable;
         VkDeviceMemory      m_memory;

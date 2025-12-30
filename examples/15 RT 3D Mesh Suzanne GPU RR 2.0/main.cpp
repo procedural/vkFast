@@ -406,7 +406,6 @@ int main() {
         e->Wait();
         profileEnd("e->Wait();");
         api->DeleteEvent(e);
-        e = NULL;
       }
       #pragma omp parallel for
       for (int64_t i = 0; i < rays_vector.size(); i += 1) {
@@ -421,8 +420,6 @@ int main() {
         e->Wait();
         profileEnd("e->Wait();");
         api->DeleteEvent(e);
-        e = NULL;
-        delete[] rays_write;
         rays_write = NULL;
       }
     }
@@ -434,15 +431,9 @@ int main() {
 
     RadeonRays::Intersection * hits_readback = NULL;
     {
-      RadeonRays::Event * e = NULL;
       profileBegin("api->MapBuffer();");
-      api->MapBufferReadback(hits_buffer, RadeonRays::kMapRead, 0, window_h * window_w * msaaSamplesCount * sizeof(RadeonRays::Intersection), (void **)&hits_readback, &e);
+      api->MapBufferReadback(hits_buffer, RadeonRays::kMapRead, 0, window_h * window_w * msaaSamplesCount * sizeof(RadeonRays::Intersection), (void **)&hits_readback);
       profileEnd("api->MapBuffer();");
-      profileBegin("e->Wait();");
-      e->Wait();
-      profileEnd("e->Wait();");
-      api->DeleteEvent(e);
-      e = NULL;
     }
     
     profileBegin("pixels array color average and write");
@@ -469,15 +460,9 @@ int main() {
     profileEnd("pixels array color average and write");
 
     {
-      RadeonRays::Event * e = NULL;
       profileBegin("api->UnmapBuffer();");
-      api->UnmapBufferReadback(hits_buffer, hits_readback, &e);
+      api->UnmapBufferReadback(hits_buffer, hits_readback);
       profileEnd("api->UnmapBuffer();");
-      profileBegin("e->Wait();");
-      e->Wait();
-      profileEnd("e->Wait();");
-      api->DeleteEvent(e);
-      e = NULL;
       hits_readback = NULL;
     }
 

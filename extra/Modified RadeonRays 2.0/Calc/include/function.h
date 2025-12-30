@@ -90,7 +90,7 @@ namespace Calc {
                                                          arg_size, queueToUse,
                                                          VK_SHARING_MODE_EXCLUSIVE,
                                                          VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                                                         true, true, arg);
+                                                         true, true, false, arg);
 
             Buffer *vBuffer = new Buffer(newBuffer, true);
 

@@ -108,6 +108,11 @@ namespace Calc
         return CreateBuffer( size, flags, nullptr );
     }
 
+    Buffer* Device::CreateBufferReadback( std::size_t size, std::uint32_t flags )
+    {
+        return CreateBufferReadback( size, flags, nullptr );
+    }
+
     Buffer* Device::CreateBuffer( std::size_t size, std::uint32_t flags, void* initdata )
     {
         if(size == 0 )
@@ -126,6 +131,31 @@ namespace Calc
                                                         , VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
                                                         , true
                                                         , false
+                                                        , false
+                                                        , initdata );
+
+        return new Buffer( newBuffer, false );
+    }
+
+    Buffer* Device::CreateBufferReadback( std::size_t size, std::uint32_t flags, void* initdata )
+    {
+        if(size == 0 )
+        {
+            anvil_assert(!"Buffer size of 0 isn't valid");
+            return nullptr;
+        }
+        const Anvil::QueueFamilyBits queueToUse = (true == m_use_compute_pipe) ?
+                                                Anvil::QUEUE_FAMILY_COMPUTE_BIT :
+                                                Anvil::QUEUE_FAMILY_GRAPHICS_BIT;
+
+        Anvil::Buffer* newBuffer = new Anvil::Buffer( m_anvil_device
+                                                        , size
+                                                        , queueToUse
+                                                        , VK_SHARING_MODE_EXCLUSIVE
+                                                        , VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
+                                                        , true
+                                                        , true
+                                                        , true
                                                         , initdata );
 
         return new Buffer( newBuffer, false );
@@ -207,6 +237,27 @@ namespace Calc
 
     }
 
+    void Device::MapBufferReadback(   Buffer const* buffer,
+                                    std::uint32_t queue,
+                                    std::size_t offset,
+                                    std::size_t size,
+                                    std::uint32_t map_type,
+                                    void** mapdata )
+    {
+        Buffer* vulkanBuffer = ConstCast<Buffer>( buffer );
+
+        // make sure GPU has stopped using this buffer
+        WaitForFence(vulkanBuffer->m_fence_id);
+
+        // read the Vulkan buffer
+        void* mappedMemory = NULL;
+        Anvil::Buffer* anvilBuffer = vulkanBuffer->GetAnvilBuffer();
+        anvilBuffer->readback_map( offset, size, &mappedMemory );
+        mapdata[0] = mappedMemory;
+
+        vulkanBuffer->SetMappedMemory( (uint8_t*)mappedMemory, map_type, offset, size );
+    }
+
     void Device::UnmapBuffer( Buffer const* buffer, std::uint32_t queue, void* mapdata, Event** e )
     {
         // get the allocated proxy buffer
@@ -227,6 +278,17 @@ namespace Calc
         }
 
         delete[] mappedMemory.data;
+
+        vulkanBuffer->SetMappedMemory( nullptr, 0, 0, 0 );
+    }
+
+    void Device::UnmapBufferReadback( Buffer const* buffer, std::uint32_t queue, void* mapdata )
+    {
+        // get the allocated proxy buffer
+        Buffer* vulkanBuffer = ConstCast<Buffer>( buffer );
+
+        Anvil::Buffer* anvilBuffer = vulkanBuffer->GetAnvilBuffer();
+        anvilBuffer->readback_unmap();
 
         vulkanBuffer->SetMappedMemory( nullptr, 0, 0, 0 );
     }

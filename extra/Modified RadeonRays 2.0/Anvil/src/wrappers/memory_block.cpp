@@ -31,11 +31,13 @@ Anvil::MemoryBlock::MemoryBlock(Anvil::Device* device_ptr,
                                 uint32_t       allowed_memory_bits,
                                 VkDeviceSize   size,
                                 bool           should_be_mappable,
-                                bool           should_be_coherent)
+                                bool           should_be_coherent,
+                                bool           should_be_cached)
     :m_allowed_memory_bits    (allowed_memory_bits),
      m_device_ptr             (device_ptr),
      m_gpu_data_ptr           (nullptr),
      m_gpu_data_user_mapped   (false),
+     m_is_cached              (should_be_cached),
      m_is_coherent            (should_be_coherent),
      m_is_mappable            (should_be_mappable),
      m_memory                 (VK_NULL_HANDLE),
@@ -49,7 +51,8 @@ Anvil::MemoryBlock::MemoryBlock(Anvil::Device* device_ptr,
     buffer_data_alloc_info.allocationSize  = size;
     buffer_data_alloc_info.memoryTypeIndex = get_device_memory_type_index(allowed_memory_bits,
                                                                           should_be_mappable,  /* mappable_memory_required */
-                                                                          should_be_coherent); /* coherent_memory_required */
+                                                                          should_be_coherent,  /* coherent_memory_required */
+                                                                          should_be_cached);   /* cached_memory_required */
     buffer_data_alloc_info.pNext           = nullptr;
     buffer_data_alloc_info.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
@@ -125,7 +128,8 @@ void Anvil::MemoryBlock::close_gpu_memory_access()
  **/
 uint32_t Anvil::MemoryBlock::get_device_memory_type_index(uint32_t memory_type_bits,
                                                           bool     mappable_memory_required,
-                                                          bool     coherent_memory_required)
+                                                          bool     coherent_memory_required,
+                                                          bool     cached_memory_required)
 {
     if (!mappable_memory_required)
     {
@@ -145,8 +149,10 @@ uint32_t Anvil::MemoryBlock::get_device_memory_type_index(uint32_t memory_type_b
 
         if (( coherent_memory_required  && current_memory_type.flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT ||
              !coherent_memory_required)                                                                     &&
-              mappable_memory_required  && current_memory_type.flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT  ||
-             !mappable_memory_required)
+            ( mappable_memory_required  && current_memory_type.flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT  ||
+             !mappable_memory_required)                                                                     &&
+            ( mappable_memory_required  && current_memory_type.flags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT   ||
+             !mappable_memory_required))
         {
             if ( (memory_type_bits & (1 << n_memory_type)) != 0)
             {

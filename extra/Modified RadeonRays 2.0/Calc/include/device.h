@@ -69,6 +69,8 @@ namespace Calc
         // Buffer creation and deletion
         Buffer* CreateBuffer( std::size_t size, std::uint32_t flags );
         Buffer* CreateBuffer( std::size_t size, std::uint32_t flags, void* initdata );
+        Buffer* CreateBufferReadback( std::size_t size, std::uint32_t flags );
+        Buffer* CreateBufferReadback( std::size_t size, std::uint32_t flags, void* initdata );
         void DeleteBuffer( Buffer* buffer );
 
         // Data movement
@@ -77,7 +79,9 @@ namespace Calc
 
         // Buffer mapping 
         void MapBuffer( Buffer const* buffer, std::uint32_t queue, std::size_t offset, std::size_t size, std::uint32_t map_type, void** mapdata, Event** e );
+        void MapBufferReadback( Buffer const* buffer, std::uint32_t queue, std::size_t offset, std::size_t size, std::uint32_t map_type, void** mapdata );
         void UnmapBuffer( Buffer const* buffer, std::uint32_t queue, void* mapdata, Event** e );
+        void UnmapBufferReadback( Buffer const* buffer, std::uint32_t queue, void* mapdata );
 
         // Kernel compilation
         Executable* CompileExecutable( );

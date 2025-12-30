@@ -44,6 +44,7 @@ namespace RadeonRays
         // Create a buffer of a specified size with specified initial data.
         // if initdata == nullptr the buffer is allocated, but not initialized.
         virtual Buffer* CreateBuffer(size_t size, void* initdata) const = 0;
+        virtual Buffer* CreateBufferReadback(size_t size, void* initdata) const = 0;
 
         // Release buffer memory.
         virtual void DeleteBuffer(Buffer* const) const = 0;
@@ -54,10 +55,12 @@ namespace RadeonRays
         // Map buffer data.
         // The call is non-blocking if event is passed it, otherwise (event == nullptr) it is blocking.
         virtual void MapBuffer(Buffer* buffer, MapType type, size_t offset, size_t size, void** data, Event** event) const = 0;
+        virtual void MapBufferReadback(Buffer* buffer, MapType type, size_t offset, size_t size, void** data) const = 0;
 
         // Unmap buffer data.
         // The call is non-blocking if event is passed it, otherwise (event == nullptr) it is blocking.
         virtual void UnmapBuffer(Buffer* buffer, void* ptr, Event** event) const = 0;
+        virtual void UnmapBufferReadback(Buffer* buffer, void* ptr) const = 0;
 
         // Find intersection for the rays in rays buffer and write them into hits buffer.
         // rays is assumed AOS with elements of type RadeonRays::ray.

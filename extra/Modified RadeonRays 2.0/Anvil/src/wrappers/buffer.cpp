@@ -56,6 +56,7 @@ Anvil::Buffer::Buffer(Anvil::Device*         device_ptr,
                       VkBufferUsageFlags     usage_flags,
                       bool                   should_be_mappable,
                       bool                   should_be_coherent,
+                      bool                   should_be_cached,
                       const void*            opt_client_data)
     :m_buffer           (VK_NULL_HANDLE),
      m_buffer_size      (size),
@@ -89,7 +90,8 @@ Anvil::Buffer::Buffer(Anvil::Device*         device_ptr,
                                                   m_buffer_memory_reqs.memoryTypeBits,
                                                   m_buffer_memory_reqs.size,
                                                   should_be_mappable,
-                                                  should_be_coherent);
+                                                  should_be_coherent,
+                                                  should_be_cached);
 
         anvil_assert(memory_block_ptr != nullptr);
 
@@ -315,6 +317,7 @@ bool Anvil::Buffer::read(VkDeviceSize start_offset,
                                                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                                true,  /* should_be_mappable */
                                                false, /* should_be_coherent */
+                                               false, /* should_be_cached */
                                                nullptr);
 
         if (staging_buffer_ptr == nullptr)
@@ -352,6 +355,33 @@ bool Anvil::Buffer::read(VkDeviceSize start_offset,
 
 end:
     return result;
+}
+
+bool Anvil::Buffer::readback_map(VkDeviceSize start_offset,
+                         VkDeviceSize size,
+                         void**       out_result_ptr)
+{
+    bool result = false;
+
+    anvil_assert(m_memory_block_ptr != nullptr);
+
+    if (m_memory_block_ptr->is_mappable() )
+    {
+        result = m_memory_block_ptr->open_gpu_memory_access(start_offset, size);
+        out_result_ptr[0] = m_memory_block_ptr->m_gpu_data_ptr;
+    }
+
+    return result;
+}
+
+void Anvil::Buffer::readback_unmap()
+{
+    anvil_assert(m_memory_block_ptr != nullptr);
+
+    if (m_memory_block_ptr->is_mappable() )
+    {
+        m_memory_block_ptr->close_gpu_memory_access();
+    }
 }
 
 /* Please see header for specification */
@@ -430,6 +460,7 @@ bool Anvil::Buffer::write(VkDeviceSize start_offset,
                                                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                                true,  /* should_be_mappable */
                                                false, /* should_be_coherent */
+                                               false, /* should_be_cached */
                                                data);
 
         if (staging_buffer_ptr == nullptr)

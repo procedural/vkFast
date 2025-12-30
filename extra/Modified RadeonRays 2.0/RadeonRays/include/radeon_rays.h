@@ -196,13 +196,16 @@ namespace RadeonRays
         ******************************************/
         // Create a buffer to use the most efficient acceleration possible
         virtual Buffer* CreateBuffer(size_t size, void* initdata) const = 0;
+        virtual Buffer* CreateBufferReadback(size_t size, void* initdata) const = 0;
         // Delete the buffer
         virtual void DeleteBuffer(Buffer* buffer) const = 0;
         // Map buffer. Event pointer might be nullptr.
         // The call is asynchronous.
         virtual void MapBuffer(Buffer* buffer, MapType type, size_t offset, size_t size, void** data, Event** event) const = 0;
+        virtual void MapBufferReadback(Buffer* buffer, MapType type, size_t offset, size_t size, void** data) const = 0;
         // Unmap buffer
         virtual void UnmapBuffer(Buffer* buffer, void* ptr, Event** event) const = 0;
+        virtual void UnmapBufferReadback(Buffer* buffer, void* ptr) const = 0;
 
         /******************************************
           Events handling

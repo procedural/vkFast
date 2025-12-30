@@ -143,6 +143,21 @@ namespace RadeonRays
         }
     }
 
+    Buffer* CalcIntersectionDevice::CreateBufferReadback(size_t size, void* initdata) const
+    {
+        // If initdata is passed in use different Calc call with init data
+        if (initdata)
+        {
+            auto calc_buffer = m_device->CreateBufferReadback(size, Calc::BufferType::kWrite, initdata);
+            return new CalcBufferHolder(m_device.get(), calc_buffer);
+        }
+        else
+        {
+            auto calc_buffer = m_device->CreateBufferReadback(size, Calc::BufferType::kWrite);
+            return new CalcBufferHolder(m_device.get(), calc_buffer);
+        }
+    }
+
     void CalcIntersectionDevice::DeleteBuffer(Buffer* const buffer) const
     {
         delete buffer;
@@ -185,6 +200,13 @@ namespace RadeonRays
         }
     }
 
+    void CalcIntersectionDevice::MapBufferReadback(Buffer* buffer, MapType type, size_t offset, size_t size, void** data) const
+    {
+        auto calc_buffer = static_cast<CalcBufferHolder*>(buffer);
+
+        m_device->MapBufferReadback(calc_buffer->GetData(), 0, offset, size, CalcMapType(type), data);
+    }
+
     void CalcIntersectionDevice::UnmapBuffer(Buffer* buffer, void* ptr, Event** event) const
     {
         auto calc_buffer = static_cast<CalcBufferHolder*>(buffer);
@@ -204,6 +226,12 @@ namespace RadeonRays
         }
     }
 
+    void CalcIntersectionDevice::UnmapBufferReadback(Buffer* buffer, void* ptr) const
+    {
+        auto calc_buffer = static_cast<CalcBufferHolder*>(buffer);
+
+        m_device->UnmapBufferReadback(calc_buffer->GetData(), 0, ptr);
+    }
 
     void CalcIntersectionDevice::QueryIntersection(Buffer const* rays, int numrays, Buffer* hits, Event const* waitevent, Event** event) const
     {

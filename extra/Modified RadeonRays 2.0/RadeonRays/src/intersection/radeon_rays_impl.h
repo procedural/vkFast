@@ -85,14 +85,17 @@ namespace RadeonRays
         Memory management
         ******************************************/
         Buffer* CreateBuffer(size_t size, void* initdata) const override;
+        Buffer* CreateBufferReadback(size_t size, void* initdata) const override;
 
         // Delete the buffer
         void DeleteBuffer(Buffer* buffer) const override;
         // Map buffer. Event pointer might be nullptr.
         // The call is asynchronous.
         void MapBuffer(Buffer* buffer, MapType type, size_t offset, size_t size, void** data, Event** event) const override;
+        void MapBufferReadback(Buffer* buffer, MapType type, size_t offset, size_t size, void** data) const override;
         // Unmap buffer
         void UnmapBuffer(Buffer* buffer, void* ptr, Event** event) const override;
+        void UnmapBufferReadback(Buffer* buffer, void* ptr) const override;
 
         /******************************************
           Events handling

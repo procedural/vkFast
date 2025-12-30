@@ -29,9 +29,11 @@
 /* Please see header for specification */
 Anvil::MemoryAllocator::MemoryAllocator(Anvil::Device* device_ptr,
                                         bool           mappable_memory_required,
-                                        bool           coherent_memory_required)
+                                        bool           coherent_memory_required,
+                                        bool           cached_memory_required)
     :m_device_ptr              (device_ptr),
      m_is_baked                (false),
+     m_cached_memory_required  (cached_memory_required),
      m_coherent_memory_required(coherent_memory_required),
      m_mappable_memory_required(mappable_memory_required),
      m_memory_block_ptr        (nullptr),
@@ -111,7 +113,8 @@ bool Anvil::MemoryAllocator::bake()
                                                 allowed_memory_types,
                                                 m_needed_memory_size,
                                                 m_mappable_memory_required,
-                                                m_coherent_memory_required);
+                                                m_coherent_memory_required,
+                                                m_cached_memory_required);
 
     /* Distribute memory regions to the registered objects */
     for (auto item_iterator  = m_items.cbegin();

@@ -100,6 +100,7 @@ namespace Anvil
                         VkBufferUsageFlags usage_flags,
                         bool               should_be_mappable,
                         bool               should_be_coherent,
+                        bool               should_be_cached,
                         const void*        opt_client_data);
 
         /** Creates a new Buffer wrapper instance. The new instance will reuse a region of the specified
@@ -193,6 +194,11 @@ namespace Anvil
         bool read(VkDeviceSize start_offset,
                   VkDeviceSize size,
                   void*        out_result_ptr);
+
+        bool readback_map(VkDeviceSize start_offset,
+                  VkDeviceSize size,
+                  void**       out_result_ptr);
+        void readback_unmap();
 
         /** Attaches a memory block to the buffer object.
          *

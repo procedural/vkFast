@@ -74,7 +74,8 @@ namespace Anvil
          **/
          MemoryAllocator(Anvil::Device* device_ptr,
                          bool           mappable_memory_required,
-                         bool           coherent_memory_required);
+                         bool           coherent_memory_required,
+                         bool           cached_memory_required);
 
          /** Destructor.
           *
@@ -122,6 +123,7 @@ namespace Anvil
         MemoryAllocator& operator=(const MemoryAllocator&);
 
         /* Private members */
+        bool           m_cached_memory_required;
         bool           m_coherent_memory_required;
         bool           m_mappable_memory_required;
 

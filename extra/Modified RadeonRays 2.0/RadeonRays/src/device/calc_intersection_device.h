@@ -49,14 +49,17 @@ namespace RadeonRays
         void Preprocess(World const& world) override;
 
         Buffer* CreateBuffer(size_t size, void* initdata) const override;
+        Buffer* CreateBufferReadback(size_t size, void* initdata) const override;
 
         void DeleteBuffer(Buffer* const) const override;
 
         void DeleteEvent(Event* const) const override;
 
         void MapBuffer(Buffer* buffer, MapType type, size_t offset, size_t size, void** data, Event** event) const override;
+        void MapBufferReadback(Buffer* buffer, MapType type, size_t offset, size_t size, void** data) const override;
 
         void UnmapBuffer(Buffer* buffer, void* ptr, Event** event) const override;
+        void UnmapBufferReadback(Buffer* buffer, void* ptr) const override;
 
         void QueryIntersection(Buffer const* rays, int numrays, Buffer* hitinfos, Event const* waitevent, Event** event) const override;
 
