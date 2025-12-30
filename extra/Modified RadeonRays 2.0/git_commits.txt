@@ -1,0 +1,2 @@
+RadeonRays_SDK: commit 2af21ac81aaf4350d72bdd74850ca3e8c341fb4b https://github.com/GPUOpen-LibrariesAndSDKs/RadeonRays_SDK/commit/2af21ac81aaf4350d72bdd74850ca3e8c341fb4b
+Anvil:          commit 84d22865842d45fe7762a3d68ef2837e60a8e9f5 https://github.com/GPUOpen-Archive/Anvil/commit/84d22865842d45fe7762a3d68ef2837e60a8e9f5

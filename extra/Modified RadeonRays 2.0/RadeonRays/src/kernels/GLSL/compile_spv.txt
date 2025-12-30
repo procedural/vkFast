@@ -1,0 +1,1 @@
+/opt/RedGpuSDK/sdk/1.2.135.0/x86_64/bin/glslangValidator -x -S comp -V100 .comp
