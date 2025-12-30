@@ -9236,8 +9236,8 @@ VKAPI_ATTR void VKAPI_CALL vkCmdDecodeVideoKHR(
 
 // VK_KHR_video_encode_h264 is a preprocessor guard. Do not pass it to API calls.
 #define VK_KHR_video_encode_h264 1
-#include "vk_video/vulkan_video_codec_h264std.h"
-#include "vk_video/vulkan_video_codec_h264std_encode.h"
+//#include "vk_video/vulkan_video_codec_h264std.h"
+//#include "vk_video/vulkan_video_codec_h264std_encode.h"
 #define VK_KHR_VIDEO_ENCODE_H264_SPEC_VERSION 14
 #define VK_KHR_VIDEO_ENCODE_H264_EXTENSION_NAME "VK_KHR_video_encode_h264"
 
@@ -9294,7 +9294,7 @@ typedef struct VkVideoEncodeH264CapabilitiesKHR {
     VkStructureType                        sType;
     void*                                  pNext;
     VkVideoEncodeH264CapabilityFlagsKHR    flags;
-    StdVideoH264LevelIdc                   maxLevelIdc;
+    //StdVideoH264LevelIdc                   maxLevelIdc;
     uint32_t                               maxSliceCount;
     uint32_t                               maxPPictureL0ReferenceCount;
     uint32_t                               maxBPictureL0ReferenceCount;
@@ -9332,16 +9332,16 @@ typedef struct VkVideoEncodeH264SessionCreateInfoKHR {
     VkStructureType         sType;
     const void*             pNext;
     VkBool32                useMaxLevelIdc;
-    StdVideoH264LevelIdc    maxLevelIdc;
+    //StdVideoH264LevelIdc    maxLevelIdc;
 } VkVideoEncodeH264SessionCreateInfoKHR;
 
 typedef struct VkVideoEncodeH264SessionParametersAddInfoKHR {
     VkStructureType                            sType;
     const void*                                pNext;
     uint32_t                                   stdSPSCount;
-    const StdVideoH264SequenceParameterSet*    pStdSPSs;
+    //const StdVideoH264SequenceParameterSet*    pStdSPSs;
     uint32_t                                   stdPPSCount;
-    const StdVideoH264PictureParameterSet*     pStdPPSs;
+    //const StdVideoH264PictureParameterSet*     pStdPPSs;
 } VkVideoEncodeH264SessionParametersAddInfoKHR;
 
 typedef struct VkVideoEncodeH264SessionParametersCreateInfoKHR {
@@ -9372,7 +9372,7 @@ typedef struct VkVideoEncodeH264NaluSliceInfoKHR {
     VkStructureType                         sType;
     const void*                             pNext;
     int32_t                                 constantQp;
-    const StdVideoEncodeH264SliceHeader*    pStdSliceHeader;
+    //const StdVideoEncodeH264SliceHeader*    pStdSliceHeader;
 } VkVideoEncodeH264NaluSliceInfoKHR;
 
 typedef struct VkVideoEncodeH264PictureInfoKHR {
@@ -9380,20 +9380,20 @@ typedef struct VkVideoEncodeH264PictureInfoKHR {
     const void*                                 pNext;
     uint32_t                                    naluSliceEntryCount;
     const VkVideoEncodeH264NaluSliceInfoKHR*    pNaluSliceEntries;
-    const StdVideoEncodeH264PictureInfo*        pStdPictureInfo;
+    //const StdVideoEncodeH264PictureInfo*        pStdPictureInfo;
     VkBool32                                    generatePrefixNalu;
 } VkVideoEncodeH264PictureInfoKHR;
 
 typedef struct VkVideoEncodeH264DpbSlotInfoKHR {
     VkStructureType                           sType;
     const void*                               pNext;
-    const StdVideoEncodeH264ReferenceInfo*    pStdReferenceInfo;
+    //const StdVideoEncodeH264ReferenceInfo*    pStdReferenceInfo;
 } VkVideoEncodeH264DpbSlotInfoKHR;
 
 typedef struct VkVideoEncodeH264ProfileInfoKHR {
     VkStructureType           sType;
     const void*               pNext;
-    StdVideoH264ProfileIdc    stdProfileIdc;
+    //StdVideoH264ProfileIdc    stdProfileIdc;
 } VkVideoEncodeH264ProfileInfoKHR;
 
 typedef struct VkVideoEncodeH264RateControlInfoKHR {
@@ -9436,8 +9436,8 @@ typedef struct VkVideoEncodeH264GopRemainingFrameInfoKHR {
 
 // VK_KHR_video_encode_h265 is a preprocessor guard. Do not pass it to API calls.
 #define VK_KHR_video_encode_h265 1
-#include "vk_video/vulkan_video_codec_h265std.h"
-#include "vk_video/vulkan_video_codec_h265std_encode.h"
+//#include "vk_video/vulkan_video_codec_h265std.h"
+//#include "vk_video/vulkan_video_codec_h265std_encode.h"
 #define VK_KHR_VIDEO_ENCODE_H265_SPEC_VERSION 14
 #define VK_KHR_VIDEO_ENCODE_H265_EXTENSION_NAME "VK_KHR_video_encode_h265"
 
@@ -9513,7 +9513,7 @@ typedef struct VkVideoEncodeH265CapabilitiesKHR {
     VkStructureType                                sType;
     void*                                          pNext;
     VkVideoEncodeH265CapabilityFlagsKHR            flags;
-    StdVideoH265LevelIdc                           maxLevelIdc;
+    //StdVideoH265LevelIdc                           maxLevelIdc;
     uint32_t                                       maxSliceSegmentCount;
     VkExtent2D                                     maxTiles;
     VkVideoEncodeH265CtbSizeFlagsKHR               ctbSizes;
@@ -9534,7 +9534,7 @@ typedef struct VkVideoEncodeH265SessionCreateInfoKHR {
     VkStructureType         sType;
     const void*             pNext;
     VkBool32                useMaxLevelIdc;
-    StdVideoH265LevelIdc    maxLevelIdc;
+    //StdVideoH265LevelIdc    maxLevelIdc;
 } VkVideoEncodeH265SessionCreateInfoKHR;
 
 typedef struct VkVideoEncodeH265QpKHR {
@@ -9560,11 +9560,11 @@ typedef struct VkVideoEncodeH265SessionParametersAddInfoKHR {
     VkStructureType                            sType;
     const void*                                pNext;
     uint32_t                                   stdVPSCount;
-    const StdVideoH265VideoParameterSet*       pStdVPSs;
+    //const StdVideoH265VideoParameterSet*       pStdVPSs;
     uint32_t                                   stdSPSCount;
-    const StdVideoH265SequenceParameterSet*    pStdSPSs;
+    //const StdVideoH265SequenceParameterSet*    pStdSPSs;
     uint32_t                                   stdPPSCount;
-    const StdVideoH265PictureParameterSet*     pStdPPSs;
+    //const StdVideoH265PictureParameterSet*     pStdPPSs;
 } VkVideoEncodeH265SessionParametersAddInfoKHR;
 
 typedef struct VkVideoEncodeH265SessionParametersCreateInfoKHR {
@@ -9599,7 +9599,7 @@ typedef struct VkVideoEncodeH265NaluSliceSegmentInfoKHR {
     VkStructureType                                sType;
     const void*                                    pNext;
     int32_t                                        constantQp;
-    const StdVideoEncodeH265SliceSegmentHeader*    pStdSliceSegmentHeader;
+    //const StdVideoEncodeH265SliceSegmentHeader*    pStdSliceSegmentHeader;
 } VkVideoEncodeH265NaluSliceSegmentInfoKHR;
 
 typedef struct VkVideoEncodeH265PictureInfoKHR {
@@ -9607,19 +9607,19 @@ typedef struct VkVideoEncodeH265PictureInfoKHR {
     const void*                                        pNext;
     uint32_t                                           naluSliceSegmentEntryCount;
     const VkVideoEncodeH265NaluSliceSegmentInfoKHR*    pNaluSliceSegmentEntries;
-    const StdVideoEncodeH265PictureInfo*               pStdPictureInfo;
+    //const StdVideoEncodeH265PictureInfo*               pStdPictureInfo;
 } VkVideoEncodeH265PictureInfoKHR;
 
 typedef struct VkVideoEncodeH265DpbSlotInfoKHR {
     VkStructureType                           sType;
     const void*                               pNext;
-    const StdVideoEncodeH265ReferenceInfo*    pStdReferenceInfo;
+    //const StdVideoEncodeH265ReferenceInfo*    pStdReferenceInfo;
 } VkVideoEncodeH265DpbSlotInfoKHR;
 
 typedef struct VkVideoEncodeH265ProfileInfoKHR {
     VkStructureType           sType;
     const void*               pNext;
-    StdVideoH265ProfileIdc    stdProfileIdc;
+    //StdVideoH265ProfileIdc    stdProfileIdc;
 } VkVideoEncodeH265ProfileInfoKHR;
 
 typedef struct VkVideoEncodeH265RateControlInfoKHR {
@@ -9662,7 +9662,7 @@ typedef struct VkVideoEncodeH265GopRemainingFrameInfoKHR {
 
 // VK_KHR_video_decode_h264 is a preprocessor guard. Do not pass it to API calls.
 #define VK_KHR_video_decode_h264 1
-#include "vk_video/vulkan_video_codec_h264std_decode.h"
+//#include "vk_video/vulkan_video_codec_h264std_decode.h"
 #define VK_KHR_VIDEO_DECODE_H264_SPEC_VERSION 9
 #define VK_KHR_VIDEO_DECODE_H264_EXTENSION_NAME "VK_KHR_video_decode_h264"
 
@@ -9676,14 +9676,14 @@ typedef VkFlags VkVideoDecodeH264PictureLayoutFlagsKHR;
 typedef struct VkVideoDecodeH264ProfileInfoKHR {
     VkStructureType                              sType;
     const void*                                  pNext;
-    StdVideoH264ProfileIdc                       stdProfileIdc;
+    //StdVideoH264ProfileIdc                       stdProfileIdc;
     VkVideoDecodeH264PictureLayoutFlagBitsKHR    pictureLayout;
 } VkVideoDecodeH264ProfileInfoKHR;
 
 typedef struct VkVideoDecodeH264CapabilitiesKHR {
     VkStructureType         sType;
     void*                   pNext;
-    StdVideoH264LevelIdc    maxLevelIdc;
+    //StdVideoH264LevelIdc    maxLevelIdc;
     VkOffset2D              fieldOffsetGranularity;
 } VkVideoDecodeH264CapabilitiesKHR;
 
@@ -9691,9 +9691,9 @@ typedef struct VkVideoDecodeH264SessionParametersAddInfoKHR {
     VkStructureType                            sType;
     const void*                                pNext;
     uint32_t                                   stdSPSCount;
-    const StdVideoH264SequenceParameterSet*    pStdSPSs;
+    //const StdVideoH264SequenceParameterSet*    pStdSPSs;
     uint32_t                                   stdPPSCount;
-    const StdVideoH264PictureParameterSet*     pStdPPSs;
+    //const StdVideoH264PictureParameterSet*     pStdPPSs;
 } VkVideoDecodeH264SessionParametersAddInfoKHR;
 
 typedef struct VkVideoDecodeH264SessionParametersCreateInfoKHR {
@@ -9707,7 +9707,7 @@ typedef struct VkVideoDecodeH264SessionParametersCreateInfoKHR {
 typedef struct VkVideoDecodeH264PictureInfoKHR {
     VkStructureType                         sType;
     const void*                             pNext;
-    const StdVideoDecodeH264PictureInfo*    pStdPictureInfo;
+    //const StdVideoDecodeH264PictureInfo*    pStdPictureInfo;
     uint32_t                                sliceCount;
     const uint32_t*                         pSliceOffsets;
 } VkVideoDecodeH264PictureInfoKHR;
@@ -9715,7 +9715,7 @@ typedef struct VkVideoDecodeH264PictureInfoKHR {
 typedef struct VkVideoDecodeH264DpbSlotInfoKHR {
     VkStructureType                           sType;
     const void*                               pNext;
-    const StdVideoDecodeH264ReferenceInfo*    pStdReferenceInfo;
+    //const StdVideoDecodeH264ReferenceInfo*    pStdReferenceInfo;
 } VkVideoDecodeH264DpbSlotInfoKHR;
 
 
@@ -10852,30 +10852,30 @@ typedef struct VkPhysicalDeviceShaderClockFeaturesKHR {
 
 // VK_KHR_video_decode_h265 is a preprocessor guard. Do not pass it to API calls.
 #define VK_KHR_video_decode_h265 1
-#include "vk_video/vulkan_video_codec_h265std_decode.h"
+//#include "vk_video/vulkan_video_codec_h265std_decode.h"
 #define VK_KHR_VIDEO_DECODE_H265_SPEC_VERSION 8
 #define VK_KHR_VIDEO_DECODE_H265_EXTENSION_NAME "VK_KHR_video_decode_h265"
 typedef struct VkVideoDecodeH265ProfileInfoKHR {
     VkStructureType           sType;
     const void*               pNext;
-    StdVideoH265ProfileIdc    stdProfileIdc;
+    //StdVideoH265ProfileIdc    stdProfileIdc;
 } VkVideoDecodeH265ProfileInfoKHR;
 
 typedef struct VkVideoDecodeH265CapabilitiesKHR {
     VkStructureType         sType;
     void*                   pNext;
-    StdVideoH265LevelIdc    maxLevelIdc;
+    //StdVideoH265LevelIdc    maxLevelIdc;
 } VkVideoDecodeH265CapabilitiesKHR;
 
 typedef struct VkVideoDecodeH265SessionParametersAddInfoKHR {
     VkStructureType                            sType;
     const void*                                pNext;
     uint32_t                                   stdVPSCount;
-    const StdVideoH265VideoParameterSet*       pStdVPSs;
+    //const StdVideoH265VideoParameterSet*       pStdVPSs;
     uint32_t                                   stdSPSCount;
-    const StdVideoH265SequenceParameterSet*    pStdSPSs;
+    //const StdVideoH265SequenceParameterSet*    pStdSPSs;
     uint32_t                                   stdPPSCount;
-    const StdVideoH265PictureParameterSet*     pStdPPSs;
+    //const StdVideoH265PictureParameterSet*     pStdPPSs;
 } VkVideoDecodeH265SessionParametersAddInfoKHR;
 
 typedef struct VkVideoDecodeH265SessionParametersCreateInfoKHR {
@@ -10890,7 +10890,7 @@ typedef struct VkVideoDecodeH265SessionParametersCreateInfoKHR {
 typedef struct VkVideoDecodeH265PictureInfoKHR {
     VkStructureType                         sType;
     const void*                             pNext;
-    const StdVideoDecodeH265PictureInfo*    pStdPictureInfo;
+    //const StdVideoDecodeH265PictureInfo*    pStdPictureInfo;
     uint32_t                                sliceSegmentCount;
     const uint32_t*                         pSliceSegmentOffsets;
 } VkVideoDecodeH265PictureInfoKHR;
@@ -10898,7 +10898,7 @@ typedef struct VkVideoDecodeH265PictureInfoKHR {
 typedef struct VkVideoDecodeH265DpbSlotInfoKHR {
     VkStructureType                           sType;
     const void*                               pNext;
-    const StdVideoDecodeH265ReferenceInfo*    pStdReferenceInfo;
+    //const StdVideoDecodeH265ReferenceInfo*    pStdReferenceInfo;
 } VkVideoDecodeH265DpbSlotInfoKHR;
 
 
@@ -12210,34 +12210,34 @@ typedef struct VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR {
 
 // VK_KHR_video_decode_av1 is a preprocessor guard. Do not pass it to API calls.
 #define VK_KHR_video_decode_av1 1
-#include "vk_video/vulkan_video_codec_av1std.h"
-#include "vk_video/vulkan_video_codec_av1std_decode.h"
+//#include "vk_video/vulkan_video_codec_av1std.h"
+//#include "vk_video/vulkan_video_codec_av1std_decode.h"
 #define VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR 7U
 #define VK_KHR_VIDEO_DECODE_AV1_SPEC_VERSION 1
 #define VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME "VK_KHR_video_decode_av1"
 typedef struct VkVideoDecodeAV1ProfileInfoKHR {
     VkStructureType       sType;
     const void*           pNext;
-    StdVideoAV1Profile    stdProfile;
+    //StdVideoAV1Profile    stdProfile;
     VkBool32              filmGrainSupport;
 } VkVideoDecodeAV1ProfileInfoKHR;
 
 typedef struct VkVideoDecodeAV1CapabilitiesKHR {
     VkStructureType     sType;
     void*               pNext;
-    StdVideoAV1Level    maxLevel;
+    //StdVideoAV1Level    maxLevel;
 } VkVideoDecodeAV1CapabilitiesKHR;
 
 typedef struct VkVideoDecodeAV1SessionParametersCreateInfoKHR {
     VkStructureType                     sType;
     const void*                         pNext;
-    const StdVideoAV1SequenceHeader*    pStdSequenceHeader;
+    //const StdVideoAV1SequenceHeader*    pStdSequenceHeader;
 } VkVideoDecodeAV1SessionParametersCreateInfoKHR;
 
 typedef struct VkVideoDecodeAV1PictureInfoKHR {
     VkStructureType                        sType;
     const void*                            pNext;
-    const StdVideoDecodeAV1PictureInfo*    pStdPictureInfo;
+    //const StdVideoDecodeAV1PictureInfo*    pStdPictureInfo;
     int32_t                                referenceNameSlotIndices[VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR];
     uint32_t                               frameHeaderOffset;
     uint32_t                               tileCount;
@@ -12248,14 +12248,14 @@ typedef struct VkVideoDecodeAV1PictureInfoKHR {
 typedef struct VkVideoDecodeAV1DpbSlotInfoKHR {
     VkStructureType                          sType;
     const void*                              pNext;
-    const StdVideoDecodeAV1ReferenceInfo*    pStdReferenceInfo;
+    //const StdVideoDecodeAV1ReferenceInfo*    pStdReferenceInfo;
 } VkVideoDecodeAV1DpbSlotInfoKHR;
 
 
 
 // VK_KHR_video_encode_av1 is a preprocessor guard. Do not pass it to API calls.
 #define VK_KHR_video_encode_av1 1
-#include "vk_video/vulkan_video_codec_av1std_encode.h"
+//#include "vk_video/vulkan_video_codec_av1std_encode.h"
 #define VK_KHR_VIDEO_ENCODE_AV1_SPEC_VERSION 1
 #define VK_KHR_VIDEO_ENCODE_AV1_EXTENSION_NAME "VK_KHR_video_encode_av1"
 
@@ -12318,7 +12318,7 @@ typedef struct VkVideoEncodeAV1CapabilitiesKHR {
     VkStructureType                           sType;
     void*                                     pNext;
     VkVideoEncodeAV1CapabilityFlagsKHR        flags;
-    StdVideoAV1Level                          maxLevel;
+    //StdVideoAV1Level                          maxLevel;
     VkExtent2D                                codedPictureAlignment;
     VkExtent2D                                maxTiles;
     VkExtent2D                                minTileSize;
@@ -12373,16 +12373,16 @@ typedef struct VkVideoEncodeAV1SessionCreateInfoKHR {
     VkStructureType     sType;
     const void*         pNext;
     VkBool32            useMaxLevel;
-    StdVideoAV1Level    maxLevel;
+    //StdVideoAV1Level    maxLevel;
 } VkVideoEncodeAV1SessionCreateInfoKHR;
 
 typedef struct VkVideoEncodeAV1SessionParametersCreateInfoKHR {
     VkStructureType                               sType;
     const void*                                   pNext;
-    const StdVideoAV1SequenceHeader*              pStdSequenceHeader;
-    const StdVideoEncodeAV1DecoderModelInfo*      pStdDecoderModelInfo;
+    //const StdVideoAV1SequenceHeader*              pStdSequenceHeader;
+    //const StdVideoEncodeAV1DecoderModelInfo*      pStdDecoderModelInfo;
     uint32_t                                      stdOperatingPointCount;
-    const StdVideoEncodeAV1OperatingPointInfo*    pStdOperatingPoints;
+    //const StdVideoEncodeAV1OperatingPointInfo*    pStdOperatingPoints;
 } VkVideoEncodeAV1SessionParametersCreateInfoKHR;
 
 typedef struct VkVideoEncodeAV1PictureInfoKHR {
@@ -12391,7 +12391,7 @@ typedef struct VkVideoEncodeAV1PictureInfoKHR {
     VkVideoEncodeAV1PredictionModeKHR      predictionMode;
     VkVideoEncodeAV1RateControlGroupKHR    rateControlGroup;
     uint32_t                               constantQIndex;
-    const StdVideoEncodeAV1PictureInfo*    pStdPictureInfo;
+    //const StdVideoEncodeAV1PictureInfo*    pStdPictureInfo;
     int32_t                                referenceNameSlotIndices[VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR];
     VkBool32                               primaryReferenceCdfOnly;
     VkBool32                               generateObuExtensionHeader;
@@ -12400,13 +12400,13 @@ typedef struct VkVideoEncodeAV1PictureInfoKHR {
 typedef struct VkVideoEncodeAV1DpbSlotInfoKHR {
     VkStructureType                          sType;
     const void*                              pNext;
-    const StdVideoEncodeAV1ReferenceInfo*    pStdReferenceInfo;
+    //const StdVideoEncodeAV1ReferenceInfo*    pStdReferenceInfo;
 } VkVideoEncodeAV1DpbSlotInfoKHR;
 
 typedef struct VkVideoEncodeAV1ProfileInfoKHR {
     VkStructureType       sType;
     const void*           pNext;
-    StdVideoAV1Profile    stdProfile;
+    //StdVideoAV1Profile    stdProfile;
 } VkVideoEncodeAV1ProfileInfoKHR;
 
 typedef struct VkVideoEncodeAV1FrameSizeKHR {
