@@ -1,9 +1,3 @@
-#if 0
-cd vs2019
-cl /EHsc ../main.cpp ../../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c /arch:AVX2 /openmp /link /stack:64000000
-exit
-#endif
-
 #include "../../vkfast.h"
 
 #include <stdio.h> // For printf
