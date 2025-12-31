@@ -9,3 +9,5 @@ redgpu.obj
 redgpu_2.obj
 redgpu_32.obj
 vkfast.obj
+profile.dll
+github_procedural_profile.json

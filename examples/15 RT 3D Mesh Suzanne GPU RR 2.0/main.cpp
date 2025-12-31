@@ -22,7 +22,7 @@
 #include "../../extra/Modified RadeonRays 2.0/RadeonRays/include/radeon_rays.h"
 #if 0
 #include "../../extra/profile/profile.h" // https://github.com/procedural/profile
-#pragma comment(lib, "../../extra/profile/profiledll.lib") // https://github.com/procedural/profile
+#pragma comment(lib, "../../../extra/profile/profiledll.lib") // https://github.com/procedural/profile
 #else
 #define profileBegin(x)
 #define profileEnd(x)
