@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include "../primitive/instance.h"
 #include "../except/except.h"
 
-#include "../device/calc_intersection_device_vk.h"
 #include <wrappers/buffer.h>
 
 #include <vector>

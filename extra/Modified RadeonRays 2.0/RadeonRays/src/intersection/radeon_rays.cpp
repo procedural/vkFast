@@ -28,8 +28,6 @@ THE SOFTWARE.
 #include "../device/calc_intersection_device.h"
 #include <cassert>
 
-#include "../device/calc_intersection_device_vk.h"
-
 namespace RadeonRays
 {
     IntersectionApi* IntersectionApi::Create(std::uint32_t devidx)
