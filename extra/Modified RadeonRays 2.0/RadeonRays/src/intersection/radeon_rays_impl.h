@@ -132,11 +132,12 @@ namespace RadeonRays
         void SetOption(char const* name, char const* value) override;
         // Set API global option: float
         void SetOption(char const* name, float value) override;
-        
-
-        IntersectionDevice* GetDevice() const { return m_device.get(); }
 
         IntersectionApiImpl(CalcIntersectionDevice* device);
+
+        // Intersection device
+        std::unique_ptr<CalcIntersectionDevice> m_device;
+
     protected:
         friend class IntersectionApi;
 
@@ -147,8 +148,6 @@ namespace RadeonRays
         World world_;
         // Shape ID tracker
         mutable std::atomic<Id> nextid_;
-        // Intersection device
-        std::unique_ptr<CalcIntersectionDevice> m_device;
     };
 }
 

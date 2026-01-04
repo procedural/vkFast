@@ -21,8 +21,6 @@ THE SOFTWARE.
 ********************************************************************/
 #pragma once
 
-#include "intersection_device.h"
-
 #include "calc.h"
 #include "device.h"
 
@@ -41,35 +39,35 @@ namespace RadeonRays
     ///< The class represents Calc based intersection device.
     ///< It uses Calc::Device abstraction to implement intersection algorithm.
     ///<
-    class CalcIntersectionDevice : public IntersectionDevice
+    class CalcIntersectionDevice
     {
     public:
         //
         CalcIntersectionDevice(Calc::Device* device);
         ~CalcIntersectionDevice();
 
-        void Preprocess(World const& world) override;
+        void Preprocess(World const& world);
 
-        Buffer* CreateBuffer(size_t size, void* initdata) const override;
-        Buffer* CreateBufferReadback(size_t size, void* initdata) const override;
+        Buffer* CreateBuffer(size_t size, void* initdata) const;
+        Buffer* CreateBufferReadback(size_t size, void* initdata) const;
 
-        void DeleteBuffer(Buffer* const) const override;
+        void DeleteBuffer(Buffer* const) const;
 
-        void DeleteEvent(Event* const) const override;
+        void DeleteEvent(Event* const) const;
 
-        void MapBuffer(Buffer* buffer, MapType type, size_t offset, size_t size, void** data, Event** event) const override;
-        void MapBufferReadback(Buffer* buffer, MapType type, size_t offset, size_t size, void** data) const override;
+        void MapBuffer(Buffer* buffer, MapType type, size_t offset, size_t size, void** data, Event** event) const;
+        void MapBufferReadback(Buffer* buffer, MapType type, size_t offset, size_t size, void** data) const;
 
-        void UnmapBuffer(Buffer* buffer, void* ptr, Event** event) const override;
-        void UnmapBufferReadback(Buffer* buffer, void* ptr) const override;
+        void UnmapBuffer(Buffer* buffer, void* ptr, Event** event) const;
+        void UnmapBufferReadback(Buffer* buffer, void* ptr) const;
 
-        void QueryIntersection(Buffer const* rays, int numrays, Buffer* hitinfos, Event const* waitevent, Event** event) const override;
+        void QueryIntersection(Buffer const* rays, int numrays, Buffer* hitinfos, Event const* waitevent, Event** event) const;
 
-        void QueryOcclusion(Buffer const* rays, int numrays, Buffer* hitresults, Event const* waitevent, Event** event) const override;
+        void QueryOcclusion(Buffer const* rays, int numrays, Buffer* hitresults, Event const* waitevent, Event** event) const;
 
-        void QueryIntersection(Buffer const* rays, Buffer const* numrays, int maxrays, Buffer* hitinfos, Event const* waitevent, Event** event) const override;
+        void QueryIntersection(Buffer const* rays, Buffer const* numrays, int maxrays, Buffer* hitinfos, Event const* waitevent, Event** event) const;
 
-        void QueryOcclusion(Buffer const* rays, Buffer const* numrays, int maxrays, Buffer* hitresults, Event const* waitevent, Event** event) const override;
+        void QueryOcclusion(Buffer const* rays, Buffer const* numrays, int maxrays, Buffer* hitresults, Event const* waitevent, Event** event) const;
 
     protected:
         CalcEventHolder* CreateEventHolder() const;
