@@ -24,8 +24,10 @@ THE SOFTWARE.
 
 #include "calc.h"
 #include "device.h"
-#include "strategy.h"
+#include "radeon_rays.h"
+#include "event.h"
 #include "executable.h"
+#include "../src/world/world.h"
 #include <memory>
 
 namespace RadeonRays
@@ -103,26 +105,26 @@ namespace RadeonRays
 {
     class Bvh;
     
-    class BvhStrategy : public Strategy
+    class BvhStrategy
     {
     public:
         BvhStrategy(Calc::Device* device);
 
-        void Preprocess(World const& world) override;
+        void Preprocess(World const& world);
         
         void QueryIntersection(std::uint32_t queueidx,
                                Calc::Buffer const* rays,
                                std::uint32_t numrays,
                                Calc::Buffer* hits,
                                Calc::Event const* waitevent,
-                               Calc::Event** event) const override;
+                               Calc::Event** event) const;
         
         void QueryOcclusion(std::uint32_t queueidx,
                             Calc::Buffer const* rays,
                             std::uint32_t numrays,
                             Calc::Buffer* hits,
                             Calc::Event const* waitevent,
-                            Calc::Event** event) const override;
+                            Calc::Event** event) const;
         
         void QueryIntersection(std::uint32_t queueidx,
                                Calc::Buffer const* rays,
@@ -130,7 +132,7 @@ namespace RadeonRays
                                std::uint32_t maxrays,
                                Calc::Buffer* hits,
                                Calc::Event const* waitevent,
-                               Calc::Event** event) const override;
+                               Calc::Event** event) const;
         
         void QueryOcclusion(std::uint32_t queueidx,
                             Calc::Buffer const* rays,
@@ -138,8 +140,9 @@ namespace RadeonRays
                             std::uint32_t maxrays,
                             Calc::Buffer* hits,
                             Calc::Event const* waitevent,
-                            Calc::Event** event) const override;
+                            Calc::Event** event) const;
 
+        Calc::Device* m_device;
         // Implementation data
         std::unique_ptr<RadeonRays::BvhStrategyGpuData> m_gpudata;
 

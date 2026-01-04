@@ -55,7 +55,7 @@ const unsigned bvh_IntersectAnyRC[] = {
 namespace RadeonRays
 {
     BvhStrategy::BvhStrategy(Calc::Device* device)
-        : Strategy(device)
+        : m_device(device)
         , m_gpudata(new BvhStrategyGpuData(device))
     {
         m_bvh = nullptr;

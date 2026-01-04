@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 #include "calc_holder.h"
 
-#include "../strategy/strategy.h"
 #include "../strategy/bvhstrategy.h"
 #include "../strategy/bvh2lstrategy.h"
 #include "../world/world.h"
@@ -95,7 +94,8 @@ namespace RadeonRays
         {
             if (m_intersector_string != "bvh2l")
             {
-                m_intersector.reset(new Bvh2lStrategy(m_device.get()));
+                // TODO(Constantine): here was a switch to bvh2l strategy.
+                m_intersector2l.reset(new Bvh2lStrategy(m_device.get()));
                 m_intersector_string = "bvh2l";
             }
         }

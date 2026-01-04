@@ -30,6 +30,8 @@ THE SOFTWARE.
 #include <functional>
 #include <queue>
 
+#include "../strategy/bvhstrategy.h"
+#include "../strategy/bvh2lstrategy.h"
 
 namespace RadeonRays
 {
@@ -74,7 +76,8 @@ namespace RadeonRays
         void      ReleaseEventHolder(CalcEventHolder* e) const;
 
         std::unique_ptr<Calc::Device, std::function<void(Calc::Device*)>> m_device;
-        std::unique_ptr<Strategy> m_intersector;
+        std::unique_ptr<BvhStrategy> m_intersector;
+        std::unique_ptr<Bvh2lStrategy> m_intersector2l;
         std::string m_intersector_string;
 
         // Initial number of events in the pool

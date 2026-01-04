@@ -52,102 +52,10 @@ const unsigned bvh2l_IntersectAnyRC2L[] = {
 
 namespace RadeonRays
 {
-    struct Bvh2lStrategy::ShapeData
-    {
-        // Shape ID
-        Id id;
-        // Index of root bvh node
-        int bvhidx;
-        int mask;
-        int padding1;
-        // Transform
-        matrix minv;
-        // Motion blur data
-        float3 linearvelocity;
-        // Angular veocity (quaternion)
-        quaternion angularvelocity;
-    };
-
-    struct Bvh2lStrategy::Face
-    {
-        int idx[3];
-        int shadeidx;
-        // Primitive ID within the mesh
-        int id;
-        // Idx count
-        int cnt;
-        int padding[2];
-    };
-
-    struct Bvh2lStrategy::GpuData
-    {
-        // Device
-        Calc::Device* device;
-        // BVH nodes
-        Calc::Buffer* bvh;
-        // Vertex positions
-        Calc::Buffer* vertices;
-        // Indices
-        Calc::Buffer* faces;
-        // Shape IDs
-        Calc::Buffer* shapes;
-
-        int bvhrootidx;
-
-        Calc::Executable* executable;
-        Calc::Function* isect_func;
-        Calc::Function* occlude_func;
-        Calc::Function* isect_indirect_func;
-        Calc::Function* occlude_indirect_func;
-
-        GpuData(Calc::Device* d)
-            : device(d)
-            , bvh(nullptr)
-            , vertices(nullptr)
-            , faces(nullptr)
-            , shapes(nullptr)
-            , bvhrootidx(-1)
-            , executable(nullptr)
-            , isect_func(nullptr)
-            , occlude_func(nullptr)
-            , isect_indirect_func(nullptr)
-            , occlude_indirect_func(nullptr)
-        {
-        }
-
-        ~GpuData()
-        {
-            device->DeleteBuffer(bvh);
-            device->DeleteBuffer(vertices);
-            device->DeleteBuffer(faces);
-            device->DeleteBuffer(shapes);
-            if(executable != nullptr)
-            {
-                executable->DeleteFunction(isect_func);
-                executable->DeleteFunction(occlude_func);
-                executable->DeleteFunction(isect_indirect_func);
-                executable->DeleteFunction(occlude_indirect_func);
-                device->DeleteExecutable(executable);
-            }
-        }
-    };
-
-
-    struct Bvh2lStrategy::CpuData
-    {
-        std::vector<int> mesh_vertices_start_idx;
-        std::vector<int> mesh_faces_start_idx;
-        std::vector<Bvh const*> bvhptrs;
-        std::vector<ShapeData> shapedata;
-        std::vector<bbox> bounds;
-
-        PlainBvhTranslator translator;
-    };
-
     Bvh2lStrategy::Bvh2lStrategy(Calc::Device* device)
-        : Strategy(device)
-        , m_gpudata(new GpuData(device))
-        , m_cpudata(new CpuData)
+        : m_device(device)
+        , m_gpudata(new Bvh2lStrategyGpuData(device))
+        , m_cpudata(new Bvh2lStrategyCpuData)
     {
         m_gpudata->executable = m_device->CompileExecutable();
         m_gpudata->isect_func = m_gpudata->executable->CreateFunction(bvh2l_IntersectClosest2L, sizeof(bvh2l_IntersectClosest2L));
@@ -369,13 +277,13 @@ namespace RadeonRays
             // Create face buffer
             {
                 // Create face buffer
-                m_gpudata->faces = m_device->CreateBuffer(numfaces * sizeof(Face), Calc::kRead);
+                m_gpudata->faces = m_device->CreateBuffer(numfaces * sizeof(Bvh2lStrategyFace), Calc::kRead);
 
                 // Get the pointer to mapped data
-                Face* facedata = nullptr;
+                Bvh2lStrategyFace* facedata = nullptr;
                 Calc::Event* e = nullptr;
 
-                m_device->MapBuffer(m_gpudata->faces, 0, 0, numfaces * sizeof(Face), Calc::MapType::kMapWrite, (void**)&facedata, &e);
+                m_device->MapBuffer(m_gpudata->faces, 0, 0, numfaces * sizeof(Bvh2lStrategyFace), Calc::MapType::kMapWrite, (void**)&facedata, &e);
 
                 e->Wait();
                 m_device->DeleteEvent(e);
@@ -469,7 +377,7 @@ namespace RadeonRays
             }
 
             // Create face ID buffer
-            m_gpudata->shapes = m_device->CreateBuffer((nummeshes + numinstances) * sizeof(ShapeData), Calc::kRead, &m_cpudata->shapedata[0]);
+            m_gpudata->shapes = m_device->CreateBuffer((nummeshes + numinstances) * sizeof(Bvh2lStrategyShapeData), Calc::kRead, &m_cpudata->shapedata[0]);
         }
         // Refit
         else if (statechange != ShapeImpl::kStateChangeNone)
@@ -630,7 +538,7 @@ namespace RadeonRays
             }
 
             // Create face ID buffer
-            m_device->WriteBuffer(m_gpudata->shapes, 0, 0, (nummeshes + numinstances) * sizeof(ShapeData), (char*)&m_cpudata->shapedata[0], &e);
+            m_device->WriteBuffer(m_gpudata->shapes, 0, 0, (nummeshes + numinstances) * sizeof(Bvh2lStrategyShapeData), (char*)&m_cpudata->shapedata[0], &e);
 
             e->Wait();
             m_device->DeleteEvent(e);
