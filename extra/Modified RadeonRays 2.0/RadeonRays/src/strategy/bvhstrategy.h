@@ -25,8 +25,79 @@ THE SOFTWARE.
 #include "calc.h"
 #include "device.h"
 #include "strategy.h"
+#include "executable.h"
 #include <memory>
 
+namespace RadeonRays
+{
+    struct BvhStrategyShapeData
+    {
+        // Shape ID
+        Id id;
+        // Index of root bvh node
+        int bvhidx;
+        // Shape mask
+        int mask;
+        int padding1;
+
+        // Transform
+        matrix minv;
+        // Motion blur data
+        float3 linearvelocity;
+        // Angular veocity (quaternion)
+        quaternion angularvelocity;
+    };
+
+    struct BvhStrategyGpuData
+    {
+        // Device
+        Calc::Device* device;
+        // BVH nodes
+        Calc::Buffer* bvh;
+        // Vertex positions
+        Calc::Buffer* vertices;
+        // Indices
+        Calc::Buffer* faces;
+        // Shape IDs
+        Calc::Buffer* shapes;
+        // Counter
+        Calc::Buffer* raycnt;
+
+        Calc::Executable* executable;
+        Calc::Function* isect_func;
+        Calc::Function* occlude_func;
+        Calc::Function* isect_indirect_func;
+        Calc::Function* occlude_indirect_func;
+
+        BvhStrategyGpuData(Calc::Device* d)
+            : device(d)
+            , bvh(nullptr)
+            , vertices(nullptr)
+            , faces(nullptr)
+            , shapes(nullptr)
+            , raycnt(nullptr)
+            , executable(nullptr)
+        {
+        }
+
+        ~BvhStrategyGpuData()
+        {
+            device->DeleteBuffer(bvh);
+            device->DeleteBuffer(vertices);
+            device->DeleteBuffer(faces);
+            device->DeleteBuffer(shapes);
+            device->DeleteBuffer(raycnt);
+            if (executable)
+            {
+                executable->DeleteFunction(isect_func);
+                executable->DeleteFunction(occlude_func);
+                executable->DeleteFunction(isect_indirect_func);
+                executable->DeleteFunction(occlude_indirect_func);
+                device->DeleteExecutable(executable);
+            }
+        }
+    };
+}
 
 namespace RadeonRays
 {
@@ -69,12 +140,10 @@ namespace RadeonRays
                             Calc::Event const* waitevent,
                             Calc::Event** event) const override;
 
-    private:
-        struct GpuData;
-        struct ShapeData;
-
         // Implementation data
-        std::unique_ptr<GpuData> m_gpudata;
+        std::unique_ptr<RadeonRays::BvhStrategyGpuData> m_gpudata;
+
+    private:
         // Bvh data structure
         std::unique_ptr<Bvh> m_bvh;
     };
