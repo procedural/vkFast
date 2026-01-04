@@ -41,7 +41,6 @@
     <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\buffer.cpp" />
     <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Calc\src\calc.cpp" />
     <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\world\world.cpp" />
-    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\device\calc_intersection_device_vk.cpp" />
     <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\device\calc_intersection_device.cpp" />
     <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\util\options.cpp" />
     <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\translator\plain_bvh_translator.cpp" />
