@@ -34,7 +34,7 @@ THE SOFTWARE.
 
 namespace RadeonRays
 {
-    IntersectionApiImpl::IntersectionApiImpl(IntersectionDevice* device)
+    IntersectionApiImpl::IntersectionApiImpl(CalcIntersectionDevice* device)
         : nextid_(1)
     , m_device(device)
     {

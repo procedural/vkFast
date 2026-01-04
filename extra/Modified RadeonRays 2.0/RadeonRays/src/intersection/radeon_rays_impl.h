@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 #include "radeon_rays.h"
 #include "../world/world.h"
+#include "../device/calc_intersection_device.h"
 
 namespace RadeonRays
 {
@@ -135,7 +136,7 @@ namespace RadeonRays
 
         IntersectionDevice* GetDevice() const { return m_device.get(); }
 
-        IntersectionApiImpl(IntersectionDevice* device);
+        IntersectionApiImpl(CalcIntersectionDevice* device);
     protected:
         friend class IntersectionApi;
 
@@ -147,7 +148,7 @@ namespace RadeonRays
         // Shape ID tracker
         mutable std::atomic<Id> nextid_;
         // Intersection device
-        std::unique_ptr<IntersectionDevice> m_device;
+        std::unique_ptr<CalcIntersectionDevice> m_device;
     };
 }
 
