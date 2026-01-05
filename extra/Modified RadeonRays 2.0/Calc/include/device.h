@@ -128,7 +128,6 @@ namespace Calc
 
         void WaitForFence( uint64_t id ) const;
 
-    private:
         typedef std::unique_ptr<Anvil::PrimaryCommandBuffer> PrimaryCommandBuffer;
         typedef std::array<std::unique_ptr<Anvil::Fence>, NUM_FENCE_TRACKERS> FenceArray;
 

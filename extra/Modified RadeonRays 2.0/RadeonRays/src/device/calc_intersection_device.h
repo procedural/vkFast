@@ -69,7 +69,6 @@ namespace RadeonRays
 
         void QueryOcclusion(Buffer const* rays, Buffer const* numrays, int maxrays, Buffer* hitresults, Event const* waitevent, Event** event) const;
 
-    protected:
         CalcEventHolder* CreateEventHolder() const;
         void      ReleaseEventHolder(CalcEventHolder* e) const;
 
