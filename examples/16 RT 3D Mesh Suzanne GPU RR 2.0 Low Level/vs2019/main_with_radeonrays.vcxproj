@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ItemGroup>
+    <ClCompile Include="C:\RedGpuSDK\redgpu.c" />
+    <ClCompile Include="C:\RedGpuSDK\redgpu_2.c" />
+    <ClCompile Include="C:\RedGpuSDK\redgpu_32.c" />
+    <ClCompile Include="..\..\..\vkfast.c" />
+    <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\misc\glsl_to_spirv.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\misc\io.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\misc\base_pipeline_manager.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\misc\memory_allocator.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\misc\types.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\instance.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\device.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\descriptor_pool.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\physical_device.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\pipeline_layout.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\fence.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\descriptor_set_group.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\pipeline_layout_manager.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\descriptor_set.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\memory_block.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\shader_module.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\compute_pipeline_manager.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\descriptor_set_layout.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\command_pool.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\queue.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\command_buffer.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Anvil\src\wrappers\buffer.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\Calc\src\calc.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\world\world.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\device\calc_intersection_device.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\util\options.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\translator\plain_bvh_translator.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\translator\fatnode_bvh_translator.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\intersection\radeon_rays.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\intersection\radeon_rays_impl.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\strategy\bvhstrategy.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\strategy\bvh2lstrategy.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\accelerator\bvh.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\accelerator\split_bvh.cpp" />
+    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\src\primitive\mesh.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>_DEBUG;RR_STATIC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalIncludeDirectories>..\..\..\extra\Modified RadeonRays 2.0\Calc\include;..\..\..\extra\Modified RadeonRays 2.0\RadeonRays\include;..\..\..\extra\Modified Vulkan\include;..\..\..\extra\Modified RadeonRays 2.0\Anvil_premake;..\..\..\extra\Modified RadeonRays 2.0\Anvil\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <StackReserveSize>64000000</StackReserveSize>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>..\..\..\extra\Modified Vulkan\lib\vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>
