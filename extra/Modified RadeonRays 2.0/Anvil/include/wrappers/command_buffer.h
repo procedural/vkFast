@@ -276,6 +276,15 @@ namespace Anvil
          **/
         bool stop_recording();
 
+        VkCommandBuffer     m_command_buffer;
+        Anvil::Device*      m_device_ptr;
+        bool                m_is_renderpass_active;
+        Anvil::CommandPool* m_parent_command_pool_ptr;
+        bool                m_recording_in_progress;
+        CommandBufferType   m_type;
+
+        static bool         m_command_stashing_disabled;
+
     protected:
         /* Forward declarations */
         struct BindDescriptorSetsCommand;
@@ -429,15 +438,6 @@ namespace Anvil
         virtual ~CommandBufferBase();
 
         void on_parent_pool_released();
-
-        VkCommandBuffer     m_command_buffer;
-        Anvil::Device*      m_device_ptr;
-        bool                m_is_renderpass_active;
-        Anvil::CommandPool* m_parent_command_pool_ptr;
-        bool                m_recording_in_progress;
-        CommandBufferType   m_type;
-
-        static bool        m_command_stashing_disabled;
 
     private:
         /* Private type definitions */
