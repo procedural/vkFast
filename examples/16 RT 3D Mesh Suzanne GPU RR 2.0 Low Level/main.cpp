@@ -1,4 +1,5 @@
 #include "../../vkfast.h"
+#include "../../vkfast_ids.h"
 
 #include <stdio.h> // For printf
 #include <vector>  // For std::vector
@@ -145,6 +146,11 @@ int main() {
 
   gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
   vfWindowFullscreen(ctx, window_handle, "[vkFast] RT 3D Mesh Suzanne GPU RR 2.0 Low Level", 700, 700, 0, FF, LL);
+
+  // Low level vkFast and REDGPU:
+  vf_handle_context_t * vfctx = (vf_handle_context_t *)ctx;
+  RedCallProceduresAndAddresses addrs = {0};
+  redGetCallProceduresAndAddresses(vfctx->context, vfctx->gpu, &addrs, NULL, FF, LL, NULL);
 
   struct Pixels {
     unsigned char pixels[window_h][window_w][4];
@@ -552,7 +558,8 @@ int main() {
           }
 
           // dispatch the Function's shader module
-          mapi->m_device->m_intersector->m_device->m_command_buffer->record_dispatch( (uint32_t)globalsize, 1, 1 );
+          //mapi->m_device->m_intersector->m_device->m_command_buffer->record_dispatch( (uint32_t)globalsize, 1, 1 );
+          addrs.redCallProcedureCompute((RedHandleCalls)mapi->m_device->m_intersector->m_device->m_command_buffer->m_command_buffer, (uint32_t)globalsize, 1, 1);
 
           // end recording
           mapi->m_device->m_intersector->m_device->EndRecording( false, NULL );
