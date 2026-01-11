@@ -20,12 +20,13 @@
 
 #define TINYBVH_IMPLEMENTATION
 #include "../../extra/Modified TinyBVH/tiny_bvh.h"
-#include "../../extra/Modified RadeonRays 2.0/RadeonRays/include/radeon_rays.h"
+#include "../../extra/Modified RadeonRays 2.0/radeon_rays.h"
 // RR 2.0 low level:
-#include "../../extra/Modified RadeonRays 2.0/RadeonRays/src/intersection/radeon_rays_impl.h"
-#include "../../extra/Modified RadeonRays 2.0/RadeonRays/src/device/calc_holder.h"
-#include "../../extra/Modified RadeonRays 2.0/Anvil/include/wrappers/descriptor_set_group.h"
-#include "../../extra/Modified RadeonRays 2.0/Anvil/include/wrappers/queue.h"
+#include "../../extra/Modified RadeonRays 2.0/radeon_rays_impl.h"
+#include "../../extra/Modified RadeonRays 2.0/calc_holder.h"
+#include "../../extra/Modified RadeonRays 2.0/descriptor_set_group.h"
+#include "../../extra/Modified RadeonRays 2.0/queue.h"
+#include "../../extra/Modified RadeonRays 2.0/command_pool.h"
 #if 0
 #include "../../extra/profile/profile.h" // https://github.com/procedural/profile
 #pragma comment(lib, "../../../extra/profile/profiledll.lib") // https://github.com/procedural/profile

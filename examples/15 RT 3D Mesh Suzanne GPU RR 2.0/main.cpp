@@ -19,7 +19,7 @@
 
 #define TINYBVH_IMPLEMENTATION
 #include "../../extra/Modified TinyBVH/tiny_bvh.h"
-#include "../../extra/Modified RadeonRays 2.0/RadeonRays/include/radeon_rays.h"
+#include "../../extra/Modified RadeonRays 2.0/radeon_rays.h"
 #if 0
 #include "../../extra/profile/profile.h" // https://github.com/procedural/profile
 #pragma comment(lib, "../../../extra/profile/profiledll.lib") // https://github.com/procedural/profile
