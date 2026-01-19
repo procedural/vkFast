@@ -20,7 +20,6 @@
     <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\glsl_to_spirv.cpp" />
     <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\io.cpp" />
     <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\base_pipeline_manager.cpp" />
-    <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\memory_allocator.cpp" />
     <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\types.cpp" />
     <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\instance.cpp" />
     <ClCompile Include="..\..\..\extra\Modified RadeonRays 2.0\device.cpp" />
