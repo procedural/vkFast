@@ -76,7 +76,7 @@ Anvil::DescriptorSetGroup::DescriptorSetGroup(DescriptorSetGroup* parent_dsg_ptr
                                                       parent_dsg_ptr->m_n_sets,
                                                       releaseable_sets);
 
-    /* Configure the new DSG instance to use the specified parent DSG */
+    /* Configure the new* DSG instance to use the specified parent DSG */
     const uint32_t n_dses = (uint32_t) parent_dsg_ptr->m_descriptor_sets.size();
 
     m_descriptor_sets = parent_dsg_ptr->m_descriptor_sets;
@@ -107,7 +107,7 @@ bool Anvil::DescriptorSetGroup::add_binding(uint32_t           n_set,
     bool result = false;
 
     /* Sanity check: The DSG must not be locked. If you run into this assertion failure, you are trying
-     *               to add a new binding to a descriptor set group which shares its layout with other
+     *               to add a new* binding to a descriptor set group which shares its layout with other
      *               DSGs. This modification would have invalidated layouts used by children DSGs, and
      *               currently there's no mechanism implemented to inform them about such event. */
     anvil_assert(!m_layout_modifications_blocked);

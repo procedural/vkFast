@@ -95,7 +95,7 @@ bool Anvil::PipelineLayoutManager::get_retained_layout(const DescriptorSetGroups
     {
         result = true;
 
-        /* Try to create a new layout for the specified DSG + push constant range set */
+        /* Try to create a new* layout for the specified DSG + push constant range set */
         Anvil::PipelineLayout* new_layout_ptr = new Anvil::PipelineLayout(m_device_ptr);
 
         for (auto dsg_iterator  = dsgs.begin();

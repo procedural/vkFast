@@ -396,7 +396,7 @@ namespace Calc
             // allocate it through Anvil
             new_descriptor_set = new Anvil::DescriptorSetGroup( m_anvil_device, false, 1 );
 
-            // add bindings and items (Buffers) to the new DSG
+            // add bindings and items (Buffers) to the new* DSG
             for ( uint32_t i = 0; i < number_of_parameters; ++i )
             {
                 const Buffer* parameter = vulkan_function->GetParameters()[ i ];
@@ -408,7 +408,7 @@ namespace Calc
             vulkan_function->SetDescriptorSetGroup( new_descriptor_set );
         }
 
-        // bind new items (Buffers), releasing the old ones
+        // bind new* items (Buffers), releasing the old ones
         for ( uint32_t i = 0; i < number_of_parameters; ++i )
         {
             const Buffer* parameter = vulkan_function->GetParameters()[ i ];

@@ -192,7 +192,7 @@ void Anvil::Buffer::convert_queue_family_bits_to_family_indices(Anvil::QueueFami
     }
 }
 
-/* Creates a new Vulkan buffer object and caches memory requirements for the created buffer.
+/* Creates a new* Vulkan buffer object and caches memory requirements for the created buffer.
  *
  * @param queue_families Queue families the buffer needs to support.
  * @param sharing_mode   Sharing mode the buffer needs to support.

@@ -42,7 +42,7 @@ namespace RadeonRays
         // Update current height
         m_height = std::max(m_height, req.level);
 
-        // Allocate new node
+        // Allocate new* node
         Node* node = AllocateNode();
         node->bounds = req.bounds;
 
@@ -424,9 +424,9 @@ namespace RadeonRays
             // Start moving border to the right
             for (int i = 1; i < kNumBins; ++i)
             {
-                // New left box
+                // New* left box
                 leftbox.grow(bins[axis][i - 1].bounds);
-                // New left box count
+                // New* left box count
                 leftcount += bins[axis][i - 1].enter;
                 // Adjust right box
                 rightcount -= bins[axis][i - 1].exit;
@@ -471,7 +471,7 @@ namespace RadeonRays
 
     void SplitBvh::SplitPrimRefs(SahSplit const& split, SplitRequest const& req, PrimRefArray& refs, int& extra_refs)
     {
-        // We are going to append new primitives at the end of the array
+        // We are going to append new* primitives at the end of the array
         int appendprims = req.numprims;
 
         // Split refs if any of them require to be split

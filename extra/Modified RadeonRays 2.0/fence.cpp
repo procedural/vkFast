@@ -36,7 +36,7 @@ Anvil::Fence::Fence(Anvil::Device* device_ptr,
     VkResult          result;
 
    
-    /* Spawn a new fence */
+    /* Spawn a new* fence */
     fence_create_info.flags = (create_signalled) ? VK_FENCE_CREATE_SIGNALED_BIT
                                                  : 0;
     fence_create_info.pNext = nullptr;

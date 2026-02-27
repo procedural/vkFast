@@ -268,7 +268,7 @@ end:
     return result;
 }
 
-/** Entry-point called back whenever a new binding is added to the parent layout.
+/** Entry-point called back whenever a new* binding is added to the parent layout.
  *
  *  This will resize a number of internally managed vectors.
  *
@@ -300,7 +300,7 @@ void Anvil::DescriptorSet::on_parent_pool_reset(void* pool_raw_ptr,
 
     /* This descriptor set instance is no longer usable.
      *
-     * To restore functionality, a new Vulkan DS handle should be assigned to this instance
+     * To restore functionality, a new* Vulkan DS handle should be assigned to this instance
      * by calling set_new_vk_handle() */
     ds_ptr->m_descriptor_set = VK_NULL_HANDLE;
     ds_ptr->m_unusable       = true;

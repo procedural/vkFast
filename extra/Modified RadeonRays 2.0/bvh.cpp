@@ -357,7 +357,7 @@ namespace RadeonRays
 
         while (!stack.empty())
         {
-            // Fetch new request
+            // Fetch new* request
             SplitRequest req = stack.top();
             stack.pop();
 

@@ -61,7 +61,7 @@ bool Anvil::DescriptorSetLayout::add_binding(uint32_t           binding_index,
         goto end;
     }
 
-    /* Add a new binding entry and mark the layout as dirty, so that it is re-baked next time
+    /* Add a new* binding entry and mark the layout as dirty, so that it is re-baked next time
      * the user calls the getter func */
     m_bindings[binding_index] = Binding(descriptor_array_size,
                                         descriptor_type,

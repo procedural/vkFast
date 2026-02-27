@@ -217,7 +217,7 @@ void Anvil::Instance::init()
     create_info.ppEnabledExtensionNames = required_extensions;
     create_info.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 
-    /* Create a new Vulkan instance */
+    /* Create a new* Vulkan instance */
     result = vkCreateInstance(&create_info,
                               nullptr, /* pAllocator */
                               &m_instance);

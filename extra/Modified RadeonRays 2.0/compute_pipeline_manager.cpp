@@ -31,9 +31,9 @@
 /** Constructor. Initializes the compute pipeline manager.
  *
  *  @param device_ptr              Device to use.
- *  @param use_pipeline_cache      true if a VkPipelineCache instance should be used to spawn new pipeline objects.
+ *  @param use_pipeline_cache      true if a VkPipelineCache instance should be used to spawn new* pipeline objects.
  *                                 What pipeline cache ends up being used depends on @param pipeline_cache_to_reuse -
- *                                 if a nullptr object is passed via this argument, a new pipeline cache instance will
+ *                                 if a nullptr object is passed via this argument, a new* pipeline cache instance will
  *                                 be created, and later released by the destructor. If a non-nullptr object is passed,
  *                                 it will be used instead. In the latter scenario, it is the caller's responsibility
  *                                 to release the cache when no longer needed!
@@ -52,7 +52,7 @@ Anvil::ComputePipelineManager::~ComputePipelineManager()
 }
 
 /** Re-creates Vulkan compute pipeline objects for all added non-proxy pipelines marked
- *  as dirty. A new compute pipeline layout object may, but does not have to, be also
+ *  as dirty. A new* compute pipeline layout object may, but does not have to, be also
  *  created implicitly by calling this function.
  *
  *  @return true if the function was successful, false otherwise.

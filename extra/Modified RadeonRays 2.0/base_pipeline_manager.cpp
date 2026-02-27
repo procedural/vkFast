@@ -52,7 +52,7 @@ bool Anvil::BasePipelineManager::add_regular_pipeline(uint32_t                  
     PipelineID                new_pipeline_id  = 0;
     std::shared_ptr<Pipeline> new_pipeline_ptr;
 
-    /* Create & store the new descriptor */
+    /* Create & store the new* descriptor */
     new_pipeline_id  = (m_pipeline_counter++);
     new_pipeline_ptr = std::shared_ptr<Pipeline>(new Pipeline(m_device_ptr,
                                                               n_shader_module_stage_entrypoints,

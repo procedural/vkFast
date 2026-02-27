@@ -35,7 +35,7 @@
 #endif
 
 
-/** Creates a new sub-directory in the process' working directory.
+/** Creates a new* sub-directory in the process' working directory.
  *
  *  @param name Name of the folder to create.
  *
