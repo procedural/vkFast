@@ -1,5 +1,14 @@
-#include "vkfast_extra_banzai.h"
+#include "../../vkfast.h"
 #include "../../vkfast_ids.h"
+
+#ifdef _WIN32
+#undef GPU_API_PRE
+#undef GPU_API_POST
+#define GPU_API_PRE __declspec(dllexport)
+#define GPU_API_POST
+#endif
+
+#include "vkfast_extra_banzai.h"
 
 #ifndef __cplusplus
 #define REDGPU_DISABLE_NAMED_PARAMETERS

@@ -1,5 +1,14 @@
-#include "vkfast_extra_banzai_pointer.h"
+#include "../../vkfast.h"
 #include "../../vkfast_ids.h"
+
+#ifdef _WIN32
+#undef GPU_API_PRE
+#undef GPU_API_POST
+#define GPU_API_PRE __declspec(dllexport)
+#define GPU_API_POST
+#endif
+
+#include "vkfast_extra_banzai_pointer.h"
 
 GPU_API_PRE void GPU_API_POST vfeBanzaiGetPointer(const gpu_storage_t * banzai_storage, uint64_t bytes_first, gpu_extra_banzai_pointer_t * out_banzai_pointer, const char * optionalFile, int optionalLine) {
   REDGPU_2_EXPECT(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(bytes_first, 4) || !"Currently, only 32-bit Banzai pointer offsets are supported.");
@@ -26,6 +35,20 @@ GPU_API_PRE void GPU_API_POST vfeBanzaiPointerGetRaw(const gpu_extra_banzai_poin
   raw.array = storage->storage.arrayRangeInfo.array;
   raw.arrayRangeBytesFirst = banzai_pointer->bytes_first;
   raw.arrayRangeBytesCount = storage->storage.arrayRangeInfo.arrayRangeBytesCount - banzai_pointer->bytes_first;
+  out_banzai_pointer_raw[0] = raw;
+}
+
+GPU_API_PRE void GPU_API_POST vfeBanzaiPointerGetRawLimited(const gpu_extra_banzai_pointer_t * banzai_pointer, uint64_t bytes_count, RedStructMemberArray * out_banzai_pointer_raw, const char * optionalFile, int optionalLine) {
+  vf_handle_t * storage = (vf_handle_t *)(void *)banzai_pointer->id;
+  vf_handle_context_t * vkfast = storage->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+  REDGPU_2_EXPECTWG(storage->handle_id == VF_HANDLE_ID_STORAGE);
+  REDGPU_2_EXPECTWG(bytes_count <= (storage->storage.arrayRangeInfo.arrayRangeBytesCount - banzai_pointer->bytes_first));
+  // Filling
+  RedStructMemberArray raw = {0};
+  raw.array = storage->storage.arrayRangeInfo.array;
+  raw.arrayRangeBytesFirst = banzai_pointer->bytes_first;
+  raw.arrayRangeBytesCount = bytes_count;
   out_banzai_pointer_raw[0] = raw;
 }
 
