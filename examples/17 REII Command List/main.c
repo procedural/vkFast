@@ -175,9 +175,7 @@ int main() {
   mesh_state_to_compile.state_multisample_count                = RED_MULTISAMPLE_COUNT_BITFLAG_1;
   mesh_state_to_compile.output_depth_stencil_enable            = 0;
   mesh_state_to_compile.output_depth_stencil_format            = RED_FORMAT_DEPTH_32_FLOAT;
-  mesh_state_to_compile.output_depth_stencil_multisample_count = RED_MULTISAMPLE_COUNT_BITFLAG_1;
   mesh_state_to_compile.output_color_format                    = RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1;
-  mesh_state_to_compile.output_color_multisample_count         = RED_MULTISAMPLE_COUNT_BITFLAG_1;
   mesh_state_to_compile.variables_slot                         = 2;
   mesh_state_to_compile.variables_bytes_count                  = 0;
   mesh_state_to_compile.struct_members_count                   = countof(slots);
@@ -201,6 +199,10 @@ int main() {
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
   ReiiHandleCommandList * list = &hlist;
+  list->mutable_outputs_array.items    = NULL;
+  list->mutable_outputs_array.capacity = 0;
+  list->dynamic_mesh_position          = pos_array;
+  list->dynamic_mesh_color             = col_array;
 
   while (vfWindowLoop(ctx)) {
     LARGE_INTEGER t_start = {0};
@@ -210,13 +212,11 @@ int main() {
     bindings_info.max_new_bindings_sets_count = 1;
     bindings_info.max_storage_binds_count     = 1;
     batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
-    hlist.batch_id = batch;
-    hlist.dynamic_mesh_position = pos_array;
-    hlist.dynamic_mesh_color    = col_array;
+    list->batch_id = batch;
     reiiCommandListReset(ctx, list);
     reiiCommandSetViewport(ctx, list, 0, 0, window_w, window_h);
     reiiCommandSetScissor(ctx, list, 0, 0, window_w, window_h);
-    reiiCommandClear(ctx, list, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
+    reiiCommandClearTexture(ctx, list, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
     reiiCommandMeshSetState(ctx, list, &mesh_state, 0);
     reiiCommandBindNewBindingsSet(ctx, list, countof(slots), slots);
     reiiCommandBindStorageRaw(ctx, list, 0, 1, &pos_array.gpu);

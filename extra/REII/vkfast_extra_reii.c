@@ -167,7 +167,6 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   REDGPU_2_EXPECTWG(state->state_multisample_count != 0);
   if (state->output_depth_stencil_enable == 1) { 
     REDGPU_2_EXPECTWG(state->output_depth_stencil_format != RED_FORMAT_UNDEFINED);
-    REDGPU_2_EXPECTWG(state->output_depth_stencil_multisample_count != 0);
     // NOTE(Constantine): Check for the only supported texture formats for now.
     REDGPU_2_EXPECTWG(
       state->output_depth_stencil_format == RED_FORMAT_DEPTH_32_FLOAT ||
@@ -175,7 +174,6 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
     );
   }
   REDGPU_2_EXPECTWG(state->output_color_format != RED_FORMAT_UNDEFINED);
-  REDGPU_2_EXPECTWG(state->output_color_multisample_count != 0);
   // NOTE(Constantine): Check for the only supported texture formats for now.
   REDGPU_2_EXPECTWG(
     state->output_color_format == RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1
@@ -247,7 +245,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   RedOutputDeclarationMembers outputs = {0};
   outputs.depthStencilEnable                        = state->output_depth_stencil_enable;
   outputs.depthStencilFormat                        = state->output_depth_stencil_format;
-  outputs.depthStencilMultisampleCount              = state->output_depth_stencil_multisample_count;
+  outputs.depthStencilMultisampleCount              = state->state_multisample_count;
   outputs.depthStencilDepthSetProcedureOutputOp     = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
   outputs.depthStencilDepthEndProcedureOutputOp     = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
   outputs.depthStencilStencilSetProcedureOutputOp   = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
@@ -262,7 +260,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   outputs.colorsFormat[5]                           = RED_FORMAT_UNDEFINED;
   outputs.colorsFormat[6]                           = RED_FORMAT_UNDEFINED;
   outputs.colorsFormat[7]                           = RED_FORMAT_UNDEFINED;
-  outputs.colorsMultisampleCount[0]                 = state->output_color_multisample_count;
+  outputs.colorsMultisampleCount[0]                 = state->state_multisample_count;
   outputs.colorsMultisampleCount[1]                 = RED_MULTISAMPLE_COUNT_BITFLAG_1;
   outputs.colorsMultisampleCount[2]                 = RED_MULTISAMPLE_COUNT_BITFLAG_1;
   outputs.colorsMultisampleCount[3]                 = RED_MULTISAMPLE_COUNT_BITFLAG_1;
@@ -1375,31 +1373,164 @@ GPU_API_PRE void GPU_API_POST reiiCommandListReset(gpu_handle_context_t context,
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
-  list->dynamicMeshPositionVec4Offset = 0;
-  list->dynamicMeshColorVec4Offset    = 0;
-  list->dynamicMeshNormalVec4Offset   = 0;
-  for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
-    list->dynamicMeshTexcoordVec4Offset[i] = 0;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  {
+    vf_handle_t * calls = (vf_handle_t *)(void *)list->batch_id;
+    REDGPU_2_EXPECTWG(calls != NULL);
+    REDGPU_2_EXPECTWG(calls->handle_id == VF_HANDLE_ID_BATCH);
   }
 
-  REDGPU_2_EXPECT(0 || !"TODO");
+  {
+    np(redGetCallProceduresAndAddresses,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "outCallProceduresAndAddresses", &list->callProceduresAndAddresses,
+      "outStatuses", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+  }
+
+  {
+    list->dynamicMeshPositionVec4Offset = 0;
+    list->dynamicMeshColorVec4Offset    = 0;
+    list->dynamicMeshNormalVec4Offset   = 0;
+    for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
+      list->dynamicMeshTexcoordVec4Offset[i] = 0;
+    }
+  }
+
+  {
+    unsigned outputsCount = list->mutable_outputs_array.count;
+    for (unsigned i = 0; i < outputsCount; i += 1) {
+      red2DestroyHandle(vkfast->context, vkfast->gpu, RED_HANDLE_TYPE_OUTPUT, list->mutable_outputs_array.items[i].handle, NULL, optionalFile, optionalLine, NULL);
+    }
+    for (unsigned i = 0; i < outputsCount; i += 1) {
+      red2DestroyHandle(vkfast->context, vkfast->gpu, RED_HANDLE_TYPE_OUTPUT_DECLARATION, list->mutable_outputs_array.items[i].handleDeclaration, NULL, optionalFile, optionalLine, NULL);
+    }
+    for (unsigned i = 0; i < outputsCount; i += 1) {
+      // Filling
+      Red2Output;
+      list->mutable_outputs_array.items[i].handle = NULL;
+      list->mutable_outputs_array.items[i].handleDeclaration = NULL;
+    }
+    list->mutable_outputs_array.count = 0;
+  }
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandSetViewport(gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height) {
+GPU_API_PRE void GPU_API_POST reiiCommandSetViewport(gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height, float depthMin, float depthMax) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  vf_handle_t * calls = (vf_handle_t *)(void *)list->batch_id;
+
+  np(redCallSetDynamicViewport,
+    "address", list->callProceduresAndAddresses.redCallSetDynamicViewport,
+    "calls", calls->batch.calls.handle,
+    "x", x,
+    "y", y,
+    "width", width,
+    "height", height,
+    "depthMin", depthMin,
+    "depthMax", depthMax
+  );
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandSetScissor(gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  vf_handle_t * calls = (vf_handle_t *)(void *)list->batch_id;
+
+  np(redCallSetDynamicScissor,
+    "address", list->callProceduresAndAddresses.redCallSetDynamicScissor,
+    "calls", calls->batch.calls.handle,
+    "x", x,
+    "y", y,
+    "width", width,
+    "height", height
+  );
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandClear(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiClearFlags clear, float depthValue, unsigned stencilValue, float colorR, float colorG, float colorB, float colorA) {
+GPU_API_PRE void GPU_API_POST reiiCommandClearTexture(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiClearFlags clear, float depthValue, unsigned stencilValue, float colorR, float colorG, float colorB, float colorA) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
+
+  vf_handle_t * calls = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_context_t * vkfast = calls->vkfast;
+
+  // TODO: get from textures
+  RedFormat                  depthStencilFormat           = RED_FORMAT_UNDEFINED;
+  RedMultisampleCountBitflag depthStencilMultisampleCount = (RedMultisampleCountBitflag)0;
+  RedFormat                  colorFormat                  = RED_FORMAT_UNDEFINED;
+  RedMultisampleCountBitflag colorMultisampleCount        = (RedMultisampleCountBitflag)0;
+
+  RedOutputDeclarationMembers outputDeclarationMembers = {0};
+  outputDeclarationMembers.depthStencilEnable                        = 0;
+  outputDeclarationMembers.depthStencilFormat                        = RED_FORMAT_UNDEFINED;
+  outputDeclarationMembers.depthStencilMultisampleCount              = RED_MULTISAMPLE_COUNT_BITFLAG_1;
+  outputDeclarationMembers.depthStencilDepthSetProcedureOutputOp     = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilDepthEndProcedureOutputOp     = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilStencilSetProcedureOutputOp   = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilStencilEndProcedureOutputOp   = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilSharesMemoryWithAnotherMember = 0;
+  outputDeclarationMembers.colorsCount                               = 0;
+  outputDeclarationMembers.colorsFormat[0]                           = RED_FORMAT_UNDEFINED;
+  outputDeclarationMembers.colorsMultisampleCount[0]                 = RED_MULTISAMPLE_COUNT_BITFLAG_1;
+  outputDeclarationMembers.colorsSetProcedureOutputOp[0]             = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.colorsEndProcedureOutputOp[0]             = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.colorsSharesMemoryWithAnotherMember[0]    = 0;
+  if (
+    ((clear & REII_CLEAR_DEPTH_BIT)   == REII_CLEAR_DEPTH_BIT) ||
+    ((clear & REII_CLEAR_STENCIL_BIT) == REII_CLEAR_STENCIL_BIT)
+  )
+  {
+    outputDeclarationMembers.depthStencilEnable           = 1;
+    outputDeclarationMembers.depthStencilFormat           = depthStencilFormat;
+    outputDeclarationMembers.depthStencilMultisampleCount = depthStencilMultisampleCount;
+  }
+  if ((clear & REII_CLEAR_DEPTH_BIT) == REII_CLEAR_DEPTH_BIT) {
+    outputDeclarationMembers.depthStencilDepthSetProcedureOutputOp = RED_SET_PROCEDURE_OUTPUT_OP_CLEAR;
+  }
+  if ((clear & REII_CLEAR_STENCIL_BIT) == REII_CLEAR_STENCIL_BIT) {
+    outputDeclarationMembers.depthStencilStencilSetProcedureOutputOp = RED_SET_PROCEDURE_OUTPUT_OP_CLEAR;
+  }
+  if ((clear & REII_CLEAR_COLOR_BIT) == REII_CLEAR_COLOR_BIT) {
+    outputDeclarationMembers.colorsCount                   = 1;
+    outputDeclarationMembers.colorsFormat[0]               = colorFormat;
+    outputDeclarationMembers.colorsMultisampleCount[0]     = colorMultisampleCount;
+    outputDeclarationMembers.colorsSetProcedureOutputOp[0] = RED_SET_PROCEDURE_OUTPUT_OP_CLEAR;
+  }
+
+  np(red2CallSetProcedureOutput,
+    "address", list->callProceduresAndAddresses.redCallSetProcedureOutput,
+    "calls", calls->batch.calls.handle,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "mutableOutputsArray", &list->mutable_outputs_array,
+    "outputDeclarationMembers", &outputDeclarationMembers,
+    "outputDeclarationMembersResolveSources", NULL,
+    "dependencyByRegion", 0,
+    "dependencyByRegionAllowUsageAliasOrderBarriers", 0,
+    const RedOutputMembers * outputMembers,
+    "outputMembersResolveTargets", NULL,
+    unsigned width,
+    unsigned height,
+    float depthClearValue,
+    unsigned stencilClearValue,
+    const RedColorsClearValuesFloat * colorsClearValuesFloat,
+    const RedColorsClearValuesSint * colorsClearValuesSint,
+    const RedColorsClearValuesUint * colorsClearValuesUint,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
   REDGPU_2_EXPECT(0 || !"TODO");
 }
 
@@ -1409,7 +1540,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshSetState(gpu_handle_context_t conte
   REDGPU_2_EXPECT(0 || !"TODO");
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t context, ReiiHandleCommandList * list, int slots_count, const RedStructDeclarationMember * slots) {
+GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t context, ReiiHandleCommandList * list, int slotsCount, const RedStructDeclarationMember * slots) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 #if 0
@@ -1451,7 +1582,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t
   REDGPU_2_EXPECT(0 || !"TODO");
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw(gpu_handle_context_t context, ReiiHandleCommandList * list, int slot, int storage_raw_count, const RedStructMemberArray * storage_raw) {
+GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw(gpu_handle_context_t context, ReiiHandleCommandList * list, int slot, int storageRawCount, const RedStructMemberArray * storageRaw) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 #if 0
