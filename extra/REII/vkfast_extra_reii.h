@@ -287,7 +287,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu                 (gpu_handle
 // Command list
 
 GPU_API_PRE void GPU_API_POST reiiCommandListReset                   (gpu_handle_context_t context, ReiiHandleCommandList * list);
-GPU_API_PRE void GPU_API_POST reiiCommandSetViewport                 (gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height, float depthMin, float depthMax);
+GPU_API_PRE void GPU_API_POST reiiCommandSetViewportExt              (gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height, float depthMin, float depthMax);
 GPU_API_PRE void GPU_API_POST reiiCommandSetScissor                  (gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height);
 GPU_API_PRE void GPU_API_POST reiiCommandClearTexture                (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiClearFlags clear, float depthValue, unsigned stencilValue, float colorR, float colorG, float colorB, float colorA);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSetState                (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiMeshState * state, void * _);

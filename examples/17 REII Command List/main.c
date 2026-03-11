@@ -214,7 +214,7 @@ int main() {
     batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
     list->batch_id = batch;
     reiiCommandListReset(ctx, list);
-    reiiCommandSetViewport(ctx, list, 0, 0, window_w, window_h);
+    reiiCommandSetViewportExt(ctx, list, 0, 0, window_w, window_h);
     reiiCommandSetScissor(ctx, list, 0, 0, window_w, window_h);
     reiiCommandClearTexture(ctx, list, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
     reiiCommandMeshSetState(ctx, list, &mesh_state, 0);

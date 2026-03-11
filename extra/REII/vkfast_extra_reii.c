@@ -1422,7 +1422,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandListReset(gpu_handle_context_t context,
   }
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandSetViewport(gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height, float depthMin, float depthMax) {
+GPU_API_PRE void GPU_API_POST reiiCommandSetViewportExt(gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height, float depthMin, float depthMax) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
