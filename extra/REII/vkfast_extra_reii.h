@@ -210,6 +210,9 @@ typedef struct ReiiHandleTexture {
   ReiiTextureBinding         binding;
   ReiiBool32                 generateMipLevels;
   int                        mipLevelsCount;
+  unsigned                   width;
+  unsigned                   height;
+  RedFormat                  format;
   RedMultisampleCountBitflag msaaCount;
   RedHandleSampler           sampler;
   RedImage                   image;
@@ -289,7 +292,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu                 (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandListReset                   (gpu_handle_context_t context, ReiiHandleCommandList * list);
 GPU_API_PRE void GPU_API_POST reiiCommandSetViewportExt              (gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height, float depthMin, float depthMax);
 GPU_API_PRE void GPU_API_POST reiiCommandSetScissor                  (gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height);
-GPU_API_PRE void GPU_API_POST reiiCommandClearTexture                (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiClearFlags clear, float depthValue, unsigned stencilValue, float colorR, float colorG, float colorB, float colorA);
+GPU_API_PRE void GPU_API_POST reiiCommandClearTexture                (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle, ReiiClearFlags clear, float depthValue, unsigned stencilValue, float colorR, float colorG, float colorB, float colorA);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSetState                (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiMeshState * state, void * _);
 GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet          (gpu_handle_context_t context, ReiiHandleCommandList * list, int slotsCount, const RedStructDeclarationMember * slots);
 GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw              (gpu_handle_context_t context, ReiiHandleCommandList * list, int slot, int storageRawCount, const RedStructMemberArray * storageRaw);

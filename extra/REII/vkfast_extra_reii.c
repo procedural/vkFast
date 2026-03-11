@@ -537,6 +537,9 @@ GPU_API_PRE void GPU_API_POST reiiCreateTextureFromTextureMemory(gpu_handle_cont
   outTexture->binding              = binding;
   outTexture->generateMipLevels    = 1;
   outTexture->mipLevelsCount       = 0;
+  outTexture->width                = 0;
+  outTexture->height               = 0;
+  outTexture->format               = RED_FORMAT_UNDEFINED;
   outTexture->msaaCount            = RED_MULTISAMPLE_COUNT_BITFLAG_1;
   outTexture->sampler              = NULL;
   outTexture->image                = imageClear;
@@ -1178,6 +1181,9 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
   }
 
   // Filling
+  bindingTexture->width                = width;
+  bindingTexture->height               = height;
+  bindingTexture->format               = format;
   bindingTexture->image                = image;
   bindingTexture->imageDedicatedMemory = imageDedicatedMemory;
   bindingTexture->texture              = texture;
@@ -1456,19 +1462,28 @@ GPU_API_PRE void GPU_API_POST reiiCommandSetScissor(gpu_handle_context_t context
   );
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandClearTexture(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiClearFlags clear, float depthValue, unsigned stencilValue, float colorR, float colorG, float colorB, float colorA) {
+GPU_API_PRE void GPU_API_POST reiiCommandClearTexture(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle, ReiiClearFlags clear, float depthValue, unsigned stencilValue, float colorR, float colorG, float colorB, float colorA) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
+  if (depthStencilTexture == NULL && colorTexture == NULL) {
+    return;
+  }
+
   vf_handle_t * calls = (vf_handle_t *)(void *)list->batch_id;
   vf_handle_context_t * vkfast = calls->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
 
-  // TODO: get from textures
+  unsigned                   depthStencilWidth            = 0;
+  unsigned                   depthStencilHeight           = 0;
   RedFormat                  depthStencilFormat           = RED_FORMAT_UNDEFINED;
   RedMultisampleCountBitflag depthStencilMultisampleCount = (RedMultisampleCountBitflag)0;
+  unsigned                   colorWidth                   = 0;
+  unsigned                   colorHeight                  = 0;
   RedFormat                  colorFormat                  = RED_FORMAT_UNDEFINED;
   RedMultisampleCountBitflag colorMultisampleCount        = (RedMultisampleCountBitflag)0;
 
+  RedOutputMembers            outputMembers            = {0};
   RedOutputDeclarationMembers outputDeclarationMembers = {0};
   outputDeclarationMembers.depthStencilEnable                        = 0;
   outputDeclarationMembers.depthStencilFormat                        = RED_FORMAT_UNDEFINED;
@@ -1485,26 +1500,83 @@ GPU_API_PRE void GPU_API_POST reiiCommandClearTexture(gpu_handle_context_t conte
   outputDeclarationMembers.colorsEndProcedureOutputOp[0]             = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
   outputDeclarationMembers.colorsSharesMemoryWithAnotherMember[0]    = 0;
   if (
-    ((clear & REII_CLEAR_DEPTH_BIT)   == REII_CLEAR_DEPTH_BIT) ||
+    ((clear & REII_CLEAR_DEPTH_BIT)   == REII_CLEAR_DEPTH_BIT) &&
     ((clear & REII_CLEAR_STENCIL_BIT) == REII_CLEAR_STENCIL_BIT)
   )
   {
-    outputDeclarationMembers.depthStencilEnable           = 1;
-    outputDeclarationMembers.depthStencilFormat           = depthStencilFormat;
-    outputDeclarationMembers.depthStencilMultisampleCount = depthStencilMultisampleCount;
-  }
-  if ((clear & REII_CLEAR_DEPTH_BIT) == REII_CLEAR_DEPTH_BIT) {
-    outputDeclarationMembers.depthStencilDepthSetProcedureOutputOp = RED_SET_PROCEDURE_OUTPUT_OP_CLEAR;
-  }
-  if ((clear & REII_CLEAR_STENCIL_BIT) == REII_CLEAR_STENCIL_BIT) {
+    REDGPU_2_EXPECTWG(depthStencilTexture != NULL);
+
+    depthStencilWidth            = depthStencilTexture->width;
+    depthStencilHeight           = depthStencilTexture->height;
+    depthStencilFormat           = depthStencilTexture->format;
+    depthStencilMultisampleCount = depthStencilTexture->msaaCount;
+
+    outputDeclarationMembers.depthStencilEnable                      = 1;
+    outputDeclarationMembers.depthStencilFormat                      = depthStencilFormat;
+    outputDeclarationMembers.depthStencilMultisampleCount            = depthStencilMultisampleCount;
+    outputDeclarationMembers.depthStencilDepthSetProcedureOutputOp   = RED_SET_PROCEDURE_OUTPUT_OP_CLEAR;
     outputDeclarationMembers.depthStencilStencilSetProcedureOutputOp = RED_SET_PROCEDURE_OUTPUT_OP_CLEAR;
+
+    outputMembers.depthStencil = depthStencilTexture->texture;
+  } else if ((clear & REII_CLEAR_DEPTH_BIT) == REII_CLEAR_DEPTH_BIT) {
+    REDGPU_2_EXPECTWG(depthStencilTexture != NULL);
+
+    depthStencilWidth            = depthStencilTexture->width;
+    depthStencilHeight           = depthStencilTexture->height;
+    depthStencilFormat           = depthStencilTexture->format;
+    depthStencilMultisampleCount = depthStencilTexture->msaaCount;
+
+    outputDeclarationMembers.depthStencilEnable                    = 1;
+    outputDeclarationMembers.depthStencilFormat                    = depthStencilFormat;
+    outputDeclarationMembers.depthStencilMultisampleCount          = depthStencilMultisampleCount;
+    outputDeclarationMembers.depthStencilDepthSetProcedureOutputOp = RED_SET_PROCEDURE_OUTPUT_OP_CLEAR;
+
+    outputMembers.depthStencil = depthStencilTexture->textureDepthOnly;
+  } else if ((clear & REII_CLEAR_STENCIL_BIT) == REII_CLEAR_STENCIL_BIT) {
+    REDGPU_2_EXPECTWG(depthStencilTexture != NULL);
+
+    depthStencilWidth            = depthStencilTexture->width;
+    depthStencilHeight           = depthStencilTexture->height;
+    depthStencilFormat           = depthStencilTexture->format;
+    depthStencilMultisampleCount = depthStencilTexture->msaaCount;
+
+    outputDeclarationMembers.depthStencilEnable                      = 1;
+    outputDeclarationMembers.depthStencilFormat                      = depthStencilFormat;
+    outputDeclarationMembers.depthStencilMultisampleCount            = depthStencilMultisampleCount;
+    outputDeclarationMembers.depthStencilStencilSetProcedureOutputOp = RED_SET_PROCEDURE_OUTPUT_OP_CLEAR;
+
+    outputMembers.depthStencil = depthStencilTexture->textureStencilOnly;
   }
   if ((clear & REII_CLEAR_COLOR_BIT) == REII_CLEAR_COLOR_BIT) {
+    REDGPU_2_EXPECTWG(colorTexture != NULL);
+    REDGPU_2_EXPECTWG(colorTextureHandle != NULL);
+
+    colorWidth            = colorTexture->width;
+    colorHeight           = colorTexture->height;
+    colorFormat           = colorTexture->format;
+    colorMultisampleCount = colorTexture->msaaCount;
+
     outputDeclarationMembers.colorsCount                   = 1;
     outputDeclarationMembers.colorsFormat[0]               = colorFormat;
     outputDeclarationMembers.colorsMultisampleCount[0]     = colorMultisampleCount;
     outputDeclarationMembers.colorsSetProcedureOutputOp[0] = RED_SET_PROCEDURE_OUTPUT_OP_CLEAR;
+
+    outputMembers.colorsCount = 1;
+    outputMembers.colors[0]   = colorTextureHandle;
   }
+
+  if (depthStencilWidth != 0 && depthStencilHeight != 0 && colorWidth != 0 && colorHeight != 0) {
+    REDGPU_2_EXPECTWG(depthStencilWidth  == colorWidth);
+    REDGPU_2_EXPECTWG(depthStencilHeight == colorHeight);
+  }
+  unsigned width  = depthStencilWidth  != 0 ? depthStencilWidth  : colorWidth;
+  unsigned height = depthStencilHeight != 0 ? depthStencilHeight : colorHeight;
+
+  RedColorsClearValuesFloat colorsClearValuesFloat = {0};
+  colorsClearValuesFloat.r[0] = colorR;
+  colorsClearValuesFloat.g[0] = colorG;
+  colorsClearValuesFloat.b[0] = colorB;
+  colorsClearValuesFloat.a[0] = colorA;
 
   np(red2CallSetProcedureOutput,
     "address", list->callProceduresAndAddresses.redCallSetProcedureOutput,
@@ -1516,22 +1588,25 @@ GPU_API_PRE void GPU_API_POST reiiCommandClearTexture(gpu_handle_context_t conte
     "outputDeclarationMembersResolveSources", NULL,
     "dependencyByRegion", 0,
     "dependencyByRegionAllowUsageAliasOrderBarriers", 0,
-    const RedOutputMembers * outputMembers,
+    "outputMembers", &outputMembers,
     "outputMembersResolveTargets", NULL,
-    unsigned width,
-    unsigned height,
-    float depthClearValue,
-    unsigned stencilClearValue,
-    const RedColorsClearValuesFloat * colorsClearValuesFloat,
-    const RedColorsClearValuesSint * colorsClearValuesSint,
-    const RedColorsClearValuesUint * colorsClearValuesUint,
+    "width", width,
+    "height", height,
+    "depthClearValue", depthValue,
+    "stencilClearValue", stencilValue,
+    "colorsClearValuesFloat", &colorsClearValuesFloat,
+    "colorsClearValuesSint", NULL,
+    "colorsClearValuesUint", NULL,
     "outStatuses", NULL,
     "optionalFile", optionalFile,
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
 
-  REDGPU_2_EXPECT(0 || !"TODO");
+  np(redCallEndProcedureOutput,
+    "address", list->callProceduresAndAddresses.redCallEndProcedureOutput,
+    "calls", calls->batch.calls.handle
+  );
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSetState(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiMeshState * state, void * _) {

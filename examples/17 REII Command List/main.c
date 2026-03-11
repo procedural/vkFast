@@ -182,6 +182,16 @@ int main() {
   mesh_state_to_compile.struct_members                         = slots;
   reiiMeshStateCompile(ctx, &mesh_state_to_compile);
 
+  ReiiHandleTextureMemory outputDSTexMemory = {0};
+  reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL, (288/*mb*/ * 1024 * 1024), &outputDSTexMemory);
+  ReiiHandleTexture houtputdstex = {0};
+  ReiiHandleTexture * outputdstex = &houtputdstex;
+  reiiCreateTextureFromTextureMemory(ctx, &outputDSTexMemory, REII_TEXTURE_BINDING_2D, &houtputdstex);
+  reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0);
+  reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 1);
+  reiiTextureSetStateSampler(ctx, REII_TEXTURE_BINDING_2D, outputdstex, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, 1);
+  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0, REII_TEXTURE_TEXEL_FORMAT_DS, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_DS, REII_TEXTURE_TEXEL_TYPE_FLOAT, 4, NULL);
+
   ReiiHandleTextureMemory outputTexMemory = {0};
   reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_COLOR, (288/*mb*/ * 1024 * 1024), &outputTexMemory);
   ReiiHandleTexture houtputtex = {0};
@@ -199,8 +209,9 @@ int main() {
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
   ReiiHandleCommandList * list = &hlist;
-  list->mutable_outputs_array.items    = NULL;
-  list->mutable_outputs_array.capacity = 0;
+  Red2Output mutable_outputs_array[1]  = {0};
+  list->mutable_outputs_array.items    = &mutable_outputs_array;
+  list->mutable_outputs_array.capacity = _countof(mutable_outputs_array);
   list->dynamic_mesh_position          = pos_array;
   list->dynamic_mesh_color             = col_array;
 
@@ -214,10 +225,10 @@ int main() {
     batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
     list->batch_id = batch;
     reiiCommandListReset(ctx, list);
-    reiiCommandSetViewportExt(ctx, list, 0, 0, window_w, window_h);
+    reiiCommandSetViewportExt(ctx, list, 0, 0, window_w, window_h, 0, 1);
     reiiCommandSetScissor(ctx, list, 0, 0, window_w, window_h);
-    reiiCommandClearTexture(ctx, list, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
-    reiiCommandMeshSetState(ctx, list, &mesh_state, 0);
+    reiiCommandClearTexture(ctx, list, outputdstex, outputtex, outputtex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
+    reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
     reiiCommandBindNewBindingsSet(ctx, list, countof(slots), slots);
     reiiCommandBindStorageRaw(ctx, list, 0, 1, &pos_array.gpu);
     reiiCommandBindStorageRaw(ctx, list, 1, 1, &col_array.gpu);
