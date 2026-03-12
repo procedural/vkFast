@@ -244,7 +244,7 @@ int main() {
         1
       );
     }
-    reiiCommandMeshEnd(ctx, list);
+    reiiCommandMeshEndExt(ctx, list, outputdstex, outputtex, outputtex->texture);
     vfBatchEnd(ctx, batch, FF, LL);
 
     uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);

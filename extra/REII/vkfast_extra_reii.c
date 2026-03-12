@@ -1011,6 +1011,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
       textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL_MSAA
     )
     {
+      // NOTE(Constantine): Assumes, a stencil-only image is not possible.
       imageParts = RED_IMAGE_PART_BITFLAG_DEPTH | (formatHasStencil == 1 ? RED_IMAGE_PART_BITFLAG_STENCIL : 0);
     }
 
@@ -1260,6 +1261,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu(gpu_handle_context_t contex
     textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL_MSAA
   )
   {
+    // NOTE(Constantine): Assumes, a stencil-only image is not possible.
     imageParts = RED_IMAGE_PART_BITFLAG_DEPTH | (bindingTexture->textureStencilOnly != NULL ? RED_IMAGE_PART_BITFLAG_STENCIL : 0);
   }
 
@@ -1395,6 +1397,12 @@ GPU_API_PRE void GPU_API_POST reiiCommandListReset(gpu_handle_context_t context,
     list->dynamicMeshNormalVec4Offset   = 0;
     for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
       list->dynamicMeshTexcoordVec4Offset[i] = 0;
+    }
+    list->dynamicMeshPositionVec4CurrentStart = 0;
+    list->dynamicMeshColorVec4CurrentStart    = 0;
+    list->dynamicMeshNormalVec4CurrentStart   = 0;
+    for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
+      list->dynamicMeshTexcoordVec4CurrentStart[i] = 0;
     }
     list->currentProcedureParametersDraw = NULL;
   }
@@ -1767,7 +1775,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshSet(gpu_handle_context_t context, R
   REDGPU_2_EXPECT(0 || !"TODO");
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEnd(gpu_handle_context_t context, ReiiHandleCommandList * list) {
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExt(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
   REDGPU_2_EXPECT(0 || !"TODO");

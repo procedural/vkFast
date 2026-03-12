@@ -247,6 +247,10 @@ typedef struct ReiiHandleCommandList {
   uint64_t        dynamicMeshColorVec4Offset;
   uint64_t        dynamicMeshNormalVec4Offset;
   uint64_t        dynamicMeshTexcoordVec4Offset[REII_TEXCOORDS_MAX_COUNT];
+  uint64_t        dynamicMeshPositionVec4CurrentStart;
+  uint64_t        dynamicMeshColorVec4CurrentStart;
+  uint64_t        dynamicMeshNormalVec4CurrentStart;
+  uint64_t        dynamicMeshTexcoordVec4CurrentStart[REII_TEXCOORDS_MAX_COUNT];
   RedHandleProcedureParameters  currentProcedureParametersDraw;
   RedCallProceduresAndAddresses callProceduresAndAddresses;
 } ReiiHandleCommandList;
@@ -302,7 +306,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindVariablesCopy           (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet             (gpu_handle_context_t context, ReiiHandleCommandList * list);
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetEnd             (gpu_handle_context_t context, ReiiHandleCommandList * list);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSet                     (gpu_handle_context_t context, ReiiHandleCommandList * list);
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEnd                     (gpu_handle_context_t context, ReiiHandleCommandList * list);
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExt                  (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshTexcoord                (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned index, float x, float y, float z, float w);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshColor                   (gpu_handle_context_t context, ReiiHandleCommandList * list, float r, float g, float b, float a);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal                  (gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z);
