@@ -90,7 +90,7 @@ int main() {
   vfeBanzaiPointerGetRawLimited(&dynamic_mesh_pos_cpu_upload, dynamic_mesh_pos_bytes_count, &raw_pos_cpu_upload, FF, LL);
   RedStructMemberArray raw_pos_gpu_only = {0};
   vfeBanzaiPointerGetRawLimited(&dynamic_mesh_pos_gpu_only, dynamic_mesh_pos_bytes_count, &raw_pos_gpu_only, FF, LL);
-  ReiiCpuGpuArray pos_array = {0};
+  gpu_extra_cpu_gpu_array pos_array = {0};
   pos_array.cpu_ptr = dynamic_mesh_pos_cpu_upload.mapped_void_ptr;
   pos_array.cpu     = raw_pos_cpu_upload;
   pos_array.gpu     = raw_pos_gpu_only;
@@ -99,7 +99,7 @@ int main() {
   vfeBanzaiPointerGetRawLimited(&dynamic_mesh_col_cpu_upload, dynamic_mesh_col_bytes_count, &raw_col_cpu_upload, FF, LL);
   RedStructMemberArray raw_col_gpu_only = {0};
   vfeBanzaiPointerGetRawLimited(&dynamic_mesh_col_gpu_only, dynamic_mesh_col_bytes_count, &raw_col_gpu_only, FF, LL);
-  ReiiCpuGpuArray col_array = {0};
+  gpu_extra_cpu_gpu_array col_array = {0};
   col_array.cpu_ptr = dynamic_mesh_col_cpu_upload.mapped_void_ptr;
   col_array.cpu     = raw_col_cpu_upload;
   col_array.gpu     = raw_col_gpu_only;

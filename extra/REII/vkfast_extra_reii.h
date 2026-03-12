@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../vkfast.h"
+#include "../CPU GPU Array/vkfast_extra_cpu_gpu_array.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -223,12 +224,6 @@ typedef struct ReiiHandleTexture {
   RedHandleTexture           textureCubeFace[6];
 } ReiiHandleTexture;
 
-typedef struct ReiiCpuGpuArray {
-  void *               cpu_ptr;
-  RedStructMemberArray cpu;
-  RedStructMemberArray gpu;
-} ReiiCpuGpuArray;
-
 typedef struct ReiiCpuGpuTexture {
   void *               cpu_scratch_buffer_ptr;
   RedStructMemberArray cpu_scratch_buffer;
@@ -236,12 +231,12 @@ typedef struct ReiiCpuGpuTexture {
 } ReiiCpuGpuTexture;
 
 typedef struct ReiiHandleCommandList {
-  uint64_t        batch_id;
+  uint64_t                     batch_id;
   Red2CallsMutableOutputsArray mutable_outputs_array;
-  ReiiCpuGpuArray dynamic_mesh_position;
-  ReiiCpuGpuArray dynamic_mesh_color;
-  ReiiCpuGpuArray dynamic_mesh_normal; // NOTE(Constantine): Treated as vec4, unlike in GL1.4-based REII that treats them as vec3.
-  ReiiCpuGpuArray dynamic_mesh_texcoord[REII_TEXCOORDS_MAX_COUNT];
+  gpu_extra_cpu_gpu_array      dynamic_mesh_position;
+  gpu_extra_cpu_gpu_array      dynamic_mesh_color;
+  gpu_extra_cpu_gpu_array      dynamic_mesh_normal; // NOTE(Constantine): Treated as vec4, unlike in GL1.4-based REII that treats them as vec3.
+  gpu_extra_cpu_gpu_array      dynamic_mesh_texcoord[REII_TEXCOORDS_MAX_COUNT];
   // Internal
   uint64_t        dynamicMeshPositionVec4Offset;
   uint64_t        dynamicMeshColorVec4Offset;
