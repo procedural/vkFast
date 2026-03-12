@@ -298,6 +298,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshSetState                (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet          (gpu_handle_context_t context, ReiiHandleCommandList * list, int slotsCount, const RedStructDeclarationMember * slots);
 GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw              (gpu_handle_context_t context, ReiiHandleCommandList * list, int slot, int storageRawCount, const RedStructMemberArray * storageRaw);
 GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsEnd          (gpu_handle_context_t context, ReiiHandleCommandList * list);
+GPU_API_PRE void GPU_API_POST reiiCommandBindVariablesCopy           (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned variablesBytesOffset, unsigned dataBytesCount, const void * data);
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet             (gpu_handle_context_t context, ReiiHandleCommandList * list);
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetEnd             (gpu_handle_context_t context, ReiiHandleCommandList * list);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSet                     (gpu_handle_context_t context, ReiiHandleCommandList * list);

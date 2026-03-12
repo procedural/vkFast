@@ -1729,6 +1729,26 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsEnd(gpu_handle_context_t
   batch->batch.currentStruct.handle = NULL;
 }
 
+GPU_API_PRE void GPU_API_POST reiiCommandBindVariablesCopy(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned variablesBytesOffset, unsigned dataBytesCount, const void * data) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_context_t * vkfast = batch->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(list->currentProcedureParametersDraw != NULL || !"Was reiiCommandMeshSetState() ever called previously?");
+
+  npfp(redCallSetProcedureParametersVariables, batch->batch.addresses.redCallSetProcedureParametersVariables,
+    "calls", batch->batch.calls.handle,
+    "procedureParameters", list->currentProcedureParametersDraw,
+    "visibleToStages", RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX | RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT,
+    "variablesBytesFirst", variablesBytesOffset,
+    "dataBytesCount", dataBytesCount,
+    "data", data
+  );
+}
+
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet(gpu_handle_context_t context, ReiiHandleCommandList * list) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
