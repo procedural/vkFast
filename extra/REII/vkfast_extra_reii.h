@@ -247,6 +247,7 @@ typedef struct ReiiHandleCommandList {
   uint64_t        dynamicMeshColorVec4Offset;
   uint64_t        dynamicMeshNormalVec4Offset;
   uint64_t        dynamicMeshTexcoordVec4Offset[REII_TEXCOORDS_MAX_COUNT];
+  RedHandleProcedureParameters  currentProcedureParametersDraw;
   RedCallProceduresAndAddresses callProceduresAndAddresses;
 } ReiiHandleCommandList;
 

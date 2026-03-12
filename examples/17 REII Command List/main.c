@@ -210,7 +210,7 @@ int main() {
   ReiiHandleCommandList hlist = {0};
   ReiiHandleCommandList * list = &hlist;
   Red2Output mutable_outputs_array[1]  = {0};
-  list->mutable_outputs_array.items    = &mutable_outputs_array;
+  list->mutable_outputs_array.items    = mutable_outputs_array;
   list->mutable_outputs_array.capacity = _countof(mutable_outputs_array);
   list->dynamic_mesh_position          = pos_array;
   list->dynamic_mesh_color             = col_array;
@@ -221,7 +221,7 @@ int main() {
 
     gpu_batch_info_t bindings_info = {0};
     bindings_info.max_new_bindings_sets_count = 1;
-    bindings_info.max_storage_binds_count     = 1;
+    bindings_info.max_storage_binds_count     = 2;
     batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
     list->batch_id = batch;
     reiiCommandListReset(ctx, list);

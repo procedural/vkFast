@@ -1390,6 +1390,16 @@ GPU_API_PRE void GPU_API_POST reiiCommandListReset(gpu_handle_context_t context,
   }
 
   {
+    list->dynamicMeshPositionVec4Offset = 0;
+    list->dynamicMeshColorVec4Offset    = 0;
+    list->dynamicMeshNormalVec4Offset   = 0;
+    for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
+      list->dynamicMeshTexcoordVec4Offset[i] = 0;
+    }
+    list->currentProcedureParametersDraw = NULL;
+  }
+
+  {
     np(redGetCallProceduresAndAddresses,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
@@ -1399,15 +1409,6 @@ GPU_API_PRE void GPU_API_POST reiiCommandListReset(gpu_handle_context_t context,
       "optionalLine", optionalLine,
       "optionalUserData", NULL
     );
-  }
-
-  {
-    list->dynamicMeshPositionVec4Offset = 0;
-    list->dynamicMeshColorVec4Offset    = 0;
-    list->dynamicMeshNormalVec4Offset   = 0;
-    for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
-      list->dynamicMeshTexcoordVec4Offset[i] = 0;
-    }
   }
 
   {
@@ -1620,19 +1621,20 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshSetState(gpu_handle_context_t conte
     "procedureType", RED_PROCEDURE_TYPE_DRAW,
     "procedure", state->procedure
   );
+
+  list->currentProcedureParametersDraw = state->procedureParameters;
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t context, ReiiHandleCommandList * list, int slotsCount, const RedStructDeclarationMember * slots) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-#if 0
-  vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
   vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
-  REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
   REDGPU_2_EXPECTWG(batch->batch.structsMemory != NULL || !"vfBatchBegin()::batch_bindings_info was likely set to NULL?");
-  if (batch->batch.currentProcedureParametersCompute == NULL) {
+  if (list->currentProcedureParametersDraw == NULL) {
     REDGPU_2_EXPECTWG(!"Was reiiCommandMeshSetState() ever called previously?");
   }
 
@@ -1642,7 +1644,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t
     "gpu", vkfast->gpu,
     "handleName", NULL,
     "structsMemory", batch->batch.structsMemory,
-    "structDeclarationMembersCount", slots_count,
+    "structDeclarationMembersCount", slotsCount,
     "structDeclarationMembers", slots,
     "structDeclarationMembersArrayROCount", 0,
     "structDeclarationMembersArrayRO", NULL,
@@ -1658,20 +1660,17 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t
     "address", batch->batch.addresses.redCallSetProcedureParameters,
     "calls", batch->batch.calls.handle,
     "procedureType", RED_PROCEDURE_TYPE_DRAW,
-    "procedureParameters", batch->batch.currentProcedureParametersCompute
+    "procedureParameters", list->currentProcedureParametersDraw
   );
-#endif
-  REDGPU_2_EXPECT(0 || !"TODO");
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw(gpu_handle_context_t context, ReiiHandleCommandList * list, int slot, int storageRawCount, const RedStructMemberArray * storageRaw) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-#if 0
-  vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
   vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
-  REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
   REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was reiiCommandBindNewBindingsSet() ever called previously?");
 
@@ -1681,10 +1680,10 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw(gpu_handle_context_t con
   member.structure = batch->batch.currentStruct.handle;
   member.slot      = slot;
   member.first     = 0;
-  member.count     = storage_raw_count;
+  member.count     = storageRawCount;
   member.type      = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
   member.textures  = NULL;
-  member.arrays    = storage_raw;
+  member.arrays    = storageRaw;
   member.setTo00   = 0;
   np(redStructsSet,
     "context", vkfast->context,
@@ -1695,23 +1694,20 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw(gpu_handle_context_t con
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
-#endif
-  REDGPU_2_EXPECT(0 || !"TODO");
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsEnd(gpu_handle_context_t context, ReiiHandleCommandList * list) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-#if 0
-  vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
   vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
-  REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
   npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
     "calls", batch->batch.calls.handle,
     "procedureType", RED_PROCEDURE_TYPE_DRAW,
-    "procedureParameters", batch->batch.currentProcedureParametersCompute,
+    "procedureParameters", list->currentProcedureParametersDraw,
     "procedureParametersDeclarationStructsDeclarationsFirst", 0,
     "structsCount", 1, // NOTE(Constantine): Only one struct for now.
     "structs", &batch->batch.currentStruct.handle,
@@ -1731,8 +1727,6 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsEnd(gpu_handle_context_t
   );
   batch->batch.currentStruct.handleDeclaration = NULL;
   batch->batch.currentStruct.handle = NULL;
-#endif
-  REDGPU_2_EXPECT(0 || !"TODO");
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet(gpu_handle_context_t context, ReiiHandleCommandList * list) {
