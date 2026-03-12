@@ -11,6 +11,10 @@ typedef unsigned ReiiBool32;
 
 #define REII_TEXCOORDS_MAX_COUNT 8
 
+typedef struct ReiiVec4 {
+  float x, y, z, w;
+} ReiiVec4;
+
 typedef enum ReiiTextureBinding {
   REII_TEXTURE_BINDING_2D              = 0x0DE1,
   REII_TEXTURE_BINDING_CUBE            = 0x8513,
@@ -306,9 +310,9 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshTexcoord                (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandMeshColor                   (gpu_handle_context_t context, ReiiHandleCommandList * list, float r, float g, float b, float a);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal                  (gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshPosition                (gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z, float w);
+GPU_API_PRE void GPU_API_POST reiiCommandCopyFromColorTextureToStorageRaw (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * texture, RedStructMemberArray * storageRaw);
 GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDraw              (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh);
 GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDrawInstanced     (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh, unsigned vertexCount, unsigned instanceCount, unsigned vertexFirst, unsigned instanceFirst);
-GPU_API_PRE void GPU_API_POST reiiCommandSetProgramEnvironmentValue  (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned index, float x, float y, float z, float w);
 
 // Static mesh
 

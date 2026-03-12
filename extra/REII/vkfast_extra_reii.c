@@ -1772,37 +1772,160 @@ GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetEnd(gpu_handle_context_t co
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSet(gpu_handle_context_t context, ReiiHandleCommandList * list) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  list->dynamicMeshPositionVec4CurrentStart = list->dynamicMeshPositionVec4Offset;
+  list->dynamicMeshColorVec4CurrentStart    = list->dynamicMeshColorVec4Offset;
+  list->dynamicMeshNormalVec4CurrentStart   = list->dynamicMeshNormalVec4Offset;
+  for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
+    list->dynamicMeshTexcoordVec4CurrentStart[i] = list->dynamicMeshTexcoordVec4Offset[i];
+  }
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExt(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
+#if 0
+  uint64_t dynamicMeshPositionCopyBytes = list->dynamicMeshPositionVec4Offset - list->dynamicMeshPositionVec4CurrentStart;
+  uint64_t dynamicMeshColorCopyBytes    = list->dynamicMeshColorVec4Offset    - list->dynamicMeshColorVec4CurrentStart;
+  uint64_t dynamicMeshNormalCopyBytes   = list->dynamicMeshNormalVec4Offset   - list->dynamicMeshNormalVec4CurrentStart;
+  uint64_t dynamicMeshTexcoordCopyBytes[REII_TEXCOORDS_MAX_COUNT] = {0};
+  for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
+    dynamicMeshTexcoordCopyBytes[i] = list->dynamicMeshTexcoordVec4Offset[i] - list->dynamicMeshTexcoordVec4CurrentStart[i];
+  }
+
+  if (dynamicMeshPositionCopyBytes > 0) {
+    RedCopyArrayRange range = {0};
+    range.arrayRBytesFirst  = from_cpu_storage_bytes_first;
+    range.arrayWBytesFirst  = to_gpu_storage_bytes_first;
+    range.bytesCount        = bytes_count;
+    npfp(redCallCopyArrayToArray, batch->batch.addresses.redCallCopyArrayToArray,
+      "calls", batch->batch.calls.handle,
+      "arrayR", from_cpu_storage->storage.arrayRangeInfo.array,
+      "arrayW", to_gpu_storage->storage.arrayRangeInfo.array,
+      "rangesCount", 1,
+      "ranges", &range
+    );
+  }
+  if (dynamicMeshColorCopyBytes > 0) {
+  }
+  if (dynamicMeshNormalCopyBytes > 0) {
+  }
+  for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
+    if (dynamicMeshTexcoordCopyBytes[i] > 0) {
+    }
+  }
+#endif
   REDGPU_2_EXPECT(0 || !"TODO");
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandMeshTexcoord(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned index, float x, float y, float z, float w) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_context_t * vkfast = batch->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(index < REII_TEXCOORDS_MAX_COUNT);
+
+  ReiiVec4 * cpu_as_vec4_start = (ReiiVec4 *)list->dynamic_mesh_texcoord[index].cpu_ptr;
+  ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshTexcoordVec4Offset[index]];
+
+  cpu_as_vec4[0].x = x;
+  cpu_as_vec4[0].y = y;
+  cpu_as_vec4[0].z = z;
+  cpu_as_vec4[0].w = w;
+
+  list->dynamicMeshTexcoordVec4Offset[index] += 1;
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandMeshColor(gpu_handle_context_t context, ReiiHandleCommandList * list, float r, float g, float b, float a) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  ReiiVec4 * cpu_as_vec4_start = (ReiiVec4 *)list->dynamic_mesh_color.cpu_ptr;
+  ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshColorVec4Offset];
+
+  cpu_as_vec4[0].x = r;
+  cpu_as_vec4[0].y = g;
+  cpu_as_vec4[0].z = b;
+  cpu_as_vec4[0].w = a;
+
+  list->dynamicMeshColorVec4Offset += 1;
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal(gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  ReiiVec4 * cpu_as_vec4_start = (ReiiVec4 *)list->dynamic_mesh_normal.cpu_ptr;
+  ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshNormalVec4Offset];
+
+  cpu_as_vec4[0].x = x;
+  cpu_as_vec4[0].y = y;
+  cpu_as_vec4[0].z = z;
+  cpu_as_vec4[0].w = 1; // NOTE(Constantine): Hmm... I guess?
+
+  list->dynamicMeshNormalVec4Offset += 1;
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandMeshPosition(gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z, float w) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  ReiiVec4 * cpu_as_vec4_start = (ReiiVec4 *)list->dynamic_mesh_position.cpu_ptr;
+  ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshPositionVec4Offset];
+
+  cpu_as_vec4[0].x = x;
+  cpu_as_vec4[0].y = y;
+  cpu_as_vec4[0].z = z;
+  cpu_as_vec4[0].w = w;
+
+  list->dynamicMeshPositionVec4Offset += 1;
+}
+
+GPU_API_PRE void GPU_API_POST reiiCommandCopyFromColorTextureToStorageRaw(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * texture, RedStructMemberArray * storageRaw) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_context_t * vkfast = batch->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  const gpu_extra_reii_texture_type textureType = texture->textureMemory->texturesType;
+
+  RedImagePartBitflags imageParts = RED_IMAGE_PART_BITFLAG_COLOR;
+  if (
+    textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL ||
+    textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL_MSAA
+  )
+  {
+    // NOTE(Constantine): Assumes, a stencil-only image is not possible.
+    imageParts = RED_IMAGE_PART_BITFLAG_DEPTH | (texture->textureStencilOnly != NULL ? RED_IMAGE_PART_BITFLAG_STENCIL : 0);
+  }
+
+  RedCopyArrayImageRange copy = {0};
+  copy.arrayBytesFirst               = storageRaw->arrayRangeBytesFirst;
+  copy.arrayTexelsCountToNextRow     = texture->width;
+  copy.arrayTexelsCountToNextLayerOr3DDepthSliceDividedByTexelsCountToNextRow = 0;
+  copy.imageParts.allParts           = imageParts;
+  copy.imageParts.level              = 0;
+  copy.imageParts.layersFirst        = 0;
+  copy.imageParts.layersCount        = 1;
+  copy.imageOffset.texelX            = 0;
+  copy.imageOffset.texelY            = 0;
+  copy.imageOffset.texelZ            = 0;
+  copy.imageExtent.texelsCountWidth  = texture->width;
+  copy.imageExtent.texelsCountHeight = texture->height;
+  copy.imageExtent.texelsCountDepth  = 1;
+  npfp(redCallCopyImageToArray, batch->batch.addresses.redCallCopyImageToArray,
+    "calls", batch->batch.calls.handle,
+    "imageR", texture->image.handle,
+    "setTo1", 1,
+    "arrayW", storageRaw->array,
+    "rangesCount", 1,
+    "ranges", &copy
+  );
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDraw(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh) {
@@ -1812,12 +1935,6 @@ GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDraw(gpu_handle_context_t con
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDrawInstanced(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh, unsigned vertexCount, unsigned instanceCount, unsigned vertexFirst, unsigned instanceFirst) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
-}
-
-GPU_API_PRE void GPU_API_POST reiiCommandSetProgramEnvironmentValue(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned index, float x, float y, float z, float w) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
   REDGPU_2_EXPECT(0 || !"TODO");

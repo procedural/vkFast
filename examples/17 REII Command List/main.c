@@ -245,12 +245,13 @@ int main() {
       );
     }
     reiiCommandMeshEndExt(ctx, list, outputdstex, outputtex, outputtex->texture);
+    RedStructMemberArray raw_pixels = {0};
+    vfeBanzaiPointerGetRaw(&pixels_gpu_only, &raw_pixels, FF, LL);
+    reiiCommandCopyFromColorTextureToStorageRaw(ctx, list, outputtex, &raw_pixels);
     vfBatchEnd(ctx, batch, FF, LL);
 
     uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
     vfAsyncWaitToFinish(ctx, wait, FF, LL);
-    RedStructMemberArray raw_pixels = {0};
-    vfeBanzaiPointerGetRaw(&pixels_gpu_only, &raw_pixels, FF, LL);
     vfAsyncDrawPixelsRaw(ctx, &raw_pixels, NULL, FF, LL);
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
 
