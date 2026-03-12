@@ -96,7 +96,7 @@ int main() {
     variables.salt_y = -1;
     variables.salt_z = -7;
     variables.salt_w = 6;
-    vfBatchBindVariablesCopy(ctx, batch, sizeof(variables), &variables, FF, LL);
+    vfBatchBindVariablesCopy(ctx, batch, 0, sizeof(variables), &variables, FF, LL);
     vfBatchCompute(ctx, batch, 1, 1, 1, FF, LL);
     vfBatchBarrierMemory(ctx, batch, FF, LL);
     vfeBanzaiBatchPointerCopyFromGpuToCpu(ctx, batch, &storage_output_gpu, &storage_output_cpu, 1 * 4*sizeof(float), FF, LL);

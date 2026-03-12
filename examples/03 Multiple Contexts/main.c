@@ -107,7 +107,7 @@ int main() {
     salt[1] = -1;
     salt[2] = -7;
     salt[3] = 6;
-    vfBatchBindVariablesCopy(ctx, batch, sizeof(salt), salt, FF, LL);
+    vfBatchBindVariablesCopy(ctx, batch, 0, sizeof(salt), salt, FF, LL);
     vfBatchCompute(ctx, batch, 1, 1, 1, FF, LL);
     vfBatchBarrierMemory(ctx, batch, FF, LL);
     vfBatchStorageCopyFromGpuToCpu(ctx, batch, storage_output_gpu.id, storage_output_cpu.id, FF, LL);

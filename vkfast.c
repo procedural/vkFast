@@ -1733,7 +1733,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(gpu_handle_context_t con
   batch->batch.currentStruct.handle = NULL;
 }
 
-GPU_API_PRE void GPU_API_POST vfBatchBindVariablesCopy(gpu_handle_context_t context, uint64_t batch_id, unsigned variables_bytes_count, const void * variables, const char * optionalFile, int optionalLine) {
+GPU_API_PRE void GPU_API_POST vfBatchBindVariablesCopy(gpu_handle_context_t context, uint64_t batch_id, unsigned variables_bytes_offset, unsigned data_bytes_count, const void * data, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
   vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
@@ -1745,9 +1745,9 @@ GPU_API_PRE void GPU_API_POST vfBatchBindVariablesCopy(gpu_handle_context_t cont
     "calls", batch->batch.calls.handle,
     "procedureParameters", batch->batch.currentProcedureParametersCompute,
     "visibleToStages", RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE,
-    "variablesBytesFirst", 0,
-    "dataBytesCount", variables_bytes_count,
-    "data", variables
+    "variablesBytesFirst", variables_bytes_offset,
+    "dataBytesCount", data_bytes_count,
+    "data", data
   );
 }
 
