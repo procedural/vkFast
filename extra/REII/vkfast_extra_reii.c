@@ -1384,9 +1384,9 @@ GPU_API_PRE void GPU_API_POST reiiCommandListReset(gpu_handle_context_t context,
   RedHandleGpu gpu = vkfast->gpu;
 
   {
-    vf_handle_t * calls = (vf_handle_t *)(void *)list->batch_id;
-    REDGPU_2_EXPECTWG(calls != NULL);
-    REDGPU_2_EXPECTWG(calls->handle_id == VF_HANDLE_ID_BATCH);
+    vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+    REDGPU_2_EXPECTWG(batch != NULL);
+    REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
   }
 
   {
@@ -1432,11 +1432,11 @@ GPU_API_PRE void GPU_API_POST reiiCommandSetViewportExt(gpu_handle_context_t con
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
-  vf_handle_t * calls = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
 
   np(redCallSetDynamicViewport,
     "address", list->callProceduresAndAddresses.redCallSetDynamicViewport,
-    "calls", calls->batch.calls.handle,
+    "calls", batch->batch.calls.handle,
     "x", x,
     "y", y,
     "width", width,
@@ -1450,11 +1450,11 @@ GPU_API_PRE void GPU_API_POST reiiCommandSetScissor(gpu_handle_context_t context
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
-  vf_handle_t * calls = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
 
   np(redCallSetDynamicScissor,
     "address", list->callProceduresAndAddresses.redCallSetDynamicScissor,
-    "calls", calls->batch.calls.handle,
+    "calls", batch->batch.calls.handle,
     "x", x,
     "y", y,
     "width", width,
@@ -1470,8 +1470,8 @@ GPU_API_PRE void GPU_API_POST reiiCommandClearTexture(gpu_handle_context_t conte
     return;
   }
 
-  vf_handle_t * calls = (vf_handle_t *)(void *)list->batch_id;
-  vf_handle_context_t * vkfast = calls->vkfast;
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
 
   unsigned                   depthStencilWidth            = 0;
@@ -1580,7 +1580,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandClearTexture(gpu_handle_context_t conte
 
   np(red2CallSetProcedureOutput,
     "address", list->callProceduresAndAddresses.redCallSetProcedureOutput,
-    "calls", calls->batch.calls.handle,
+    "calls", batch->batch.calls.handle,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
     "mutableOutputsArray", &list->mutable_outputs_array,
@@ -1605,14 +1605,21 @@ GPU_API_PRE void GPU_API_POST reiiCommandClearTexture(gpu_handle_context_t conte
 
   np(redCallEndProcedureOutput,
     "address", list->callProceduresAndAddresses.redCallEndProcedureOutput,
-    "calls", calls->batch.calls.handle
+    "calls", batch->batch.calls.handle
   );
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSetState(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiMeshState * state, void * _) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+
+  npfp(redCallSetProcedure, list->callProceduresAndAddresses.redCallSetProcedure,
+    "calls", batch->batch.calls.handle,
+    "procedureType", RED_PROCEDURE_TYPE_DRAW,
+    "procedure", state->procedure
+  );
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t context, ReiiHandleCommandList * list, int slotsCount, const RedStructDeclarationMember * slots) {
