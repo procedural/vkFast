@@ -1757,16 +1757,110 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindVariablesCopy(gpu_handle_context_t 
   );
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet(gpu_handle_context_t context, ReiiHandleCommandList * list) {
+GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_context_t * vkfast = batch->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  unsigned                   depthStencilWidth            = 0;
+  unsigned                   depthStencilHeight           = 0;
+  RedFormat                  depthStencilFormat           = RED_FORMAT_UNDEFINED;
+  RedMultisampleCountBitflag depthStencilMultisampleCount = (RedMultisampleCountBitflag)0;
+  unsigned                   colorWidth                   = 0;
+  unsigned                   colorHeight                  = 0;
+  RedFormat                  colorFormat                  = RED_FORMAT_UNDEFINED;
+  RedMultisampleCountBitflag colorMultisampleCount        = (RedMultisampleCountBitflag)0;
+
+  RedOutputMembers            outputMembers            = {0};
+  RedOutputDeclarationMembers outputDeclarationMembers = {0};
+  outputDeclarationMembers.depthStencilEnable                        = 0;
+  outputDeclarationMembers.depthStencilFormat                        = RED_FORMAT_UNDEFINED;
+  outputDeclarationMembers.depthStencilMultisampleCount              = RED_MULTISAMPLE_COUNT_BITFLAG_1;
+  outputDeclarationMembers.depthStencilDepthSetProcedureOutputOp     = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilDepthEndProcedureOutputOp     = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilStencilSetProcedureOutputOp   = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilStencilEndProcedureOutputOp   = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilSharesMemoryWithAnotherMember = 0;
+  outputDeclarationMembers.colorsCount                               = 0;
+  outputDeclarationMembers.colorsFormat[0]                           = RED_FORMAT_UNDEFINED;
+  outputDeclarationMembers.colorsMultisampleCount[0]                 = RED_MULTISAMPLE_COUNT_BITFLAG_1;
+  outputDeclarationMembers.colorsSetProcedureOutputOp[0]             = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.colorsEndProcedureOutputOp[0]             = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.colorsSharesMemoryWithAnotherMember[0]    = 0;
+  if (depthStencilTexture != NULL) {
+    depthStencilWidth            = depthStencilTexture->width;
+    depthStencilHeight           = depthStencilTexture->height;
+    depthStencilFormat           = depthStencilTexture->format;
+    depthStencilMultisampleCount = depthStencilTexture->msaaCount;
+
+    outputDeclarationMembers.depthStencilEnable           = 1;
+    outputDeclarationMembers.depthStencilFormat           = depthStencilFormat;
+    outputDeclarationMembers.depthStencilMultisampleCount = depthStencilMultisampleCount;
+
+    outputMembers.depthStencil = depthStencilTexture->texture;
+  }
+  if (colorTexture != NULL) {
+    REDGPU_2_EXPECTWG(colorTextureHandle != NULL);
+
+    colorWidth            = colorTexture->width;
+    colorHeight           = colorTexture->height;
+    colorFormat           = colorTexture->format;
+    colorMultisampleCount = colorTexture->msaaCount;
+
+    outputDeclarationMembers.colorsCount                   = 1;
+    outputDeclarationMembers.colorsFormat[0]               = colorFormat;
+    outputDeclarationMembers.colorsMultisampleCount[0]     = colorMultisampleCount;
+
+    outputMembers.colorsCount = 1;
+    outputMembers.colors[0]   = colorTextureHandle;
+  }
+
+  if (depthStencilWidth != 0 && depthStencilHeight != 0 && colorWidth != 0 && colorHeight != 0) {
+    REDGPU_2_EXPECTWG(depthStencilWidth  == colorWidth);
+    REDGPU_2_EXPECTWG(depthStencilHeight == colorHeight);
+  }
+  unsigned width  = depthStencilWidth  != 0 ? depthStencilWidth  : colorWidth;
+  unsigned height = depthStencilHeight != 0 ? depthStencilHeight : colorHeight;
+
+  np(red2CallSetProcedureOutput,
+    "address", list->callProceduresAndAddresses.redCallSetProcedureOutput,
+    "calls", batch->batch.calls.handle,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "mutableOutputsArray", &list->mutable_outputs_array,
+    "outputDeclarationMembers", &outputDeclarationMembers,
+    "outputDeclarationMembersResolveSources", NULL,
+    "dependencyByRegion", 0,
+    "dependencyByRegionAllowUsageAliasOrderBarriers", 0,
+    "outputMembers", &outputMembers,
+    "outputMembersResolveTargets", NULL,
+    "width", width,
+    "height", height,
+    "depthClearValue", 0,
+    "stencilClearValue", 0,
+    "colorsClearValuesFloat", NULL,
+    "colorsClearValuesSint", NULL,
+    "colorsClearValuesUint", NULL,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetEnd(gpu_handle_context_t context, ReiiHandleCommandList * list) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+
+  np(redCallEndProcedureOutput,
+    "address", list->callProceduresAndAddresses.redCallEndProcedureOutput,
+    "calls", batch->batch.calls.handle
+  );
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSet(gpu_handle_context_t context, ReiiHandleCommandList * list) {
@@ -1784,38 +1878,81 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshSet(gpu_handle_context_t context, R
 GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExt(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-#if 0
-  uint64_t dynamicMeshPositionCopyBytes = list->dynamicMeshPositionVec4Offset - list->dynamicMeshPositionVec4CurrentStart;
-  uint64_t dynamicMeshColorCopyBytes    = list->dynamicMeshColorVec4Offset    - list->dynamicMeshColorVec4CurrentStart;
-  uint64_t dynamicMeshNormalCopyBytes   = list->dynamicMeshNormalVec4Offset   - list->dynamicMeshNormalVec4CurrentStart;
-  uint64_t dynamicMeshTexcoordCopyBytes[REII_TEXCOORDS_MAX_COUNT] = {0};
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_context_t * vkfast = batch->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  uint64_t dynamicMeshPositionCopyVec4Count = list->dynamicMeshPositionVec4Offset - list->dynamicMeshPositionVec4CurrentStart;
+  uint64_t dynamicMeshColorCopyVec4Count    = list->dynamicMeshColorVec4Offset    - list->dynamicMeshColorVec4CurrentStart;
+  uint64_t dynamicMeshNormalCopyVec4Count   = list->dynamicMeshNormalVec4Offset   - list->dynamicMeshNormalVec4CurrentStart;
+  uint64_t dynamicMeshTexcoordCopyVec4Count[REII_TEXCOORDS_MAX_COUNT] = {0};
   for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
-    dynamicMeshTexcoordCopyBytes[i] = list->dynamicMeshTexcoordVec4Offset[i] - list->dynamicMeshTexcoordVec4CurrentStart[i];
+    dynamicMeshTexcoordCopyVec4Count[i] = list->dynamicMeshTexcoordVec4Offset[i] - list->dynamicMeshTexcoordVec4CurrentStart[i];
   }
 
-  if (dynamicMeshPositionCopyBytes > 0) {
-    RedCopyArrayRange range = {0};
-    range.arrayRBytesFirst  = from_cpu_storage_bytes_first;
-    range.arrayWBytesFirst  = to_gpu_storage_bytes_first;
-    range.bytesCount        = bytes_count;
-    npfp(redCallCopyArrayToArray, batch->batch.addresses.redCallCopyArrayToArray,
-      "calls", batch->batch.calls.handle,
-      "arrayR", from_cpu_storage->storage.arrayRangeInfo.array,
-      "arrayW", to_gpu_storage->storage.arrayRangeInfo.array,
-      "rangesCount", 1,
-      "ranges", &range
+  if (dynamicMeshPositionCopyVec4Count == 0) {
+    return;
+  }
+
+  REDGPU_2_EXPECTWG(dynamicMeshPositionCopyVec4Count % 3 == 0);
+
+  vfeCpuGpuArrayBatchCopyFromCpuToGpu(
+    context,
+    list->batch_id,
+    &list->dynamic_mesh_position,
+    list->dynamicMeshPositionVec4CurrentStart * sizeof(ReiiVec4),
+    dynamicMeshPositionCopyVec4Count * sizeof(ReiiVec4),
+    optionalFile,
+    optionalLine
+  );
+  if (dynamicMeshColorCopyVec4Count > 0) {
+    vfeCpuGpuArrayBatchCopyFromCpuToGpu(
+      context,
+      list->batch_id,
+      &list->dynamic_mesh_color,
+      list->dynamicMeshColorVec4CurrentStart * sizeof(ReiiVec4),
+      dynamicMeshColorCopyVec4Count * sizeof(ReiiVec4),
+      optionalFile,
+      optionalLine
     );
   }
-  if (dynamicMeshColorCopyBytes > 0) {
-  }
-  if (dynamicMeshNormalCopyBytes > 0) {
+  if (dynamicMeshNormalCopyVec4Count > 0) {
+    vfeCpuGpuArrayBatchCopyFromCpuToGpu(
+      context,
+      list->batch_id,
+      &list->dynamic_mesh_normal,
+      list->dynamicMeshNormalVec4CurrentStart * sizeof(ReiiVec4),
+      dynamicMeshNormalCopyVec4Count * sizeof(ReiiVec4),
+      optionalFile,
+      optionalLine
+    );
   }
   for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
-    if (dynamicMeshTexcoordCopyBytes[i] > 0) {
+    if (dynamicMeshTexcoordCopyVec4Count[i] > 0) {
+      vfeCpuGpuArrayBatchCopyFromCpuToGpu(
+        context,
+        list->batch_id,
+        &list->dynamic_mesh_texcoord[i],
+        list->dynamicMeshTexcoordVec4CurrentStart[i] * sizeof(ReiiVec4),
+        dynamicMeshTexcoordCopyVec4Count[i] * sizeof(ReiiVec4),
+        optionalFile,
+        optionalLine
+      );
     }
   }
-#endif
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  // NOTE(Constantine): Should I insert a GPU barrier here, to wait for copies to finish?
+
+  reiiCommandRenderTargetSet(context, list, depthStencilTexture, colorTexture, colorTextureHandle);
+  npfp(redCallProcedure, list->callProceduresAndAddresses.redCallProcedure,
+    "calls", batch->batch.calls.handle,
+    "vertexCount", dynamicMeshPositionCopyVec4Count,
+    "instanceCount", 1,
+    "vertexFirst", 0,
+    "instanceFirst", 0
+  );
+  reiiCommandRenderTargetEnd(context, list);
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandMeshTexcoord(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned index, float x, float y, float z, float w) {

@@ -11,6 +11,10 @@ typedef unsigned ReiiBool32;
 
 #define REII_TEXCOORDS_MAX_COUNT 8
 
+typedef struct ReiiRgba8 {
+  unsigned char r, g, b, a;
+} ReiiRgba8;
+
 typedef struct ReiiVec4 {
   float x, y, z, w;
 } ReiiVec4;
@@ -302,7 +306,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet          (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw              (gpu_handle_context_t context, ReiiHandleCommandList * list, int slot, int storageRawCount, const RedStructMemberArray * storageRaw);
 GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsEnd          (gpu_handle_context_t context, ReiiHandleCommandList * list);
 GPU_API_PRE void GPU_API_POST reiiCommandBindVariablesCopy           (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned variablesBytesOffset, unsigned dataBytesCount, const void * data);
-GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet             (gpu_handle_context_t context, ReiiHandleCommandList * list);
+GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet             (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetEnd             (gpu_handle_context_t context, ReiiHandleCommandList * list);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSet                     (gpu_handle_context_t context, ReiiHandleCommandList * list);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExt                  (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);

@@ -209,7 +209,7 @@ int main() {
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
   ReiiHandleCommandList * list = &hlist;
-  Red2Output mutable_outputs_array[1]  = {0};
+  Red2Output mutable_outputs_array[2]  = {0};
   list->mutable_outputs_array.items    = mutable_outputs_array;
   list->mutable_outputs_array.capacity = _countof(mutable_outputs_array);
   list->dynamic_mesh_position          = pos_array;
