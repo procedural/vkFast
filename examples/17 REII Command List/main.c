@@ -120,7 +120,7 @@ int main() {
   mesh_state.programFragment                                = fp;
   mesh_state.codeVertex                                     = vp_string;
   mesh_state.codeFragment                                   = fp_string;
-  mesh_state.rasterizationDepthClampEnable                  = 1;
+  mesh_state.rasterizationDepthClampEnable                  = 0;
   mesh_state.rasterizationCullMode                          = REII_CULL_MODE_NONE;
   mesh_state.rasterizationFrontFace                         = REII_FRONT_FACE_COUNTER_CLOCKWISE;
   mesh_state.rasterizationDepthBiasEnable                   = 0;
@@ -240,7 +240,7 @@ int main() {
       reiiCommandMeshPosition(ctx, list,
         mesh_vertices[i * 3 + 0] * scale,
         mesh_vertices[i * 3 + 1] * scale,
-        mesh_vertices[i * 3 + 2] * scale,
+        ((mesh_vertices[i * 3 + 2] * scale) + 1) * 0.5, // https://community.khronos.org/t/1-1-clip-depth-mode-on-vulkan-glclipcontrol/104208
         1
       );
     }
