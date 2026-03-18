@@ -608,20 +608,17 @@ GPU_API_PRE void GPU_API_POST reiiTextureSetStateSampler(gpu_handle_context_t co
   );
 
   RedHandleSampler sampler = bindingTexture->sampler;
-
-  if (sampler != NULL) {
-    np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_SAMPLER,
-      "handle", sampler,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-    sampler = NULL;
-  }
+  np(red2DestroyHandle,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "handleType", RED_HANDLE_TYPE_SAMPLER,
+    "handle", sampler,
+    "optionalHandle2", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+  sampler = NULL;
 
   RedSamplerFiltering    filteringMag = RiiSamplerFilteringToRed(magFiltering);
   RedSamplerFiltering    filteringMin = RiiSamplerFilteringToRed(minFiltering);
@@ -2119,26 +2116,170 @@ GPU_API_PRE void GPU_API_POST reiiStaticMeshPosition(gpu_handle_context_t contex
   REDGPU_2_EXPECT(0 || !"TODO");
 }
 
-GPU_API_PRE void GPU_API_POST reiiDestroyTexture(gpu_handle_context_t context, ReiiHandleTexture * texture) {
+GPU_API_PRE void GPU_API_POST reiiDestroyExt(gpu_handle_context_t context, gpu_extra_reii_destroy_type_e destroyHandleType, void * destroyHandle) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
-}
 
-GPU_API_PRE void GPU_API_POST reiiDestroyCommandList(gpu_handle_context_t context, ReiiHandleCommandList * list) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
-}
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
-GPU_API_PRE void GPU_API_POST reiiDestroyStaticMesh(gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
-}
+  RedHandleGpu gpu = vkfast->gpu;
 
-GPU_API_PRE void GPU_API_POST reiiDestroyCompiledMeshState(gpu_handle_context_t context, ReiiMeshState * state) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+  if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_UNDEFINED) {
+    REDGPU_2_EXPECT(0 || !"destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_UNDEFINED (0)");
+  } else if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE) {
+    ReiiMeshState * handle = (ReiiMeshState *)destroyHandle;
+
+    RedHandleGpuCode             gpuCodeVertex       = handle->gpuCodeVertex;
+    RedHandleGpuCode             gpuCodeFragment     = handle->gpuCodeFragment;
+    RedHandleProcedureParameters procedureParameters = handle->procedureParameters;
+    RedHandleProcedure           procedure           = handle->procedure;
+
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_GPU_CODE,
+      "handle", gpuCodeVertex,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_GPU_CODE,
+      "handle", gpuCodeFragment,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_PROCEDURE_PARAMETERS,
+      "handle", procedureParameters,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_PROCEDURE,
+      "handle", procedure,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+  } else if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE) {
+    ReiiHandleTexture * handle = (ReiiHandleTexture *)destroyHandle;
+
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_SAMPLER,
+      "handle", handle->sampler,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_TEXTURE,
+      "handle", handle->texture,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_TEXTURE,
+      "handle", handle->textureDepthOnly,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_TEXTURE,
+      "handle", handle->textureStencilOnly,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    for (int i = 0; i < 6; i += 1) {
+      np(red2DestroyHandle,
+        "context", vkfast->context,
+        "gpu", vkfast->gpu,
+        "handleType", RED_HANDLE_TYPE_TEXTURE,
+        "handle", handle->textureCubeFace[i],
+        "optionalHandle2", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+    }
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_IMAGE,
+      "handle", handle->image.handle,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_MEMORY,
+      "handle", handle->imageDedicatedMemory,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+  } else if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY) {
+    ReiiHandleTextureMemory * handle = (ReiiHandleTextureMemory *)destroyHandle;
+
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_MEMORY,
+      "handle", handle->memory,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+  } else if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST) {
+    ReiiHandleCommandList * handle = (ReiiHandleCommandList *)destroyHandle;
+
+    {
+      unsigned outputsCount = handle->mutable_outputs_array.count;
+      for (unsigned i = 0; i < outputsCount; i += 1) {
+        red2DestroyHandle(vkfast->context, vkfast->gpu, RED_HANDLE_TYPE_OUTPUT, handle->mutable_outputs_array.items[i].handle, NULL, optionalFile, optionalLine, NULL);
+      }
+      for (unsigned i = 0; i < outputsCount; i += 1) {
+        red2DestroyHandle(vkfast->context, vkfast->gpu, RED_HANDLE_TYPE_OUTPUT_DECLARATION, handle->mutable_outputs_array.items[i].handleDeclaration, NULL, optionalFile, optionalLine, NULL);
+      }
+    }
+  } else if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_STATIC_MESH) {
+    REDGPU_2_EXPECT(0 || !"TODO");
+  } else {
+    REDGPU_2_EXPECT(0 || !"Invalid enum value");
+  }
 }

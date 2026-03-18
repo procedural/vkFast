@@ -239,21 +239,21 @@ typedef struct ReiiCpuGpuTexture {
 } ReiiCpuGpuTexture;
 
 typedef struct ReiiHandleCommandList {
-  uint64_t                     batch_id;
-  Red2CallsMutableOutputsArray mutable_outputs_array;
-  gpu_extra_cpu_gpu_array      dynamic_mesh_position;
-  gpu_extra_cpu_gpu_array      dynamic_mesh_color;
-  gpu_extra_cpu_gpu_array      dynamic_mesh_normal; // NOTE(Constantine): Treated as vec4, unlike in GL1.4-based REII that treats them as vec3.
-  gpu_extra_cpu_gpu_array      dynamic_mesh_texcoord[REII_TEXCOORDS_MAX_COUNT];
+  uint64_t                      batch_id;
+  Red2CallsMutableOutputsArray  mutable_outputs_array;
+  gpu_extra_cpu_gpu_array       dynamic_mesh_position;
+  gpu_extra_cpu_gpu_array       dynamic_mesh_color;
+  gpu_extra_cpu_gpu_array       dynamic_mesh_normal; // NOTE(Constantine): Treated as vec4, unlike in GL1.4-based REII that treats them as vec3.
+  gpu_extra_cpu_gpu_array       dynamic_mesh_texcoord[REII_TEXCOORDS_MAX_COUNT];
   // Internal
-  uint64_t        dynamicMeshPositionVec4Offset;
-  uint64_t        dynamicMeshColorVec4Offset;
-  uint64_t        dynamicMeshNormalVec4Offset;
-  uint64_t        dynamicMeshTexcoordVec4Offset[REII_TEXCOORDS_MAX_COUNT];
-  uint64_t        dynamicMeshPositionVec4CurrentStart;
-  uint64_t        dynamicMeshColorVec4CurrentStart;
-  uint64_t        dynamicMeshNormalVec4CurrentStart;
-  uint64_t        dynamicMeshTexcoordVec4CurrentStart[REII_TEXCOORDS_MAX_COUNT];
+  uint64_t                      dynamicMeshPositionVec4Offset;
+  uint64_t                      dynamicMeshColorVec4Offset;
+  uint64_t                      dynamicMeshNormalVec4Offset;
+  uint64_t                      dynamicMeshTexcoordVec4Offset[REII_TEXCOORDS_MAX_COUNT];
+  uint64_t                      dynamicMeshPositionVec4CurrentStart;
+  uint64_t                      dynamicMeshColorVec4CurrentStart;
+  uint64_t                      dynamicMeshNormalVec4CurrentStart;
+  uint64_t                      dynamicMeshTexcoordVec4CurrentStart[REII_TEXCOORDS_MAX_COUNT];
   RedHandleProcedureParameters  currentProcedureParametersDraw;
   RedCallProceduresAndAddresses callProceduresAndAddresses;
 } ReiiHandleCommandList;
@@ -262,6 +262,15 @@ typedef struct ReiiHandleStaticMesh {
   // Internal
   int _;
 } ReiiHandleStaticMesh;
+
+typedef enum gpu_extra_reii_destroy_type_e {
+  GPU_EXTRA_REII_DESTROY_TYPE_UNDEFINED      = 0,
+  GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE     = 1,
+  GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE        = 2,
+  GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY = 3,
+  GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST   = 4,
+  GPU_EXTRA_REII_DESTROY_TYPE_STATIC_MESH    = 5,
+} gpu_extra_reii_destroy_type_e;
 
 typedef struct gpu_extra_reii_mesh_state_compile_info_t {
   ReiiMeshState *                    state;
@@ -330,10 +339,7 @@ GPU_API_PRE void GPU_API_POST reiiStaticMeshPosition                 (gpu_handle
 
 // Destroy
 
-GPU_API_PRE void GPU_API_POST reiiDestroyTexture                     (gpu_handle_context_t context, ReiiHandleTexture * texture);
-GPU_API_PRE void GPU_API_POST reiiDestroyCommandList                 (gpu_handle_context_t context, ReiiHandleCommandList * list);
-GPU_API_PRE void GPU_API_POST reiiDestroyStaticMesh                  (gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh);
-GPU_API_PRE void GPU_API_POST reiiDestroyCompiledMeshState           (gpu_handle_context_t context, ReiiMeshState * state);
+GPU_API_PRE void GPU_API_POST reiiDestroyExt                         (gpu_handle_context_t context, gpu_extra_reii_destroy_type_e destroyHandleType, void * destroyHandle);
 
 #ifdef __cplusplus
 }

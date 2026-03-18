@@ -53,6 +53,7 @@ int main() {
   gpu_context_optional_parameters_t optional_parameters = {0};
   optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
 
+  // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
   gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
   vfWindowFullscreen(ctx, NULL, "[vkFast] REII Command List", window_w, window_h, 0, FF, LL);
 
@@ -244,7 +245,7 @@ int main() {
         1
       );
     }
-    reiiCommandMeshEndExt(ctx, list, outputdstex, outputtex, outputtex->texture);
+    reiiCommandMeshEndExt(ctx, list, NULL, outputtex, outputtex->texture);
     RedStructMemberArray raw_pixels = {0};
     vfeBanzaiPointerGetRaw(&pixels_gpu_only, &raw_pixels, FF, LL);
     reiiCommandCopyFromColorTextureToStorageRaw(ctx, list, outputtex, &raw_pixels);
@@ -266,8 +267,14 @@ int main() {
     }
   }
 
-  reiiDestroyCommandList(ctx, list);
+  reiiDestroyExt(ctx, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, list);
+  reiiDestroyExt(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);
+  reiiDestroyExt(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputdstex);
+  reiiDestroyExt(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &outputTexMemory);
+  reiiDestroyExt(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &outputDSTexMemory);
+  reiiDestroyExt(ctx, GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE, &mesh_state);
   uint64_t ids[] = {
+    batch,
     storage_gpu_only.id,
     storage_cpu_upload.id,
     storage_cpu_readback.id,
