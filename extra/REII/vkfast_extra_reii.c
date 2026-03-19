@@ -1939,7 +1939,9 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExt(gpu_handle_context_t context
     }
   }
 
-  // NOTE(Constantine): Should I insert a GPU barrier here, to wait for copies to finish?
+  // NOTE(Constantine)(Mar 15, 2026): Should I insert a GPU barrier here, to wait for copies to finish?
+  // NOTE(Constantine)(Mar 19, 2026): Yes, I should: AMD RX 550 needs this barrier to wait for copies to finish.
+  vfBatchBarrierMemory(context, list->batch_id, optionalFile, optionalLine);
 
   reiiCommandRenderTargetSet(context, list, depthStencilTexture, colorTexture, colorTextureHandle);
   npfp(redCallProcedure, list->callProceduresAndAddresses.redCallProcedure,

@@ -204,6 +204,12 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
       "optionalFile", optionalFile,
       "optionalLine", optionalLine
     );
+  } else if (gpuInfo->gpuVendorId == 4098/*AMD Radeon*/) {
+    np(red2ExpectMinimumGuaranteesIntelUHDGraphics730,
+      "gpuInfo", gpuInfo,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine
+    );
   } else {
     REDGPU_2_EXPECT(!"Unsupported by vkFast GPU, recompile your program with vfContextInit()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
   }
@@ -296,7 +302,7 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
       specificMemoryTypesCpuUpload   = 3;
       specificMemoryTypesCpuReadback = 4; // NOTE(Constantine): The cpu cached one.
 
-    } else if (gpuInfo->gpuVendorId == 32902/*Intel UHD Graphics*/) { // NOTE(Constantine): Tested on Intel UHD Graphics 730 and Windows 10.
+    } else if (gpuInfo->gpuVendorId == 32902/*Intel UHD Graphics 730*/) { // NOTE(Constantine): Tested on Intel UHD Graphics 730 and Windows 10.
       unsigned      memoryTypesCount = 0;
       RedMemoryType memoryTypes[32]  = {0};
       unsigned      memoryHeapsCount = 0;
@@ -339,6 +345,62 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
       specificMemoryTypesGpuVram     = 0;
       specificMemoryTypesCpuUpload   = 1;
       specificMemoryTypesCpuReadback = 2; // NOTE(Constantine): The cpu cached one.
+
+    } else if (gpuInfo->gpuVendorId == 4098/*AMD Radeon*/) { // NOTE(Constantine): Tested on AMD RX 550 and Windows 10.
+      unsigned      memoryTypesCount = 0;
+      RedMemoryType memoryTypes[32]  = {0};
+      unsigned      memoryHeapsCount = 0;
+      RedMemoryHeap memoryHeaps[32]  = {0};
+
+      memoryTypesCount = 4;
+      memoryHeapsCount = 3;
+
+      memoryTypes[0].memoryHeapIndex = 0;
+      memoryTypes[0].isGpuVram       = 1;
+      memoryTypes[0].isCpuMappable   = 0;
+      memoryTypes[0].isCpuCoherent   = 0;
+      memoryTypes[0].isCpuCached     = 0;
+
+      memoryTypes[1].memoryHeapIndex = 1;
+      memoryTypes[1].isGpuVram       = 0;
+      memoryTypes[1].isCpuMappable   = 1;
+      memoryTypes[1].isCpuCoherent   = 1;
+      memoryTypes[1].isCpuCached     = 0;
+
+      memoryTypes[2].memoryHeapIndex = 2;
+      memoryTypes[2].isGpuVram       = 1;
+      memoryTypes[2].isCpuMappable   = 1;
+      memoryTypes[2].isCpuCoherent   = 1;
+      memoryTypes[2].isCpuCached     = 0;
+
+      memoryTypes[3].memoryHeapIndex = 1;
+      memoryTypes[3].isGpuVram       = 0;
+      memoryTypes[3].isCpuMappable   = 1;
+      memoryTypes[3].isCpuCoherent   = 1;
+      memoryTypes[3].isCpuCached     = 1;
+
+      memoryHeaps[0].memoryBytesCount = 1800000000;
+      memoryHeaps[0].isGpuVram        = 1;
+
+      memoryHeaps[1].memoryBytesCount = 2000000000;
+      memoryHeaps[1].isGpuVram        = 0;
+
+      memoryHeaps[2].memoryBytesCount = 200000000;
+      memoryHeaps[2].isGpuVram        = 1;
+
+      np(red2ExpectMemoryTypes,
+        "gpuInfo", gpuInfo,
+        "expectedMemoryHeapsCount", memoryHeapsCount,
+        "expectedMemoryHeaps", memoryHeaps,
+        "expectedMemoryTypesCount", memoryTypesCount,
+        "expectedMemoryTypes", memoryTypes,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine
+      );
+
+      specificMemoryTypesGpuVram     = 0;
+      specificMemoryTypesCpuUpload   = 1;
+      specificMemoryTypesCpuReadback = 3; // NOTE(Constantine): The cpu cached one.
 
     } else {
       REDGPU_2_EXPECTWG(!"Unsupported by vkFast GPU, recompile your program with vfContextInit()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
