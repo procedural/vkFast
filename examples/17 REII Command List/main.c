@@ -226,7 +226,7 @@ int main() {
     batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
     list->batch_id = batch;
     reiiCommandListReset(ctx, list);
-    reiiCommandSetViewportExt(ctx, list, 0, 0, window_w, window_h, 0, 1);
+    reiiCommandSetViewportEx(ctx, list, 0, 0, window_w, window_h, 0, 1);
     reiiCommandSetScissor(ctx, list, 0, 0, window_w, window_h);
     reiiCommandClearTexture(ctx, list, outputdstex, outputtex, outputtex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
     reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
@@ -245,7 +245,7 @@ int main() {
         1
       );
     }
-    reiiCommandMeshEndExt(ctx, list, NULL, outputtex, outputtex->texture);
+    reiiCommandMeshEndEx(ctx, list, NULL, outputtex, outputtex->texture);
     RedStructMemberArray raw_pixels = {0};
     vfeBanzaiPointerGetRaw(&pixels_gpu_only, &raw_pixels, FF, LL);
     reiiCommandCopyFromColorTextureToStorageRaw(ctx, list, outputtex, &raw_pixels);
@@ -267,12 +267,12 @@ int main() {
     }
   }
 
-  reiiDestroyExt(ctx, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, list);
-  reiiDestroyExt(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);
-  reiiDestroyExt(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputdstex);
-  reiiDestroyExt(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &outputTexMemory);
-  reiiDestroyExt(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &outputDSTexMemory);
-  reiiDestroyExt(ctx, GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE, &mesh_state);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, list);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputdstex);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &outputTexMemory);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &outputDSTexMemory);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE, &mesh_state);
   uint64_t ids[] = {
     batch,
     storage_gpu_only.id,

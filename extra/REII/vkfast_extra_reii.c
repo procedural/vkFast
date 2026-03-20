@@ -1434,7 +1434,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandListReset(gpu_handle_context_t context,
   }
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandSetViewportExt(gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height, float depthMin, float depthMax) {
+GPU_API_PRE void GPU_API_POST reiiCommandSetViewportEx(gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height, float depthMin, float depthMax) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -1872,7 +1872,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshSet(gpu_handle_context_t context, R
   }
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExt(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndEx(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -2118,7 +2118,7 @@ GPU_API_PRE void GPU_API_POST reiiStaticMeshPosition(gpu_handle_context_t contex
   REDGPU_2_EXPECT(0 || !"TODO");
 }
 
-GPU_API_PRE void GPU_API_POST reiiDestroyExt(gpu_handle_context_t context, gpu_extra_reii_destroy_type_e destroyHandleType, void * destroyHandle) {
+GPU_API_PRE void GPU_API_POST reiiDestroyEx(gpu_handle_context_t context, gpu_extra_reii_destroy_type_e destroyHandleType, void * destroyHandle) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 

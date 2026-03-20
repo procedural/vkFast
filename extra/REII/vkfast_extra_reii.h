@@ -307,7 +307,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu                 (gpu_handle
 // Command list
 
 GPU_API_PRE void GPU_API_POST reiiCommandListReset                   (gpu_handle_context_t context, ReiiHandleCommandList * list);
-GPU_API_PRE void GPU_API_POST reiiCommandSetViewportExt              (gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height, float depthMin, float depthMax);
+GPU_API_PRE void GPU_API_POST reiiCommandSetViewportEx               (gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height, float depthMin, float depthMax);
 GPU_API_PRE void GPU_API_POST reiiCommandSetScissor                  (gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height);
 GPU_API_PRE void GPU_API_POST reiiCommandClearTexture                (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle, ReiiClearFlags clear, float depthValue, unsigned stencilValue, float colorR, float colorG, float colorB, float colorA);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSetState                (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiMeshState * state, void * _);
@@ -318,7 +318,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindVariablesCopy           (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet             (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetEnd             (gpu_handle_context_t context, ReiiHandleCommandList * list);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSet                     (gpu_handle_context_t context, ReiiHandleCommandList * list);
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExt                  (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndEx                   (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshTexcoord                (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned index, float x, float y, float z, float w);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshColor                   (gpu_handle_context_t context, ReiiHandleCommandList * list, float r, float g, float b, float a);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal                  (gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z);
@@ -339,7 +339,7 @@ GPU_API_PRE void GPU_API_POST reiiStaticMeshPosition                 (gpu_handle
 
 // Destroy
 
-GPU_API_PRE void GPU_API_POST reiiDestroyExt                         (gpu_handle_context_t context, gpu_extra_reii_destroy_type_e destroyHandleType, void * destroyHandle);
+GPU_API_PRE void GPU_API_POST reiiDestroyEx                          (gpu_handle_context_t context, gpu_extra_reii_destroy_type_e destroyHandleType, void * destroyHandle);
 
 #ifdef __cplusplus
 }
