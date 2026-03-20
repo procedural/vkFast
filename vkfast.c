@@ -77,7 +77,7 @@ static RedBool32 vfRedGpuDebugCallback(RedDebugCallbackSeverity severity, RedDeb
   return 0;
 }
 
-GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_context_optional_parameters_t * optional_parameters, const char * optionalFile, int optionalLine) {
+static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const char * optionalFile, int optionalLine) {
   if (enable_debug_mode) {
     vfInternalPrint("[vkFast][Debug] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
   }
@@ -93,6 +93,7 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
     // To free
     vkfast = (vf_handle_context_t *)red32MemoryCalloc(sizeof(vf_handle_context_t));
     REDGPU_2_EXPECT(vkfast != NULL);
+    vkfast->gpuIndex = gpu_index;
   }
 
   uint64_t internalMemoryAllocationSizeGpuVramArrays           = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_GPU_ONLY_512MB;
@@ -139,6 +140,7 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
 
   REDGPU_2_EXPECT(context != NULL);
   REDGPU_2_EXPECT(context->gpusCount > 0);
+  REDGPU_2_EXPECT(vkfast->gpuIndex < context->gpusCount);
 
   const RedGpuInfo * gpuInfo = &context->gpus[vkfast->gpuIndex]; // NOTE(Constantine): Picking the first available GPU by default.
 
@@ -584,6 +586,14 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mod
   vkfast->presentPixelsCpuUpload_void_ptr_original = NULL;
 
   return (gpu_handle_context_t)(void *)vkfast;
+}
+
+GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_context_optional_parameters_t * optional_parameters, const char * optionalFile, int optionalLine) {
+  return vfInternalContextInit(enable_debug_mode, 0, optional_parameters, optionalFile, optionalLine);
+}
+
+GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInitEx(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const char * optionalFile, int optionalLine) {
+  return vfInternalContextInit(enable_debug_mode, gpu_index, optional_parameters, optionalFile, optionalLine);
 }
 
 GPU_API_PRE void GPU_API_POST vfIdDestroy(uint64_t ids_count, const uint64_t * ids, const char * optionalFile, int optionalLine) {
