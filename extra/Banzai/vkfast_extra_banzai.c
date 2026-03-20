@@ -19,12 +19,14 @@
 #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
 
 GPU_API_PRE gpu_handle_context_t GPU_API_POST vfeBanzaiAllocateExtraMemory(gpu_handle_context_t derive_from_context, gpu_internal_memory_allocation_sizes_t * memory_allocation_sizes, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(derive_from_context != NULL);
   // Donate raw context from derive_from_context to new_context.
   vf_handle_context_t * new_context_handle = (vf_handle_context_t *)red32MemoryCalloc(sizeof(vf_handle_context_t));
   REDGPU_2_EXPECT(new_context_handle != NULL);
   new_context_handle->doNotDestroyRawContext = 1; // Since we donate raw context from derive_from_context.
   new_context_handle->doNotFreeHandle        = 0; // Since we create new_context_handle on the heap.
   new_context_handle->context                = vfContextGetRaw(derive_from_context, optionalFile, optionalLine);
+  new_context_handle->gpuIndex               = ((vf_handle_context_t *)derive_from_context)->gpuIndex;
   // Custom initialization of new_context.
   gpu_context_optional_parameters_t new_context_params = {0};
   new_context_params.internal_memory_allocation_sizes             = memory_allocation_sizes;

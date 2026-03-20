@@ -46,7 +46,7 @@ int main() {
   REDGPU_2_EXPECTFL(windowMonitorArea[3] == window_h);
 
   gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = (1024/*mb*/ * 1024 * 1024);
+  memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = (1024/*mb*/ * 1024 * 1024) - 64; // NOTE(Constantine)(Mar 20, 2026): '- 64' added for Intel iGPUs which can allocate not 1073741824, but 1073741820 max, lol.
   memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_upload       = (512/*mb*/ * 1024 * 1024);
   memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_readback     = (512/*mb*/ * 1024 * 1024);
   memory_allocation_sizes.bytes_count_for_memory_present_pixels_type_cpu_upload = 0;
