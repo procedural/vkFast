@@ -1958,11 +1958,15 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshTexcoord(gpu_handle_context_t conte
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
-  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
-  vf_handle_context_t * vkfast = batch->vkfast;
-  RedHandleGpu gpu = vkfast->gpu;
+  REDGPU_2_EXPECT(index < REII_TEXCOORDS_MAX_COUNT);
 
-  REDGPU_2_EXPECTWG(index < REII_TEXCOORDS_MAX_COUNT);
+#ifndef NDEBUG
+  {
+    const uint64_t bytesNeeded = (list->dynamicMeshTexcoordVec4Offset[index] + 1) * sizeof(ReiiVec4);
+    const uint64_t bytesTotal  = list->dynamic_mesh_texcoord[index].cpu.arrayRangeBytesCount;
+    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(list->dynamicMeshTexcoordVec4Offset + 1) * sizeof(ReiiVec4) <= list->dynamic_mesh_texcoord[index].cpu.arrayRangeBytesCount");
+  }
+#endif
 
   ReiiVec4 * cpu_as_vec4_start = (ReiiVec4 *)list->dynamic_mesh_texcoord[index].cpu_ptr;
   ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshTexcoordVec4Offset[index]];
@@ -1979,6 +1983,14 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshColor(gpu_handle_context_t context,
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
+#ifndef NDEBUG
+  {
+    const uint64_t bytesNeeded = (list->dynamicMeshColorVec4Offset + 1) * sizeof(ReiiVec4);
+    const uint64_t bytesTotal  = list->dynamic_mesh_color.cpu.arrayRangeBytesCount;
+    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(list->dynamicMeshColorVec4Offset + 1) * sizeof(ReiiVec4) <= list->dynamic_mesh_color.cpu.arrayRangeBytesCount");
+  }
+#endif
+
   ReiiVec4 * cpu_as_vec4_start = (ReiiVec4 *)list->dynamic_mesh_color.cpu_ptr;
   ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshColorVec4Offset];
 
@@ -1994,6 +2006,14 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal(gpu_handle_context_t context
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
+#ifndef NDEBUG
+  {
+    const uint64_t bytesNeeded = (list->dynamicMeshNormalVec4Offset + 1) * sizeof(ReiiVec4);
+    const uint64_t bytesTotal  = list->dynamic_mesh_normal.cpu.arrayRangeBytesCount;
+    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(list->dynamicMeshNormalVec4Offset + 1) * sizeof(ReiiVec4) <= list->dynamic_mesh_normal.cpu.arrayRangeBytesCount");
+  }
+#endif
+
   ReiiVec4 * cpu_as_vec4_start = (ReiiVec4 *)list->dynamic_mesh_normal.cpu_ptr;
   ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshNormalVec4Offset];
 
@@ -2008,6 +2028,14 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal(gpu_handle_context_t context
 GPU_API_PRE void GPU_API_POST reiiCommandMeshPosition(gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z, float w) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
+
+#ifndef NDEBUG
+  {
+    const uint64_t bytesNeeded = (list->dynamicMeshPositionVec4Offset + 1) * sizeof(ReiiVec4);
+    const uint64_t bytesTotal  = list->dynamic_mesh_position.cpu.arrayRangeBytesCount;
+    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(list->dynamicMeshPositionVec4Offset + 1) * sizeof(ReiiVec4) <= list->dynamic_mesh_position.cpu.arrayRangeBytesCount");
+  }
+#endif
 
   ReiiVec4 * cpu_as_vec4_start = (ReiiVec4 *)list->dynamic_mesh_position.cpu_ptr;
   ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshPositionVec4Offset];
