@@ -185,12 +185,12 @@ typedef struct ReiiMeshState {
   ReiiBlendOp        outputColorBlendAlphaOp;
   char *             codeVertex;
   char *             codeFragment;
-  gpu_program_info_t           programVertex;
-  gpu_program_info_t           programFragment;
-  RedHandleGpuCode             gpuCodeVertex;       // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
-  RedHandleGpuCode             gpuCodeFragment;     // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
-  RedHandleProcedureParameters procedureParameters; // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
-  RedHandleProcedure           procedure;           // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
+  gpu_program_info_t                     programVertex;
+  gpu_program_info_t                     programFragment;
+  RedHandleGpuCode                       gpuCodeVertex;       // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
+  RedHandleGpuCode                       gpuCodeFragment;     // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
+  Red2ProcedureParametersAndDeclarations procedureParameters; // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
+  RedHandleProcedure                     procedure;           // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
 } ReiiMeshState;
 
 typedef enum gpu_extra_reii_texture_type {

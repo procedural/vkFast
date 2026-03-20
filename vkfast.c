@@ -615,7 +615,29 @@ GPU_API_PRE void GPU_API_POST vfIdDestroy(uint64_t ids_count, const uint64_t * i
         "context", handle->vkfast->context,
         "gpu", handle->vkfast->gpu,
         "handleType", RED_HANDLE_TYPE_PROCEDURE_PARAMETERS,
-        "handle", handle->procedure.procedureParameters,
+        "handle", handle->procedure.procedureParameters.procedureParameters,
+        "optionalHandle2", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      for (int i = 0; i < 7; i += 1) {
+        np(red2DestroyHandle,
+          "context", handle->vkfast->context,
+          "gpu", handle->vkfast->gpu,
+          "handleType", RED_HANDLE_TYPE_STRUCT_DECLARATION,
+          "handle", handle->procedure.procedureParameters.structsDeclarations[i],
+          "optionalHandle2", NULL,
+          "optionalFile", optionalFile,
+          "optionalLine", optionalLine,
+          "optionalUserData", NULL
+        );
+      }
+      np(red2DestroyHandle,
+        "context", handle->vkfast->context,
+        "gpu", handle->vkfast->gpu,
+        "handleType", RED_HANDLE_TYPE_STRUCT_DECLARATION,
+        "handle", handle->procedure.procedureParameters.handlesDeclaration,
         "optionalHandle2", NULL,
         "optionalFile", optionalFile,
         "optionalLine", optionalLine,
@@ -1416,13 +1438,13 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_cont
   parameters.structsDeclarations[0].structDeclarationMembersArrayRO      = NULL;
 
   // To destroy
-  RedHandleProcedureParameters procedureParameters = NULL;
+  Red2ProcedureParametersAndDeclarations procedureParameters = {0};
   np(red2CreateProcedureParameters,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
     "handleName", program_pipeline_compute_info->optional_debug_name,
     "procedureParametersDeclaration", &parameters,
-    "outProcedureParameters", &procedureParameters,
+    "outProcedureParametersAndDeclarations", &procedureParameters,
     "outStatuses", NULL,
     "optionalFile", optionalFile,
     "optionalLine", optionalLine,
@@ -1436,7 +1458,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_cont
     "gpu", vkfast->gpu,
     "handleName", program_pipeline_compute_info->optional_debug_name,
     "procedureCache", NULL,
-    "procedureParameters", procedureParameters,
+    "procedureParameters", procedureParameters.procedureParameters,
     "gpuCodeMainProcedureName", "main",
     "gpuCode", gpuCodeCompute->gpuCode.gpuCode,
     "outProcedure", &procedure,
@@ -1650,7 +1672,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindProgramPipelineCompute(gpu_handle_conte
     "procedure", program_pipeline_compute->procedure.procedure
   );
 
-  batch->batch.currentProcedureParametersCompute = program_pipeline_compute->procedure.procedureParameters;
+  batch->batch.currentProcedureParametersCompute = program_pipeline_compute->procedure.procedureParameters.procedureParameters;
 }
 
 GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(gpu_handle_context_t context, uint64_t batch_id, int slots_count, const RedStructDeclarationMember * slots, const char * optionalFile, int optionalLine) {

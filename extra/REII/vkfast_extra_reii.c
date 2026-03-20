@@ -228,19 +228,19 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   parameters.structsDeclarations[0].structDeclarationMembersArrayRO      = NULL;
 
   // To destroy
-  RedHandleProcedureParameters procedureParameters = NULL;
+  Red2ProcedureParametersAndDeclarations procedureParameters = {0};
   np(red2CreateProcedureParameters,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
     "handleName", state->optional_debug_name,
     "procedureParametersDeclaration", &parameters,
-    "outProcedureParameters", &procedureParameters,
+    "outProcedureParametersAndDeclarations", &procedureParameters,
     "outStatuses", NULL,
     "optionalFile", optionalFile,
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
-  REDGPU_2_EXPECTWG(procedureParameters != NULL);
+  REDGPU_2_EXPECTWG(procedureParameters.procedureParameters != NULL);
 
   RedOutputDeclarationMembers outputs = {0};
   outputs.depthStencilEnable                        = state->output_depth_stencil_enable;
@@ -432,7 +432,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
     "outputDeclarationMembersResolveSources", NULL,
     "dependencyByRegion", 0,
     "dependencyByRegionAllowUsageAliasOrderBarriers", 0,
-    "procedureParameters", procedureParameters,
+    "procedureParameters", procedureParameters.procedureParameters,
     "gpuCodeVertexMainProcedureName", "main",
     "gpuCodeVertex", gpuCodeVertex,
     "gpuCodeFragmentMainProcedureName", "main",
@@ -1627,7 +1627,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshSetState(gpu_handle_context_t conte
     "procedure", state->procedure
   );
 
-  list->currentProcedureParametersDraw = state->procedureParameters;
+  list->currentProcedureParametersDraw = state->procedureParameters.procedureParameters;
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t context, ReiiHandleCommandList * list, int slotsCount, const RedStructDeclarationMember * slots) {
@@ -2131,10 +2131,10 @@ GPU_API_PRE void GPU_API_POST reiiDestroyExt(gpu_handle_context_t context, gpu_e
   } else if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE) {
     ReiiMeshState * handle = (ReiiMeshState *)destroyHandle;
 
-    RedHandleGpuCode             gpuCodeVertex       = handle->gpuCodeVertex;
-    RedHandleGpuCode             gpuCodeFragment     = handle->gpuCodeFragment;
-    RedHandleProcedureParameters procedureParameters = handle->procedureParameters;
-    RedHandleProcedure           procedure           = handle->procedure;
+    RedHandleGpuCode                       gpuCodeVertex       = handle->gpuCodeVertex;
+    RedHandleGpuCode                       gpuCodeFragment     = handle->gpuCodeFragment;
+    Red2ProcedureParametersAndDeclarations procedureParameters = handle->procedureParameters;
+    RedHandleProcedure                     procedure           = handle->procedure;
 
     np(red2DestroyHandle,
       "context", vkfast->context,
@@ -2162,7 +2162,31 @@ GPU_API_PRE void GPU_API_POST reiiDestroyExt(gpu_handle_context_t context, gpu_e
       "context", vkfast->context,
       "gpu", vkfast->gpu,
       "handleType", RED_HANDLE_TYPE_PROCEDURE_PARAMETERS,
-      "handle", procedureParameters,
+      "handle", procedureParameters.procedureParameters,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+
+    for (int i = 0; i < 7; i += 1) {
+      np(red2DestroyHandle,
+        "context", vkfast->context,
+        "gpu", vkfast->gpu,
+        "handleType", RED_HANDLE_TYPE_STRUCT_DECLARATION,
+        "handle", procedureParameters.structsDeclarations[i],
+        "optionalHandle2", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+    }
+
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_STRUCT_DECLARATION,
+      "handle", procedureParameters.handlesDeclaration,
       "optionalHandle2", NULL,
       "optionalFile", optionalFile,
       "optionalLine", optionalLine,

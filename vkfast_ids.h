@@ -96,9 +96,9 @@ typedef struct vf_handle_procedure_t {
   union {
     gpu_program_pipeline_compute_info_t infoCompute; // NOTE(Constantine): Optional debug name is a stale pointer, do not use.
   };
-  vf_procedure_type_t          procedureType;
-  RedHandleProcedureParameters procedureParameters;
-  RedHandleProcedure           procedure;
+  vf_procedure_type_t                    procedureType;
+  Red2ProcedureParametersAndDeclarations procedureParameters;
+  RedHandleProcedure                     procedure;
 } vf_handle_procedure_t;
 
 typedef struct vf_handle_batch_t {
