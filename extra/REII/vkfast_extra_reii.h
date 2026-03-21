@@ -295,7 +295,8 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile                   (gpu_handle
 
 // Texture
 
-GPU_API_PRE void GPU_API_POST reiiCreateTextureMemory                (gpu_handle_context_t context, gpu_extra_reii_texture_type textureType, uint64_t bytesCount, ReiiHandleTextureMemory * outTextureMemory);
+GPU_API_PRE void GPU_API_POST reiiCreateTextureMemory                (gpu_handle_context_t context, gpu_extra_reii_texture_type texturesType, uint64_t bytesCount, ReiiHandleTextureMemory * outTextureMemory);
+GPU_API_PRE void GPU_API_POST reiiResetTextureMemory                 (gpu_handle_context_t context, ReiiHandleTextureMemory * textureMemory);
 GPU_API_PRE void GPU_API_POST reiiCreateTextureFromTextureMemory     (gpu_handle_context_t context, ReiiHandleTextureMemory * textureMemory, ReiiTextureBinding binding, ReiiHandleTexture * outTexture);
 GPU_API_PRE void GPU_API_POST reiiTextureSetStateMipmap              (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, ReiiBool32 generateMipLevels);
 GPU_API_PRE void GPU_API_POST reiiTextureSetStateMipmapLevelsCount   (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int mipLevelsCount);

@@ -456,7 +456,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   state->state->procedure           = procedure;
 }
 
-GPU_API_PRE void GPU_API_POST reiiCreateTextureMemory(gpu_handle_context_t context, gpu_extra_reii_texture_type textureType, uint64_t bytesCount, ReiiHandleTextureMemory * outTextureMemory) {
+GPU_API_PRE void GPU_API_POST reiiCreateTextureMemory(gpu_handle_context_t context, gpu_extra_reii_texture_type texturesType, uint64_t bytesCount, ReiiHandleTextureMemory * outTextureMemory) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -473,7 +473,7 @@ GPU_API_PRE void GPU_API_POST reiiCreateTextureMemory(gpu_handle_context_t conte
   RedBool32 texturesUseTheirOwnDedicatedMemory = 0;
   RedHandleMemory memory = NULL;
 
-  if (textureType == GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL) {
+  if (texturesType == GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL) {
     // To destroy
     np(redMemoryAllocate,
       "context", vkfast->context,
@@ -499,11 +499,18 @@ GPU_API_PRE void GPU_API_POST reiiCreateTextureMemory(gpu_handle_context_t conte
   }
 
   // Filling
-  outTextureMemory->texturesType = textureType;
+  outTextureMemory->texturesType = texturesType;
   outTextureMemory->texturesUseTheirOwnDedicatedMemory = texturesUseTheirOwnDedicatedMemory;
   outTextureMemory->bytesCount   = bytesCount;
   outTextureMemory->memory       = memory;
   outTextureMemory->bytesOffset  = 0;
+}
+
+GPU_API_PRE void GPU_API_POST reiiResetTextureMemory(gpu_handle_context_t context, ReiiHandleTextureMemory * textureMemory) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  textureMemory->bytesOffset = 0;
 }
 
 GPU_API_PRE void GPU_API_POST reiiCreateTextureFromTextureMemory(gpu_handle_context_t context, ReiiHandleTextureMemory * textureMemory, ReiiTextureBinding binding, ReiiHandleTexture * outTexture) {
