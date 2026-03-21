@@ -464,6 +464,8 @@ GPU_API_PRE void GPU_API_POST reiiCreateTextureMemory(gpu_handle_context_t conte
   
   RedHandleGpu gpu = vkfast->gpu;
 
+  REDGPU_2_EXPECT(outTextureMemory->texturesType == GPU_EXTRA_REII_TEXTURE_TYPE_INVALID || !"Texture memory's type is not zero, are you passing an existing texture memory accidentally?");
+
   const char * optional_debug_name = outTextureMemory->optional_debug_name;
   ReiiHandleTextureMemory clear = {0};
   outTextureMemory[0] = clear;
@@ -2046,6 +2048,77 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshPosition(gpu_handle_context_t conte
   cpu_as_vec4[0].w = w;
 
   list->dynamicMeshPositionVec4Offset += 1;
+}
+
+GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTexture(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * sourceMsaaColorTexture, ReiiHandleTexture * targetColorTexture) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_context_t * vkfast = batch->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(sourceMsaaColorTexture->width  == targetColorTexture->width);
+  REDGPU_2_EXPECTWG(sourceMsaaColorTexture->height == targetColorTexture->height);
+
+  RedOutputDeclarationMembers outputDeclarationMembers = {0};
+  outputDeclarationMembers.depthStencilEnable                        = 0;
+  outputDeclarationMembers.depthStencilFormat                        = RED_FORMAT_UNDEFINED;
+  outputDeclarationMembers.depthStencilMultisampleCount              = RED_MULTISAMPLE_COUNT_BITFLAG_1;
+  outputDeclarationMembers.depthStencilDepthSetProcedureOutputOp     = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilDepthEndProcedureOutputOp     = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilStencilSetProcedureOutputOp   = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilStencilEndProcedureOutputOp   = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.depthStencilSharesMemoryWithAnotherMember = 0;
+  outputDeclarationMembers.colorsCount                               = 1;
+  outputDeclarationMembers.colorsFormat[0]                           = sourceMsaaColorTexture->format;
+  outputDeclarationMembers.colorsMultisampleCount[0]                 = sourceMsaaColorTexture->msaaCount;
+  outputDeclarationMembers.colorsSetProcedureOutputOp[0]             = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.colorsEndProcedureOutputOp[0]             = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
+  outputDeclarationMembers.colorsSharesMemoryWithAnotherMember[0]    = 0;
+  
+  RedOutputDeclarationMembersResolveSources outputDeclarationMembersResolveSources = {0};
+  outputDeclarationMembersResolveSources.resolveModeDepth    = RED_RESOLVE_MODE_NONE;
+  outputDeclarationMembersResolveSources.resolveModeStencil  = RED_RESOLVE_MODE_NONE;
+  outputDeclarationMembersResolveSources.resolveDepthStencil = 0;
+  outputDeclarationMembersResolveSources.resolveColors       = 1;
+
+  RedOutputMembers outputMembers = {0};
+  outputMembers.colorsCount = 1;
+  outputMembers.colors[0]   = sourceMsaaColorTexture->texture;
+
+  RedOutputMembersResolveTargets outputMembersResolveTargets = {0};
+  outputMembersResolveTargets.colors[0] = targetColorTexture->texture;
+
+  np(red2CallSetProcedureOutput,
+    "address", list->callProceduresAndAddresses.redCallSetProcedureOutput,
+    "calls", batch->batch.calls.handle,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "mutableOutputsArray", &list->mutable_outputs_array,
+    "outputDeclarationMembers", &outputDeclarationMembers,
+    "outputDeclarationMembersResolveSources", &outputDeclarationMembersResolveSources,
+    "dependencyByRegion", 0,
+    "dependencyByRegionAllowUsageAliasOrderBarriers", 0,
+    "outputMembers", &outputMembers,
+    "outputMembersResolveTargets", &outputMembersResolveTargets,
+    "width", targetColorTexture->width,
+    "height", targetColorTexture->height,
+    "depthClearValue", 0,
+    "stencilClearValue", 0,
+    "colorsClearValuesFloat", NULL,
+    "colorsClearValuesSint", NULL,
+    "colorsClearValuesUint", NULL,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  np(redCallEndProcedureOutput,
+    "address", list->callProceduresAndAddresses.redCallEndProcedureOutput,
+    "calls", batch->batch.calls.handle
+  );
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandCopyFromColorTextureToStorageRaw(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * texture, RedStructMemberArray * storageRaw) {

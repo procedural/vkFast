@@ -23,6 +23,26 @@ exit
 #include <crtdbg.h>
 #endif
 
+static gpu_extra_cpu_gpu_array OffsetAllocateCpuGpuArray(uint64_t bytesCountToAllocate, gpu_storage_t * storage_cpu, uint64_t * storage_cpu_offset, gpu_storage_t * storage_gpu, uint64_t * storage_gpu_offset, const char * optionalFile, int optionalLine) {
+  gpu_extra_banzai_pointer_t cpu_pointer = {0};
+  gpu_extra_banzai_pointer_t gpu_pointer = {0};
+  vfeBanzaiGetPointer(storage_cpu, storage_cpu_offset[0], &cpu_pointer, optionalFile, optionalLine);
+  vfeBanzaiGetPointer(storage_gpu, storage_gpu_offset[0], &gpu_pointer, optionalFile, optionalLine);
+  storage_cpu_offset[0] += bytesCountToAllocate;
+  storage_gpu_offset[0] += bytesCountToAllocate;
+
+  RedStructMemberArray cpu_array = {0};
+  RedStructMemberArray gpu_array = {0};
+  vfeBanzaiPointerGetRawLimited(&cpu_pointer, bytesCountToAllocate, &cpu_array, optionalFile, optionalLine);
+  vfeBanzaiPointerGetRawLimited(&gpu_pointer, bytesCountToAllocate, &gpu_array, optionalFile, optionalLine);
+  gpu_extra_cpu_gpu_array cpu_gpu_array = {0};
+  cpu_gpu_array.cpu_ptr = cpu_pointer.mapped_void_ptr;
+  cpu_gpu_array.cpu     = cpu_array;
+  cpu_gpu_array.gpu     = gpu_array;
+
+  return cpu_gpu_array;
+}
+
 int main() {
 #ifdef __MINGW32__
   SetProcessDPIAware();
@@ -55,7 +75,7 @@ int main() {
 
   // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
   gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
-  vfWindowFullscreen(ctx, NULL, "[vkFast] REII Command List", window_w, window_h, 0, FF, LL);
+  vfWindowFullscreen(ctx, NULL, "[vkFast] REII Multisampling", window_w, window_h, 0, FF, LL);
 
   gpu_storage_t storage_gpu_only     = {0};
   gpu_storage_t storage_cpu_upload   = {0};
@@ -66,44 +86,22 @@ int main() {
   uint64_t storage_cpu_upload_mem_offset = 0;
   uint64_t storage_cpu_readback_mem_offset = 0;
 
-  uint64_t                   pixels_gpu_only_bytes_count = (288/*mb*/ * 1024 * 1024);
-  gpu_extra_banzai_pointer_t pixels_gpu_only             = {0};
+  gpu_extra_banzai_pointer_t pixels_gpu_only = {0};
   vfeBanzaiGetPointer(&storage_gpu_only, storage_gpu_only_mem_offset, &pixels_gpu_only, FF, LL);
-  storage_gpu_only_mem_offset += pixels_gpu_only_bytes_count;
+  storage_gpu_only_mem_offset += (288/*mb*/ * 1024 * 1024);
 
-  uint64_t                   dynamic_mesh_pos_bytes_count = (64/*mb*/ * 1024 * 1024);
-  gpu_extra_banzai_pointer_t dynamic_mesh_pos_cpu_upload  = {0};
-  gpu_extra_banzai_pointer_t dynamic_mesh_pos_gpu_only    = {0};
-  vfeBanzaiGetPointer(&storage_cpu_upload, storage_cpu_upload_mem_offset, &dynamic_mesh_pos_cpu_upload, FF, LL);
-  storage_cpu_upload_mem_offset += dynamic_mesh_pos_bytes_count;
-  vfeBanzaiGetPointer(&storage_gpu_only, storage_gpu_only_mem_offset, &dynamic_mesh_pos_gpu_only, FF, LL);
-  storage_gpu_only_mem_offset += dynamic_mesh_pos_bytes_count;
-
-  uint64_t                   dynamic_mesh_col_bytes_count = (64/*mb*/ * 1024 * 1024);
-  gpu_extra_banzai_pointer_t dynamic_mesh_col_cpu_upload  = {0};
-  gpu_extra_banzai_pointer_t dynamic_mesh_col_gpu_only    = {0};
-  vfeBanzaiGetPointer(&storage_cpu_upload, storage_cpu_upload_mem_offset, &dynamic_mesh_col_cpu_upload, FF, LL);
-  storage_cpu_upload_mem_offset += dynamic_mesh_col_bytes_count;
-  vfeBanzaiGetPointer(&storage_gpu_only, storage_gpu_only_mem_offset, &dynamic_mesh_col_gpu_only, FF, LL);
-  storage_gpu_only_mem_offset += dynamic_mesh_col_bytes_count;
-
-  RedStructMemberArray raw_pos_cpu_upload = {0};
-  vfeBanzaiPointerGetRawLimited(&dynamic_mesh_pos_cpu_upload, dynamic_mesh_pos_bytes_count, &raw_pos_cpu_upload, FF, LL);
-  RedStructMemberArray raw_pos_gpu_only = {0};
-  vfeBanzaiPointerGetRawLimited(&dynamic_mesh_pos_gpu_only, dynamic_mesh_pos_bytes_count, &raw_pos_gpu_only, FF, LL);
-  gpu_extra_cpu_gpu_array pos_array = {0};
-  pos_array.cpu_ptr = dynamic_mesh_pos_cpu_upload.mapped_void_ptr;
-  pos_array.cpu     = raw_pos_cpu_upload;
-  pos_array.gpu     = raw_pos_gpu_only;
-
-  RedStructMemberArray raw_col_cpu_upload = {0};
-  vfeBanzaiPointerGetRawLimited(&dynamic_mesh_col_cpu_upload, dynamic_mesh_col_bytes_count, &raw_col_cpu_upload, FF, LL);
-  RedStructMemberArray raw_col_gpu_only = {0};
-  vfeBanzaiPointerGetRawLimited(&dynamic_mesh_col_gpu_only, dynamic_mesh_col_bytes_count, &raw_col_gpu_only, FF, LL);
-  gpu_extra_cpu_gpu_array col_array = {0};
-  col_array.cpu_ptr = dynamic_mesh_col_cpu_upload.mapped_void_ptr;
-  col_array.cpu     = raw_col_cpu_upload;
-  col_array.gpu     = raw_col_gpu_only;
+  gpu_extra_cpu_gpu_array pos_array = OffsetAllocateCpuGpuArray(
+    64/*mb*/ * 1024 * 1024,
+    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
+    &storage_gpu_only,   &storage_gpu_only_mem_offset,
+    FF, LL
+  );
+  gpu_extra_cpu_gpu_array col_array = OffsetAllocateCpuGpuArray(
+    64/*mb*/ * 1024 * 1024,
+    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
+    &storage_gpu_only,   &storage_gpu_only_mem_offset,
+    FF, LL
+  );
 
   #include "mesh.vs.h"
   #include "mesh.fs.h"
@@ -127,7 +125,7 @@ int main() {
   mesh_state.rasterizationDepthBiasEnable                   = 0;
   mesh_state.rasterizationDepthBiasConstantFactor           = 0;
   mesh_state.rasterizationDepthBiasSlopeFactor              = 0;
-  mesh_state.multisampleEnable                              = 0;
+  mesh_state.multisampleEnable                              = 1;
   mesh_state.multisampleAlphaToCoverageEnable               = 0;
   mesh_state.multisampleAlphaToOneEnable                    = 0;
   mesh_state.depthTestEnable                                = 0;
@@ -173,7 +171,7 @@ int main() {
   slots[1].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
   gpu_extra_reii_mesh_state_compile_info_t mesh_state_to_compile = {0};
   mesh_state_to_compile.state                                  = &mesh_state;
-  mesh_state_to_compile.state_multisample_count                = RED_MULTISAMPLE_COUNT_BITFLAG_1;
+  mesh_state_to_compile.state_multisample_count                = RED_MULTISAMPLE_COUNT_BITFLAG_4;
   mesh_state_to_compile.output_depth_stencil_enable            = 0;
   mesh_state_to_compile.output_depth_stencil_format            = RED_FORMAT_DEPTH_32_FLOAT;
   mesh_state_to_compile.output_color_format                    = RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1;
@@ -184,10 +182,11 @@ int main() {
   reiiMeshStateCompile(ctx, &mesh_state_to_compile);
 
   ReiiHandleTextureMemory outputDSTexMemory = {0};
-  reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL, (288/*mb*/ * 1024 * 1024), &outputDSTexMemory);
+  reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL_MSAA, (288/*mb*/ * 1024 * 1024), &outputDSTexMemory);
   ReiiHandleTexture houtputdstex = {0};
   ReiiHandleTexture * outputdstex = &houtputdstex;
   reiiCreateTextureFromTextureMemory(ctx, &outputDSTexMemory, REII_TEXTURE_BINDING_2D, &houtputdstex);
+  reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 4);
   reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0);
   reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 1);
   reiiTextureSetStateSampler(ctx, REII_TEXTURE_BINDING_2D, outputdstex, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, 1);
@@ -203,6 +202,17 @@ int main() {
   reiiTextureSetStateSampler(ctx, REII_TEXTURE_BINDING_2D, outputtex, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, 1);
   reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL);
 
+  ReiiHandleTextureMemory outputMSTexMemory = {0};
+  reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_COLOR_MSAA, (288/*mb*/ * 1024 * 1024), &outputMSTexMemory);
+  ReiiHandleTexture houtputmstex = {0};
+  ReiiHandleTexture * outputmstex = &houtputmstex;
+  reiiCreateTextureFromTextureMemory(ctx, &outputMSTexMemory, REII_TEXTURE_BINDING_2D, &houtputmstex);
+  reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 4);
+  reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0);
+  reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
+  reiiTextureSetStateSampler(ctx, REII_TEXTURE_BINDING_2D, outputmstex, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, 1);
+  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL);
+
   float mesh_vertices[] = {
     #include "../../extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
   };
@@ -210,7 +220,7 @@ int main() {
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
   ReiiHandleCommandList * list = &hlist;
-  Red2Output mutable_outputs_array[2]  = {0};
+  Red2Output mutable_outputs_array[3]  = {0};
   list->mutable_outputs_array.items    = mutable_outputs_array;
   list->mutable_outputs_array.capacity = countof(mutable_outputs_array);
   list->dynamic_mesh_position          = pos_array;
@@ -228,7 +238,7 @@ int main() {
     reiiCommandListReset(ctx, list);
     reiiCommandSetViewportEx(ctx, list, 0, 0, window_w, window_h, 0, 1);
     reiiCommandSetScissor(ctx, list, 0, 0, window_w, window_h);
-    reiiCommandClearTexture(ctx, list, outputdstex, outputtex, outputtex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
+    reiiCommandClearTexture(ctx, list, outputdstex, outputmstex, outputmstex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
     reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
     reiiCommandBindNewBindingsSet(ctx, list, countof(slots), slots);
     reiiCommandBindStorageRaw(ctx, list, 0, 1, &pos_array.gpu);
@@ -245,9 +255,10 @@ int main() {
         1
       );
     }
-    reiiCommandMeshEndEx(ctx, list, NULL, outputtex, outputtex->texture);
+    reiiCommandMeshEndEx(ctx, list, NULL, outputmstex, outputmstex->texture);
     RedStructMemberArray raw_pixels = {0};
     vfeBanzaiPointerGetRaw(&pixels_gpu_only, &raw_pixels, FF, LL);
+    reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     reiiCommandCopyFromColorTextureToStorageRaw(ctx, list, outputtex, &raw_pixels);
     vfBatchEnd(ctx, batch, FF, LL);
 
@@ -268,8 +279,10 @@ int main() {
   }
 
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, list);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputmstex);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputdstex);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &outputMSTexMemory);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &outputTexMemory);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &outputDSTexMemory);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE, &mesh_state);
