@@ -1968,8 +1968,8 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshTexcoord(gpu_handle_context_t conte
   }
 #endif
 
-  ReiiVec4 * cpu_as_vec4_start = (ReiiVec4 *)list->dynamic_mesh_texcoord[index].cpu_ptr;
-  ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshTexcoordVec4Offset[index]];
+  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)list->dynamic_mesh_texcoord[index].cpu_ptr;
+  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshTexcoordVec4Offset[index]];
 
   cpu_as_vec4[0].x = x;
   cpu_as_vec4[0].y = y;
@@ -1991,8 +1991,8 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshColor(gpu_handle_context_t context,
   }
 #endif
 
-  ReiiVec4 * cpu_as_vec4_start = (ReiiVec4 *)list->dynamic_mesh_color.cpu_ptr;
-  ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshColorVec4Offset];
+  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)list->dynamic_mesh_color.cpu_ptr;
+  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshColorVec4Offset];
 
   cpu_as_vec4[0].x = r;
   cpu_as_vec4[0].y = g;
@@ -2014,8 +2014,8 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal(gpu_handle_context_t context
   }
 #endif
 
-  ReiiVec4 * cpu_as_vec4_start = (ReiiVec4 *)list->dynamic_mesh_normal.cpu_ptr;
-  ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshNormalVec4Offset];
+  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)list->dynamic_mesh_normal.cpu_ptr;
+  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshNormalVec4Offset];
 
   cpu_as_vec4[0].x = x;
   cpu_as_vec4[0].y = y;
@@ -2037,8 +2037,8 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshPosition(gpu_handle_context_t conte
   }
 #endif
 
-  ReiiVec4 * cpu_as_vec4_start = (ReiiVec4 *)list->dynamic_mesh_position.cpu_ptr;
-  ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshPositionVec4Offset];
+  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)list->dynamic_mesh_position.cpu_ptr;
+  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshPositionVec4Offset];
 
   cpu_as_vec4[0].x = x;
   cpu_as_vec4[0].y = y;
