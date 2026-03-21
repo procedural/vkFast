@@ -958,6 +958,9 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
       memoryTypeIsSupported[1]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0010)) == 0 ? 0 : 1;
       memoryTypeIsSupported[0]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0001)) == 0 ? 0 : 1;
       REDGPU_2_EXPECTWG(memoryTypeIsSupported[vkfast->specificMemoryTypesGpuVram] == 1);
+
+      REDGPU_2_EXPECTWG((bindingTexture->textureMemory->bytesOffset + image.memoryBytesCount) <= bindingTexture->textureMemory->bytesCount);
+
       // To destroy
       np(redMemoryAllocate,
         "context", vkfast->context,
@@ -994,6 +997,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
         "optionalLine", optionalLine,
         "optionalUserData", NULL
       );
+      bindingTexture->textureMemory->bytesOffset += image.memoryBytesCount;
     } else {
       REDGPU_2_EXPECTWG((bindingTexture->textureMemory->bytesOffset + image.memoryBytesCount) <= bindingTexture->textureMemory->bytesCount);
       // NOTE(Constantine): Assuming here images do not have any alignment or padding between them.
