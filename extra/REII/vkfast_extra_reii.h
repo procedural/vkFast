@@ -59,7 +59,8 @@ typedef enum ReiiTextureTexelType {
   REII_TEXTURE_TEXEL_TYPE_S32    = 0x1404,
   REII_TEXTURE_TEXEL_TYPE_U32    = 0x1405,
   REII_TEXTURE_TEXEL_TYPE_FLOAT  = 0x1406,
-  REII_TEXTURE_TEXEL_TYPE_U24_U8 = 0x84FA, // NOTE(Constantine): Added for depth stencil textures in vkFast REII.
+  REII_TEXTURE_TEXEL_TYPE_U24_U8 = 0x88F0, // NOTE(Constantine): Added for depth stencil textures in vkFast REII.
+  REII_TEXTURE_TEXEL_TYPE_F32_U8 = 0x8CAD, // NOTE(Constantine): Added for depth stencil textures in vkFast REII.
 } ReiiTextureTexelType;
 
 typedef unsigned ReiiClearFlags;

@@ -865,12 +865,19 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
   } else if (textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL || textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL_MSAA) {
     REDGPU_2_EXPECTWG(bindingTexelFormat == REII_TEXTURE_TEXEL_FORMAT_DS);
     REDGPU_2_EXPECTWG(texelsFormat       == REII_TEXTURE_TEXEL_FORMAT_DS);
-    REDGPU_2_EXPECTWG(texelsType         == REII_TEXTURE_TEXEL_TYPE_FLOAT || texelsType == REII_TEXTURE_TEXEL_TYPE_U24_U8);
-    if (REII_TEXTURE_TEXEL_TYPE_FLOAT) {
+    REDGPU_2_EXPECTWG(
+      texelsType == REII_TEXTURE_TEXEL_TYPE_FLOAT  ||
+      texelsType == REII_TEXTURE_TEXEL_TYPE_U24_U8 ||
+      texelsType == REII_TEXTURE_TEXEL_TYPE_F32_U8
+    );
+    if (texelsType == REII_TEXTURE_TEXEL_TYPE_FLOAT) {
       format = RED_FORMAT_DEPTH_32_FLOAT;
       formatHasStencil = 0;
-    } else {
+    } else if (texelsType == REII_TEXTURE_TEXEL_TYPE_U24_U8) {
       format = RED_FORMAT_DEPTH_24_UINT_TO_FLOAT_0_1_STENCIL_8_UINT;
+      formatHasStencil = 1;
+    } else if (texelsType == REII_TEXTURE_TEXEL_TYPE_F32_U8) {
+      format = RED_FORMAT_DEPTH_32_FLOAT_STENCIL_8_UINT;
       formatHasStencil = 1;
     }
   } else {
