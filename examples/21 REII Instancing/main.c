@@ -447,7 +447,7 @@ int main() {
     // NOTE(Constantine):
     // Camera quaternion rotation and translation.
     const float mouse_move_sensitivity = 0.0035f;
-    const float camera_move_speed      = 0.1f;
+    const float camera_move_speed      = 0.5f;
     if (mouse_right_mouse_button_state == GLFW_PRESS && mouse_right_mouse_button_state != mouse_right_mouse_button_state_prev) {
       camera_is_enabled = !camera_is_enabled;
       glfwSetInputMode(window, GLFW_CURSOR, camera_is_enabled == 1 ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
@@ -550,7 +550,7 @@ int main() {
       LONGLONG elapsedTicks = t_end.QuadPart - t_start.QuadPart;
       LONGLONG nanoseconds = (elapsedTicks * 1000000000LL) / frequency.QuadPart;
       double milliseconds_fp = (double)(nanoseconds) / 1000000.0;
-      printf("Elapsed milliseconds: %f\n", milliseconds_fp);
+      //printf("Elapsed milliseconds: %f\n", milliseconds_fp);
     }
   }
 
