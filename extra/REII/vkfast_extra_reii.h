@@ -258,10 +258,18 @@ typedef struct ReiiHandleCommandList {
   RedCallProceduresAndAddresses callProceduresAndAddresses;
 } ReiiHandleCommandList;
 
-typedef struct ReiiHandleStaticMesh {
+typedef struct ReiiHandleStaticArray {
+  gpu_extra_cpu_gpu_array       position;
+  gpu_extra_cpu_gpu_array       color;
+  gpu_extra_cpu_gpu_array       normal; // NOTE(Constantine): Treated as vec4, unlike in GL1.4-based REII that treats them as vec3.
+  gpu_extra_cpu_gpu_array       texcoord[REII_TEXCOORDS_MAX_COUNT];
   // Internal
-  int _;
-} ReiiHandleStaticMesh;
+  uint64_t                      batchId;
+  uint64_t                      positionVec4Count;
+  uint64_t                      colorVec4Count;
+  uint64_t                      normalVec4Count;
+  uint64_t                      texcoordVec4Count[REII_TEXCOORDS_MAX_COUNT];
+} ReiiHandleStaticArray;
 
 typedef enum gpu_extra_reii_destroy_type_e {
   GPU_EXTRA_REII_DESTROY_TYPE_UNDEFINED      = 0,
@@ -269,7 +277,6 @@ typedef enum gpu_extra_reii_destroy_type_e {
   GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE        = 2,
   GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY = 3,
   GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST   = 4,
-  GPU_EXTRA_REII_DESTROY_TYPE_STATIC_MESH    = 5,
 } gpu_extra_reii_destroy_type_e;
 
 typedef struct gpu_extra_reii_mesh_state_compile_info_t {
@@ -284,10 +291,6 @@ typedef struct gpu_extra_reii_mesh_state_compile_info_t {
   RedFormat                          output_color_format;
   const char *                       optional_debug_name;
 } gpu_extra_reii_mesh_state_compile_info_t;
-
-typedef struct gpu_extra_reii_create_static_mesh_parameters_t {
-  int _; // TODO(Constantine)
-} gpu_extra_reii_create_static_mesh_parameters_t;
 
 // Pipeline
 
@@ -325,19 +328,19 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal                  (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandMeshPosition                (gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z, float w);
 GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTexture     (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * sourceMsaaColorTexture, ReiiHandleTexture * targetColorTexture);
 GPU_API_PRE void GPU_API_POST reiiCommandCopyFromColorTextureToStorageRaw (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * texture, RedStructMemberArray * storageRaw);
-GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDraw              (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh);
-GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDrawInstanced     (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh, unsigned instanceCount);
-GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDrawInstancedEx   (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh, unsigned instanceCount, unsigned vertexCount);
+GPU_API_PRE void GPU_API_POST reiiCommandStaticArrayDraw             (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticArray * staticArray);
+GPU_API_PRE void GPU_API_POST reiiCommandStaticArrayDrawInstanced    (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticArray * staticArray, unsigned instanceCount);
+GPU_API_PRE void GPU_API_POST reiiCommandStaticArrayDrawInstancedEx  (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticArray * staticArray, unsigned instanceCount, unsigned vertexCount);
 
-// Static mesh
+// Static array
 
-GPU_API_PRE void GPU_API_POST reiiCreateStaticMesh                   (gpu_handle_context_t context, gpu_extra_reii_create_static_mesh_parameters_t * parameters, ReiiHandleStaticMesh * outStaticMesh);
-GPU_API_PRE void GPU_API_POST reiiStaticMeshSet                      (gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh);
-GPU_API_PRE void GPU_API_POST reiiStaticMeshEnd                      (gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh);
-GPU_API_PRE void GPU_API_POST reiiStaticMeshTexcoord                 (gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh, unsigned index, float x, float y, float z, float w);
-GPU_API_PRE void GPU_API_POST reiiStaticMeshColor                    (gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh, float r, float g, float b, float a);
-GPU_API_PRE void GPU_API_POST reiiStaticMeshNormal                   (gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh, float x, float y, float z);
-GPU_API_PRE void GPU_API_POST reiiStaticMeshPosition                 (gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh, float x, float y, float z, float w);
+GPU_API_PRE void GPU_API_POST reiiCreateStaticArray                   (gpu_handle_context_t context, ReiiHandleStaticArray * outStaticArray);
+GPU_API_PRE void GPU_API_POST reiiStaticArraySet                      (gpu_handle_context_t context, ReiiHandleStaticArray * staticArray);
+GPU_API_PRE void GPU_API_POST reiiStaticArrayEnd                      (gpu_handle_context_t context, ReiiHandleStaticArray * staticArray);
+GPU_API_PRE void GPU_API_POST reiiStaticArrayTexcoord                 (gpu_handle_context_t context, ReiiHandleStaticArray * staticArray, unsigned index, float x, float y, float z, float w);
+GPU_API_PRE void GPU_API_POST reiiStaticArrayColor                    (gpu_handle_context_t context, ReiiHandleStaticArray * staticArray, float r, float g, float b, float a);
+GPU_API_PRE void GPU_API_POST reiiStaticArrayNormal                   (gpu_handle_context_t context, ReiiHandleStaticArray * staticArray, float x, float y, float z);
+GPU_API_PRE void GPU_API_POST reiiStaticArrayPosition                 (gpu_handle_context_t context, ReiiHandleStaticArray * staticArray, float x, float y, float z, float w);
 
 // Destroy
 

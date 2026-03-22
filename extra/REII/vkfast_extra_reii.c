@@ -161,7 +161,6 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   int optionalLine = 0;
 
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-
   RedHandleGpu gpu = vkfast->gpu;
 
   REDGPU_2_EXPECTWG(state->state_multisample_count != 0);
@@ -461,7 +460,6 @@ GPU_API_PRE void GPU_API_POST reiiCreateTextureMemory(gpu_handle_context_t conte
   int optionalLine = 0;
 
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-  
   RedHandleGpu gpu = vkfast->gpu;
 
   REDGPU_2_EXPECT(outTextureMemory->texturesType == GPU_EXTRA_REII_TEXTURE_TYPE_INVALID || !"Texture memory's type is not zero, are you passing an existing texture memory accidentally?");
@@ -518,7 +516,6 @@ GPU_API_PRE void GPU_API_POST reiiCreateTextureFromTextureMemory(gpu_handle_cont
   int optionalLine = 0;
 
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-  
   RedHandleGpu gpu = vkfast->gpu;
 
   const char * optional_debug_name = outTexture->optional_debug_name;
@@ -568,7 +565,6 @@ GPU_API_PRE void GPU_API_POST reiiTextureSetStateMipmap(gpu_handle_context_t con
   int optionalLine = 0;
 
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-
   RedHandleGpu gpu = vkfast->gpu;
 
   REDGPU_2_EXPECTWG(binding == bindingTexture->binding);
@@ -581,7 +577,6 @@ GPU_API_PRE void GPU_API_POST reiiTextureSetStateMipmapLevelsCount(gpu_handle_co
   int optionalLine = 0;
 
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-
   RedHandleGpu gpu = vkfast->gpu;
 
   REDGPU_2_EXPECTWG(binding == bindingTexture->binding);
@@ -592,10 +587,6 @@ GPU_API_PRE void GPU_API_POST reiiTextureSetStateMipmapLevelsCount(gpu_handle_co
 GPU_API_PRE void GPU_API_POST reiiTextureSetStateMsaa(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, RedMultisampleCountBitflag msaaCount) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-
-  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-
-  RedHandleGpu gpu = vkfast->gpu;
 
   bindingTexture->msaaCount = msaaCount;
 }
@@ -756,7 +747,6 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
   int optionalLine = 0;
 
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-
   RedHandleGpu gpu = vkfast->gpu;
 
   const gpu_extra_reii_texture_type textureType = bindingTexture->textureMemory->texturesType;
@@ -1157,7 +1147,6 @@ GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu(gpu_handle_context_t contex
   int optionalLine = 0;
 
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-
   RedHandleGpu gpu = vkfast->gpu;
 
   const gpu_extra_reii_texture_type textureType = bindingTexture->textureMemory->texturesType;
@@ -1336,7 +1325,6 @@ GPU_API_PRE void GPU_API_POST reiiCommandListReset(gpu_handle_context_t context,
   int optionalLine = 0;
 
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-
   RedHandleGpu gpu = vkfast->gpu;
 
   {
@@ -1592,7 +1580,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t
   int optionalLine = 0;
 
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
-  vf_handle_context_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
 
   REDGPU_2_EXPECTWG(batch->batch.structsMemory != NULL || !"vfBatchBegin()::batch_bindings_info was likely set to NULL?");
@@ -1631,7 +1619,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw(gpu_handle_context_t con
   int optionalLine = 0;
 
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
-  vf_handle_context_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
 
   REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was reiiCommandBindNewBindingsSet() ever called previously?");
@@ -1663,7 +1651,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsEnd(gpu_handle_context_t
   int optionalLine = 0;
 
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
-  vf_handle_context_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
 
   npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
@@ -1696,7 +1684,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindVariablesCopy(gpu_handle_context_t 
   int optionalLine = 0;
 
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
-  vf_handle_context_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
 
   REDGPU_2_EXPECTWG(list->currentProcedureParametersDraw != NULL || !"Was reiiCommandMeshSetState() ever called previously?");
@@ -1716,7 +1704,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet(gpu_handle_context_t co
   int optionalLine = 0;
 
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
-  vf_handle_context_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
 
   unsigned                   depthStencilWidth            = 0;
@@ -1834,7 +1822,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshEndEx(gpu_handle_context_t context,
   int optionalLine = 0;
 
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
-  vf_handle_context_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
 
   uint64_t dynamicMeshPositionCopyVec4Count = list->dynamicMeshPositionVec4Offset - list->dynamicMeshPositionVec4CurrentStart;
@@ -2010,7 +1998,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTexture(gpu_handle_cont
   int optionalLine = 0;
 
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
-  vf_handle_context_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
 
   REDGPU_2_EXPECTWG(sourceMsaaColorTexture->width  == targetColorTexture->width);
@@ -2081,7 +2069,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandCopyFromColorTextureToStorageRaw(gpu_ha
   int optionalLine = 0;
 
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
-  vf_handle_context_t * vkfast = batch->vkfast;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
 
   const gpu_extra_reii_texture_type textureType = texture->textureMemory->texturesType;
@@ -2120,64 +2108,219 @@ GPU_API_PRE void GPU_API_POST reiiCommandCopyFromColorTextureToStorageRaw(gpu_ha
   );
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDraw(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh) {
+GPU_API_PRE void GPU_API_POST reiiCommandStaticArrayDraw(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticArray * staticArray) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+
+  npfp(redCallProcedure, list->callProceduresAndAddresses.redCallProcedure,
+    "calls", batch->batch.calls.handle,
+    "vertexCount", staticArray->positionVec4Count,
+    "instanceCount", 1,
+    "vertexFirst", 0,
+    "instanceFirst", 0
+  );
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDrawInstanced(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh, unsigned instanceCount) {
+GPU_API_PRE void GPU_API_POST reiiCommandStaticArrayDrawInstanced(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticArray * staticArray, unsigned instanceCount) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+
+  npfp(redCallProcedure, list->callProceduresAndAddresses.redCallProcedure,
+    "calls", batch->batch.calls.handle,
+    "vertexCount", staticArray->positionVec4Count,
+    "instanceCount", instanceCount,
+    "vertexFirst", 0,
+    "instanceFirst", 0
+  );
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDrawInstancedEx(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh, unsigned instanceCount, unsigned vertexCount) {
+GPU_API_PRE void GPU_API_POST reiiCommandStaticArrayDrawInstancedEx(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticArray * staticArray, unsigned instanceCount, unsigned vertexCount) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+
+  npfp(redCallProcedure, list->callProceduresAndAddresses.redCallProcedure,
+    "calls", batch->batch.calls.handle,
+    "vertexCount", vertexCount,
+    "instanceCount", instanceCount,
+    "vertexFirst", 0,
+    "instanceFirst", 0
+  );
 }
 
-GPU_API_PRE void GPU_API_POST reiiCreateStaticMesh(gpu_handle_context_t context, gpu_extra_reii_create_static_mesh_parameters_t * parameters, ReiiHandleStaticMesh * outStaticMesh) {
+GPU_API_PRE void GPU_API_POST reiiCreateStaticArray(gpu_handle_context_t context, ReiiHandleStaticArray * outStaticArray) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  RedHandleGpu gpu = vkfast->gpu;
 }
 
-GPU_API_PRE void GPU_API_POST reiiStaticMeshSet(gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh) {
+GPU_API_PRE void GPU_API_POST reiiStaticArraySet(gpu_handle_context_t context, ReiiHandleStaticArray * staticArray) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  gpu_batch_info_t bindings_info = {0};
+  staticArray->batchId = vfBatchBegin(context, 0, &bindings_info, NULL, optionalFile, optionalLine);
 }
 
-GPU_API_PRE void GPU_API_POST reiiStaticMeshEnd(gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh) {
+GPU_API_PRE void GPU_API_POST reiiStaticArrayEnd(gpu_handle_context_t context, ReiiHandleStaticArray * staticArray) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  if (staticArray->positionVec4Count > 0) {
+    vfeCpuGpuArrayBatchCopyFromCpuToGpu(
+      context,
+      staticArray->batchId,
+      &staticArray->position,
+      0,
+      staticArray->positionVec4Count * sizeof(ReiiVec4),
+      optionalFile,
+      optionalLine
+    );
+  }
+  if (staticArray->colorVec4Count > 0) {
+    vfeCpuGpuArrayBatchCopyFromCpuToGpu(
+      context,
+      staticArray->batchId,
+      &staticArray->color,
+      0,
+      staticArray->colorVec4Count * sizeof(ReiiVec4),
+      optionalFile,
+      optionalLine
+    );
+  }
+  if (staticArray->normalVec4Count > 0) {
+    vfeCpuGpuArrayBatchCopyFromCpuToGpu(
+      context,
+      staticArray->batchId,
+      &staticArray->normal,
+      0,
+      staticArray->normalVec4Count * sizeof(ReiiVec4),
+      optionalFile,
+      optionalLine
+    );
+  }
+  for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
+    if (staticArray->texcoordVec4Count[i] > 0) {
+      vfeCpuGpuArrayBatchCopyFromCpuToGpu(
+        context,
+        staticArray->batchId,
+        &staticArray->texcoord[i],
+        0,
+        staticArray->texcoordVec4Count[i] * sizeof(ReiiVec4),
+        optionalFile,
+        optionalLine
+      );
+    }
+  }
+  vfBatchEnd(context, staticArray->batchId, optionalFile, optionalLine);
+  uint64_t wait = vfAsyncBatchExecute(context, 1, &staticArray->batchId, optionalFile, optionalLine);
+  vfAsyncWaitToFinish(context, wait, optionalFile, optionalLine);
+  vfIdDestroy(1, &staticArray->batchId, optionalFile, optionalLine);
+  staticArray->batchId = 0;
 }
 
-GPU_API_PRE void GPU_API_POST reiiStaticMeshTexcoord(gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh, unsigned index, float x, float y, float z, float w) {
+GPU_API_PRE void GPU_API_POST reiiStaticArrayTexcoord(gpu_handle_context_t context, ReiiHandleStaticArray * staticArray, unsigned index, float x, float y, float z, float w) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+  REDGPU_2_EXPECT(index < REII_TEXCOORDS_MAX_COUNT);
+
+#ifndef NDEBUG
+  {
+    const uint64_t bytesNeeded = (staticArray->texcoordVec4Count[index] + 1) * sizeof(ReiiVec4);
+    const uint64_t bytesTotal  = staticArray->texcoord[index].cpu.arrayRangeBytesCount;
+    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(staticArray->texcoordVec4Count + 1) * sizeof(ReiiVec4) <= staticArray->texcoord[index].cpu.arrayRangeBytesCount");
+  }
+#endif
+
+  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)staticArray->texcoord[index].cpu_ptr;
+  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[staticArray->texcoordVec4Count[index]];
+
+  cpu_as_vec4[0].x = x;
+  cpu_as_vec4[0].y = y;
+  cpu_as_vec4[0].z = z;
+  cpu_as_vec4[0].w = w;
+
+  staticArray->texcoordVec4Count[index] += 1;
 }
 
-GPU_API_PRE void GPU_API_POST reiiStaticMeshColor(gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh, float r, float g, float b, float a) {
+GPU_API_PRE void GPU_API_POST reiiStaticArrayColor(gpu_handle_context_t context, ReiiHandleStaticArray * staticArray, float r, float g, float b, float a) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+#ifndef NDEBUG
+  {
+    const uint64_t bytesNeeded = (staticArray->colorVec4Count + 1) * sizeof(ReiiVec4);
+    const uint64_t bytesTotal  = staticArray->color.cpu.arrayRangeBytesCount;
+    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(staticArray->colorVec4Count + 1) * sizeof(ReiiVec4) <= staticArray->color.cpu.arrayRangeBytesCount");
+  }
+#endif
+
+  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)staticArray->color.cpu_ptr;
+  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[staticArray->colorVec4Count];
+
+  cpu_as_vec4[0].x = r;
+  cpu_as_vec4[0].y = g;
+  cpu_as_vec4[0].z = b;
+  cpu_as_vec4[0].w = a;
+
+  staticArray->colorVec4Count += 1;
 }
 
-GPU_API_PRE void GPU_API_POST reiiStaticMeshNormal(gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh, float x, float y, float z) {
+GPU_API_PRE void GPU_API_POST reiiStaticArrayNormal(gpu_handle_context_t context, ReiiHandleStaticArray * staticArray, float x, float y, float z) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+#ifndef NDEBUG
+  {
+    const uint64_t bytesNeeded = (staticArray->normalVec4Count + 1) * sizeof(ReiiVec4);
+    const uint64_t bytesTotal  = staticArray->normal.cpu.arrayRangeBytesCount;
+    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(staticArray->normalVec4Count + 1) * sizeof(ReiiVec4) <= staticArray->normal.cpu.arrayRangeBytesCount");
+  }
+#endif
+
+  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)staticArray->normal.cpu_ptr;
+  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[staticArray->normalVec4Count];
+
+  cpu_as_vec4[0].x = x;
+  cpu_as_vec4[0].y = y;
+  cpu_as_vec4[0].z = z;
+  cpu_as_vec4[0].w = 1; // NOTE(Constantine): Hmm... I guess?
+
+  staticArray->normalVec4Count += 1;
 }
 
-GPU_API_PRE void GPU_API_POST reiiStaticMeshPosition(gpu_handle_context_t context, ReiiHandleStaticMesh * staticMesh, float x, float y, float z, float w) {
+GPU_API_PRE void GPU_API_POST reiiStaticArrayPosition(gpu_handle_context_t context, ReiiHandleStaticArray * staticArray, float x, float y, float z, float w) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
-  REDGPU_2_EXPECT(0 || !"TODO");
+
+#ifndef NDEBUG
+  {
+    const uint64_t bytesNeeded = (staticArray->positionVec4Count + 1) * sizeof(ReiiVec4);
+    const uint64_t bytesTotal  = staticArray->position.cpu.arrayRangeBytesCount;
+    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(staticArray->positionVec4Count + 1) * sizeof(ReiiVec4) <= staticArray->position.cpu.arrayRangeBytesCount");
+  }
+#endif
+
+  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)staticArray->position.cpu_ptr;
+  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[staticArray->positionVec4Count];
+
+  cpu_as_vec4[0].x = x;
+  cpu_as_vec4[0].y = y;
+  cpu_as_vec4[0].z = z;
+  cpu_as_vec4[0].w = w;
+
+  staticArray->positionVec4Count += 1;
 }
 
 GPU_API_PRE void GPU_API_POST reiiDestroyEx(gpu_handle_context_t context, gpu_extra_reii_destroy_type_e destroyHandleType, void * destroyHandle) {
@@ -2185,7 +2328,6 @@ GPU_API_PRE void GPU_API_POST reiiDestroyEx(gpu_handle_context_t context, gpu_ex
   int optionalLine = 0;
 
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-
   RedHandleGpu gpu = vkfast->gpu;
 
   if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_UNDEFINED) {
@@ -2355,8 +2497,6 @@ GPU_API_PRE void GPU_API_POST reiiDestroyEx(gpu_handle_context_t context, gpu_ex
         red2DestroyHandle(vkfast->context, vkfast->gpu, RED_HANDLE_TYPE_OUTPUT_DECLARATION, handle->mutable_outputs_array.items[i].handleDeclaration, NULL, optionalFile, optionalLine, NULL);
       }
     }
-  } else if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_STATIC_MESH) {
-    REDGPU_2_EXPECT(0 || !"TODO");
   } else {
     REDGPU_2_EXPECT(0 || !"Invalid enum value");
   }
