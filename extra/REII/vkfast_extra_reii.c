@@ -2189,7 +2189,13 @@ GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDraw(gpu_handle_context_t con
   REDGPU_2_EXPECT(0 || !"TODO");
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDrawInstanced(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh, unsigned vertexCount, unsigned instanceCount, unsigned vertexFirst, unsigned instanceFirst) {
+GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDrawInstanced(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh, unsigned instanceCount) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+  REDGPU_2_EXPECT(0 || !"TODO");
+}
+
+GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDrawInstancedEx(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh, unsigned instanceCount, unsigned vertexCount) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
   REDGPU_2_EXPECT(0 || !"TODO");

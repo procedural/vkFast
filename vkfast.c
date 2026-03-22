@@ -3,7 +3,7 @@
 #define GPU_API_POST
 #endif
 
-#include "vkfast.h"
+#include "vkfast_ex.h"
 #include "vkfast_ids.h"
 
 #ifndef __cplusplus
@@ -1495,7 +1495,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_cont
   return (uint64_t)(void *)handle;
 }
 
-GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(gpu_handle_context_t context, uint64_t existing_batch_id, const gpu_batch_info_t * batch_info, const char * optional_debug_name, const char * optionalFile, int optionalLine) {
+static uint64_t vfInternalBatchBegin(gpu_handle_context_t context, uint64_t existing_batch_id, const gpu_batch_info_t * batch_info, unsigned queue_family_index, const char * optional_debug_name, const char * optionalFile, int optionalLine) {
   vf_handle_t * handle = (vf_handle_t *)(void *)existing_batch_id;
   
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
@@ -1509,7 +1509,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(gpu_handle_context_t context, uin
       "context", vkfast->context,
       "gpu", vkfast->gpu,
       "handleName", optional_debug_name,
-      "queueFamilyIndex", vkfast->mainQueueFamilyIndex,
+      "queueFamilyIndex", queue_family_index,
       "outCalls", &calls,
       "outStatuses", NULL,
       "optionalFile", optionalFile,
@@ -1599,6 +1599,15 @@ GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(gpu_handle_context_t context, uin
   }
 
   return (uint64_t)(void *)handle;
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(gpu_handle_context_t context, uint64_t existing_batch_id, const gpu_batch_info_t * batch_info, const char * optional_debug_name, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  return vfInternalBatchBegin(context, existing_batch_id, batch_info, vkfast->mainQueueFamilyIndex, optional_debug_name, optionalFile, optionalLine);
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfBatchBeginEx(gpu_handle_context_t context, uint64_t existing_batch_id, const gpu_batch_info_t * batch_info, unsigned queue_family_index, const char * optional_debug_name, const char * optionalFile, int optionalLine) {
+  return vfInternalBatchBegin(context, existing_batch_id, batch_info, queue_family_index, optional_debug_name, optionalFile, optionalLine);
 }
 
 GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromCpuToGpu(gpu_handle_context_t context, uint64_t batch_id, uint64_t from_cpu_storage_id, uint64_t to_gpu_storage_id, const char * optionalFile, int optionalLine) {
@@ -1914,7 +1923,7 @@ GPU_API_PRE void GPU_API_POST vfBatchGetRaw(gpu_handle_context_t context, uint64
   out_batch_raw[0] = batch->batch.calls;
 }
 
-GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(gpu_handle_context_t context, uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optionalFile, int optionalLine) {
+static uint64_t vfInternalAsyncBatchExecute(gpu_handle_context_t context, RedHandleQueue queue, uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optionalFile, int optionalLine) {
   if (batch_ids_count == 0) {
     return 0;
   }
@@ -1961,7 +1970,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(gpu_handle_context_t conte
   np(redQueueSubmit,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
-    "queue", vkfast->mainQueue,
+    "queue", queue,
     "timelinesCount", 1,
     "timelines", timelines,
     "signalCpuSignal", cpuSignal,
@@ -1975,6 +1984,15 @@ GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(gpu_handle_context_t conte
   calls = NULL;
 
   return (uint64_t)(void *)cpuSignal;
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(gpu_handle_context_t context, uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  return vfInternalAsyncBatchExecute(context, vkfast->mainQueue, batch_ids_count, batch_ids, optionalFile, optionalLine);
+}
+
+GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecuteEx(gpu_handle_context_t context, RedHandleQueue queue, uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optionalFile, int optionalLine) {
+  return vfInternalAsyncBatchExecute(context, queue, batch_ids_count, batch_ids, optionalFile, optionalLine);
 }
 
 GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(gpu_handle_context_t context, uint64_t async_id, const char * optionalFile, int optionalLine) {

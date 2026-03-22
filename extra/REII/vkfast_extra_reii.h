@@ -328,7 +328,8 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshPosition                (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTexture     (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * sourceMsaaColorTexture, ReiiHandleTexture * targetColorTexture);
 GPU_API_PRE void GPU_API_POST reiiCommandCopyFromColorTextureToStorageRaw (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * texture, RedStructMemberArray * storageRaw);
 GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDraw              (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh);
-GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDrawInstanced     (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh, unsigned vertexCount, unsigned instanceCount, unsigned vertexFirst, unsigned instanceFirst);
+GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDrawInstanced     (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh, unsigned instanceCount);
+GPU_API_PRE void GPU_API_POST reiiCommandStaticMeshDrawInstancedEx   (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticMesh * staticMesh, unsigned instanceCount, unsigned vertexCount);
 
 // Static mesh
 
