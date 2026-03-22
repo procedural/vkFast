@@ -224,7 +224,6 @@ typedef struct ReiiHandleTexture {
   unsigned                   height;
   RedFormat                  format;
   RedMultisampleCountBitflag msaaCount;
-  RedHandleSampler           sampler;
   RedImage                   image;
   RedHandleMemory            imageDedicatedMemory;
   RedHandleTexture           texture;
@@ -302,7 +301,6 @@ GPU_API_PRE void GPU_API_POST reiiCreateTextureFromTextureMemory     (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiTextureSetStateMipmap              (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, ReiiBool32 generateMipLevels);
 GPU_API_PRE void GPU_API_POST reiiTextureSetStateMipmapLevelsCount   (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int mipLevelsCount);
 GPU_API_PRE void GPU_API_POST reiiTextureSetStateMsaa                (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, RedMultisampleCountBitflag msaaCount);
-GPU_API_PRE void GPU_API_POST reiiTextureSetStateSampler             (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, ReiiSamplerFiltering magFiltering, ReiiSamplerFiltering minFiltering, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateU, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateV, int maxAnisotropy);
 GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu        (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuGpuTexture * texels);
 GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu                 (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuGpuTexture * texels);
 

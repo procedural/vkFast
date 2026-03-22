@@ -550,7 +550,6 @@ GPU_API_PRE void GPU_API_POST reiiCreateTextureFromTextureMemory(gpu_handle_cont
   outTexture->height               = 0;
   outTexture->format               = RED_FORMAT_UNDEFINED;
   outTexture->msaaCount            = RED_MULTISAMPLE_COUNT_BITFLAG_1;
-  outTexture->sampler              = NULL;
   outTexture->image                = imageClear;
   outTexture->imageDedicatedMemory = NULL;
   outTexture->texture              = NULL;
@@ -599,67 +598,6 @@ GPU_API_PRE void GPU_API_POST reiiTextureSetStateMsaa(gpu_handle_context_t conte
   RedHandleGpu gpu = vkfast->gpu;
 
   bindingTexture->msaaCount = msaaCount;
-}
-
-GPU_API_PRE void GPU_API_POST reiiTextureSetStateSampler(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, ReiiSamplerFiltering magFiltering, ReiiSamplerFiltering minFiltering, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateU, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateV, int maxAnisotropy) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-
-  RedHandleGpu gpu = vkfast->gpu;
-
-  REDGPU_2_EXPECTWG(binding == bindingTexture->binding);
-  REDGPU_2_EXPECTWG(magFiltering == REII_SAMPLER_FILTERING_NEAREST || magFiltering == REII_SAMPLER_FILTERING_LINEAR);
-  REDGPU_2_EXPECTWG(minFiltering == REII_SAMPLER_FILTERING_NEAREST || minFiltering == REII_SAMPLER_FILTERING_LINEAR ||
-    minFiltering == REII_SAMPLER_FILTERING_NEAREST_MIP_NEAREST || minFiltering == REII_SAMPLER_FILTERING_NEAREST_MIP_LINEAR ||
-    minFiltering == REII_SAMPLER_FILTERING_LINEAR_MIP_NEAREST  || minFiltering == REII_SAMPLER_FILTERING_LINEAR_MIP_LINEAR
-  );
-
-  RedHandleSampler sampler = bindingTexture->sampler;
-  np(red2DestroyHandle,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "handleType", RED_HANDLE_TYPE_SAMPLER,
-    "handle", sampler,
-    "optionalHandle2", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
-  sampler = NULL;
-
-  RedSamplerFiltering    filteringMag = RiiSamplerFilteringToRed(magFiltering);
-  RedSamplerFiltering    filteringMin = RiiSamplerFilteringToRed(minFiltering);
-  RedSamplerFilteringMip filteringMip = RiiSamplerFilteringMipToRed(minFiltering);
-
-  // To destroy
-  np(redCreateSampler,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "handleName", bindingTexture->optional_debug_name,
-    "filteringMag", filteringMag,
-    "filteringMin", filteringMin,
-    "filteringMip", filteringMip,
-    "behaviorOutsideTextureCoordinateU", ReiiSamplerBehaviorOutsideTextureCoordinateToRed(behaviorOutsideTextureCoordinateU),
-    "behaviorOutsideTextureCoordinateV", ReiiSamplerBehaviorOutsideTextureCoordinateToRed(behaviorOutsideTextureCoordinateV),
-    "behaviorOutsideTextureCoordinateW", RED_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, // NOTE(Constantine): We don't use these samplers on 3D textures, so whatever.
-    "mipLodBias", 0.f,
-    "enableAnisotropy", maxAnisotropy > 1,
-    "maxAnisotropy", maxAnisotropy,
-    "enableCompare", 0,
-    "compareOp", RED_COMPARE_OP_NEVER,
-    "minLod",-1000.f,
-    "maxLod", 1000.f,
-    "outSampler", &sampler,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
-  REDGPU_2_EXPECTWG(sampler != NULL);
-
-  bindingTexture->sampler = sampler;
 }
 
 static void redHelperImageSetStateUsable(RedContext context, RedHandleGpu gpu, RedHandleImage image, RedImagePartBitflags allParts, RedHandleQueue queueToSubmitImageStateChange, unsigned queueFamilyIndexToSubmitImageStateChange, RedStatuses * outStatuses, const char * optionalFile, int optionalLine, void * optionalUserData) {
@@ -844,7 +782,6 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
   REDGPU_2_EXPECTWG(bindingTexture->generateMipLevels == 0 || !"TODO(Constantine): Generating mipmaps is not supported right now, use extra/ad_mipmap to generate and upload mip levels manually.");
   REDGPU_2_EXPECTWG(bindingTexture->mipLevelsCount >= 1);
   REDGPU_2_EXPECTWG(bindingTexture->mipLevelsCount <= ((int)log2(width) + 1));
-  REDGPU_2_EXPECTWG(bindingTexture->sampler != NULL);
   if (textureType != GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL) {
     REDGPU_2_EXPECTWG(texels == NULL);
   }
@@ -2331,16 +2268,6 @@ GPU_API_PRE void GPU_API_POST reiiDestroyEx(gpu_handle_context_t context, gpu_ex
   } else if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE) {
     ReiiHandleTexture * handle = (ReiiHandleTexture *)destroyHandle;
 
-    np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_SAMPLER,
-      "handle", handle->sampler,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
     np(red2DestroyHandle,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
