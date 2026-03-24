@@ -232,11 +232,10 @@ typedef struct ReiiHandleTexture {
   RedHandleTexture           textureCubeFace[6];
 } ReiiHandleTexture;
 
-typedef struct ReiiCpuGpuTexture {
+typedef struct ReiiCpuScratchBuffer {
   void *               cpu_scratch_buffer_ptr;
   RedStructMemberArray cpu_scratch_buffer;
-  ReiiHandleTexture *  gpu_texture;
-} ReiiCpuGpuTexture;
+} ReiiCpuScratchBuffer;
 
 typedef struct ReiiHandleCommandList {
   uint64_t                      batch_id;
@@ -277,6 +276,7 @@ typedef enum gpu_extra_reii_destroy_type_e {
   GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE        = 2,
   GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY = 3,
   GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST   = 4,
+  GPU_EXTRA_REII_DESTROY_TYPE_SAMPLER        = 5,
 } gpu_extra_reii_destroy_type_e;
 
 typedef struct gpu_extra_reii_mesh_state_compile_info_t {
@@ -309,8 +309,8 @@ GPU_API_PRE void GPU_API_POST reiiCreateTextureFromTextureMemory     (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiTextureSetStateMipmap              (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, ReiiBool32 generateMipLevels);
 GPU_API_PRE void GPU_API_POST reiiTextureSetStateMipmapLevelsCount   (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int mipLevelsCount);
 GPU_API_PRE void GPU_API_POST reiiTextureSetStateMsaa                (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, RedMultisampleCountBitflag msaaCount);
-GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu        (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuGpuTexture * texels);
-GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu                 (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuGpuTexture * texels);
+GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu        (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels);
+GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu                 (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels);
 
 // Command list
 

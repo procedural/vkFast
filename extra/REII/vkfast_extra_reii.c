@@ -221,7 +221,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   parameters.variablesSlot            = state->variables_slot;
   parameters.variablesVisibleToStages = state->variables_bytes_count == 0 ? 0 : (RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX | RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT);
   parameters.variablesBytesCount      = state->variables_bytes_count;
-  parameters.structsDeclarationsCount = state->struct_members_count == 0 ? 0 : 1;
+  parameters.structsDeclarationsCount = (state->struct_members_count == 0 ? 0 : 1) + (state->samplers_count == 0 ? 0 : 1);
   parameters.structsDeclarations[0].structDeclarationMembersCount        = state->struct_members_count;
   parameters.structsDeclarations[0].structDeclarationMembers             = state->struct_members;
   parameters.structsDeclarations[0].structDeclarationMembersArrayROCount = 0;
@@ -805,7 +805,7 @@ static void redHelperImageSetStateUsable(RedContext context, RedHandleGpu gpu, R
   );
 }
 
-GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuGpuTexture * texels) {
+GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -836,7 +836,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
   REDGPU_2_EXPECTWG(bindingTexture->mipLevelsCount >= 1);
   REDGPU_2_EXPECTWG(bindingTexture->mipLevelsCount <= ((int)log2(width) + 1));
   if (textureType != GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL) {
-    REDGPU_2_EXPECTWG(texels == NULL);
+    REDGPU_2_EXPECTWG(texels == NULL || !"textureType != GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL");
   }
 
   RedFormat  format = RED_FORMAT_UNDEFINED;
@@ -1171,6 +1171,22 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
     );
   }
 
+  // Filling
+  bindingTexture->width                = width;
+  bindingTexture->height               = height;
+  bindingTexture->format               = format;
+  bindingTexture->image                = image;
+  bindingTexture->imageDedicatedMemory = imageDedicatedMemory;
+  bindingTexture->texture              = texture;
+  bindingTexture->textureDepthOnly     = textureDepthOnly;
+  bindingTexture->textureStencilOnly   = textureStencilOnly;
+  bindingTexture->textureCubeFace[0]   = textureCubeFace[0];
+  bindingTexture->textureCubeFace[1]   = textureCubeFace[1];
+  bindingTexture->textureCubeFace[2]   = textureCubeFace[2];
+  bindingTexture->textureCubeFace[3]   = textureCubeFace[3];
+  bindingTexture->textureCubeFace[4]   = textureCubeFace[4];
+  bindingTexture->textureCubeFace[5]   = textureCubeFace[5];
+
   if (texels != NULL) {
     reiiTextureCopyFromCpu(
       context, // gpu_handle_context_t context
@@ -1187,25 +1203,9 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
       texels // const ReiiCpuGpuTexture * texels
     );
   }
-
-  // Filling
-  bindingTexture->width                = width;
-  bindingTexture->height               = height;
-  bindingTexture->format               = format;
-  bindingTexture->image                = image;
-  bindingTexture->imageDedicatedMemory = imageDedicatedMemory;
-  bindingTexture->texture              = texture;
-  bindingTexture->textureDepthOnly     = textureDepthOnly;
-  bindingTexture->textureStencilOnly   = textureStencilOnly;
-  bindingTexture->textureCubeFace[0]   = textureCubeFace[0];
-  bindingTexture->textureCubeFace[1]   = textureCubeFace[1];
-  bindingTexture->textureCubeFace[2]   = textureCubeFace[2];
-  bindingTexture->textureCubeFace[3]   = textureCubeFace[3];
-  bindingTexture->textureCubeFace[4]   = textureCubeFace[4];
-  bindingTexture->textureCubeFace[5]   = textureCubeFace[5];
 }
 
-GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuGpuTexture * texels) {
+GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -2679,6 +2679,19 @@ GPU_API_PRE void GPU_API_POST reiiDestroyEx(gpu_handle_context_t context, gpu_ex
         red2DestroyHandle(vkfast->context, vkfast->gpu, RED_HANDLE_TYPE_OUTPUT_DECLARATION, handle->mutable_outputs_array.items[i].handleDeclaration, NULL, optionalFile, optionalLine, NULL);
       }
     }
+  } else if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_SAMPLER) {
+    RedHandleSampler handle = (RedHandleSampler)destroyHandle;
+
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_SAMPLER,
+      "handle", handle,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
   } else {
     REDGPU_2_EXPECT(0 || !"Invalid enum value");
   }

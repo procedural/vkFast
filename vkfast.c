@@ -1525,8 +1525,6 @@ static uint64_t vfInternalBatchBegin(gpu_handle_context_t context, uint64_t exis
 
   RedHandleGpu gpu = vkfast->gpu;
 
-  RedHandleStructsMemory structsMemorySamplers = NULL;
-
   if (handle == NULL) {
     // To destroy
     RedCalls calls = {0};
@@ -1577,6 +1575,7 @@ static uint64_t vfInternalBatchBegin(gpu_handle_context_t context, uint64_t exis
       }
     }
 
+    RedHandleStructsMemory structsMemorySamplers = NULL;
     if (batch_info != NULL) {
       if (batch_info->max_sampler_binds_count > 0) {
         REDGPU_2_EXPECTWG(batch_info->max_sampler_binds_count <= 4000);
@@ -1649,6 +1648,16 @@ static uint64_t vfInternalBatchBegin(gpu_handle_context_t context, uint64_t exis
       "optionalLine", optionalLine,
       "optionalUserData", NULL
     );
+    np(red2DestroyHandle,
+      "context", handle->vkfast->context,
+      "gpu", handle->vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_STRUCT_DECLARATION,
+      "handle", handle->batch.currentStructSamplers.handleDeclaration,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
     RedStructDeclarationMember samplers[4000] = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
     for (unsigned i = 0; i < batch_info->max_sampler_binds_count; i += 1) {
       samplers[i].slot            = i;
@@ -1661,7 +1670,7 @@ static uint64_t vfInternalBatchBegin(gpu_handle_context_t context, uint64_t exis
       "context", vkfast->context,
       "gpu", vkfast->gpu,
       "handleName", optional_debug_name,
-      "structsMemory", structsMemorySamplers,
+      "structsMemory", handle->batch.structsMemorySamplers,
       "structDeclarationMembersCount", batch_info->max_sampler_binds_count,
       "structDeclarationMembers", samplers,
       "structDeclarationMembersArrayROCount", 0,
