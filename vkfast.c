@@ -1894,6 +1894,36 @@ GPU_API_PRE void GPU_API_POST vfBatchBindStorageRaw(gpu_handle_context_t context
   );
 }
 
+GPU_API_PRE void GPU_API_POST vfBatchBindTextureRWEx(gpu_handle_context_t context, uint64_t batch_id, int slot, int textures_rw_count, const RedStructMemberTexture * textures_rw, const char * optionalFile, int optionalLine) {
+  vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
+  vf_handle_context_t * vkfast = batch->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+  REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
+
+  REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was vfBatchBindNewBindingsSet() ever called previously?");
+
+  RedStructMember member = {0};
+  member.setTo35   = 35;
+  member.setTo0    = 0;
+  member.structure = batch->batch.currentStruct.handle;
+  member.slot      = slot;
+  member.first     = 0;
+  member.count     = textures_rw_count;
+  member.type      = RED_STRUCT_MEMBER_TYPE_TEXTURE_RW;
+  member.textures  = textures_rw;
+  member.arrays    = NULL;
+  member.setTo00   = 0;
+  np(redStructsSet,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "structsMembersCount", 1,
+    "structsMembers", &member,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+}
+
 GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(gpu_handle_context_t context, uint64_t batch_id, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
   vf_handle_context_t * vkfast = batch->vkfast;

@@ -1764,6 +1764,70 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw(gpu_handle_context_t con
   );
 }
 
+GPU_API_PRE void GPU_API_POST reiiCommandBindTextureRW(gpu_handle_context_t context, ReiiHandleCommandList * list, int slot, int texturesRWCount, const RedStructMemberTexture * texturesRW) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was reiiCommandBindNewBindingsSet() ever called previously?");
+
+  RedStructMember member = {0};
+  member.setTo35   = 35;
+  member.setTo0    = 0;
+  member.structure = batch->batch.currentStruct.handle;
+  member.slot      = slot;
+  member.first     = 0;
+  member.count     = texturesRWCount;
+  member.type      = RED_STRUCT_MEMBER_TYPE_TEXTURE_RW;
+  member.textures  = texturesRW;
+  member.arrays    = NULL;
+  member.setTo00   = 0;
+  np(redStructsSet,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "structsMembersCount", 1,
+    "structsMembers", &member,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+}
+
+GPU_API_PRE void GPU_API_POST reiiCommandBindTextureRO(gpu_handle_context_t context, ReiiHandleCommandList * list, int slot, int texturesROCount, const RedStructMemberTexture * texturesRO) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was reiiCommandBindNewBindingsSet() ever called previously?");
+
+  RedStructMember member = {0};
+  member.setTo35   = 35;
+  member.setTo0    = 0;
+  member.structure = batch->batch.currentStruct.handle;
+  member.slot      = slot;
+  member.first     = 0;
+  member.count     = texturesROCount;
+  member.type      = RED_STRUCT_MEMBER_TYPE_TEXTURE_RO;
+  member.textures  = texturesRO;
+  member.arrays    = NULL;
+  member.setTo00   = 0;
+  np(redStructsSet,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "structsMembersCount", 1,
+    "structsMembers", &member,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+}
+
 GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsEnd(gpu_handle_context_t context, ReiiHandleCommandList * list) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
