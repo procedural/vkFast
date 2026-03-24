@@ -316,8 +316,9 @@ int main() {
   ReiiVec4   camera_pos  = {0, 0, -2.f};
   ReiiVec4   camera_quat = {0, 0, 0, 1};
   ReiiBool32 camera_is_enabled = 1;
-
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  if (camera_is_enabled == 1) {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  }
 
   glfwPollEvents();
   double mouse_x = 0;
