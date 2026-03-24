@@ -177,6 +177,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   REDGPU_2_EXPECTWG(
     state->output_color_format == RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1
   );
+  REDGPU_2_EXPECTWG(state->samplers_count <= 4000);
 
   // To destroy
   RedHandleGpuCode gpuCodeVertex = NULL;
@@ -225,6 +226,19 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   parameters.structsDeclarations[0].structDeclarationMembers             = state->struct_members;
   parameters.structsDeclarations[0].structDeclarationMembersArrayROCount = 0;
   parameters.structsDeclarations[0].structDeclarationMembersArrayRO      = NULL;
+  RedStructDeclarationMember samplers[4000] = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
+  if (state->samplers_count > 0) {
+    for (unsigned i = 0; i < state->samplers_count; i += 1) {
+      samplers[i].slot            = i;
+      samplers[i].type            = RED_STRUCT_MEMBER_TYPE_SAMPLER;
+      samplers[i].count           = 1;
+      samplers[i].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT; // NOTE(Constantine): I doubt anyone needs to sample textures in vertex shaders?
+    }
+    parameters.structsDeclarations[1].structDeclarationMembersCount        = state->samplers_count;
+    parameters.structsDeclarations[1].structDeclarationMembers             = samplers;
+    parameters.structsDeclarations[1].structDeclarationMembersArrayROCount = 0;
+    parameters.structsDeclarations[1].structDeclarationMembersArrayRO      = NULL;
+  }
 
   // To destroy
   Red2ProcedureParametersAndDeclarations procedureParameters = {0};
@@ -453,6 +467,55 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   state->state->gpuCodeFragment     = gpuCodeFragment;
   state->state->procedureParameters = procedureParameters;
   state->state->procedure           = procedure;
+}
+
+GPU_API_PRE RedHandleSampler GPU_API_POST reiiCreateSampler(gpu_handle_context_t context, const char * optionalDebugName, ReiiSamplerFiltering magFiltering, ReiiSamplerFiltering minFiltering, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateU, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateV, int maxAnisotropy) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(magFiltering == REII_SAMPLER_FILTERING_NEAREST || magFiltering == REII_SAMPLER_FILTERING_LINEAR);
+  REDGPU_2_EXPECTWG(
+    minFiltering == REII_SAMPLER_FILTERING_NEAREST             || minFiltering == REII_SAMPLER_FILTERING_LINEAR             ||
+    minFiltering == REII_SAMPLER_FILTERING_NEAREST_MIP_NEAREST || minFiltering == REII_SAMPLER_FILTERING_NEAREST_MIP_LINEAR ||
+    minFiltering == REII_SAMPLER_FILTERING_LINEAR_MIP_NEAREST  || minFiltering == REII_SAMPLER_FILTERING_LINEAR_MIP_LINEAR
+  );
+
+  RedSamplerFiltering    filteringMag = RiiSamplerFilteringToRed(magFiltering);
+  RedSamplerFiltering    filteringMin = RiiSamplerFilteringToRed(minFiltering);
+  RedSamplerFilteringMip filteringMip = RiiSamplerFilteringMipToRed(minFiltering);
+
+  RedHandleSampler sampler = NULL;
+  // To destroy
+  np(redCreateSampler,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "handleName", optionalDebugName,
+    "filteringMag", filteringMag,
+    "filteringMin", filteringMin,
+    "filteringMip", filteringMip,
+    "behaviorOutsideTextureCoordinateU", ReiiSamplerBehaviorOutsideTextureCoordinateToRed(behaviorOutsideTextureCoordinateU),
+    "behaviorOutsideTextureCoordinateV", ReiiSamplerBehaviorOutsideTextureCoordinateToRed(behaviorOutsideTextureCoordinateV),
+    "behaviorOutsideTextureCoordinateW", RED_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, // NOTE(Constantine): We don't use these samplers on 3D textures, so whatever.
+    "mipLodBias", 0.f,
+    "enableAnisotropy", maxAnisotropy > 1,
+    "maxAnisotropy", maxAnisotropy,
+    "enableCompare", 0,
+    "compareOp", RED_COMPARE_OP_NEVER,
+    "minLod",-1000.f,
+    "maxLod", 1000.f,
+    "outSampler", &sampler,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+  REDGPU_2_EXPECTWG(sampler != NULL);
+
+  return sampler;
 }
 
 GPU_API_PRE void GPU_API_POST reiiCreateTextureMemory(gpu_handle_context_t context, gpu_extra_reii_texture_type texturesType, uint64_t bytesCount, ReiiHandleTextureMemory * outTextureMemory) {
@@ -1575,6 +1638,61 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshSetState(gpu_handle_context_t conte
   list->currentProcedureParametersDraw = state->procedureParameters.procedureParameters;
 }
 
+GPU_API_PRE void GPU_API_POST reiiCommandBindSamplers(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned samplersCount, RedHandleSampler * samplers) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  if (samplersCount == 0) {
+    return;
+  }
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(batch->batch.currentStructSamplers.handle != NULL || !"vfBatchBegin()::batch_bindings_info was set to NULL? Or vfBatchBegin()::batch_bindings_info::max_sampler_binds_count was set to 0?");
+  REDGPU_2_EXPECTWG(samplersCount <= 4000);
+
+  RedStructMemberTexture membersSamplers[4000] = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
+  RedStructMember        members[4000]         = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
+  for (unsigned i = 0; i < samplersCount; i += 1) {
+    membersSamplers[i].sampler = samplers[i];
+    membersSamplers[i].texture = NULL;
+    membersSamplers[i].setTo1  = 1;
+
+    members[i].setTo35   = 35;
+    members[i].setTo0    = 0;
+    members[i].structure = batch->batch.currentStructSamplers.handle;
+    members[i].slot      = i;
+    members[i].first     = 0;
+    members[i].count     = 1;
+    members[i].type      = RED_STRUCT_MEMBER_TYPE_SAMPLER;
+    members[i].textures  = &membersSamplers[i];
+    members[i].arrays    = NULL;
+    members[i].setTo00   = 0;
+  }
+  np(redStructsSet,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "structsMembersCount", samplersCount,
+    "structsMembers", members,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
+    "calls", batch->batch.calls.handle,
+    "procedureType", RED_PROCEDURE_TYPE_DRAW,
+    "procedureParameters", list->currentProcedureParametersDraw,
+    "procedureParametersDeclarationStructsDeclarationsFirst", 1,
+    "structsCount", 1,
+    "structs", &batch->batch.currentStructSamplers.handle,
+    "setTo0", 0,
+    "setTo00", 0
+  );
+}
+
 GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t context, ReiiHandleCommandList * list, int slotsCount, const RedStructDeclarationMember * slots) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
@@ -1583,7 +1701,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
 
-  REDGPU_2_EXPECTWG(batch->batch.structsMemory != NULL || !"vfBatchBegin()::batch_bindings_info was likely set to NULL?");
+  REDGPU_2_EXPECTWG(batch->batch.structsMemory != NULL || !"vfBatchBegin()::batch_bindings_info was set to NULL?");
   if (list->currentProcedureParametersDraw == NULL) {
     REDGPU_2_EXPECTWG(!"Was reiiCommandMeshSetState() ever called previously?");
   }
@@ -1659,7 +1777,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsEnd(gpu_handle_context_t
     "procedureType", RED_PROCEDURE_TYPE_DRAW,
     "procedureParameters", list->currentProcedureParametersDraw,
     "procedureParametersDeclarationStructsDeclarationsFirst", 0,
-    "structsCount", 1, // NOTE(Constantine): Only one struct for now.
+    "structsCount", 1,
     "structs", &batch->batch.currentStruct.handle,
     "setTo0", 0,
     "setTo00", 0

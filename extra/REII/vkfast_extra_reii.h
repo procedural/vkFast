@@ -259,16 +259,16 @@ typedef struct ReiiHandleCommandList {
 } ReiiHandleCommandList;
 
 typedef struct ReiiHandleStaticArray {
-  gpu_extra_cpu_gpu_array       position;
-  gpu_extra_cpu_gpu_array       color;
-  gpu_extra_cpu_gpu_array       normal; // NOTE(Constantine): Treated as vec4, unlike in GL1.4-based REII that treats them as vec3.
-  gpu_extra_cpu_gpu_array       texcoord[REII_TEXCOORDS_MAX_COUNT];
+  gpu_extra_cpu_gpu_array position;
+  gpu_extra_cpu_gpu_array color;
+  gpu_extra_cpu_gpu_array normal; // NOTE(Constantine): Treated as vec4, unlike in GL1.4-based REII that treats them as vec3.
+  gpu_extra_cpu_gpu_array texcoord[REII_TEXCOORDS_MAX_COUNT];
   // Internal
-  uint64_t                      batchId;
-  uint64_t                      positionVec4Count;
-  uint64_t                      colorVec4Count;
-  uint64_t                      normalVec4Count;
-  uint64_t                      texcoordVec4Count[REII_TEXCOORDS_MAX_COUNT];
+  uint64_t                batchId;
+  uint64_t                positionVec4Count;
+  uint64_t                colorVec4Count;
+  uint64_t                normalVec4Count;
+  uint64_t                texcoordVec4Count[REII_TEXCOORDS_MAX_COUNT];
 } ReiiHandleStaticArray;
 
 typedef enum gpu_extra_reii_destroy_type_e {
@@ -286,6 +286,7 @@ typedef struct gpu_extra_reii_mesh_state_compile_info_t {
   unsigned                           variables_bytes_count;
   unsigned                           struct_members_count;
   const RedStructDeclarationMember * struct_members;
+  unsigned                           samplers_count;
   RedBool32                          output_depth_stencil_enable;
   RedFormat                          output_depth_stencil_format;
   RedFormat                          output_color_format;
@@ -295,6 +296,10 @@ typedef struct gpu_extra_reii_mesh_state_compile_info_t {
 // Pipeline
 
 GPU_API_PRE void GPU_API_POST reiiMeshStateCompile                   (gpu_handle_context_t context, gpu_extra_reii_mesh_state_compile_info_t * state);
+
+// Sampler
+
+GPU_API_PRE RedHandleSampler GPU_API_POST reiiCreateSampler          (gpu_handle_context_t context, const char * optionalDebugName, ReiiSamplerFiltering magFiltering, ReiiSamplerFiltering minFiltering, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateU, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateV, int maxAnisotropy);
 
 // Texture
 
@@ -314,6 +319,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandSetViewportEx               (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandSetScissor                  (gpu_handle_context_t context, ReiiHandleCommandList * list, int x, int y, int width, int height);
 GPU_API_PRE void GPU_API_POST reiiCommandClearTexture                (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle, ReiiClearFlags clear, float depthValue, unsigned stencilValue, float colorR, float colorG, float colorB, float colorA);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSetState                (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiMeshState * state, void * _);
+GPU_API_PRE void GPU_API_POST reiiCommandBindSamplers                (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned samplersCount, RedHandleSampler * samplers);
 GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet          (gpu_handle_context_t context, ReiiHandleCommandList * list, int slotsCount, const RedStructDeclarationMember * slots);
 GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw              (gpu_handle_context_t context, ReiiHandleCommandList * list, int slot, int storageRawCount, const RedStructMemberArray * storageRaw);
 GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsEnd          (gpu_handle_context_t context, ReiiHandleCommandList * list);

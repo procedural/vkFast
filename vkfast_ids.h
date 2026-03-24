@@ -105,7 +105,9 @@ typedef struct vf_handle_batch_t {
   RedCalls                      calls;
   RedCallProceduresAndAddresses addresses;
   RedHandleStructsMemory        structsMemory;
-  Red2Struct                    currentStruct; // NOTE(Constantine): Only one struct for now.
+  RedHandleStructsMemory        structsMemorySamplers;
+  Red2Struct                    currentStruct;
+  Red2Struct                    currentStructSamplers;
   RedHandleProcedureParameters  currentProcedureParametersCompute;
 } vf_handle_batch_t;
 
