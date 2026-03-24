@@ -122,7 +122,7 @@ void quatRotateVec3Fast(float * out, const float * v, const float * q) {
   vec3Add(out, out, vc);
 }
 
-static ReiiCpuScratchBuffer OffsetAllocateCpuTextureDataScratchBuffer(uint64_t bytesCountToAllocate, gpu_storage_t * storage_cpu, uint64_t * storage_cpu_offset, const char * optionalFile, int optionalLine) {
+static ReiiCpuScratchBuffer OffsetAllocateCpuScratchBuffer(uint64_t bytesCountToAllocate, gpu_storage_t * storage_cpu, uint64_t * storage_cpu_offset, const char * optionalFile, int optionalLine) {
   gpu_extra_banzai_pointer_t cpu_pointer = {0};
   vfeBanzaiGetPointer(storage_cpu, storage_cpu_offset[0], &cpu_pointer, optionalFile, optionalLine);
   storage_cpu_offset[0] += bytesCountToAllocate;
@@ -210,7 +210,7 @@ int main() {
     FF, LL
   );
 
-  ReiiCpuScratchBuffer texture_upload_scratch_buffer = OffsetAllocateCpuTextureDataScratchBuffer(
+  ReiiCpuScratchBuffer texture_upload_scratch_buffer = OffsetAllocateCpuScratchBuffer(
     256/*mb*/ * 1024 * 1024,
     &storage_cpu_upload, &storage_cpu_upload_mem_offset,
     FF, LL
