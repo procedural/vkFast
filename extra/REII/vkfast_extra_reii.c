@@ -1,4 +1,4 @@
-#include "../../vkfast.h"
+#include "../../vkfast_ex.h"
 #include "../../vkfast_ids.h"
 
 #ifdef _WIN32
@@ -654,158 +654,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureSetStateMsaa(gpu_handle_context_t conte
   bindingTexture->msaaCount = msaaCount;
 }
 
-static void redHelperImageSetStateUsable(RedContext context, RedHandleGpu gpu, RedHandleImage image, RedImagePartBitflags allParts, RedHandleQueue queueToSubmitImageStateChange, unsigned queueFamilyIndexToSubmitImageStateChange, RedStatuses * outStatuses, const char * optionalFile, int optionalLine, void * optionalUserData) {
-  RedCallProceduresAndAddresses callProceduresAndAddresses = {0};
-  np(redGetCallProceduresAndAddresses,
-    "context", context,
-    "gpu", gpu,
-    "outCallProceduresAndAddresses", &callProceduresAndAddresses,
-    "outStatuses", outStatuses,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", optionalUserData
-  );
-
-  // To destroy
-  RedCalls calls = {0};
-  np(redCreateCalls,
-    "context", context,
-    "gpu", gpu,
-    "handleName", NULL,
-    "queueFamilyIndex", queueFamilyIndexToSubmitImageStateChange,
-    "outCalls", &calls,
-    "outStatuses", outStatuses,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", optionalUserData
-  );
-  REDGPU_2_EXPECTWG(calls.handle != NULL);
-
-  np(redCallsSet,
-    "context", context,
-    "gpu", gpu,
-    "calls", calls.handle,
-    "callsMemory", calls.memory,
-    "callsReusable", calls.reusable,
-    "outStatuses", outStatuses,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", optionalUserData
-  );
-
-  RedUsageImage imageUsage = {0};
-  imageUsage.barrierSplit           = RED_BARRIER_SPLIT_NONE;
-  imageUsage.oldAccessStages        = 0;
-  imageUsage.newAccessStages        = 0;
-  imageUsage.oldAccess              = 0;
-  imageUsage.newAccess              = 0;
-  imageUsage.oldState               = RED_STATE_UNUSABLE;
-  imageUsage.newState               = RED_STATE_USABLE;
-  imageUsage.queueFamilyIndexSource = -1;
-  imageUsage.queueFamilyIndexTarget = -1;
-  imageUsage.image                  = image;
-  imageUsage.imageAllParts          = allParts;
-  imageUsage.imageLevelsFirst       = 0;
-  imageUsage.imageLevelsCount       = -1;
-  imageUsage.imageLayersFirst       = 0;
-  imageUsage.imageLayersCount       = -1;
-  np(redCallUsageAliasOrderBarrier,
-    "address", callProceduresAndAddresses.redCallUsageAliasOrderBarrier,
-    "calls", calls.handle,
-    "context", context,
-    "arrayUsagesCount", 0,
-    "arrayUsages", NULL,
-    "imageUsagesCount", 1,
-    "imageUsages", &imageUsage,
-    "aliasesCount", 0,
-    "aliases", NULL,
-    "ordersCount", 0,
-    "orders", NULL,
-    "dependencyByRegion", 0
-  );
-
-  np(redCallsEnd,
-    "context", context,
-    "gpu", gpu,
-    "calls", calls.handle,
-    "callsMemory", calls.memory,
-    "outStatuses", outStatuses,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", optionalUserData
-  );
-
-  // To destroy
-  RedHandleCpuSignal cpuSignal = NULL;
-  np(redCreateCpuSignal,
-    "context", context,
-    "gpu", gpu,
-    "handleName", NULL,
-    "createSignaled", 0,
-    "outCpuSignal", &cpuSignal,
-    "outStatuses", outStatuses,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", optionalUserData
-  );
-  REDGPU_2_EXPECTWG(cpuSignal != NULL);
-
-  RedGpuTimeline timeline = {0};
-  timeline.setTo4                            = 4;
-  timeline.setTo0                            = 0;
-  timeline.waitForAndUnsignalGpuSignalsCount = 0;
-  timeline.waitForAndUnsignalGpuSignals      = NULL;
-  timeline.setTo65536                        = NULL;
-  timeline.callsCount                        = 1;
-  timeline.calls                             = &calls.handle;
-  timeline.signalGpuSignalsCount             = 0;
-  timeline.signalGpuSignals                  = NULL;
-  np(redQueueSubmit,
-    "context", context,
-    "gpu", gpu,
-    "queue", queueToSubmitImageStateChange,
-    "timelinesCount", 1,
-    "timelines", &timeline,
-    "signalCpuSignal", cpuSignal,
-    "outStatuses", outStatuses,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", optionalUserData
-  );
-
-  np(redCpuSignalWait,
-    "context", context,
-    "gpu", gpu,
-    "cpuSignalsCount", 1,
-    "cpuSignals", &cpuSignal,
-    "waitAll", 1,
-    "outStatuses", outStatuses,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", optionalUserData
-  );
-
-  np(redDestroyCpuSignal,
-    "context", context,
-    "gpu", gpu,
-    "cpuSignal", cpuSignal,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", optionalUserData
-  );
-
-  np(redDestroyCalls,
-    "context", context,
-    "gpu", gpu,
-    "calls", calls.handle,
-    "callsMemory", calls.memory,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", optionalUserData
-  );
-}
-
-GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels) {
+GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -835,9 +684,6 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
   REDGPU_2_EXPECTWG(bindingTexture->generateMipLevels == 0 || !"TODO(Constantine): Generating mipmaps is not supported right now, use extra/ad_mipmap to generate and upload mip levels manually.");
   REDGPU_2_EXPECTWG(bindingTexture->mipLevelsCount >= 1);
   REDGPU_2_EXPECTWG(bindingTexture->mipLevelsCount <= ((int)log2(width) + 1));
-  if (textureType != GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL) {
-    REDGPU_2_EXPECTWG(texels == NULL || !"textureType != GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL");
-  }
 
   RedFormat  format = RED_FORMAT_UNDEFINED;
   ReiiBool32 formatHasStencil = 0;
@@ -1156,19 +1002,6 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
         REDGPU_2_EXPECTWG(textureCubeFace[i] != NULL);
       }
     }
-
-    redHelperImageSetStateUsable(
-      vkfast->context,
-      vkfast->gpu,
-      image.handle,
-      imageParts,
-      vkfast->mainQueue,
-      vkfast->mainQueueFamilyIndex,
-      NULL,
-      optionalFile,
-      optionalLine,
-      NULL
-    );
   }
 
   // Filling
@@ -1186,26 +1019,128 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context
   bindingTexture->textureCubeFace[3]   = textureCubeFace[3];
   bindingTexture->textureCubeFace[4]   = textureCubeFace[4];
   bindingTexture->textureCubeFace[5]   = textureCubeFace[5];
-
-  if (texels != NULL) {
-    reiiTextureCopyFromCpu(
-      context, // gpu_handle_context_t context
-      binding, // ReiiTextureBinding binding
-      bindingTexture, // ReiiHandleTexture * bindingTexture
-      bindingLevel, // int bindingLevel
-      0, // int bindingX
-      0, // int bindingY
-      width, // int width
-      height, // int height
-      texelsFormat, // ReiiTextureTexelFormat texelsFormat
-      texelsType, // ReiiTextureTexelType texelsType
-      texelsBytesAlignment, // int texelsBytesAlignment
-      texels // const ReiiCpuGpuTexture * texels
-    );
-  }
 }
 
-GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels) {
+GPU_API_PRE void GPU_API_POST reiiBatchImageSetUsableStateEx(gpu_handle_context_t context, uint64_t batchId, RedHandleImage image, RedImagePartBitflags imageAllParts) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)batchId;
+
+  RedUsageImage imageUsage = {0};
+  imageUsage.barrierSplit           = RED_BARRIER_SPLIT_NONE;
+  imageUsage.oldAccessStages        = 0;
+  imageUsage.newAccessStages        = 0;
+  imageUsage.oldAccess              = 0;
+  imageUsage.newAccess              = 0;
+  imageUsage.oldState               = RED_STATE_UNUSABLE;
+  imageUsage.newState               = RED_STATE_USABLE;
+  imageUsage.queueFamilyIndexSource = -1;
+  imageUsage.queueFamilyIndexTarget = -1;
+  imageUsage.image                  = image;
+  imageUsage.imageAllParts          = imageAllParts;
+  imageUsage.imageLevelsFirst       = 0;
+  imageUsage.imageLevelsCount       = -1;
+  imageUsage.imageLayersFirst       = 0;
+  imageUsage.imageLayersCount       = -1;
+  np(redCallUsageAliasOrderBarrier,
+    "address", batch->batch.addresses.redCallUsageAliasOrderBarrier,
+    "calls", batch->batch.calls.handle,
+    "context", vkfast->context,
+    "arrayUsagesCount", 0,
+    "arrayUsages", NULL,
+    "imageUsagesCount", 1,
+    "imageUsages", &imageUsage,
+    "aliasesCount", 0,
+    "aliases", NULL,
+    "ordersCount", 0,
+    "orders", NULL,
+    "dependencyByRegion", 0
+  );
+}
+
+GPU_API_PRE void GPU_API_POST reiiBatchImageCopyFromCpuEx(gpu_handle_context_t context, uint64_t batchId, RedHandleImage image, RedImagePartBitflags imageAllParts, int bindingLevel, int bindingLayer, int bindingX, int bindingY, int width, int height, const ReiiCpuScratchBuffer * texels) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(texels != NULL);
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)batchId;
+
+  RedCopyArrayImageRange copy = {0};
+  copy.arrayBytesFirst               = texels->cpu_scratch_buffer.arrayRangeBytesFirst;
+  copy.arrayTexelsCountToNextRow     = width;
+  copy.arrayTexelsCountToNextLayerOr3DDepthSliceDividedByTexelsCountToNextRow = 0;
+  copy.imageParts.allParts           = imageAllParts;
+  copy.imageParts.level              = bindingLevel;
+  copy.imageParts.layersFirst        = bindingLayer;
+  copy.imageParts.layersCount        = 1;
+  copy.imageOffset.texelX            = bindingX;
+  copy.imageOffset.texelY            = bindingY;
+  copy.imageOffset.texelZ            = 0;
+  copy.imageExtent.texelsCountWidth  = width;
+  copy.imageExtent.texelsCountHeight = height;
+  copy.imageExtent.texelsCountDepth  = 1;
+  npfp(redCallCopyArrayToImage, batch->batch.addresses.redCallCopyArrayToImage,
+    "calls", batch->batch.calls.handle,
+    "arrayR", texels->cpu_scratch_buffer.array,
+    "imageW", image,
+    "setTo1", 1,
+    "rangesCount", 1,
+    "ranges", &copy
+  );
+}
+
+GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpuEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  RedHandleGpu gpu = vkfast->gpu;
+
+  const gpu_extra_reii_texture_type textureType = bindingTexture->textureMemory->texturesType;
+
+  if (textureType != GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL) {
+    REDGPU_2_EXPECTWG(texels == NULL || !"textureType != GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL");
+  }
+
+  RedImagePartBitflags imageParts = RED_IMAGE_PART_BITFLAG_COLOR;
+  if (
+    textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL ||
+    textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL_MSAA
+  )
+  {
+    // NOTE(Constantine): Assumes, a stencil-only image is not possible.
+    imageParts = RED_IMAGE_PART_BITFLAG_DEPTH | (bindingTexture->textureStencilOnly != NULL ? RED_IMAGE_PART_BITFLAG_STENCIL : 0);
+  }
+
+  unsigned bindingLayer = 0;
+  if      (binding == REII_TEXTURE_BINDING_CUBE_POSITIVE_X) { bindingLayer = 0; }
+  else if (binding == REII_TEXTURE_BINDING_CUBE_NEGATIVE_X) { bindingLayer = 1; }
+  else if (binding == REII_TEXTURE_BINDING_CUBE_POSITIVE_Y) { bindingLayer = 2; }
+  else if (binding == REII_TEXTURE_BINDING_CUBE_NEGATIVE_Y) { bindingLayer = 3; }
+  else if (binding == REII_TEXTURE_BINDING_CUBE_POSITIVE_Z) { bindingLayer = 4; }
+  else if (binding == REII_TEXTURE_BINDING_CUBE_NEGATIVE_Z) { bindingLayer = 5; }
+
+  reiiTextureDefineEx(context, binding, bindingTexture, bindingLevel, bindingTexelFormat, width, height, texelsFormat, texelsType, texelsBytesAlignment);
+
+  uint64_t batch = vfBatchBeginEx(context, 0, NULL, queueFamilyIndexToSubmitCopyCommands, NULL, optionalFile, optionalLine);
+
+  reiiBatchImageSetUsableStateEx(context, batch, bindingTexture->image.handle, imageParts);
+  if (texels != NULL) {
+    reiiBatchImageCopyFromCpuEx(context, batch, bindingTexture->image.handle, imageParts, bindingLevel, bindingLayer, 0, 0, width, height, texels);
+  }
+
+  vfBatchEnd(context, batch, optionalFile, optionalLine);
+  uint64_t async = vfAsyncBatchExecuteEx(context, queueToSubmitCopyCommands, 1, &batch, optionalFile, optionalLine);
+  vfAsyncWaitToFinish(context, async, optionalFile, optionalLine);
+  vfIdDestroy(1, &batch, optionalFile, optionalLine);
+}
+
+GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpuEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -1223,44 +1158,6 @@ GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu(gpu_handle_context_t contex
   REDGPU_2_EXPECTWG(texels != NULL);
   REDGPU_2_EXPECTWG(textureType == GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL);
 
-  RedCallProceduresAndAddresses callProceduresAndAddresses = {0};
-  np(redGetCallProceduresAndAddresses,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "outCallProceduresAndAddresses", &callProceduresAndAddresses,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
-
-  // To destroy
-  RedCalls calls = {0};
-  np(redCreateCalls,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "handleName", NULL,
-    "queueFamilyIndex", vkfast->mainQueueFamilyIndex,
-    "outCalls", &calls,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
-  REDGPU_2_EXPECTWG(calls.handle != NULL);
-
-  np(redCallsSet,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "calls", calls.handle,
-    "callsMemory", calls.memory,
-    "callsReusable", calls.reusable,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
-
   RedImagePartBitflags imageParts = RED_IMAGE_PART_BITFLAG_COLOR;
   if (
     textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL ||
@@ -1271,116 +1168,36 @@ GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu(gpu_handle_context_t contex
     imageParts = RED_IMAGE_PART_BITFLAG_DEPTH | (bindingTexture->textureStencilOnly != NULL ? RED_IMAGE_PART_BITFLAG_STENCIL : 0);
   }
 
-  unsigned layerFirst = 0;
-  if      (binding == REII_TEXTURE_BINDING_CUBE_POSITIVE_X) { layerFirst = 0; }
-  else if (binding == REII_TEXTURE_BINDING_CUBE_NEGATIVE_X) { layerFirst = 1; }
-  else if (binding == REII_TEXTURE_BINDING_CUBE_POSITIVE_Y) { layerFirst = 2; }
-  else if (binding == REII_TEXTURE_BINDING_CUBE_NEGATIVE_Y) { layerFirst = 3; }
-  else if (binding == REII_TEXTURE_BINDING_CUBE_POSITIVE_Z) { layerFirst = 4; }
-  else if (binding == REII_TEXTURE_BINDING_CUBE_NEGATIVE_Z) { layerFirst = 5; }
+  unsigned bindingLayer = 0;
+  if      (binding == REII_TEXTURE_BINDING_CUBE_POSITIVE_X) { bindingLayer = 0; }
+  else if (binding == REII_TEXTURE_BINDING_CUBE_NEGATIVE_X) { bindingLayer = 1; }
+  else if (binding == REII_TEXTURE_BINDING_CUBE_POSITIVE_Y) { bindingLayer = 2; }
+  else if (binding == REII_TEXTURE_BINDING_CUBE_NEGATIVE_Y) { bindingLayer = 3; }
+  else if (binding == REII_TEXTURE_BINDING_CUBE_POSITIVE_Z) { bindingLayer = 4; }
+  else if (binding == REII_TEXTURE_BINDING_CUBE_NEGATIVE_Z) { bindingLayer = 5; }
 
-  RedCopyArrayImageRange copy = {0};
-  copy.arrayBytesFirst               = texels->cpu_scratch_buffer.arrayRangeBytesFirst;
-  copy.arrayTexelsCountToNextRow     = width;
-  copy.arrayTexelsCountToNextLayerOr3DDepthSliceDividedByTexelsCountToNextRow = 0;
-  copy.imageParts.allParts           = imageParts;
-  copy.imageParts.level              = bindingLevel;
-  copy.imageParts.layersFirst        = layerFirst;
-  copy.imageParts.layersCount        = 1;
-  copy.imageOffset.texelX            = bindingX;
-  copy.imageOffset.texelY            = bindingY;
-  copy.imageOffset.texelZ            = 0;
-  copy.imageExtent.texelsCountWidth  = width;
-  copy.imageExtent.texelsCountHeight = height;
-  copy.imageExtent.texelsCountDepth  = 1;
-  npfp(redCallCopyArrayToImage, callProceduresAndAddresses.redCallCopyArrayToImage,
-    "calls", calls.handle,
-    "arrayR", texels->cpu_scratch_buffer.array,
-    "imageW", bindingTexture->image.handle,
-    "setTo1", 1,
-    "rangesCount", 1,
-    "ranges", &copy
-  );
+  uint64_t batch = vfBatchBeginEx(context, 0, NULL, queueFamilyIndexToSubmitCopyCommands, NULL, optionalFile, optionalLine);
 
-  np(redCallsEnd,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "calls", calls.handle,
-    "callsMemory", calls.memory,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
+  reiiBatchImageCopyFromCpuEx(context, batch, bindingTexture->image.handle, imageParts, bindingLevel, bindingLayer, 0, 0, width, height, texels);
 
-  // To destroy
-  RedHandleCpuSignal cpuSignal = NULL;
-  np(redCreateCpuSignal,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "handleName", NULL,
-    "createSignaled", 0,
-    "outCpuSignal", &cpuSignal,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
-  REDGPU_2_EXPECTWG(cpuSignal != NULL);
+  vfBatchEnd(context, batch, optionalFile, optionalLine);
+  uint64_t async = vfAsyncBatchExecuteEx(context, queueToSubmitCopyCommands, 1, &batch, optionalFile, optionalLine);
+  vfAsyncWaitToFinish(context, async, optionalFile, optionalLine);
+  vfIdDestroy(1, &batch, optionalFile, optionalLine);
+}
 
-  RedGpuTimeline timeline = {0};
-  timeline.setTo4                            = 4;
-  timeline.setTo0                            = 0;
-  timeline.waitForAndUnsignalGpuSignalsCount = 0;
-  timeline.waitForAndUnsignalGpuSignals      = NULL;
-  timeline.setTo65536                        = NULL;
-  timeline.callsCount                        = 1;
-  timeline.calls                             = &calls.handle;
-  timeline.signalGpuSignalsCount             = 0;
-  timeline.signalGpuSignals                  = NULL;
-  np(redQueueSubmit,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "queue", vkfast->mainQueue,
-    "timelinesCount", 1,
-    "timelines", &timeline,
-    "signalCpuSignal", cpuSignal,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
+GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  RedHandleGpu gpu = vkfast->gpu;
 
-  np(redCpuSignalWait,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "cpuSignalsCount", 1,
-    "cpuSignals", &cpuSignal,
-    "waitAll", 1,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
+  reiiTextureDefineAndCopyFromCpuEx(context, binding, bindingTexture, bindingLevel, bindingTexelFormat, width, height, texelsFormat, texelsType, texelsBytesAlignment, texels, vkfast->mainQueueFamilyIndex, vkfast->mainQueue);
+}
 
-  np(redDestroyCpuSignal,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "cpuSignal", cpuSignal,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
+GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  RedHandleGpu gpu = vkfast->gpu;
 
-  np(redDestroyCalls,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "calls", calls.handle,
-    "callsMemory", calls.memory,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
+  reiiTextureCopyFromCpuEx(context, binding, bindingTexture, bindingLevel, bindingX, bindingY, width, height, texelsFormat, texelsType, texelsBytesAlignment, texels, vkfast->mainQueueFamilyIndex, vkfast->mainQueue);
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandListReset(gpu_handle_context_t context, ReiiHandleCommandList * list) {

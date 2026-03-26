@@ -352,7 +352,15 @@ GPU_API_PRE void GPU_API_POST reiiStaticArrayPosition                 (gpu_handl
 
 // Destroy
 
-GPU_API_PRE void GPU_API_POST reiiDestroyEx                          (gpu_handle_context_t context, gpu_extra_reii_destroy_type_e destroyHandleType, void * destroyHandle);
+GPU_API_PRE void GPU_API_POST reiiDestroyEx                           (gpu_handle_context_t context, gpu_extra_reii_destroy_type_e destroyHandleType, void * destroyHandle);
+
+// Misc Ex
+
+GPU_API_PRE void GPU_API_POST reiiTextureDefineEx                     (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment);
+GPU_API_PRE void GPU_API_POST reiiBatchImageSetUsableStateEx          (gpu_handle_context_t context, uint64_t batchId, RedHandleImage image, RedImagePartBitflags imageAllParts);
+GPU_API_PRE void GPU_API_POST reiiBatchImageCopyFromCpuEx             (gpu_handle_context_t context, uint64_t batchId, RedHandleImage image, RedImagePartBitflags imageAllParts, int bindingLevel, int bindingLayer, int bindingX, int bindingY, int width, int height, const ReiiCpuScratchBuffer * texels);
+GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpuEx       (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands);
+GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpuEx                (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands);
 
 #ifdef __cplusplus
 }
