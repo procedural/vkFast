@@ -158,37 +158,37 @@ static RedSamplerBehaviorOutsideTextureCoordinate ReiiSamplerBehaviorOutsideText
   return (RedSamplerBehaviorOutsideTextureCoordinate)0;
 }
 
-GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context, gpu_extra_reii_mesh_state_compile_info_t * state) {
+GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context, ReiiMeshState * state) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
 
-  REDGPU_2_EXPECTWG(state->state_multisample_count != 0);
-  if (state->output_depth_stencil_enable == 1) { 
-    REDGPU_2_EXPECTWG(state->output_depth_stencil_format != RED_FORMAT_UNDEFINED);
+  REDGPU_2_EXPECTWG(state->compileInfo.state_multisample_count != 0);
+  if (state->compileInfo.output_depth_stencil_enable == 1) {
+    REDGPU_2_EXPECTWG(state->compileInfo.output_depth_stencil_format != RED_FORMAT_UNDEFINED);
     // NOTE(Constantine): Check for the only supported texture formats for now.
     REDGPU_2_EXPECTWG(
-      state->output_depth_stencil_format == RED_FORMAT_DEPTH_32_FLOAT ||
-      state->output_depth_stencil_format == RED_FORMAT_DEPTH_24_UINT_TO_FLOAT_0_1_STENCIL_8_UINT
+      state->compileInfo.output_depth_stencil_format == RED_FORMAT_DEPTH_32_FLOAT ||
+      state->compileInfo.output_depth_stencil_format == RED_FORMAT_DEPTH_24_UINT_TO_FLOAT_0_1_STENCIL_8_UINT
     );
   }
-  REDGPU_2_EXPECTWG(state->output_color_format != RED_FORMAT_UNDEFINED);
+  REDGPU_2_EXPECTWG(state->compileInfo.output_color_format != RED_FORMAT_UNDEFINED);
   // NOTE(Constantine): Check for the only supported texture formats for now.
   REDGPU_2_EXPECTWG(
-    state->output_color_format == RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1
+    state->compileInfo.output_color_format == RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1
   );
-  REDGPU_2_EXPECTWG(state->samplers_count <= REII_INTERNAL_MAX_SAMPLERS_COUNT);
+  REDGPU_2_EXPECTWG(state->compileInfo.samplers_count <= REII_INTERNAL_MAX_SAMPLERS_COUNT);
 
   // To destroy
   RedHandleGpuCode gpuCodeVertex = NULL;
   np(redCreateGpuCode,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
-    "handleName", state->state->programVertex.optional_debug_name,
-    "irBytesCount", state->state->programVertex.program_binary_bytes_count,
-    "ir", (const void *)state->state->programVertex.program_binary,
+    "handleName", state->programVertex.optional_debug_name,
+    "irBytesCount", state->programVertex.program_binary_bytes_count,
+    "ir", (const void *)state->programVertex.program_binary,
     "outGpuCode", &gpuCodeVertex,
     "outStatuses", NULL,
     "optionalFile", optionalFile,
@@ -202,9 +202,9 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   np(redCreateGpuCode,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
-    "handleName", state->state->programFragment.optional_debug_name,
-    "irBytesCount", state->state->programFragment.program_binary_bytes_count,
-    "ir", (const void *)state->state->programFragment.program_binary,
+    "handleName", state->programFragment.optional_debug_name,
+    "irBytesCount", state->programFragment.program_binary_bytes_count,
+    "ir", (const void *)state->programFragment.program_binary,
     "outGpuCode", &gpuCodeFragment,
     "outStatuses", NULL,
     "optionalFile", optionalFile,
@@ -213,30 +213,30 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   );
   REDGPU_2_EXPECTWG(gpuCodeFragment != NULL);
 
-  if (state->variables_bytes_count > 0) {
-    for (unsigned i = 0; i < state->struct_members_count; i += 1) {
-      REDGPU_2_EXPECTWG(state->variables_slot != state->struct_members[i].slot);
+  if (state->compileInfo.variables_bytes_count > 0) {
+    for (unsigned i = 0; i < state->compileInfo.struct_members_count; i += 1) {
+      REDGPU_2_EXPECTWG(state->compileInfo.variables_slot != state->compileInfo.struct_members[i].slot);
     }
   }
 
   Red2ProcedureParametersDeclaration parameters = {0};
-  parameters.variablesSlot            = state->variables_slot;
-  parameters.variablesVisibleToStages = state->variables_bytes_count == 0 ? 0 : (RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX | RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT);
-  parameters.variablesBytesCount      = state->variables_bytes_count;
-  parameters.structsDeclarationsCount = (state->struct_members_count == 0 ? 0 : 1) + (state->samplers_count == 0 ? 0 : 1);
-  parameters.structsDeclarations[0].structDeclarationMembersCount        = state->struct_members_count;
-  parameters.structsDeclarations[0].structDeclarationMembers             = state->struct_members;
+  parameters.variablesSlot            = state->compileInfo.variables_slot;
+  parameters.variablesVisibleToStages = state->compileInfo.variables_bytes_count == 0 ? 0 : (RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX | RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT);
+  parameters.variablesBytesCount      = state->compileInfo.variables_bytes_count;
+  parameters.structsDeclarationsCount = (state->compileInfo.struct_members_count == 0 ? 0 : 1) + (state->compileInfo.samplers_count == 0 ? 0 : 1);
+  parameters.structsDeclarations[0].structDeclarationMembersCount        = state->compileInfo.struct_members_count;
+  parameters.structsDeclarations[0].structDeclarationMembers             = state->compileInfo.struct_members;
   parameters.structsDeclarations[0].structDeclarationMembersArrayROCount = 0;
   parameters.structsDeclarations[0].structDeclarationMembersArrayRO      = NULL;
   RedStructDeclarationMember samplers[REII_INTERNAL_MAX_SAMPLERS_COUNT] = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
-  if (state->samplers_count > 0) {
-    for (unsigned i = 0; i < state->samplers_count; i += 1) {
+  if (state->compileInfo.samplers_count > 0) {
+    for (unsigned i = 0; i < state->compileInfo.samplers_count; i += 1) {
       samplers[i].slot            = i;
       samplers[i].type            = RED_STRUCT_MEMBER_TYPE_SAMPLER;
       samplers[i].count           = 1;
       samplers[i].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT; // NOTE(Constantine): I doubt anyone needs to sample textures in vertex shaders?
     }
-    parameters.structsDeclarations[1].structDeclarationMembersCount        = state->samplers_count;
+    parameters.structsDeclarations[1].structDeclarationMembersCount        = state->compileInfo.samplers_count;
     parameters.structsDeclarations[1].structDeclarationMembers             = samplers;
     parameters.structsDeclarations[1].structDeclarationMembersArrayROCount = 0;
     parameters.structsDeclarations[1].structDeclarationMembersArrayRO      = NULL;
@@ -247,7 +247,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   np(red2CreateProcedureParameters,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
-    "handleName", state->optional_debug_name,
+    "handleName", state->compileInfo.optional_debug_name,
     "procedureParametersDeclaration", &parameters,
     "outProcedureParametersAndDeclarations", &procedureParameters,
     "outStatuses", NULL,
@@ -258,16 +258,16 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   REDGPU_2_EXPECTWG(procedureParameters.procedureParameters != NULL);
 
   RedOutputDeclarationMembers outputs = {0};
-  outputs.depthStencilEnable                        = state->output_depth_stencil_enable;
-  outputs.depthStencilFormat                        = state->output_depth_stencil_format;
-  outputs.depthStencilMultisampleCount              = state->state_multisample_count;
+  outputs.depthStencilEnable                        = state->compileInfo.output_depth_stencil_enable;
+  outputs.depthStencilFormat                        = state->compileInfo.output_depth_stencil_format;
+  outputs.depthStencilMultisampleCount              = state->compileInfo.state_multisample_count;
   outputs.depthStencilDepthSetProcedureOutputOp     = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
   outputs.depthStencilDepthEndProcedureOutputOp     = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
   outputs.depthStencilStencilSetProcedureOutputOp   = RED_SET_PROCEDURE_OUTPUT_OP_PRESERVE;
   outputs.depthStencilStencilEndProcedureOutputOp   = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
   outputs.depthStencilSharesMemoryWithAnotherMember = 0;
   outputs.colorsCount                               = 1;
-  outputs.colorsFormat[0]                           = state->output_color_format;
+  outputs.colorsFormat[0]                           = state->compileInfo.output_color_format;
   outputs.colorsFormat[1]                           = RED_FORMAT_UNDEFINED;
   outputs.colorsFormat[2]                           = RED_FORMAT_UNDEFINED;
   outputs.colorsFormat[3]                           = RED_FORMAT_UNDEFINED;
@@ -275,7 +275,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   outputs.colorsFormat[5]                           = RED_FORMAT_UNDEFINED;
   outputs.colorsFormat[6]                           = RED_FORMAT_UNDEFINED;
   outputs.colorsFormat[7]                           = RED_FORMAT_UNDEFINED;
-  outputs.colorsMultisampleCount[0]                 = state->state_multisample_count;
+  outputs.colorsMultisampleCount[0]                 = state->compileInfo.state_multisample_count;
   outputs.colorsMultisampleCount[1]                 = RED_MULTISAMPLE_COUNT_BITFLAG_1;
   outputs.colorsMultisampleCount[2]                 = RED_MULTISAMPLE_COUNT_BITFLAG_1;
   outputs.colorsMultisampleCount[3]                 = RED_MULTISAMPLE_COUNT_BITFLAG_1;
@@ -323,55 +323,55 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   procstate.scissorStaticY                                 = 0;
   procstate.scissorStaticWidth                             = 0;
   procstate.scissorStaticHeight                            = 0;
-  procstate.rasterizationDepthClampEnable                  = state->state->rasterizationDepthClampEnable;
+  procstate.rasterizationDepthClampEnable                  = state->rasterizationDepthClampEnable;
   procstate.rasterizationDiscardAllPrimitivesEnable        = 0;
-  procstate.rasterizationCullMode                          = ReiiCullModeToRed(state->state->rasterizationCullMode);
-  procstate.rasterizationFrontFace                         = ReiiFrontFaceToRed(state->state->rasterizationFrontFace);
-  procstate.rasterizationDepthBiasEnable                   = state->state->rasterizationDepthBiasEnable;
+  procstate.rasterizationCullMode                          = ReiiCullModeToRed(state->rasterizationCullMode);
+  procstate.rasterizationFrontFace                         = ReiiFrontFaceToRed(state->rasterizationFrontFace);
+  procstate.rasterizationDepthBiasEnable                   = state->rasterizationDepthBiasEnable;
   procstate.rasterizationDepthBiasDynamic                  = 0;
-  procstate.rasterizationDepthBiasStaticConstantFactor     = state->state->rasterizationDepthBiasConstantFactor;
+  procstate.rasterizationDepthBiasStaticConstantFactor     = state->rasterizationDepthBiasConstantFactor;
   procstate.rasterizationDepthBiasStaticClamp              = 0;
-  procstate.rasterizationDepthBiasStaticSlopeFactor        = state->state->rasterizationDepthBiasSlopeFactor;
-  procstate.multisampleCount                               = state->state_multisample_count;
+  procstate.rasterizationDepthBiasStaticSlopeFactor        = state->rasterizationDepthBiasSlopeFactor;
+  procstate.multisampleCount                               = state->compileInfo.state_multisample_count;
   procstate.multisampleSampleMask                          = NULL;
   procstate.multisampleSampleShadingEnable                 = 0;
   procstate.multisampleSampleShadingMin                    = 0;
-  procstate.multisampleAlphaToCoverageEnable               = state->state->multisampleAlphaToCoverageEnable;
-  procstate.multisampleAlphaToOneEnable                    = state->state->multisampleAlphaToOneEnable;
-  procstate.depthTestEnable                                = state->state->depthTestEnable;
-  procstate.depthTestDepthWriteEnable                      = state->state->depthTestDepthWriteEnable;
-  procstate.depthTestDepthCompareOp                        = ReiiCompareOpToRed(state->state->depthTestDepthCompareOp);
+  procstate.multisampleAlphaToCoverageEnable               = state->multisampleAlphaToCoverageEnable;
+  procstate.multisampleAlphaToOneEnable                    = state->multisampleAlphaToOneEnable;
+  procstate.depthTestEnable                                = state->depthTestEnable;
+  procstate.depthTestDepthWriteEnable                      = state->depthTestDepthWriteEnable;
+  procstate.depthTestDepthCompareOp                        = ReiiCompareOpToRed(state->depthTestDepthCompareOp);
   procstate.depthTestBoundsTestEnable                      = 0;
   procstate.depthTestBoundsTestDynamic                     = 0;
   procstate.depthTestBoundsTestStaticMin                   = 0;
   procstate.depthTestBoundsTestStaticMax                   = 0;
-  procstate.stencilTestEnable                              = state->state->stencilTestEnable;
+  procstate.stencilTestEnable                              = state->stencilTestEnable;
   procstate.stencilTestFrontAndBackDynamicCompareMask      = 0;
   procstate.stencilTestFrontAndBackDynamicWriteMask        = 0;
   procstate.stencilTestFrontAndBackDynamicReference        = 0;
-  procstate.stencilTestFrontStencilTestFailOp              = ReiiStencilOpToRed(state->state->stencilTestFrontStencilTestFailOp);
-  procstate.stencilTestFrontStencilTestPassDepthTestPassOp = ReiiStencilOpToRed(state->state->stencilTestFrontStencilTestPassDepthTestPassOp);
-  procstate.stencilTestFrontStencilTestPassDepthTestFailOp = ReiiStencilOpToRed(state->state->stencilTestFrontStencilTestPassDepthTestFailOp);
-  procstate.stencilTestFrontCompareOp                      = ReiiCompareOpToRed(state->state->stencilTestFrontCompareOp);
-  procstate.stencilTestBackStencilTestFailOp               = ReiiStencilOpToRed(state->state->stencilTestBackStencilTestFailOp);
-  procstate.stencilTestBackStencilTestPassDepthTestPassOp  = ReiiStencilOpToRed(state->state->stencilTestBackStencilTestPassDepthTestPassOp);
-  procstate.stencilTestBackStencilTestPassDepthTestFailOp  = ReiiStencilOpToRed(state->state->stencilTestBackStencilTestPassDepthTestFailOp);
-  procstate.stencilTestBackCompareOp                       = ReiiCompareOpToRed(state->state->stencilTestBackCompareOp);
+  procstate.stencilTestFrontStencilTestFailOp              = ReiiStencilOpToRed(state->stencilTestFrontStencilTestFailOp);
+  procstate.stencilTestFrontStencilTestPassDepthTestPassOp = ReiiStencilOpToRed(state->stencilTestFrontStencilTestPassDepthTestPassOp);
+  procstate.stencilTestFrontStencilTestPassDepthTestFailOp = ReiiStencilOpToRed(state->stencilTestFrontStencilTestPassDepthTestFailOp);
+  procstate.stencilTestFrontCompareOp                      = ReiiCompareOpToRed(state->stencilTestFrontCompareOp);
+  procstate.stencilTestBackStencilTestFailOp               = ReiiStencilOpToRed(state->stencilTestBackStencilTestFailOp);
+  procstate.stencilTestBackStencilTestPassDepthTestPassOp  = ReiiStencilOpToRed(state->stencilTestBackStencilTestPassDepthTestPassOp);
+  procstate.stencilTestBackStencilTestPassDepthTestFailOp  = ReiiStencilOpToRed(state->stencilTestBackStencilTestPassDepthTestFailOp);
+  procstate.stencilTestBackCompareOp                       = ReiiCompareOpToRed(state->stencilTestBackCompareOp);
   procstate.stencilTestFrontAndBackDynamicCompareMask      = 0;
   procstate.stencilTestFrontAndBackDynamicWriteMask        = 0;
   procstate.stencilTestFrontAndBackDynamicReference        = 0;
-  procstate.stencilTestFrontAndBackStaticCompareMask       = state->state->stencilTestFrontAndBackCompareMask;
-  procstate.stencilTestFrontAndBackStaticWriteMask         = state->state->stencilTestFrontAndBackWriteMask;
-  procstate.stencilTestFrontAndBackStaticReference         = state->state->stencilTestFrontAndBackReference;
-  procstate.blendLogicOpEnable                             = state->state->blendLogicOpEnable;
-  procstate.blendLogicOp                                   = ReiiLogicOpToRed(state->state->blendLogicOp);
+  procstate.stencilTestFrontAndBackStaticCompareMask       = state->stencilTestFrontAndBackCompareMask;
+  procstate.stencilTestFrontAndBackStaticWriteMask         = state->stencilTestFrontAndBackWriteMask;
+  procstate.stencilTestFrontAndBackStaticReference         = state->stencilTestFrontAndBackReference;
+  procstate.blendLogicOpEnable                             = state->blendLogicOpEnable;
+  procstate.blendLogicOp                                   = ReiiLogicOpToRed(state->blendLogicOp);
   procstate.blendConstantsDynamic                          = 0;
-  procstate.blendConstantsStatic[0]                        = state->state->blendConstants[0];
-  procstate.blendConstantsStatic[1]                        = state->state->blendConstants[1];
-  procstate.blendConstantsStatic[2]                        = state->state->blendConstants[2];
-  procstate.blendConstantsStatic[3]                        = state->state->blendConstants[3];
+  procstate.blendConstantsStatic[0]                        = state->blendConstants[0];
+  procstate.blendConstantsStatic[1]                        = state->blendConstants[1];
+  procstate.blendConstantsStatic[2]                        = state->blendConstants[2];
+  procstate.blendConstantsStatic[3]                        = state->blendConstants[3];
   procstate.outputColorsCount                              = 1;
-  procstate.outputColorsWriteMask[0]                       = (state->state->outputColorWriteEnableR ? RED_COLOR_COMPONENT_BITFLAG_R : 0) | (state->state->outputColorWriteEnableG ? RED_COLOR_COMPONENT_BITFLAG_G : 0) | (state->state->outputColorWriteEnableB ? RED_COLOR_COMPONENT_BITFLAG_B : 0) | (state->state->outputColorWriteEnableA ? RED_COLOR_COMPONENT_BITFLAG_A : 0);
+  procstate.outputColorsWriteMask[0]                       = (state->outputColorWriteEnableR ? RED_COLOR_COMPONENT_BITFLAG_R : 0) | (state->outputColorWriteEnableG ? RED_COLOR_COMPONENT_BITFLAG_G : 0) | (state->outputColorWriteEnableB ? RED_COLOR_COMPONENT_BITFLAG_B : 0) | (state->outputColorWriteEnableA ? RED_COLOR_COMPONENT_BITFLAG_A : 0);
   procstate.outputColorsWriteMask[1]                       = 0;
   procstate.outputColorsWriteMask[2]                       = 0;
   procstate.outputColorsWriteMask[3]                       = 0;
@@ -379,7 +379,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   procstate.outputColorsWriteMask[5]                       = 0;
   procstate.outputColorsWriteMask[6]                       = 0;
   procstate.outputColorsWriteMask[7]                       = 0;
-  procstate.outputColorsBlendEnable[0]                     = state->state->outputColorBlendEnable;
+  procstate.outputColorsBlendEnable[0]                     = state->outputColorBlendEnable;
   procstate.outputColorsBlendEnable[1]                     = 0;
   procstate.outputColorsBlendEnable[2]                     = 0;
   procstate.outputColorsBlendEnable[3]                     = 0;
@@ -387,7 +387,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   procstate.outputColorsBlendEnable[5]                     = 0;
   procstate.outputColorsBlendEnable[6]                     = 0;
   procstate.outputColorsBlendEnable[7]                     = 0;
-  procstate.outputColorsBlendColorFactorSource[0]          = ReiiBlendFactorToRed(state->state->outputColorBlendColorFactorSource);
+  procstate.outputColorsBlendColorFactorSource[0]          = ReiiBlendFactorToRed(state->outputColorBlendColorFactorSource);
   procstate.outputColorsBlendColorFactorSource[1]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendColorFactorSource[2]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendColorFactorSource[3]          = RED_BLEND_FACTOR_ZERO;
@@ -395,7 +395,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   procstate.outputColorsBlendColorFactorSource[5]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendColorFactorSource[6]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendColorFactorSource[7]          = RED_BLEND_FACTOR_ZERO;
-  procstate.outputColorsBlendColorFactorTarget[0]          = ReiiBlendFactorToRed(state->state->outputColorBlendColorFactorTarget);
+  procstate.outputColorsBlendColorFactorTarget[0]          = ReiiBlendFactorToRed(state->outputColorBlendColorFactorTarget);
   procstate.outputColorsBlendColorFactorTarget[1]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendColorFactorTarget[2]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendColorFactorTarget[3]          = RED_BLEND_FACTOR_ZERO;
@@ -403,7 +403,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   procstate.outputColorsBlendColorFactorTarget[5]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendColorFactorTarget[6]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendColorFactorTarget[7]          = RED_BLEND_FACTOR_ZERO;
-  procstate.outputColorsBlendColorOp[0]                    = ReiiBlendOpToRed(state->state->outputColorBlendColorOp);
+  procstate.outputColorsBlendColorOp[0]                    = ReiiBlendOpToRed(state->outputColorBlendColorOp);
   procstate.outputColorsBlendColorOp[1]                    = RED_BLEND_OP_ADD;
   procstate.outputColorsBlendColorOp[2]                    = RED_BLEND_OP_ADD;
   procstate.outputColorsBlendColorOp[3]                    = RED_BLEND_OP_ADD;
@@ -411,7 +411,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   procstate.outputColorsBlendColorOp[5]                    = RED_BLEND_OP_ADD;
   procstate.outputColorsBlendColorOp[6]                    = RED_BLEND_OP_ADD;
   procstate.outputColorsBlendColorOp[7]                    = RED_BLEND_OP_ADD;
-  procstate.outputColorsBlendAlphaFactorSource[0]          = ReiiBlendFactorToRed(state->state->outputColorBlendAlphaFactorSource);
+  procstate.outputColorsBlendAlphaFactorSource[0]          = ReiiBlendFactorToRed(state->outputColorBlendAlphaFactorSource);
   procstate.outputColorsBlendAlphaFactorSource[1]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendAlphaFactorSource[2]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendAlphaFactorSource[3]          = RED_BLEND_FACTOR_ZERO;
@@ -419,7 +419,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   procstate.outputColorsBlendAlphaFactorSource[5]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendAlphaFactorSource[6]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendAlphaFactorSource[7]          = RED_BLEND_FACTOR_ZERO;
-  procstate.outputColorsBlendAlphaFactorTarget[0]          = ReiiBlendFactorToRed(state->state->outputColorBlendAlphaFactorTarget);
+  procstate.outputColorsBlendAlphaFactorTarget[0]          = ReiiBlendFactorToRed(state->outputColorBlendAlphaFactorTarget);
   procstate.outputColorsBlendAlphaFactorTarget[1]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendAlphaFactorTarget[2]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendAlphaFactorTarget[3]          = RED_BLEND_FACTOR_ZERO;
@@ -427,7 +427,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   procstate.outputColorsBlendAlphaFactorTarget[5]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendAlphaFactorTarget[6]          = RED_BLEND_FACTOR_ZERO;
   procstate.outputColorsBlendAlphaFactorTarget[7]          = RED_BLEND_FACTOR_ZERO;
-  procstate.outputColorsBlendAlphaOp[0]                    = ReiiBlendOpToRed(state->state->outputColorBlendAlphaOp);
+  procstate.outputColorsBlendAlphaOp[0]                    = ReiiBlendOpToRed(state->outputColorBlendAlphaOp);
   procstate.outputColorsBlendAlphaOp[1]                    = RED_BLEND_OP_ADD;
   procstate.outputColorsBlendAlphaOp[2]                    = RED_BLEND_OP_ADD;
   procstate.outputColorsBlendAlphaOp[3]                    = RED_BLEND_OP_ADD;
@@ -441,7 +441,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   np(red2CreateProcedure,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
-    "handleName", state->optional_debug_name,
+    "handleName", state->compileInfo.optional_debug_name,
     "procedureCache", NULL,
     "outputDeclarationMembers", &outputs,
     "outputDeclarationMembersResolveSources", NULL,
@@ -465,10 +465,10 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   REDGPU_2_EXPECTWG(procedure != NULL);
 
   // Filling
-  state->state->gpuCodeVertex       = gpuCodeVertex;
-  state->state->gpuCodeFragment     = gpuCodeFragment;
-  state->state->procedureParameters = procedureParameters;
-  state->state->procedure           = procedure;
+  state->gpuCodeVertex       = gpuCodeVertex;
+  state->gpuCodeFragment     = gpuCodeFragment;
+  state->procedureParameters = procedureParameters;
+  state->procedure           = procedure;
 }
 
 GPU_API_PRE RedHandleSampler GPU_API_POST reiiCreateSampler(gpu_handle_context_t context, const char * optionalDebugName, ReiiSamplerFiltering magFiltering, ReiiSamplerFiltering minFiltering, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateU, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateV, int maxAnisotropy) {

@@ -144,6 +144,21 @@ typedef enum ReiiBlendOp {
   REII_BLEND_OP_MAX              = 0x8008,
 } ReiiBlendOp;
 
+typedef struct gpu_extra_reii_mesh_state_compile_info_t {
+  RedMultisampleCountBitflag         state_multisample_count;
+  unsigned                           variables_slot;
+  unsigned                           variables_bytes_count;
+  unsigned                           struct_members_count;
+  const RedStructDeclarationMember * struct_members;
+  unsigned                           samplers_count;
+  RedBool32                          output_depth_stencil_enable;
+  RedFormat                          output_depth_stencil_format;
+  RedFormat                          output_color_format;
+  const char *                       optional_shader_source_file_path_vertex;
+  const char *                       optional_shader_source_file_path_fragment;
+  const char *                       optional_debug_name;
+} gpu_extra_reii_mesh_state_compile_info_t;
+
 typedef struct ReiiMeshState {
   uint64_t           _; // NOTE(Constantine): Ignore this, it's here for ReiiMeshState's struct layout compatibility with the original GL1.4-based REII.
   ReiiBool32         rasterizationDepthClampEnable;
@@ -186,12 +201,14 @@ typedef struct ReiiMeshState {
   ReiiBlendOp        outputColorBlendAlphaOp;
   char *             codeVertex;
   char *             codeFragment;
-  gpu_program_info_t                     programVertex;
-  gpu_program_info_t                     programFragment;
-  RedHandleGpuCode                       gpuCodeVertex;       // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
-  RedHandleGpuCode                       gpuCodeFragment;     // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
-  Red2ProcedureParametersAndDeclarations procedureParameters; // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
-  RedHandleProcedure                     procedure;           // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
+  gpu_program_info_t                       programVertex;
+  gpu_program_info_t                       programFragment;
+  gpu_extra_reii_mesh_state_compile_info_t compileInfo;
+  // Internal
+  RedHandleGpuCode                         gpuCodeVertex;       // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
+  RedHandleGpuCode                         gpuCodeFragment;     // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
+  Red2ProcedureParametersAndDeclarations   procedureParameters; // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
+  RedHandleProcedure                       procedure;           // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
 } ReiiMeshState;
 
 typedef enum gpu_extra_reii_texture_type {
@@ -279,23 +296,9 @@ typedef enum gpu_extra_reii_destroy_type_e {
   GPU_EXTRA_REII_DESTROY_TYPE_SAMPLER        = 5,
 } gpu_extra_reii_destroy_type_e;
 
-typedef struct gpu_extra_reii_mesh_state_compile_info_t {
-  ReiiMeshState *                    state;
-  RedMultisampleCountBitflag         state_multisample_count;
-  unsigned                           variables_slot;
-  unsigned                           variables_bytes_count;
-  unsigned                           struct_members_count;
-  const RedStructDeclarationMember * struct_members;
-  unsigned                           samplers_count;
-  RedBool32                          output_depth_stencil_enable;
-  RedFormat                          output_depth_stencil_format;
-  RedFormat                          output_color_format;
-  const char *                       optional_debug_name;
-} gpu_extra_reii_mesh_state_compile_info_t;
-
 // Pipeline
 
-GPU_API_PRE void GPU_API_POST reiiMeshStateCompile                   (gpu_handle_context_t context, gpu_extra_reii_mesh_state_compile_info_t * state);
+GPU_API_PRE void GPU_API_POST reiiMeshStateCompile                   (gpu_handle_context_t context, ReiiMeshState * state);
 
 // Sampler
 
