@@ -357,6 +357,7 @@ GPU_API_PRE void GPU_API_POST reiiDestroyEx                           (gpu_handl
 
 // Misc Ex
 
+GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx                (gpu_handle_context_t context, ReiiMeshState * state, const char * compileCommandVS, const char * compileCommandFS, const wchar_t * compiledSpvFilepathVS, const wchar_t * compiledSpvFilepathFS);
 GPU_API_PRE void GPU_API_POST reiiTextureDefineEx                     (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment);
 GPU_API_PRE void GPU_API_POST reiiBatchImageSetUsableStateEx          (gpu_handle_context_t context, uint64_t batchId, RedHandleImage image, RedImagePartBitflags imageAllParts);
 GPU_API_PRE void GPU_API_POST reiiBatchImageCopyFromCpuEx             (gpu_handle_context_t context, uint64_t batchId, RedHandleImage image, RedImagePartBitflags imageAllParts, int bindingLevel, int bindingLayer, int bindingX, int bindingY, int width, int height, const ReiiCpuScratchBuffer * texels);

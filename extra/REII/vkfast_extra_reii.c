@@ -19,6 +19,8 @@
 #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
 #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
 
+#include <stdio.h> // For _popen, _pclose
+
 #define REII_INTERNAL_MAX_SAMPLERS_COUNT 4000
 
 static RedCullMode ReiiCullModeToRed(ReiiCullMode x) {
@@ -469,6 +471,62 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   state->gpuCodeFragment     = gpuCodeFragment;
   state->procedureParameters = procedureParameters;
   state->procedure           = procedure;
+}
+
+GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx(gpu_handle_context_t context, ReiiMeshState * state, const char * compileCommandVS, const char * compileCommandFS, const wchar_t * compiledSpvFilepathVS, const wchar_t * compiledSpvFilepathFS) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  reiiDestroyEx(context, GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE, state);
+  Red2ProcedureParametersAndDeclarations defaults = {0};
+  state->gpuCodeVertex       = NULL;
+  state->gpuCodeFragment     = NULL;
+  state->procedureParameters = defaults;
+  state->procedure           = NULL;
+
+  {
+    FILE * reiiMeshStateRecompileEx_compileCommandVS_popen = _popen(compileCommandVS, "r");
+    REDGPU_2_EXPECTWG(reiiMeshStateRecompileEx_compileCommandVS_popen != NULL);
+    while (!feof(reiiMeshStateRecompileEx_compileCommandVS_popen)) {
+      fgetc(reiiMeshStateRecompileEx_compileCommandVS_popen);
+    }
+    _pclose(reiiMeshStateRecompileEx_compileCommandVS_popen);
+  }
+
+  {
+    FILE * reiiMeshStateRecompileEx_compileCommandFS_popen = _popen(compileCommandFS, "r");
+    REDGPU_2_EXPECTWG(reiiMeshStateRecompileEx_compileCommandFS_popen != NULL);
+    while (!feof(reiiMeshStateRecompileEx_compileCommandFS_popen)) {
+      fgetc(reiiMeshStateRecompileEx_compileCommandFS_popen);
+    }
+    _pclose(reiiMeshStateRecompileEx_compileCommandFS_popen);
+  }
+
+  void * vs_fh   = (void *)-1;
+  void * vs_fmap = (void *)-1;
+  size_t vs_spv_bytes_count = 0;
+  void * vs_spv  = NULL;
+  REDGPU_2_EXPECTWG(0 == red32FileMap(compiledSpvFilepathVS, &vs_fh, &vs_fmap, &vs_spv_bytes_count, &vs_spv));
+
+  void * fs_fh   = (void *)-1;
+  void * fs_fmap = (void *)-1;
+  size_t fs_spv_bytes_count = 0;
+  void * fs_spv  = NULL;
+  REDGPU_2_EXPECTWG(0 == red32FileMap(compiledSpvFilepathFS, &fs_fh, &fs_fmap, &fs_spv_bytes_count, &fs_spv));
+
+  state->programVertex.program_binary_bytes_count   = vs_spv_bytes_count;
+  state->programVertex.program_binary               = vs_spv;
+  state->programFragment.program_binary_bytes_count = fs_spv_bytes_count;
+  state->programFragment.program_binary             = fs_spv;
+
+  reiiMeshStateCompile(context, state);
+
+  REDGPU_2_EXPECTWG(0 == red32FileUnmap(vs_fh, vs_fmap, vs_spv));
+  REDGPU_2_EXPECTWG(0 == red32FileUnmap(fs_fh, fs_fmap, fs_spv));
 }
 
 GPU_API_PRE RedHandleSampler GPU_API_POST reiiCreateSampler(gpu_handle_context_t context, const char * optionalDebugName, ReiiSamplerFiltering magFiltering, ReiiSamplerFiltering minFiltering, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateU, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateV, int maxAnisotropy) {
