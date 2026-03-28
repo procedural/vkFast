@@ -154,8 +154,6 @@ typedef struct gpu_extra_reii_mesh_state_compile_info_t {
   RedBool32                          output_depth_stencil_enable;
   RedFormat                          output_depth_stencil_format;
   RedFormat                          output_color_format;
-  const char *                       optional_shader_source_file_path_vertex;
-  const char *                       optional_shader_source_file_path_fragment;
   const char *                       optional_debug_name;
 } gpu_extra_reii_mesh_state_compile_info_t;
 
