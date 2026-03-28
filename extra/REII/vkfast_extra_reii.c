@@ -19,6 +19,8 @@
 #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
 #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
 
+#define REII_INTERNAL_MAX_SAMPLERS_COUNT 4000
+
 static RedCullMode ReiiCullModeToRed(ReiiCullMode x) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
@@ -177,7 +179,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   REDGPU_2_EXPECTWG(
     state->output_color_format == RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1
   );
-  REDGPU_2_EXPECTWG(state->samplers_count <= 4000);
+  REDGPU_2_EXPECTWG(state->samplers_count <= REII_INTERNAL_MAX_SAMPLERS_COUNT);
 
   // To destroy
   RedHandleGpuCode gpuCodeVertex = NULL;
@@ -226,7 +228,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   parameters.structsDeclarations[0].structDeclarationMembers             = state->struct_members;
   parameters.structsDeclarations[0].structDeclarationMembersArrayROCount = 0;
   parameters.structsDeclarations[0].structDeclarationMembersArrayRO      = NULL;
-  RedStructDeclarationMember samplers[4000] = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
+  RedStructDeclarationMember samplers[REII_INTERNAL_MAX_SAMPLERS_COUNT] = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
   if (state->samplers_count > 0) {
     for (unsigned i = 0; i < state->samplers_count; i += 1) {
       samplers[i].slot            = i;
@@ -1468,10 +1470,10 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindSamplers(gpu_handle_context_t conte
   RedHandleGpu gpu = vkfast->gpu;
 
   REDGPU_2_EXPECTWG(batch->batch.currentStructSamplers.handle != NULL || !"vfBatchBegin()::batch_bindings_info was set to NULL? Or vfBatchBegin()::batch_bindings_info::max_sampler_binds_count was set to 0?");
-  REDGPU_2_EXPECTWG(samplersCount <= 4000);
+  REDGPU_2_EXPECTWG(samplersCount <= REII_INTERNAL_MAX_SAMPLERS_COUNT);
 
-  RedStructMemberTexture membersSamplers[4000] = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
-  RedStructMember        members[4000]         = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
+  RedStructMemberTexture membersSamplers[REII_INTERNAL_MAX_SAMPLERS_COUNT] = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
+  RedStructMember        members[REII_INTERNAL_MAX_SAMPLERS_COUNT]         = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
   for (unsigned i = 0; i < samplersCount; i += 1) {
     membersSamplers[i].sampler = samplers[i];
     membersSamplers[i].texture = NULL;

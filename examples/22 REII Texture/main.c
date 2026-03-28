@@ -542,7 +542,7 @@ int main() {
     // NOTE(Constantine):
     // Camera quaternion rotation and translation.
     const float mouse_move_sensitivity = 0.0035f;
-    const float camera_move_speed      = 0.5f;
+    const float camera_move_speed      = 0.05f;
     if (mouse_right_mouse_button_state == GLFW_PRESS && mouse_right_mouse_button_state != mouse_right_mouse_button_state_prev) {
       camera_is_enabled = !camera_is_enabled;
       glfwSetInputMode(window, GLFW_CURSOR, camera_is_enabled == 1 ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
