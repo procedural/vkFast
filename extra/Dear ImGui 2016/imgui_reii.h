@@ -290,8 +290,8 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
         slots[2].count           = 1;
         slots[2].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT;
         reiiCommandBindNewBindingsSet(globalImguiState->gpuContext, list, _countof(slots), slots);
-        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 0, 1, &list->dynamic_mesh_position.gpu);
-        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 1, 1, &list->dynamic_mesh_color.gpu);
+        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 0, 1, &list->dynamic_mesh_position.gpu); // NOTE(Constantine):
+        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 1, 1, &list->dynamic_mesh_color.gpu);    // I need to fix these two binds, since they're not moving with the loop, so I need to use push constants to offset into this memory.
         RedStructMemberTexture texture = {0};
         texture.sampler = NULL;
         texture.texture = textureToBind->texture;
