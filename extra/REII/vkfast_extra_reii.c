@@ -736,7 +736,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
     h_power *= 2;
   }
   REDGPU_2_EXPECTWG(texelsBytesAlignment == 4);
-  if (textureType == GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL) {
+  if (textureType == GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL && bindingTexture->mipLevelsCount > 1) {
     REDGPU_2_EXPECTWG(width  == w_power);
     REDGPU_2_EXPECTWG(height == h_power);
     REDGPU_2_EXPECTWG(width  == height);
@@ -1528,6 +1528,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindSamplers(gpu_handle_context_t conte
   RedHandleGpu gpu = vkfast->gpu;
 
   REDGPU_2_EXPECTWG(batch->batch.currentStructSamplers.handle != NULL || !"vfBatchBegin()::batch_bindings_info was set to NULL? Or vfBatchBegin()::batch_bindings_info::max_sampler_binds_count was set to 0?");
+  REDGPU_2_EXPECTWG(list->currentProcedureParametersDraw != NULL || !"reiiCommandBindSamplers() needs at least one reiiCommandMeshSetState() call made before it.");
   REDGPU_2_EXPECTWG(samplersCount <= REII_INTERNAL_MAX_SAMPLERS_COUNT);
 
   RedStructMemberTexture membersSamplers[REII_INTERNAL_MAX_SAMPLERS_COUNT] = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
@@ -1599,6 +1600,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
+  REDGPU_2_EXPECTWG(structure.handle != NULL || !"red2StructsMemorySuballocateStruct() call returned NULL. Ran out of vfBatchBegin()::batch_bindings_info::max_new_bindings_sets_count and all the other vfBatchBegin()::batch_bindings_info::max_* memory to allocate?");
   batch->batch.currentStruct = structure;
 
   np(redCallSetProcedureParameters,
@@ -1850,6 +1852,8 @@ GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet(gpu_handle_context_t co
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
+  REDGPU_2_EXPECTWG(list->mutable_outputs_array.items[list->mutable_outputs_array.count-1].handle != NULL);
+  REDGPU_2_EXPECTWG(list->mutable_outputs_array.items[list->mutable_outputs_array.count-1].handleDeclaration != NULL);
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetEnd(gpu_handle_context_t context, ReiiHandleCommandList * list) {

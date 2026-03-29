@@ -2,3 +2,5 @@
 x64/*
 *.vcxproj.user
 texture.ppm
+imgui.ini
+NotoSans.ttf

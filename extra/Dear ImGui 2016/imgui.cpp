@@ -2742,7 +2742,7 @@ void ImGui::Render()
 
         // Render. If user hasn't set a callback then they may retrieve the draw data via GetDrawData()
         if (g.RenderDrawData.CmdListsCount > 0 && g.IO.RenderDrawListsFn != NULL)
-            g.IO.RenderDrawListsFn(&g.RenderDrawData);
+            g.IO.RenderDrawListsFn(&g.RenderDrawData); // NOTE(Constantine): Where the rendering happens.
     }
 }
 

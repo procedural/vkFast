@@ -203,8 +203,16 @@ typedef struct ImguiState {
   GLFWwindow *            window;
   gpu_handle_context_t    gpuContext;
   ReiiMeshState           gpuMeshState;
-  ReiiHandleCommandList   gpuCommandList;
+  ReiiHandleTextureMemory gpuFontAtlasMemory;
+  ReiiCpuScratchBuffer    gpuFontAtlasScratchBuffer;
   ReiiHandleTexture       gpuFontAtlas;
+  RedHandleSampler        gpuSampler;
+  uint64_t                gpuBatch;
+  ReiiHandleCommandList   gpuCommandList;
+  gpu_extra_cpu_gpu_array gpuDynamicMeshPosition;
+  gpu_extra_cpu_gpu_array gpuDynamicMeshColor;
+  Red2Output *            gpuMutableOutputsArray;
+  ReiiHandleTexture *     gpuOutputTexture;
   double                  time;
   float                   mouseWheel;
   int                     mousePressed[3];
@@ -232,8 +240,20 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
   }
   ImDrawData_ScaleClipRects((struct ImDrawData *)drawData, io->displayFramebufferScale);
 
-  reiiCommandListSet(globalImguiState->gpuContext, globalImguiState->gpuCommandList);
-  reiiCommandSetViewport(globalImguiState->gpuContext, 0, 0, windowWidth, windowHeight);
+  const uint64_t num_of_structs_to_allocate = 100; // NOTE(Constantine): Maybe need more?
+
+  gpu_batch_info_t bindings_info = {0};
+  bindings_info.max_new_bindings_sets_count = num_of_structs_to_allocate;
+  bindings_info.max_storage_binds_count     = 2 * num_of_structs_to_allocate;
+  bindings_info.max_texture_ro_binds_count  = 1 * num_of_structs_to_allocate;
+  bindings_info.max_sampler_binds_count     = 1; // NOTE(Constantine): Intentionally not multiplying by num_of_structs_to_allocate: samplers are global, not per-struct.
+  globalImguiState->gpuBatch = vfBatchBegin(globalImguiState->gpuContext, globalImguiState->gpuBatch, &bindings_info, NULL, __FILE__, __LINE__);
+  ReiiHandleCommandList * list = &globalImguiState->gpuCommandList;
+  list->batch_id = globalImguiState->gpuBatch;
+  reiiCommandListReset(globalImguiState->gpuContext, list);
+  reiiCommandSetViewportEx(globalImguiState->gpuContext, list, 0, 0, windowWidth, windowHeight, 0, 1);
+  reiiCommandMeshSetState(globalImguiState->gpuContext, list, &globalImguiState->gpuMeshState, NULL);
+  reiiCommandBindSamplers(globalImguiState->gpuContext, list, 1, &globalImguiState->gpuSampler);
   for (int commandListIndex = 0; commandListIndex < drawData->commandListsCount; commandListIndex += 1) {
     struct ImDrawList * commandList     = drawData->commandLists[commandListIndex];
     ImguiDrawVertex   * pointerVertices = (ImguiDrawVertex *)((void *)ImDrawList_GetVertexPtr(commandList, 0));
@@ -243,28 +263,61 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
       if (command->userCallback != NULL) {
         command->userCallback((struct ImDrawList *)commandList, (struct ImDrawCmd *)command);
       } else {
-        reiiCommandSetScissor(globalImguiState->gpuContext, (int)command->clipRectangle.x, (int)(windowHeight - command->clipRectangle.w), (int)(command->clipRectangle.z - command->clipRectangle.x), (int)(command->clipRectangle.w - command->clipRectangle.y));
-        globalImguiState->gpuMeshTextureBindings.texture[0] = (ReiiHandleTexture)(intptr_t)command->data;
-        reiiCommandMeshSetState(globalImguiState->gpuContext, &globalImguiState->gpuMeshState, &globalImguiState->gpuMeshTextureBindings);
-        reiiCommandMeshSet(globalImguiState->gpuContext);
+        // Project scissor/clipping rectangles into framebuffer space
+        ImVec2 clip_min = {command->clipRectangle.x, command->clipRectangle.y};
+        ImVec2 clip_max = {command->clipRectangle.z, command->clipRectangle.w};
+        // Clamp to viewport as vkCmdSetScissor() won't accept values that are off bounds
+        if (clip_min.x < 0.0f) { clip_min.x = 0.0f; }
+        if (clip_min.y < 0.0f) { clip_min.y = 0.0f; }
+        if (clip_max.x > windowWidth) { clip_max.x = (float)windowWidth; }
+        if (clip_max.y > windowHeight) { clip_max.y = (float)windowHeight; }
+        if (clip_max.x <= clip_min.x || clip_max.y <= clip_min.y) {
+          continue;
+        }
+        reiiCommandSetScissor(globalImguiState->gpuContext, list, clip_min.x, clip_min.y, clip_max.x - clip_min.x, clip_max.y - clip_min.y);
+        ReiiHandleTexture * textureToBind = (ReiiHandleTexture *)(intptr_t)command->data;
+        RedStructDeclarationMember slots[3] = {0};
+        slots[0].slot            = 0;
+        slots[0].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
+        slots[0].count           = 1;
+        slots[0].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
+        slots[1].slot            = 1;
+        slots[1].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
+        slots[1].count           = 1;
+        slots[1].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
+        slots[2].slot            = 2;
+        slots[2].type            = RED_STRUCT_MEMBER_TYPE_TEXTURE_RO;
+        slots[2].count           = 1;
+        slots[2].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT;
+        reiiCommandBindNewBindingsSet(globalImguiState->gpuContext, list, _countof(slots), slots);
+        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 0, 1, &list->dynamic_mesh_position.gpu);
+        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 1, 1, &list->dynamic_mesh_color.gpu);
+        RedStructMemberTexture texture = {0};
+        texture.sampler = NULL;
+        texture.texture = textureToBind->texture;
+        texture.setTo1  = 1;
+        reiiCommandBindTextureRO(globalImguiState->gpuContext, list, 2, 1, &texture);
+        reiiCommandBindNewBindingsEnd(globalImguiState->gpuContext, list);
+        reiiCommandMeshSet(globalImguiState->gpuContext, list);
         for (unsigned i = 0; i < command->elementsCount; i += 1) {
           unsigned index = pointerIndices[i];
           ImVec4 color = imguiUnpackUnorm4x8(pointerVertices[index].color);
-          reiiCommandMeshColor(globalImguiState->gpuContext, color.x, color.y, color.z, color.w);
+          reiiCommandMeshColor(globalImguiState->gpuContext, list, color.x, color.y, color.z, color.w);
           float xformWidth  = 2.f / windowWidth;
           float xformHeight = 2.f /-windowHeight;
           float positionX   = pointerVertices[index].position.x * xformWidth  - 1.f;
           float positionY   = pointerVertices[index].position.y * xformHeight + 1.f;
-          reiiCommandMeshPosition(globalImguiState->gpuContext, positionX, positionY, pointerVertices[index].uv.x, pointerVertices[index].uv.y);
+          reiiCommandMeshPosition(globalImguiState->gpuContext, list, positionX, positionY, pointerVertices[index].uv.x, pointerVertices[index].uv.y);
         }
-        reiiCommandMeshEnd(globalImguiState->gpuContext);
+        reiiCommandMeshEndEx(globalImguiState->gpuContext, list, NULL, globalImguiState->gpuOutputTexture, globalImguiState->gpuOutputTexture->texture);
       }
       pointerIndices += command->elementsCount;
     }
   }
-  reiiCommandListEnd(globalImguiState->gpuContext);
+  vfBatchEnd(globalImguiState->gpuContext, globalImguiState->gpuBatch, __FILE__, __LINE__);
 
-  reiiSubmitCommandLists(globalImguiState->gpuContext, 1, &globalImguiState->gpuCommandList);
+  uint64_t wait = vfAsyncBatchExecute(globalImguiState->gpuContext, 1, &globalImguiState->gpuBatch, __FILE__, __LINE__);
+  vfAsyncWaitToFinish(globalImguiState->gpuContext, wait, __FILE__, __LINE__);
 }
 
 char * imguiGLFW3ClipboardTextGet() {
@@ -315,33 +368,55 @@ static inline void imguiCreateFontTexture() {
   int bpp    = 0;
   ImFontAtlas_GetTexDataAsRGBA32(io->fonts, &data, &width, &height, &bpp);
 
-  reiiCreateTexture(globalImguiState->gpuContext, &globalImguiState->gpuFontAtlas);
-  reiiTextureSetStateMipmap(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, globalImguiState->gpuFontAtlas, 0);
-  reiiTextureSetStateSampler(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, globalImguiState->gpuFontAtlas, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, 1);
-  reiiTextureDefineAndCopyFromCpu(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, globalImguiState->gpuFontAtlas, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, width, height, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, data);
+  globalImguiState->gpuSampler = reiiCreateSampler(globalImguiState->gpuContext, NULL, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, 1);
 
-  ImFontAtlas_SetTexID(io->fonts, (void *)(intptr_t)globalImguiState->gpuFontAtlas);
+  reiiCreateTextureFromTextureMemory(globalImguiState->gpuContext, &globalImguiState->gpuFontAtlasMemory, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas);
+  reiiTextureSetStateMipmap(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas, 0);
+  reiiTextureSetStateMipmapLevelsCount(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas, 1);
+  memcpy(globalImguiState->gpuFontAtlasScratchBuffer.cpu_scratch_buffer_ptr, data, width * height * bpp);
+  reiiTextureDefineAndCopyFromCpu(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, width, height, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, &globalImguiState->gpuFontAtlasScratchBuffer);
+
+  ImFontAtlas_SetTexID(io->fonts, (void *)(intptr_t)&globalImguiState->gpuFontAtlas);
 }
 
 static inline void imguiCreateDeviceObjects() {
-  globalImguiState->gpuMeshTextureBindings.binding[0] = REII_TEXTURE_BINDING_2D;
+  #include "imgui_shader.vs.h"
+  #include "imgui_shader.fs.h"
+  gpu_program_info_t vp = {0};
+  vp.program_binary_bytes_count = sizeof(g_main_vs);
+  vp.program_binary             = g_main_vs;
+  gpu_program_info_t fp = {0};
+  fp.program_binary_bytes_count = sizeof(g_main_fs);
+  fp.program_binary             = g_main_fs;
+  char * vp_string = NULL;
+  char * fp_string = NULL;
 
-  char * vp_string =
-    "!!ARBvp1.0"
-    "PARAM c[1] = {{0,1}};"
-    "MOV result.texcoord[0], vertex.color;"
-    "MOV result.texcoord[1].xy, vertex.position.zwzw;"
-    "MOV result.position.xy, vertex.position;"
-    "MOV result.position.zw, c[0].xyxy;"
-    "END";
-
-  char * fp_string =
-    "!!ARBfp1.0"
-    "TEMP R0;"
-    "TEX R0, fragment.texcoord[1], texture[0], 2D;"
-    "MUL result.color, fragment.texcoord[0], R0;"
-    "END";
-
+  RedStructDeclarationMember slots[3] = {0};
+  slots[0].slot            = 0;
+  slots[0].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
+  slots[0].count           = 1;
+  slots[0].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
+  slots[1].slot            = 1;
+  slots[1].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
+  slots[1].count           = 1;
+  slots[1].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
+  slots[2].slot            = 2;
+  slots[2].type            = RED_STRUCT_MEMBER_TYPE_TEXTURE_RO;
+  slots[2].count           = 1;
+  slots[2].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT;
+  gpu_extra_reii_mesh_state_compile_info_t mesh_state_compile_info = {0};
+  mesh_state_compile_info.state_multisample_count     = RED_MULTISAMPLE_COUNT_BITFLAG_1;
+  mesh_state_compile_info.output_depth_stencil_enable = 0;
+  mesh_state_compile_info.output_depth_stencil_format = RED_FORMAT_DEPTH_32_FLOAT;
+  mesh_state_compile_info.output_color_format         = RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1;
+  mesh_state_compile_info.variables_slot              = 3;
+  mesh_state_compile_info.variables_bytes_count       = 0;
+  mesh_state_compile_info.struct_members_count        = _countof(slots);
+  mesh_state_compile_info.struct_members              = slots;
+  mesh_state_compile_info.samplers_count              = 1;
+  globalImguiState->gpuMeshState.compileInfo                                    = mesh_state_compile_info;
+  globalImguiState->gpuMeshState.programVertex                                  = vp;
+  globalImguiState->gpuMeshState.programFragment                                = fp;
   globalImguiState->gpuMeshState.codeVertex                                     = vp_string;
   globalImguiState->gpuMeshState.codeFragment                                   = fp_string;
   globalImguiState->gpuMeshState.rasterizationDepthClampEnable                  = 0;
@@ -385,18 +460,13 @@ static inline void imguiCreateDeviceObjects() {
   globalImguiState->gpuMeshState.outputColorBlendAlphaFactorSource              = REII_BLEND_FACTOR_SOURCE_ALPHA;
   globalImguiState->gpuMeshState.outputColorBlendAlphaFactorTarget              = REII_BLEND_FACTOR_ONE_MINUS_SOURCE_ALPHA;
   globalImguiState->gpuMeshState.outputColorBlendAlphaOp                        = REII_BLEND_OP_ADD;
-
-  reiiCreateCommandList(globalImguiState->gpuContext, &globalImguiState->gpuCommandList);
+  reiiMeshStateCompile(globalImguiState->gpuContext, &globalImguiState->gpuMeshState);
 
   imguiCreateFontTexture();
 }
 
-static void inline imguiNewFrame() {
+static inline void imguiNewFrame() {
   ImguiIO * io = (ImguiIO *)igGetIO();
-
-  if (globalImguiState->gpuFontAtlas == 0) {
-    imguiCreateDeviceObjects();
-  }
 
   int w = 0;
   int h = 0;
@@ -433,35 +503,51 @@ static void inline imguiNewFrame() {
 
 static inline void imguiInvalidateDeviceObjects() {
   ImguiIO * io = (ImguiIO *)igGetIO();
-  if (globalImguiState->gpuMeshState.programVertex != 0) {
-    reiiDestroyProgram(globalImguiState->gpuContext, globalImguiState->gpuMeshState.programVertex);
-    globalImguiState->gpuMeshState.programVertex = 0;
-  }
-  if (globalImguiState->gpuMeshState.programFragment != 0) {
-    reiiDestroyProgram(globalImguiState->gpuContext, globalImguiState->gpuMeshState.programFragment);
-    globalImguiState->gpuMeshState.programFragment = 0;
-  }
-  if (globalImguiState->gpuCommandList != 0) {
-    reiiDestroyCommandList(globalImguiState->gpuContext, globalImguiState->gpuCommandList);
-    globalImguiState->gpuCommandList = 0;
-  }
-  if (globalImguiState->gpuFontAtlas != 0) {
-    reiiDestroyTexture(globalImguiState->gpuContext, globalImguiState->gpuFontAtlas);
-    globalImguiState->gpuFontAtlas = 0;
-    ImFontAtlas_SetTexID(io->fonts, 0);
-  }
+  reiiDestroyEx(globalImguiState->gpuContext, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, &globalImguiState->gpuCommandList);
+  reiiDestroyEx(globalImguiState->gpuContext, GPU_EXTRA_REII_DESTROY_TYPE_SAMPLER, globalImguiState->gpuSampler);
+  reiiDestroyEx(globalImguiState->gpuContext, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, &globalImguiState->gpuFontAtlas);
+  reiiDestroyEx(globalImguiState->gpuContext, GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE, &globalImguiState->gpuMeshState);
+  uint64_t ids[] = {
+    globalImguiState->gpuBatch,
+  };
+  vfIdDestroy(_countof(ids), ids, __FILE__, __LINE__);
+  ImFontAtlas_SetTexID(io->fonts, 0);
 }
 
 static inline void imguiDeinit() {
   imguiInvalidateDeviceObjects();
   igShutdown();
+  ImguiState defaults = {0};
+  globalImguiState[0] = defaults;
 }
 
-static inline void imguiInit(GLFWwindow * window, ReiiContext * context) {
+static inline void imguiInit(
+  GLFWwindow *            window,
+  gpu_handle_context_t    context,
+  ReiiHandleTextureMemory fontAtlasMemory,
+  ReiiCpuScratchBuffer    fontAtlasScratchBuffer,
+  gpu_extra_cpu_gpu_array dynamicMeshPosition,
+  gpu_extra_cpu_gpu_array dynamicMeshColor,
+  uint64_t                mutableOutputsArrayMaxCapacity,
+  Red2Output *            mutableOutputsArray,
+  ReiiHandleTexture *     outputTexture
+)
+{
   ImguiIO * io = (ImguiIO *)igGetIO();
 
-  globalImguiState->window     = window;
-  globalImguiState->gpuContext = context;
+  globalImguiState->window                    = window;
+  globalImguiState->gpuContext                = context;
+  globalImguiState->gpuFontAtlasMemory        = fontAtlasMemory;
+  globalImguiState->gpuFontAtlasScratchBuffer = fontAtlasScratchBuffer;
+  globalImguiState->gpuDynamicMeshPosition    = dynamicMeshPosition;
+  globalImguiState->gpuDynamicMeshColor       = dynamicMeshColor;
+  globalImguiState->gpuMutableOutputsArray    = mutableOutputsArray;
+  globalImguiState->gpuOutputTexture          = outputTexture;
+
+  globalImguiState->gpuCommandList.mutable_outputs_array.items    = globalImguiState->gpuMutableOutputsArray;
+  globalImguiState->gpuCommandList.mutable_outputs_array.capacity = mutableOutputsArrayMaxCapacity;
+  globalImguiState->gpuCommandList.dynamic_mesh_position          = globalImguiState->gpuDynamicMeshPosition;
+  globalImguiState->gpuCommandList.dynamic_mesh_color             = globalImguiState->gpuDynamicMeshColor;
 
   io->keyMap[IMGUI_KEY_TAB]       = GLFW_KEY_TAB;
   io->keyMap[IMGUI_KEY_LEFT]      = GLFW_KEY_LEFT;
@@ -491,6 +577,8 @@ static inline void imguiInit(GLFWwindow * window, ReiiContext * context) {
   glfwSetScrollCallback(window,      imguiGLFW3ScrollCallback);
   glfwSetKeyCallback(window,         imguiGLFW3KeyCallback);
   glfwSetCharCallback(window,        imguiGLFW3CharCallback);
+
+  imguiCreateDeviceObjects();
 }
 
 static inline void imguiEasyTheming(ImVec3 colorText, ImVec3 colorHead, ImVec3 colorArea, ImVec3 colorBody, ImVec3 colorPops) {

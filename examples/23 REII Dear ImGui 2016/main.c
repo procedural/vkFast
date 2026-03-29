@@ -178,7 +178,7 @@ int main() {
 
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  GLFWwindow * window = glfwCreateWindow(window_w, window_h, "[vkFast] REII Texture", 0, 0);
+  GLFWwindow * window = glfwCreateWindow(window_w, window_h, "[vkFast] REII Dear ImGui 2016", 0, 0);
   void * window_handle = (void *)glfwGetWin32Window(window);
 
   gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
@@ -191,7 +191,7 @@ int main() {
 
   // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
   gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
-  vfWindowFullscreen(ctx, window_handle, "[vkFast] REII Texture", window_w, window_h, 0, FF, LL);
+  vfWindowFullscreen(ctx, window_handle, "[vkFast] REII Dear ImGui 2016", window_w, window_h, 0, FF, LL);
 
   gpu_storage_t storage_gpu_only     = {0};
   gpu_storage_t storage_cpu_upload   = {0};
@@ -460,6 +460,53 @@ int main() {
     &texture_upload_scratch_buffer
   );
 
+  // Dear ImGui 2016
+  ReiiHandleTextureMemory imgui_fontAtlasMemory = {0};
+  reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL, (64/*mb*/ * 1024 * 1024), &imgui_fontAtlasMemory);
+
+  ReiiCpuScratchBuffer imgui_fontAtlas_upload_scratch_buffer = OffsetAllocateCpuScratchBuffer(
+    128/*mb*/ * 1024 * 1024,
+    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
+    FF, LL
+  );
+
+  gpu_extra_cpu_gpu_array imgui_dynamicMeshPosition = OffsetAllocateCpuGpuArray(
+    32/*mb*/ * 1024 * 1024,
+    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
+    &storage_gpu_only,   &storage_gpu_only_mem_offset,
+    FF, LL
+  );
+
+  gpu_extra_cpu_gpu_array imgui_dynamicMeshColor = OffsetAllocateCpuGpuArray(
+    32/*mb*/ * 1024 * 1024,
+    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
+    &storage_gpu_only,   &storage_gpu_only_mem_offset,
+    FF, LL
+  );
+
+  Red2Output imgui_mutableOutputsArray[100] = {0}; // NOTE(Constantine): Maybe need more?
+  imguiInit(
+    window,
+    ctx,
+    imgui_fontAtlasMemory,
+    imgui_fontAtlas_upload_scratch_buffer,
+    imgui_dynamicMeshPosition,
+    imgui_dynamicMeshColor,
+    100,
+    imgui_mutableOutputsArray,
+    outputtex
+  );
+
+  ImguiIO    * io    = (ImguiIO *)igGetIO();
+  ImguiStyle * style = (ImguiStyle *)igGetStyle();
+
+  style->scrollbarRounding = 0;
+  style->windowRounding    = 0;
+  style->frameRounding     = 0;
+
+  // NOTE(Constantine): For VS 2019, make sure to copy NotoSans.ttf file to project's folder.
+  ImFontAtlas_AddFontFromFileTTF(io->fonts, "NotoSans.ttf", 21, NULL, NULL);
+
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
   ReiiHandleCommandList * list = &hlist;
@@ -490,7 +537,7 @@ int main() {
 
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
-  
+
     int os_window_w = 0;
     int os_window_h = 0;
     glfwGetWindowSize(window, &os_window_w, &os_window_h);
@@ -501,6 +548,8 @@ int main() {
 
     LARGE_INTEGER t_start = {0};
     QueryPerformanceCounter(&t_start);
+
+    imguiNewFrame();
 
     {
       vfWindowGetSize(ctx, &window_w, &window_h);
@@ -606,6 +655,41 @@ int main() {
       vec3Add(&camera_pos.x, &camera_pos.x, move_vec_normalized);
     }
 
+    static bool showTestWindow = 1;
+    igShowTestWindow(&showTestWindow);
+#if 0
+    {
+      // Flat UI by yorick.penninks: https://color.adobe.com/Flat-UI-color-theme-2469224/
+      static ImVec3 color_for_text = {236 / 255.f, 240 / 255.f, 241 / 255.f};
+      static ImVec3 color_for_head = { 41 / 255.f, 128 / 255.f, 185 / 255.f};
+      static ImVec3 color_for_area = { 57 / 255.f,  79 / 255.f, 105 / 255.f};
+      static ImVec3 color_for_body = { 44 / 255.f,  62 / 255.f,  80 / 255.f};
+      static ImVec3 color_for_pops = { 33 / 255.f,  46 / 255.f,  60 / 255.f};
+
+      // Mint Y Dark:
+      //static struct ImVec3 color_for_text = {211 / 255.f, 211 / 255.f, 211 / 255.f};
+      //static struct ImVec3 color_for_head = { 95 / 255.f, 142 / 255.f,  85 / 255.f};
+      //static struct ImVec3 color_for_area = { 47 / 255.f,  47 / 255.f,  47 / 255.f};
+      //static struct ImVec3 color_for_body = { 64 / 255.f,  64 / 255.f,  64 / 255.f};
+      //static struct ImVec3 color_for_pops = { 30 / 255.f,  30 / 255.f,  30 / 255.f};
+
+      // Arc Theme:
+      //static struct ImVec3 color_for_text = {211 / 255.f, 218 / 255.f, 227 / 255.f};
+      //static struct ImVec3 color_for_head = { 64 / 255.f, 132 / 255.f, 214 / 255.f};
+      //static struct ImVec3 color_for_area = { 47 / 255.f,  52 / 255.f,  63 / 255.f};
+      //static struct ImVec3 color_for_body = { 56 / 255.f,  60 / 255.f,  74 / 255.f};
+      //static struct ImVec3 color_for_pops = { 28 / 255.f,  30 / 255.f,  37 / 255.f};
+
+      igColorEdit3("Text", &color_for_text.x);
+      igColorEdit3("Head", &color_for_head.x);
+      igColorEdit3("Area", &color_for_area.x);
+      igColorEdit3("Body", &color_for_body.x);
+      igColorEdit3("Pops", &color_for_pops.x);
+
+      imguiEasyTheming(color_for_text, color_for_head, color_for_area, color_for_body, color_for_pops);
+    }
+#endif
+
     if (glfwGetKey(window, GLFW_KEY_R) == 1) {
       // NOTE(Constantine):
       // Replace compiler and shader paths below to yours.
@@ -669,9 +753,22 @@ int main() {
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     reiiCommandCopyFromColorTextureToStorageRaw(ctx, list, outputtex, &raw_pixels);
     vfBatchEnd(ctx, batch, FF, LL);
+    {
+      uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+      vfAsyncWaitToFinish(ctx, wait, FF, LL);
+    }
 
-    uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
-    vfAsyncWaitToFinish(ctx, wait, FF, LL);
+    igRender();
+
+    batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
+    list->batch_id = batch;
+    reiiCommandCopyFromColorTextureToStorageRaw(ctx, list, outputtex, &raw_pixels);
+    vfBatchEnd(ctx, batch, FF, LL);
+    {
+      uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+      vfAsyncWaitToFinish(ctx, wait, FF, LL);
+    }
+
     vfAsyncDrawPixelsRaw(ctx, &raw_pixels, NULL, FF, LL);
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
 
@@ -691,6 +788,9 @@ int main() {
       //printf("Elapsed milliseconds: %f\n", milliseconds_fp);
     }
   }
+
+  imguiDeinit();
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &imgui_fontAtlasMemory);
 
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, list);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_SAMPLER, sampler);
