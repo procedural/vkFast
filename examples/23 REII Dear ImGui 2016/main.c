@@ -508,7 +508,8 @@ int main() {
   style->frameRounding     = 0;
 
   // NOTE(Constantine): For VS 2019, make sure to copy NotoSans.ttf file to project's folder.
-  ImFontAtlas_AddFontFromFileTTF(io->fonts, "NotoSans.ttf", 22, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
+  float fontPixelSize = 22;
+  ImFontAtlas_AddFontFromFileTTF(io->fonts, "NotoSans.ttf", fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
   imguiInvalidateFontTexture();
   imguiCreateFontTexture();
   REDGPU_2_EXPECTFL(ImFontAtlas_GetFontsCount(io->fonts) == 2);
@@ -555,6 +556,31 @@ int main() {
 
     LARGE_INTEGER t_start = {0};
     QueryPerformanceCounter(&t_start);
+
+    {
+      // Font resizing with Left Ctrl + '-' and Left Ctrl + '+' logic.
+      ReiiBool32 fontPixelSizeChanged = 0;
+      if (igIsKeyDown(GLFW_KEY_LEFT_CONTROL) && igIsKeyPressed(GLFW_KEY_EQUAL, 0)) {
+        fontPixelSizeChanged = 1;
+        fontPixelSize += 2;
+        if (fontPixelSize > 100) { fontPixelSize = 100; }
+      }
+      if (igIsKeyDown(GLFW_KEY_LEFT_CONTROL) && igIsKeyPressed(GLFW_KEY_MINUS, 0)) {
+        fontPixelSizeChanged = 1;
+        fontPixelSize -= 2;
+        if (fontPixelSize < 10) { fontPixelSize = 10; }
+      }
+      if (fontPixelSizeChanged == 1) {
+        fontPixelSizeChanged = 0;
+        ImFontAtlas_Clear(io->fonts);
+        imguiInvalidateFontTexture();
+        ImFontAtlas_AddFontDefault(io->fonts, NULL);
+        ImFontAtlas_AddFontFromFileTTF(io->fonts, "NotoSans.ttf", fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
+        imguiCreateFontTexture();
+        REDGPU_2_EXPECTFL(ImFontAtlas_GetFontsCount(io->fonts) == 2);
+        ImFontAtlas_SetFontAsDefault(io->fonts, 1);
+      }
+    }
 
     imguiSetProcessInputsState(!camera_is_enabled);
     imguiNewFrame();
