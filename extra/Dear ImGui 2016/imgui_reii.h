@@ -291,6 +291,13 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
         reiiCommandBindNewBindingsSet(globalImguiState->gpuContext, list, _countof(slots), slots);
         gpu_extra_cpu_gpu_array dynamicMeshPositionOffsetted = list->dynamic_mesh_position;
         gpu_extra_cpu_gpu_array dynamicMeshColorOffsetted    = list->dynamic_mesh_color;
+        // NOTE(Constantine): Intel GPUs want 64 byte aligned array start addresses.
+        while (REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(list->dynamicMeshPositionVec4Offset * sizeof(ReiiVec4), 64) > 0) {
+          list->dynamicMeshPositionVec4Offset += 1;
+        }
+        while (REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(list->dynamicMeshColorVec4Offset * sizeof(ReiiVec4), 64) > 0) {
+          list->dynamicMeshColorVec4Offset += 1;
+        }
         vfeCpuGpuArrayOffset(&dynamicMeshPositionOffsetted, list->dynamicMeshPositionVec4Offset * sizeof(ReiiVec4));
         vfeCpuGpuArrayOffset(&dynamicMeshColorOffsetted, list->dynamicMeshColorVec4Offset * sizeof(ReiiVec4));
         reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 0, 1, &dynamicMeshPositionOffsetted.gpu);
