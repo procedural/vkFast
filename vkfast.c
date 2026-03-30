@@ -18,6 +18,9 @@
 #include <Windows.h>
 #endif
 
+// Profile
+#include "extra/profile/profile.h"
+
 static void vfInternalPrint(const char * string) {
   red32OutputDebugString(string);
   red32ConsolePrint(string);
@@ -2183,6 +2186,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
     REDGPU_2_EXPECTWG(swapGpuSignal != NULL);
   }
 
+  profileBegin("redPresentGetImageIndex()");
   np(redPresentGetImageIndex,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
@@ -2195,6 +2199,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
+  profileEnd("redPresentGetImageIndex()");
 
   if (out_optional_is_pixels_copy_finished_cpu_signal_index != NULL) {
     out_optional_is_pixels_copy_finished_cpu_signal_index[0] = presentImageIndex;
@@ -2260,7 +2265,9 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
 
   if (copy_pixels != NULL) {
     // NOTE(Constantine): The reason we copy pixels here is because vkfast->screenWidth/Height were updated in a potential vfInternalRebuildPresent call above.
+    profileBegin("red32MemoryCopy()");
     red32MemoryCopy(vkfast->presentPixelsCpuUpload_void_ptr_original, copy_pixels, sizeof(unsigned char) * 4 * vkfast->screenHeight * vkfast->screenWidth);
+    profileEnd("red32MemoryCopy()");
   }
 
   RedCalls * calls = &vkfast->presentCopyCalls[presentImageIndex];
@@ -2425,6 +2432,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
 
   RedStatus queuePresentStatus = RED_STATUS_SUCCESS;
   RedStatuses queuePresentStatuses = {0};
+  profileBegin("redQueuePresent()");
   np(redQueuePresent,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
@@ -2440,6 +2448,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
+  profileEnd("redQueuePresent()");
   REDGPU_2_EXPECTWG(queuePresentStatus == RED_STATUS_SUCCESS || queuePresentStatus == RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE);
   REDGPU_2_EXPECTWG(queuePresentStatuses.status == RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(queuePresentStatuses.statusError == RED_STATUS_SUCCESS || queuePresentStatuses.statusError == RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE);

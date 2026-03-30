@@ -27,6 +27,10 @@ exit
 // Dear ImGui 2016
 #include "../../extra/Dear ImGui 2016/imgui_reii.h"
 
+// Profile
+#include "../../extra/profile/profile.h"
+#pragma comment(lib, "../../../extra/profile/profiledll.lib")
+
 #define countof(x) (sizeof(x) / sizeof((x)[0]))
 
 #define FF __FILE__
@@ -190,7 +194,7 @@ int main() {
   optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
 
   // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
-  gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
+  gpu_handle_context_t ctx = vfContextInitEx(1, 0, &optional_parameters, FF, LL);
   vfWindowFullscreen(ctx, window_handle, "[vkFast] REII Dear ImGui 2016", window_w, window_h, 0, FF, LL);
 
   gpu_storage_t storage_gpu_only     = {0};
@@ -544,7 +548,11 @@ int main() {
   unsigned frame = 0;
 
   while (glfwWindowShouldClose(window) == 0) {
+    profileBegin("glfwPollEvents()");
     glfwPollEvents();
+    profileEnd("glfwPollEvents()");
+
+    profileBegin("frame");
 
     int os_window_w = 0;
     int os_window_h = 0;
@@ -802,8 +810,12 @@ int main() {
     reiiCommandCopyFromColorTextureToStorageRaw(ctx, list, outputtex, &raw_pixels);
     vfBatchEnd(ctx, batch, FF, LL);
     {
+      profileBegin("vfAsyncBatchExecute()");
       uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+      profileEnd("vfAsyncBatchExecute()");
+      profileBegin("vfAsyncWaitToFinish()");
       vfAsyncWaitToFinish(ctx, wait, FF, LL);
+      profileEnd("vfAsyncWaitToFinish()");
     }
 
     igRender();
@@ -813,12 +825,20 @@ int main() {
     reiiCommandCopyFromColorTextureToStorageRaw(ctx, list, outputtex, &raw_pixels);
     vfBatchEnd(ctx, batch, FF, LL);
     {
+      profileBegin("vfAsyncBatchExecute()");
       uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+      profileEnd("vfAsyncBatchExecute()");
+      profileBegin("vfAsyncWaitToFinish()");
       vfAsyncWaitToFinish(ctx, wait, FF, LL);
+      profileEnd("vfAsyncWaitToFinish()");
     }
 
+    profileBegin("vfAsyncDrawPixelsRaw()");
     vfAsyncDrawPixelsRaw(ctx, &raw_pixels, NULL, FF, LL);
+    profileEnd("vfAsyncDrawPixelsRaw()");
+    profileBegin("vfAsyncDrawWaitToFinish()");
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
+    profileEnd("vfAsyncDrawWaitToFinish()");
 
     mouse_x_prev = mouse_x;
     mouse_y_prev = mouse_y;
@@ -835,6 +855,8 @@ int main() {
       double milliseconds_fp = (double)(nanoseconds) / 1000000.0;
       //printf("Elapsed milliseconds: %f\n", milliseconds_fp);
     }
+
+    profileEnd("frame");
   }
 
   imguiDeinit();
