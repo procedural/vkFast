@@ -378,8 +378,6 @@ static inline void imguiCreateFontTexture() {
   int bpp    = 0;
   ImFontAtlas_GetTexDataAsRGBA32(io->fonts, &data, &width, &height, &bpp);
 
-  globalImguiState->gpuSampler = reiiCreateSampler(globalImguiState->gpuContext, NULL, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, 1);
-
   reiiCreateTextureFromTextureMemory(globalImguiState->gpuContext, &globalImguiState->gpuFontAtlasMemory, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas);
   reiiTextureSetStateMipmap(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas, 0);
   reiiTextureSetStateMipmapLevelsCount(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas, 1);
@@ -472,6 +470,8 @@ static inline void imguiCreateDeviceObjects() {
   globalImguiState->gpuMeshState.outputColorBlendAlphaOp                        = REII_BLEND_OP_ADD;
   reiiMeshStateCompile(globalImguiState->gpuContext, &globalImguiState->gpuMeshState);
 
+  globalImguiState->gpuSampler = reiiCreateSampler(globalImguiState->gpuContext, NULL, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, 1);
+
   imguiCreateFontTexture();
 }
 
@@ -511,17 +511,23 @@ static inline void imguiNewFrame() {
   igNewFrame();
 }
 
+static inline void imguiInvalidateFontTexture() {
+  ImguiIO * io = (ImguiIO *)igGetIO();
+  reiiDestroyEx(globalImguiState->gpuContext, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, &globalImguiState->gpuFontAtlas);
+  reiiResetTextureMemory(globalImguiState->gpuContext, &globalImguiState->gpuFontAtlasMemory);
+  ImFontAtlas_SetTexID(io->fonts, 0);
+}
+
 static inline void imguiInvalidateDeviceObjects() {
   ImguiIO * io = (ImguiIO *)igGetIO();
+  imguiInvalidateFontTexture();
   reiiDestroyEx(globalImguiState->gpuContext, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, &globalImguiState->gpuCommandList);
   reiiDestroyEx(globalImguiState->gpuContext, GPU_EXTRA_REII_DESTROY_TYPE_SAMPLER, globalImguiState->gpuSampler);
-  reiiDestroyEx(globalImguiState->gpuContext, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, &globalImguiState->gpuFontAtlas);
   reiiDestroyEx(globalImguiState->gpuContext, GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE, &globalImguiState->gpuMeshState);
   uint64_t ids[] = {
     globalImguiState->gpuBatch,
   };
   vfIdDestroy(_countof(ids), ids, __FILE__, __LINE__);
-  ImFontAtlas_SetTexID(io->fonts, 0);
 }
 
 static inline void imguiDeinit() {

@@ -507,6 +507,8 @@ int main() {
 
   // NOTE(Constantine): For VS 2019, make sure to copy NotoSans.ttf file to project's folder.
   ImFontAtlas_AddFontFromFileTTF(io->fonts, "NotoSans.ttf", 21, NULL, NULL);
+  imguiInvalidateFontTexture();
+  imguiCreateFontTexture();
 
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
