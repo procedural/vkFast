@@ -209,6 +209,7 @@ typedef struct ImguiState {
   RedHandleSampler        gpuSampler;
   uint64_t                gpuBatch;
   ReiiHandleCommandList   gpuCommandList;
+  uint64_t                gpuMaxNewBindingsSetsCount;
   gpu_extra_cpu_gpu_array gpuDynamicMeshPosition;
   gpu_extra_cpu_gpu_array gpuDynamicMeshColor;
   Red2Output *            gpuMutableOutputsArray;
@@ -240,12 +241,10 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
   }
   ImDrawData_ScaleClipRects((struct ImDrawData *)drawData, io->displayFramebufferScale);
 
-  const uint64_t num_of_structs_to_allocate = 100; // NOTE(Constantine): Maybe need more?
-
   gpu_batch_info_t bindings_info = {0};
-  bindings_info.max_new_bindings_sets_count = num_of_structs_to_allocate;
-  bindings_info.max_storage_binds_count     = 2 * num_of_structs_to_allocate;
-  bindings_info.max_texture_ro_binds_count  = 1 * num_of_structs_to_allocate;
+  bindings_info.max_new_bindings_sets_count = globalImguiState->gpuMaxNewBindingsSetsCount;
+  bindings_info.max_storage_binds_count     = 2 * globalImguiState->gpuMaxNewBindingsSetsCount;
+  bindings_info.max_texture_ro_binds_count  = 1 * globalImguiState->gpuMaxNewBindingsSetsCount;
   bindings_info.max_sampler_binds_count     = 1; // NOTE(Constantine): Intentionally not multiplying by num_of_structs_to_allocate: samplers are global, not per-struct.
   globalImguiState->gpuBatch = vfBatchBegin(globalImguiState->gpuContext, globalImguiState->gpuBatch, &bindings_info, NULL, __FILE__, __LINE__);
   ReiiHandleCommandList * list = &globalImguiState->gpuCommandList;
@@ -290,8 +289,12 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
         slots[2].count           = 1;
         slots[2].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT;
         reiiCommandBindNewBindingsSet(globalImguiState->gpuContext, list, _countof(slots), slots);
-        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 0, 1, &list->dynamic_mesh_position.gpu); // NOTE(Constantine):
-        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 1, 1, &list->dynamic_mesh_color.gpu);    // I need to fix these two binds, since they're not moving with the loop, so I need to use push constants to offset into this memory.
+        gpu_extra_cpu_gpu_array dynamicMeshPositionOffsetted = list->dynamic_mesh_position;
+        gpu_extra_cpu_gpu_array dynamicMeshColorOffsetted    = list->dynamic_mesh_color;
+        vfeCpuGpuArrayOffset(&dynamicMeshPositionOffsetted, list->dynamicMeshPositionVec4Offset * sizeof(ReiiVec4));
+        vfeCpuGpuArrayOffset(&dynamicMeshColorOffsetted, list->dynamicMeshColorVec4Offset * sizeof(ReiiVec4));
+        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 0, 1, &dynamicMeshPositionOffsetted.gpu);
+        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 1, 1, &dynamicMeshColorOffsetted.gpu);
         RedStructMemberTexture texture = {0};
         texture.sampler = NULL;
         texture.texture = textureToBind->texture;
@@ -526,6 +529,7 @@ static inline void imguiInit(
   gpu_handle_context_t    context,
   ReiiHandleTextureMemory fontAtlasMemory,
   ReiiCpuScratchBuffer    fontAtlasScratchBuffer,
+  uint64_t                maxNewBindingsSetsCount,
   gpu_extra_cpu_gpu_array dynamicMeshPosition,
   gpu_extra_cpu_gpu_array dynamicMeshColor,
   uint64_t                mutableOutputsArrayMaxCapacity,
@@ -535,14 +539,15 @@ static inline void imguiInit(
 {
   ImguiIO * io = (ImguiIO *)igGetIO();
 
-  globalImguiState->window                    = window;
-  globalImguiState->gpuContext                = context;
-  globalImguiState->gpuFontAtlasMemory        = fontAtlasMemory;
-  globalImguiState->gpuFontAtlasScratchBuffer = fontAtlasScratchBuffer;
-  globalImguiState->gpuDynamicMeshPosition    = dynamicMeshPosition;
-  globalImguiState->gpuDynamicMeshColor       = dynamicMeshColor;
-  globalImguiState->gpuMutableOutputsArray    = mutableOutputsArray;
-  globalImguiState->gpuOutputTexture          = outputTexture;
+  globalImguiState->window                     = window;
+  globalImguiState->gpuContext                 = context;
+  globalImguiState->gpuFontAtlasMemory         = fontAtlasMemory;
+  globalImguiState->gpuFontAtlasScratchBuffer  = fontAtlasScratchBuffer;
+  globalImguiState->gpuMaxNewBindingsSetsCount = maxNewBindingsSetsCount;
+  globalImguiState->gpuDynamicMeshPosition     = dynamicMeshPosition;
+  globalImguiState->gpuDynamicMeshColor        = dynamicMeshColor;
+  globalImguiState->gpuMutableOutputsArray     = mutableOutputsArray;
+  globalImguiState->gpuOutputTexture           = outputTexture;
 
   globalImguiState->gpuCommandList.mutable_outputs_array.items    = globalImguiState->gpuMutableOutputsArray;
   globalImguiState->gpuCommandList.mutable_outputs_array.capacity = mutableOutputsArrayMaxCapacity;

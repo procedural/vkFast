@@ -490,6 +490,7 @@ int main() {
     ctx,
     imgui_fontAtlasMemory,
     imgui_fontAtlas_upload_scratch_buffer,
+    100,
     imgui_dynamicMeshPosition,
     imgui_dynamicMeshColor,
     100,
@@ -658,7 +659,10 @@ int main() {
     static bool showTestWindow = 1;
     igShowTestWindow(&showTestWindow);
 #if 0
-    {
+    static bool styleOnce = 1;
+    if (styleOnce == 1) {
+      styleOnce = 0;
+
       // Flat UI by yorick.penninks: https://color.adobe.com/Flat-UI-color-theme-2469224/
       static ImVec3 color_for_text = {236 / 255.f, 240 / 255.f, 241 / 255.f};
       static ImVec3 color_for_head = { 41 / 255.f, 128 / 255.f, 185 / 255.f};
@@ -687,6 +691,17 @@ int main() {
       igColorEdit3("Pops", &color_for_pops.x);
 
       imguiEasyTheming(color_for_text, color_for_head, color_for_area, color_for_body, color_for_pops);
+
+      {
+        ImguiStyle * style = (ImguiStyle *)igGetStyle();
+        for (int i = 0; i < IMGUI_COLOR_COUNT; i += 1) {
+          float x = style->colors[i].x;
+          float y = style->colors[i].y;
+          float z = style->colors[i].z;
+          float w = style->colors[i].w;
+          style->colors[i] = (ImVec4){x*x, y*y, z*z, w};
+        }
+      }
     }
 #endif
 

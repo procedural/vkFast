@@ -55,3 +55,17 @@ GPU_API_PRE void GPU_API_POST vfeCpuGpuArrayBatchCopyFromGpuToCpu(gpu_handle_con
     "ranges", &range
   );
 }
+
+GPU_API_PRE void GPU_API_POST vfeCpuGpuArrayOffset(gpu_extra_cpu_gpu_array * cpu_gpu_array, uint64_t bytes_offset) {
+  REDGPU_2_EXPECTFL(bytes_offset <= cpu_gpu_array->gpu.arrayRangeBytesCount);
+
+  unsigned char * cpu_ptr = (unsigned char *)cpu_gpu_array->cpu_ptr;
+  cpu_ptr += bytes_offset;
+  cpu_gpu_array->cpu_ptr = cpu_ptr;
+
+  cpu_gpu_array->cpu.arrayRangeBytesFirst += bytes_offset;
+  cpu_gpu_array->cpu.arrayRangeBytesCount -= bytes_offset;
+
+  cpu_gpu_array->gpu.arrayRangeBytesFirst += bytes_offset;
+  cpu_gpu_array->gpu.arrayRangeBytesCount -= bytes_offset;
+}
