@@ -817,8 +817,10 @@ int main() {
       vfAsyncWaitToFinish(ctx, wait, FF, LL);
     }
 
-    vfAsyncDrawPixelsRaw(ctx, &raw_pixels, NULL, FF, LL);
+    // NOTE(Constantine)(Mar 30, 2026):
+    // Calling vfAsyncDrawWaitToFinish() *before* vfAsyncDrawPixelsRaw() increases perf for Intel iGPUs.
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
+    vfAsyncDrawPixelsRaw(ctx, &raw_pixels, NULL, FF, LL);
 
     mouse_x_prev = mouse_x;
     mouse_y_prev = mouse_y;
