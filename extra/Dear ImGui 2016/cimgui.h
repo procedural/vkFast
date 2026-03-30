@@ -423,6 +423,11 @@ CIMGUI_API CONST ImWchar*   ImFontAtlas_GetGlyphRangesKorean(struct ImFontAtlas*
 CIMGUI_API CONST ImWchar*   ImFontAtlas_GetGlyphRangesJapanese(struct ImFontAtlas* atlas);
 CIMGUI_API CONST ImWchar*   ImFontAtlas_GetGlyphRangesChinese(struct ImFontAtlas* atlas);
 CIMGUI_API CONST ImWchar*   ImFontAtlas_GetGlyphRangesCyrillic(struct ImFontAtlas* atlas);
+CIMGUI_API CONST int        ImFontAtlas_GetFontsCount(struct ImFontAtlas* atlas);
+CIMGUI_API CONST char *     ImFontAtlas_GetFontName(struct ImFontAtlas* atlas, int fontIndex);
+CIMGUI_API CONST float      ImFontAtlas_GetFontSize(struct ImFontAtlas* atlas, int fontIndex);
+CIMGUI_API CONST int        ImFontAtlas_GetFontGlyphsCount(struct ImFontAtlas* atlas, int fontIndex);
+CIMGUI_API CONST void       ImFontAtlas_SetFontAsDefault(struct ImFontAtlas* atlas, int fontIndex);
 
 CIMGUI_API void             ImGuiIO_AddInputCharacter(unsigned short c);
 CIMGUI_API void             ImGuiIO_AddInputCharactersUTF8(CONST char* utf8_chars);

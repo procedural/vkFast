@@ -67,22 +67,52 @@ CIMGUI_API CONST ImWchar* ImFontAtlas_GetGlyphRangesDefault(struct ImFontAtlas* 
 	return atlas->GetGlyphRangesDefault();
 }
 
-CIMGUI_API CONST ImWchar*   ImFontAtlas_GetGlyphRangesKorean(struct ImFontAtlas* atlas)
+CIMGUI_API CONST ImWchar* ImFontAtlas_GetGlyphRangesKorean(struct ImFontAtlas* atlas)
 {
 	return atlas->GetGlyphRangesKorean();
 }
 
-CIMGUI_API CONST ImWchar*   ImFontAtlas_GetGlyphRangesJapanese(struct ImFontAtlas* atlas)
+CIMGUI_API CONST ImWchar* ImFontAtlas_GetGlyphRangesJapanese(struct ImFontAtlas* atlas)
 {
 	return atlas->GetGlyphRangesJapanese();
 }
 
-CIMGUI_API CONST ImWchar*   ImFontAtlas_GetGlyphRangesChinese(struct ImFontAtlas* atlas)
+CIMGUI_API CONST ImWchar* ImFontAtlas_GetGlyphRangesChinese(struct ImFontAtlas* atlas)
 {
 	return atlas->GetGlyphRangesChinese();
 }
 
-CIMGUI_API CONST ImWchar*   ImFontAtlas_GetGlyphRangesCyrillic(struct ImFontAtlas* atlas)
+CIMGUI_API CONST ImWchar* ImFontAtlas_GetGlyphRangesCyrillic(struct ImFontAtlas* atlas)
 {
 	return atlas->GetGlyphRangesCyrillic();
+}
+
+CIMGUI_API CONST int ImFontAtlas_GetFontsCount(struct ImFontAtlas* atlas)
+{
+	return atlas->Fonts.Size;
+}
+
+CIMGUI_API CONST char * ImFontAtlas_GetFontName(struct ImFontAtlas* atlas, int fontIndex)
+{
+  ImFont* font = atlas->Fonts[fontIndex];
+	return font->ConfigData ? font->ConfigData[0].Name : NULL;
+}
+
+CIMGUI_API CONST float ImFontAtlas_GetFontSize(struct ImFontAtlas* atlas, int fontIndex)
+{
+  ImFont* font = atlas->Fonts[fontIndex];
+	return font->FontSize;
+}
+
+CIMGUI_API CONST int ImFontAtlas_GetFontGlyphsCount(struct ImFontAtlas* atlas, int fontIndex)
+{
+  ImFont* font = atlas->Fonts[fontIndex];
+  return font->Glyphs.Size;
+}
+
+CIMGUI_API CONST void ImFontAtlas_SetFontAsDefault(struct ImFontAtlas* atlas, int fontIndex)
+{
+  ImFont* font = atlas->Fonts[fontIndex];
+  atlas->Fonts[fontIndex] = atlas->Fonts[0];
+  atlas->Fonts[0] = font;
 }

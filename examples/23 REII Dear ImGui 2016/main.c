@@ -508,9 +508,11 @@ int main() {
   style->frameRounding     = 0;
 
   // NOTE(Constantine): For VS 2019, make sure to copy NotoSans.ttf file to project's folder.
-  ImFontAtlas_AddFontFromFileTTF(io->fonts, "NotoSans.ttf", 21, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
+  ImFontAtlas_AddFontFromFileTTF(io->fonts, "NotoSans.ttf", 22, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
   imguiInvalidateFontTexture();
   imguiCreateFontTexture();
+  REDGPU_2_EXPECTFL(ImFontAtlas_GetFontsCount(io->fonts) == 2);
+  ImFontAtlas_SetFontAsDefault(io->fonts, 1);
 
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
