@@ -738,30 +738,6 @@ int main() {
     }
 #endif
 
-    if (glfwGetKey(window, GLFW_KEY_R) == 1) {
-      // NOTE(Constantine):
-      // Replace compiler and shader paths below to yours.
-
-      // Recompile mesh states
-      reiiMeshStateRecompileEx(ctx, &mesh_state,
-
-        "C:/Programs/Dxc/dxc.exe"
-          " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
-          " -DVS -T vs_6_0 -Fo"
-          " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv\""
-          " -spirv",
-
-        "C:/Programs/Dxc/dxc.exe"
-          " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
-          " -DFS -T ps_6_0 -Fo"
-          " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv\""
-          " -spirv",
-
-        L"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv",
-        L"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv"
-      );
-    }
-
     gpu_batch_info_t bindings_info = {0};
     bindings_info.max_new_bindings_sets_count = 1;
     bindings_info.max_storage_binds_count     = 1;
