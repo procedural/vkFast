@@ -214,9 +214,12 @@ typedef struct ImguiState {
   gpu_extra_cpu_gpu_array gpuDynamicMeshColor;
   Red2Output *            gpuMutableOutputsArray;
   ReiiHandleTexture *     gpuOutputTexture;
+  unsigned                gpuOptionalQueueFamilyIndex;
+  RedHandleQueue          gpuOptionalQueue;
   double                  time;
   float                   mouseWheel;
   int                     mousePressed[3];
+  ReiiBool32              processInputs;
 } ImguiState;
 
 ImguiState   globalImguiStateData = {0};
@@ -246,7 +249,11 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
   bindings_info.max_storage_binds_count     = 2 * globalImguiState->gpuMaxNewBindingsSetsCount;
   bindings_info.max_texture_ro_binds_count  = 1 * globalImguiState->gpuMaxNewBindingsSetsCount;
   bindings_info.max_sampler_binds_count     = 1; // NOTE(Constantine): Intentionally not multiplying by num_of_structs_to_allocate: samplers are global, not per-struct.
-  globalImguiState->gpuBatch = vfBatchBegin(globalImguiState->gpuContext, globalImguiState->gpuBatch, &bindings_info, NULL, __FILE__, __LINE__);
+  if (globalImguiState->gpuOptionalQueue == NULL) {
+    globalImguiState->gpuBatch = vfBatchBegin(globalImguiState->gpuContext, globalImguiState->gpuBatch, &bindings_info, NULL, __FILE__, __LINE__);
+  } else {
+    globalImguiState->gpuBatch = vfBatchBeginEx(globalImguiState->gpuContext, globalImguiState->gpuBatch, &bindings_info, globalImguiState->gpuOptionalQueueFamilyIndex, NULL, __FILE__, __LINE__);
+  }
   ReiiHandleCommandList * list = &globalImguiState->gpuCommandList;
   list->batch_id = globalImguiState->gpuBatch;
   reiiCommandListReset(globalImguiState->gpuContext, list);
@@ -326,7 +333,12 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
   }
   vfBatchEnd(globalImguiState->gpuContext, globalImguiState->gpuBatch, __FILE__, __LINE__);
 
-  uint64_t wait = vfAsyncBatchExecute(globalImguiState->gpuContext, 1, &globalImguiState->gpuBatch, __FILE__, __LINE__);
+  uint64_t wait = 0;
+  if (globalImguiState->gpuOptionalQueue == NULL) {
+    wait = vfAsyncBatchExecute(globalImguiState->gpuContext, 1, &globalImguiState->gpuBatch, __FILE__, __LINE__);
+  } else {
+    wait = vfAsyncBatchExecuteEx(globalImguiState->gpuContext, globalImguiState->gpuOptionalQueue, 1, &globalImguiState->gpuBatch, __FILE__, __LINE__);
+  }
   vfAsyncWaitToFinish(globalImguiState->gpuContext, wait, __FILE__, __LINE__);
 }
 
@@ -339,6 +351,9 @@ void imguiGLFW3ClipboardTextSet(char * text) {
 }
 
 void imguiGLFW3MouseButtonCallback(GLFWwindow * window, int button, int action, int mods) {
+  if (globalImguiState->processInputs == 0) {
+    return;
+  }
   if (action == GLFW_PRESS && button >= 0 && button < 3) {
     globalImguiState->mousePressed[button] = 1;
   }
@@ -346,11 +361,23 @@ void imguiGLFW3MouseButtonCallback(GLFWwindow * window, int button, int action, 
 
 void imguiGLFW3ScrollCallback(GLFWwindow * window, double xoffset, double yoffset) {
   ImguiIO * io = (ImguiIO *)igGetIO();
+  if (globalImguiState->processInputs == 0) {
+    globalImguiState->mouseWheel = 0;
+    return;
+  }
   globalImguiState->mouseWheel = (float)yoffset;
 }
 
 void imguiGLFW3KeyCallback(GLFWwindow * window, int key, int keycode, int action, int mods) {
   ImguiIO * io = (ImguiIO *)igGetIO();
+  if (globalImguiState->processInputs == 0) {
+    io->keysDown[key] = 0;
+    io->keyCtrl  = 0;
+    io->keyShift = 0;
+    io->keyAlt   = 0;
+    io->keySuper = 0;
+    return;
+  }
   if (action == GLFW_PRESS) {
     io->keysDown[key] = 1;
   }
@@ -364,6 +391,9 @@ void imguiGLFW3KeyCallback(GLFWwindow * window, int key, int keycode, int action
 }
 
 void imguiGLFW3CharCallback(GLFWwindow * window, unsigned int c) {
+  if (globalImguiState->processInputs == 0) {
+    return;
+  }
   if (c > 0 && c < 0x10000) {
     ImGuiIO_AddInputCharacter((unsigned short)c);
   }
@@ -491,7 +521,7 @@ static inline void imguiNewFrame() {
   io->deltaTime = globalImguiState->time > 0.0 ? (float)(currentTime - globalImguiState->time) : (float)(1.0f / 60.0f);
   globalImguiState->time = currentTime;
 
-  if (glfwGetWindowAttrib(globalImguiState->window, GLFW_FOCUSED)) {
+  if (globalImguiState->processInputs == 1 && glfwGetWindowAttrib(globalImguiState->window, GLFW_FOCUSED)) {
     double mouse_x = 0;
     double mouse_y = 0;
     glfwGetCursorPos(globalImguiState->window, &mouse_x, &mouse_y);
@@ -501,7 +531,11 @@ static inline void imguiNewFrame() {
   }
 
   for (int i = 0; i < 3; i += 1) {
-    io->mouseDown[i] = globalImguiState->mousePressed[i] == 1 || glfwGetMouseButton(globalImguiState->window, i) != 0; // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+    if (globalImguiState->processInputs == 1) {
+      io->mouseDown[i] = globalImguiState->mousePressed[i] == 1 || glfwGetMouseButton(globalImguiState->window, i) != 0; // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+    } else {
+      io->mouseDown[i] = 0;
+    }
     globalImguiState->mousePressed[i] = 0;
   }
 
@@ -547,20 +581,24 @@ static inline void imguiInit(
   gpu_extra_cpu_gpu_array dynamicMeshColor,
   uint64_t                mutableOutputsArrayMaxCapacity,
   Red2Output *            mutableOutputsArray,
-  ReiiHandleTexture *     outputTexture
+  ReiiHandleTexture *     outputTexture,
+  unsigned                optionalQueueFamilyIndex,
+  RedHandleQueue          optionalQueue
 )
 {
   ImguiIO * io = (ImguiIO *)igGetIO();
 
-  globalImguiState->window                     = window;
-  globalImguiState->gpuContext                 = context;
-  globalImguiState->gpuFontAtlasMemory         = fontAtlasMemory;
-  globalImguiState->gpuFontAtlasScratchBuffer  = fontAtlasScratchBuffer;
-  globalImguiState->gpuMaxNewBindingsSetsCount = maxNewBindingsSetsCount;
-  globalImguiState->gpuDynamicMeshPosition     = dynamicMeshPosition;
-  globalImguiState->gpuDynamicMeshColor        = dynamicMeshColor;
-  globalImguiState->gpuMutableOutputsArray     = mutableOutputsArray;
-  globalImguiState->gpuOutputTexture           = outputTexture;
+  globalImguiState->window                      = window;
+  globalImguiState->gpuContext                  = context;
+  globalImguiState->gpuFontAtlasMemory          = fontAtlasMemory;
+  globalImguiState->gpuFontAtlasScratchBuffer   = fontAtlasScratchBuffer;
+  globalImguiState->gpuMaxNewBindingsSetsCount  = maxNewBindingsSetsCount;
+  globalImguiState->gpuDynamicMeshPosition      = dynamicMeshPosition;
+  globalImguiState->gpuDynamicMeshColor         = dynamicMeshColor;
+  globalImguiState->gpuMutableOutputsArray      = mutableOutputsArray;
+  globalImguiState->gpuOutputTexture            = outputTexture;
+  globalImguiState->gpuOptionalQueueFamilyIndex = optionalQueueFamilyIndex;
+  globalImguiState->gpuOptionalQueue            = optionalQueue;
 
   globalImguiState->gpuCommandList.mutable_outputs_array.items    = globalImguiState->gpuMutableOutputsArray;
   globalImguiState->gpuCommandList.mutable_outputs_array.capacity = mutableOutputsArrayMaxCapacity;
@@ -597,6 +635,10 @@ static inline void imguiInit(
   glfwSetCharCallback(window,        imguiGLFW3CharCallback);
 
   imguiCreateDeviceObjects();
+}
+
+void imguiSetProcessInputsState(ReiiBool32 enable) {
+  globalImguiState->processInputs = enable;
 }
 
 static inline void imguiEasyTheming(ImVec3 colorText, ImVec3 colorHead, ImVec3 colorArea, ImVec3 colorBody, ImVec3 colorPops) {

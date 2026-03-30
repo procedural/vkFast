@@ -3,7 +3,7 @@ clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/Red
 exit
 #endif
 
-#include "../../vkfast.h"
+#include "../../vkfast_ex.h"
 #include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
 
@@ -486,16 +486,18 @@ int main() {
 
   Red2Output imgui_mutableOutputsArray[100] = {0}; // NOTE(Constantine): Maybe need more?
   imguiInit(
-    window,
-    ctx,
-    imgui_fontAtlasMemory,
-    imgui_fontAtlas_upload_scratch_buffer,
-    100,
-    imgui_dynamicMeshPosition,
-    imgui_dynamicMeshColor,
-    100,
-    imgui_mutableOutputsArray,
-    outputtex
+    window, // GLFWwindow * window
+    ctx, // gpu_handle_context_t context
+    imgui_fontAtlasMemory, // ReiiHandleTextureMemory fontAtlasMemory
+    imgui_fontAtlas_upload_scratch_buffer, // ReiiCpuScratchBuffer fontAtlasScratchBuffer
+    100, // uint64_t maxNewBindingsSetsCount
+    imgui_dynamicMeshPosition, // gpu_extra_cpu_gpu_array dynamicMeshPosition
+    imgui_dynamicMeshColor, // gpu_extra_cpu_gpu_array dynamicMeshColor
+    100, // uint64_t mutableOutputsArrayMaxCapacity
+    imgui_mutableOutputsArray, // Red2Output * mutableOutputsArray
+    outputtex, // ReiiHandleTexture * outputTexture
+    0, // unsigned optionalQueueFamilyIndex
+    NULL // RedHandleQueue optionalQueue
   );
 
   ImguiIO    * io    = (ImguiIO *)igGetIO();
@@ -552,6 +554,7 @@ int main() {
     LARGE_INTEGER t_start = {0};
     QueryPerformanceCounter(&t_start);
 
+    imguiSetProcessInputsState(!camera_is_enabled);
     imguiNewFrame();
 
     {
