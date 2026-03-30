@@ -530,6 +530,8 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
     REDGPU_2_EXPECTWG(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)memoryCpuReadback_mapped_void_ptr, gpuInfo->minMemoryAllocateBytesAlignment)); // NOTE(Constantine): Start address is guaranteed to be aligned.
   }
 
+  REDGPU_2_EXPECTWG(gpuInfo->minArrayRORWStructMemberRangeBytesAlignment <= 64);
+
   // Filling
   vf_handle_context_t;
   vkfast->doNotDestroyRawContext;
