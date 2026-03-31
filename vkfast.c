@@ -349,60 +349,147 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
       specificMemoryTypesCpuReadback = 2; // NOTE(Constantine): The cpu cached one.
 
     } else if (gpuInfo->gpuVendorId == 4098/*AMD Radeon*/) { // NOTE(Constantine): Tested on AMD RX 550 and Windows 10.
-      unsigned      memoryTypesCount = 0;
-      RedMemoryType memoryTypes[32]  = {0};
-      unsigned      memoryHeapsCount = 0;
-      RedMemoryHeap memoryHeaps[32]  = {0};
 
-      memoryTypesCount = 4;
-      memoryHeapsCount = 3;
+      // /* Navi12 */
+      // https://github.com/torvalds/linux/blob/d0c3bcd5b8976159d835a897254048e078f447e6/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c#L2128-L2129
+      if (
+        gpuInfo->gpuDeviceId == 0x7360 ||
+        gpuInfo->gpuDeviceId == 0x7362
+      )
+      {
+        unsigned      memoryTypesCount = 0;
+        RedMemoryType memoryTypes[32]  = {0};
+        unsigned      memoryHeapsCount = 0;
+        RedMemoryHeap memoryHeaps[32]  = {0};
 
-      memoryTypes[0].memoryHeapIndex = 0;
-      memoryTypes[0].isGpuVram       = 1;
-      memoryTypes[0].isCpuMappable   = 0;
-      memoryTypes[0].isCpuCoherent   = 0;
-      memoryTypes[0].isCpuCached     = 0;
+        memoryTypesCount = 8;
+        memoryHeapsCount = 2;
 
-      memoryTypes[1].memoryHeapIndex = 1;
-      memoryTypes[1].isGpuVram       = 0;
-      memoryTypes[1].isCpuMappable   = 1;
-      memoryTypes[1].isCpuCoherent   = 1;
-      memoryTypes[1].isCpuCached     = 0;
+        memoryTypes[0].memoryHeapIndex = 1;
+        memoryTypes[0].isGpuVram       = 1;
+        memoryTypes[0].isCpuMappable   = 0;
+        memoryTypes[0].isCpuCoherent   = 0;
+        memoryTypes[0].isCpuCached     = 0;
 
-      memoryTypes[2].memoryHeapIndex = 2;
-      memoryTypes[2].isGpuVram       = 1;
-      memoryTypes[2].isCpuMappable   = 1;
-      memoryTypes[2].isCpuCoherent   = 1;
-      memoryTypes[2].isCpuCached     = 0;
+        memoryTypes[1].memoryHeapIndex = 0;
+        memoryTypes[1].isGpuVram       = 0;
+        memoryTypes[1].isCpuMappable   = 1;
+        memoryTypes[1].isCpuCoherent   = 1;
+        memoryTypes[1].isCpuCached     = 0;
 
-      memoryTypes[3].memoryHeapIndex = 1;
-      memoryTypes[3].isGpuVram       = 0;
-      memoryTypes[3].isCpuMappable   = 1;
-      memoryTypes[3].isCpuCoherent   = 1;
-      memoryTypes[3].isCpuCached     = 1;
+        memoryTypes[2].memoryHeapIndex = 1;
+        memoryTypes[2].isGpuVram       = 1;
+        memoryTypes[2].isCpuMappable   = 1;
+        memoryTypes[2].isCpuCoherent   = 1;
+        memoryTypes[2].isCpuCached     = 0;
 
-      memoryHeaps[0].memoryBytesCount = 1800000000;
-      memoryHeaps[0].isGpuVram        = 1;
+        memoryTypes[3].memoryHeapIndex = 0;
+        memoryTypes[3].isGpuVram       = 0;
+        memoryTypes[3].isCpuMappable   = 1;
+        memoryTypes[3].isCpuCoherent   = 1;
+        memoryTypes[3].isCpuCached     = 1;
 
-      memoryHeaps[1].memoryBytesCount = 2000000000;
-      memoryHeaps[1].isGpuVram        = 0;
+        memoryTypes[4].memoryHeapIndex = 1;
+        memoryTypes[4].isGpuVram       = 1;
+        memoryTypes[4].isCpuMappable   = 0;
+        memoryTypes[4].isCpuCoherent   = 0;
+        memoryTypes[4].isCpuCached     = 0;
 
-      memoryHeaps[2].memoryBytesCount = 200000000;
-      memoryHeaps[2].isGpuVram        = 1;
+        memoryTypes[5].memoryHeapIndex = 0;
+        memoryTypes[5].isGpuVram       = 0;
+        memoryTypes[5].isCpuMappable   = 1;
+        memoryTypes[5].isCpuCoherent   = 1;
+        memoryTypes[5].isCpuCached     = 0;
 
-      np(red2ExpectMemoryTypes,
-        "gpuInfo", gpuInfo,
-        "expectedMemoryHeapsCount", memoryHeapsCount,
-        "expectedMemoryHeaps", memoryHeaps,
-        "expectedMemoryTypesCount", memoryTypesCount,
-        "expectedMemoryTypes", memoryTypes,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine
-      );
+        memoryTypes[6].memoryHeapIndex = 1;
+        memoryTypes[6].isGpuVram       = 1;
+        memoryTypes[6].isCpuMappable   = 1;
+        memoryTypes[6].isCpuCoherent   = 1;
+        memoryTypes[6].isCpuCached     = 0;
 
-      specificMemoryTypesGpuVram     = 0;
-      specificMemoryTypesCpuUpload   = 1;
-      specificMemoryTypesCpuReadback = 3; // NOTE(Constantine): The cpu cached one.
+        memoryTypes[7].memoryHeapIndex = 0;
+        memoryTypes[7].isGpuVram       = 0;
+        memoryTypes[7].isCpuMappable   = 1;
+        memoryTypes[7].isCpuCoherent   = 1;
+        memoryTypes[7].isCpuCached     = 1;
+
+        memoryHeaps[0].memoryBytesCount = 2000000000;
+        memoryHeaps[0].isGpuVram        = 0;
+
+        memoryHeaps[1].memoryBytesCount = 8000000000;
+        memoryHeaps[1].isGpuVram        = 1;
+
+        np(red2ExpectMemoryTypes,
+          "gpuInfo", gpuInfo,
+          "expectedMemoryHeapsCount", memoryHeapsCount,
+          "expectedMemoryHeaps", memoryHeaps,
+          "expectedMemoryTypesCount", memoryTypesCount,
+          "expectedMemoryTypes", memoryTypes,
+          "optionalFile", optionalFile,
+          "optionalLine", optionalLine
+        );
+
+        specificMemoryTypesGpuVram     = 0;
+        specificMemoryTypesCpuUpload   = 1;
+        specificMemoryTypesCpuReadback = 3; // NOTE(Constantine): The cpu cached one.
+
+      } else {
+
+        unsigned      memoryTypesCount = 0;
+        RedMemoryType memoryTypes[32]  = {0};
+        unsigned      memoryHeapsCount = 0;
+        RedMemoryHeap memoryHeaps[32]  = {0};
+
+        memoryTypesCount = 4;
+        memoryHeapsCount = 3;
+
+        memoryTypes[0].memoryHeapIndex = 0;
+        memoryTypes[0].isGpuVram       = 1;
+        memoryTypes[0].isCpuMappable   = 0;
+        memoryTypes[0].isCpuCoherent   = 0;
+        memoryTypes[0].isCpuCached     = 0;
+
+        memoryTypes[1].memoryHeapIndex = 1;
+        memoryTypes[1].isGpuVram       = 0;
+        memoryTypes[1].isCpuMappable   = 1;
+        memoryTypes[1].isCpuCoherent   = 1;
+        memoryTypes[1].isCpuCached     = 0;
+
+        memoryTypes[2].memoryHeapIndex = 2;
+        memoryTypes[2].isGpuVram       = 1;
+        memoryTypes[2].isCpuMappable   = 1;
+        memoryTypes[2].isCpuCoherent   = 1;
+        memoryTypes[2].isCpuCached     = 0;
+
+        memoryTypes[3].memoryHeapIndex = 1;
+        memoryTypes[3].isGpuVram       = 0;
+        memoryTypes[3].isCpuMappable   = 1;
+        memoryTypes[3].isCpuCoherent   = 1;
+        memoryTypes[3].isCpuCached     = 1;
+
+        memoryHeaps[0].memoryBytesCount = 1800000000;
+        memoryHeaps[0].isGpuVram        = 1;
+
+        memoryHeaps[1].memoryBytesCount = 2000000000;
+        memoryHeaps[1].isGpuVram        = 0;
+
+        memoryHeaps[2].memoryBytesCount = 200000000;
+        memoryHeaps[2].isGpuVram        = 1;
+
+        np(red2ExpectMemoryTypes,
+          "gpuInfo", gpuInfo,
+          "expectedMemoryHeapsCount", memoryHeapsCount,
+          "expectedMemoryHeaps", memoryHeaps,
+          "expectedMemoryTypesCount", memoryTypesCount,
+          "expectedMemoryTypes", memoryTypes,
+          "optionalFile", optionalFile,
+          "optionalLine", optionalLine
+        );
+
+        specificMemoryTypesGpuVram     = 0;
+        specificMemoryTypesCpuUpload   = 1;
+        specificMemoryTypesCpuReadback = 3; // NOTE(Constantine): The cpu cached one.
+      }
 
     } else {
       REDGPU_2_EXPECTWG(!"Unsupported by vkFast GPU, recompile your program with vfContextInit()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
