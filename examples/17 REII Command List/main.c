@@ -6,22 +6,7 @@ exit
 #include "../../vkfast.h"
 #include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
-
-#include <stdio.h> // For printf
-#include <math.h>  // For sin, cos
-
-#include <shellscalingapi.h>   // For SetProcessDpiAwareness
-#pragma comment(lib, "shcore") // For SetProcessDpiAwareness
-
-#define countof(x) (sizeof(x) / sizeof((x)[0]))
-
-#define FF __FILE__
-#define LL __LINE__
-
-#if defined(_MSC_VER) && defined(_DEBUG)
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
+#include "../Common/vkfast_examples_common.h"
 
 int main() {
 #ifdef __MINGW32__
@@ -243,7 +228,7 @@ int main() {
         1
       );
     }
-    reiiCommandMeshEndEx(ctx, list, NULL, outputtex, outputtex->texture);
+    reiiCommandMeshEndWithTale64BytesAlign(ctx, list, NULL, outputtex, outputtex->texture);
     RedStructMemberArray raw_pixels = {0};
     vfeBanzaiPointerGetRaw(&pixels_gpu_only, &raw_pixels, FF, LL);
     reiiCommandCopyFromColorTextureToStorageRaw(ctx, list, outputtex, &raw_pixels);

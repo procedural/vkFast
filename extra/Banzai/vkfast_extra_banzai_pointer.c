@@ -12,7 +12,8 @@
 
 GPU_API_PRE void GPU_API_POST vfeBanzaiGetPointer(const gpu_storage_t * banzai_storage, uint64_t bytes_first, gpu_extra_banzai_pointer_t * out_banzai_pointer, const char * optionalFile, int optionalLine) {
   REDGPU_2_EXPECT(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(bytes_first, 4) || !"Currently, only 32-bit Banzai pointer offsets are supported.");
-  
+  REDGPU_2_EXPECT(bytes_first <= banzai_storage->info.bytes_count);
+
   // Filling
   gpu_extra_banzai_pointer_t pointer = {0};
   pointer.id          = banzai_storage->id;

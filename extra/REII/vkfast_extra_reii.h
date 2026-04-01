@@ -330,7 +330,8 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindVariablesCopy           (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet             (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetEnd             (gpu_handle_context_t context, ReiiHandleCommandList * list);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshSet                     (gpu_handle_context_t context, ReiiHandleCommandList * list);
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndEx                   (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExact                (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndWithTale64BytesAlign (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshTexcoord                (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned index, float x, float y, float z, float w);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshColor                   (gpu_handle_context_t context, ReiiHandleCommandList * list, float r, float g, float b, float a);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal                  (gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z);

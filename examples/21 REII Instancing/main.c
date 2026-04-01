@@ -6,12 +6,7 @@ exit
 #include "../../vkfast.h"
 #include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
-
-#include <stdio.h> // For printf
-#include <math.h>  // For sin, cos
-
-#include <shellscalingapi.h>   // For SetProcessDpiAwareness
-#pragma comment(lib, "shcore") // For SetProcessDpiAwareness
+#include "../Common/vkfast_examples_common.h"
 
 #ifdef _WIN32
 #define GLFW_INCLUDE_NONE
@@ -23,124 +18,6 @@ exit
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "Gdi32.lib")
 #endif
-
-#define countof(x) (sizeof(x) / sizeof((x)[0]))
-
-#define FF __FILE__
-#define LL __LINE__
-
-#if defined(_MSC_VER) && defined(_DEBUG)
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
-
-void RandomInit() {
-  srand(time(NULL));
-}
-
-float RandomRange(float min, float max) {
-  float n = rand() / (float)RAND_MAX;
-  return min + n * (max - min);
-}
-
-void vec3Mulf(float * out, const float * v, float f) {
-  out[0] = v[0] * f;
-  out[1] = v[1] * f;
-  out[2] = v[2] * f;
-}
-
-void vec3Add(float * out, const float * v1, const float * v2) {
-  out[0] = v1[0] + v2[0];
-  out[1] = v1[1] + v2[1];
-  out[2] = v1[2] + v2[2];
-}
-
-void vec3Cross(float * out, const float * v1, const float * v2) {
-  float v1x = v1[0];
-  float v1y = v1[1];
-  float v1z = v1[2];
-
-  float v2x = v2[0];
-  float v2y = v2[1];
-  float v2z = v2[2];
-
-  out[0] = (v1y * v2z) - (v2y * v1z);
-  out[1] = (v1z * v2x) - (v2z * v1x);
-  out[2] = (v1x * v2y) - (v2x * v1y);
-}
-
-void quatFromAxisAngle(float * out, const float * axis, float angle_rad) {
-  float s = (float)sin(angle_rad / 2.f);
-  float c = (float)cos(angle_rad / 2.f);
-
-  out[0] = axis[0] * s;
-  out[1] = axis[1] * s;
-  out[2] = axis[2] * s;
-  out[3] = c;
-}
-
-void quatMul(float * out, const float * q1, const float * q2) {
-  float q1x = q1[0];
-  float q1y = q1[1];
-  float q1z = q1[2];
-  float q1w = q1[3];
-
-  float q2x = q2[0];
-  float q2y = q2[1];
-  float q2z = q2[2];
-  float q2w = q2[3];
-
-  out[0] = q1x * q2w + q2x * q1w + (q1y * q2z - q2y * q1z);
-  out[1] = q1y * q2w + q2y * q1w + (q1z * q2x - q2z * q1x);
-  out[2] = q1z * q2w + q2z * q1w + (q1x * q2y - q2x * q1y);
-  out[3] = q1w * q2w - (q1x * q2x + q1y * q2y + q1z * q2z);
-}
-
-void quatRotateVec3(float * out, const float * v, const float * q) {
-  float v4[4] = { v[0],  v[1],  v[2], 0};
-  float nq[4] = {-q[0], -q[1], -q[2], q[3]};
-
-  float t1[4];
-  quatMul(t1, q, v4);
-  float t2[4];
-  quatMul(t2, t1, nq);
-  
-  out[0] = t2[0];
-  out[1] = t2[1];
-  out[2] = t2[2];
-}
-
-void quatRotateVec3Fast(float * out, const float * v, const float * q) {
-  // (cross(q.xyz, cross(q.xyz, v) + (v * q.w)) * 2.f) + v
-  float vc[3] = {v[0], v[1], v[2]};
-  vec3Cross(out, q, vc);
-  float t1[3];
-  vec3Mulf(t1, vc, q[3]);
-  vec3Add(out, out, t1);
-  vec3Cross(out, q, out);
-  vec3Mulf(out, out, 2.f);
-  vec3Add(out, out, vc);
-}
-
-static gpu_extra_cpu_gpu_array OffsetAllocateCpuGpuArray(uint64_t bytesCountToAllocate, gpu_storage_t * storage_cpu, uint64_t * storage_cpu_offset, gpu_storage_t * storage_gpu, uint64_t * storage_gpu_offset, const char * optionalFile, int optionalLine) {
-  gpu_extra_banzai_pointer_t cpu_pointer = {0};
-  gpu_extra_banzai_pointer_t gpu_pointer = {0};
-  vfeBanzaiGetPointer(storage_cpu, storage_cpu_offset[0], &cpu_pointer, optionalFile, optionalLine);
-  vfeBanzaiGetPointer(storage_gpu, storage_gpu_offset[0], &gpu_pointer, optionalFile, optionalLine);
-  storage_cpu_offset[0] += bytesCountToAllocate;
-  storage_gpu_offset[0] += bytesCountToAllocate;
-
-  RedStructMemberArray cpu_array = {0};
-  RedStructMemberArray gpu_array = {0};
-  vfeBanzaiPointerGetRawLimited(&cpu_pointer, bytesCountToAllocate, &cpu_array, optionalFile, optionalLine);
-  vfeBanzaiPointerGetRawLimited(&gpu_pointer, bytesCountToAllocate, &gpu_array, optionalFile, optionalLine);
-  gpu_extra_cpu_gpu_array cpu_gpu_array = {0};
-  cpu_gpu_array.cpu_ptr = cpu_pointer.mapped_void_ptr;
-  cpu_gpu_array.cpu     = cpu_array;
-  cpu_gpu_array.gpu     = gpu_array;
-
-  return cpu_gpu_array;
-}
 
 int main() {
 #ifdef __MINGW32__
@@ -189,19 +66,19 @@ int main() {
   vfeBanzaiGetPointer(&storage_gpu_only, storage_gpu_only_mem_offset, &pixels_gpu_only, FF, LL);
   storage_gpu_only_mem_offset += (288/*mb*/ * 1024 * 1024);
 
-  gpu_extra_cpu_gpu_array mesh_vertex_array = OffsetAllocateCpuGpuArray(
+  gpu_extra_cpu_gpu_array mesh_vertex_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
     64/*mb*/ * 1024 * 1024,
     &storage_cpu_upload, &storage_cpu_upload_mem_offset,
     &storage_gpu_only,   &storage_gpu_only_mem_offset,
     FF, LL
   );
-  gpu_extra_cpu_gpu_array instance_color_array = OffsetAllocateCpuGpuArray(
+  gpu_extra_cpu_gpu_array instance_color_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
     64/*mb*/ * 1024 * 1024,
     &storage_cpu_upload, &storage_cpu_upload_mem_offset,
     &storage_gpu_only,   &storage_gpu_only_mem_offset,
     FF, LL
   );
-  gpu_extra_cpu_gpu_array instance_position_array = OffsetAllocateCpuGpuArray(
+  gpu_extra_cpu_gpu_array instance_position_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
     64/*mb*/ * 1024 * 1024,
     &storage_cpu_upload, &storage_cpu_upload_mem_offset,
     &storage_gpu_only,   &storage_gpu_only_mem_offset,

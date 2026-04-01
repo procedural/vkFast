@@ -7,7 +7,7 @@
 #define GPU_API_POST
 #endif
 
-#include "vkfast_extra_reii_backport.h"
+#include "../REII/vkfast_extra_reii.h"
 
 #include <stdio.h> // For _popen, _pclose
 
@@ -197,7 +197,13 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshSet(gpu_handle_context_t context, R
   REDGPU_2_EXPECTWG(0 || !"TODO");
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndEx(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExact(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+  REDGPU_2_EXPECTWG(0 || !"TODO");
+}
+
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndWithTale64BytesAlign(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
   REDGPU_2_EXPECTWG(0 || !"TODO");

@@ -1880,7 +1880,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshSet(gpu_handle_context_t context, R
   }
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndEx(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExact(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -1960,6 +1960,40 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshEndEx(gpu_handle_context_t context,
     "instanceFirst", 0
   );
   reiiCommandRenderTargetEnd(context, list);
+}
+
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndWithTale64BytesAlign(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  reiiCommandMeshEndExact(context, list, depthStencilTexture, colorTexture, colorTextureHandle);
+
+  while (REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(list->dynamicMeshPositionVec4Offset * sizeof(ReiiVec4), 64) > 0) {
+    if ((list->dynamicMeshPositionVec4Offset * sizeof(ReiiVec4)) >= list->dynamic_mesh_position.cpu.arrayRangeBytesCount) {
+      break;
+    }
+    list->dynamicMeshPositionVec4Offset += 1;
+  }
+  while (REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(list->dynamicMeshColorVec4Offset * sizeof(ReiiVec4), 64) > 0) {
+    if ((list->dynamicMeshColorVec4Offset * sizeof(ReiiVec4)) >= list->dynamic_mesh_color.cpu.arrayRangeBytesCount) {
+      break;
+    }
+    list->dynamicMeshColorVec4Offset += 1;
+  }
+  while (REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(list->dynamicMeshNormalVec4Offset * sizeof(ReiiVec4), 64) > 0) {
+    if ((list->dynamicMeshNormalVec4Offset * sizeof(ReiiVec4)) >= list->dynamic_mesh_normal.cpu.arrayRangeBytesCount) {
+      break;
+    }
+    list->dynamicMeshNormalVec4Offset += 1;
+  }
+  for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
+    while (REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(list->dynamicMeshTexcoordVec4Offset[i] * sizeof(ReiiVec4), 64) > 0) {
+      if ((list->dynamicMeshTexcoordVec4Offset[i] * sizeof(ReiiVec4)) >= list->dynamic_mesh_texcoord[i].cpu.arrayRangeBytesCount) {
+        break;
+      }
+      list->dynamicMeshTexcoordVec4Offset[i] += 1;
+    }
+  }
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandMeshTexcoord(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned index, float x, float y, float z, float w) {

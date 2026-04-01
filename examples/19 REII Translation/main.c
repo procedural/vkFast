@@ -6,12 +6,7 @@ exit
 #include "../../vkfast.h"
 #include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
-
-#include <stdio.h> // For printf
-#include <math.h>  // For sin, cos
-
-#include <shellscalingapi.h>   // For SetProcessDpiAwareness
-#pragma comment(lib, "shcore") // For SetProcessDpiAwareness
+#include "../Common/vkfast_examples_common.h"
 
 #ifdef _WIN32
 #define GLFW_INCLUDE_NONE
@@ -23,36 +18,6 @@ exit
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "Gdi32.lib")
 #endif
-
-#define countof(x) (sizeof(x) / sizeof((x)[0]))
-
-#define FF __FILE__
-#define LL __LINE__
-
-#if defined(_MSC_VER) && defined(_DEBUG)
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
-
-static gpu_extra_cpu_gpu_array OffsetAllocateCpuGpuArray(uint64_t bytesCountToAllocate, gpu_storage_t * storage_cpu, uint64_t * storage_cpu_offset, gpu_storage_t * storage_gpu, uint64_t * storage_gpu_offset, const char * optionalFile, int optionalLine) {
-  gpu_extra_banzai_pointer_t cpu_pointer = {0};
-  gpu_extra_banzai_pointer_t gpu_pointer = {0};
-  vfeBanzaiGetPointer(storage_cpu, storage_cpu_offset[0], &cpu_pointer, optionalFile, optionalLine);
-  vfeBanzaiGetPointer(storage_gpu, storage_gpu_offset[0], &gpu_pointer, optionalFile, optionalLine);
-  storage_cpu_offset[0] += bytesCountToAllocate;
-  storage_gpu_offset[0] += bytesCountToAllocate;
-
-  RedStructMemberArray cpu_array = {0};
-  RedStructMemberArray gpu_array = {0};
-  vfeBanzaiPointerGetRawLimited(&cpu_pointer, bytesCountToAllocate, &cpu_array, optionalFile, optionalLine);
-  vfeBanzaiPointerGetRawLimited(&gpu_pointer, bytesCountToAllocate, &gpu_array, optionalFile, optionalLine);
-  gpu_extra_cpu_gpu_array cpu_gpu_array = {0};
-  cpu_gpu_array.cpu_ptr = cpu_pointer.mapped_void_ptr;
-  cpu_gpu_array.cpu     = cpu_array;
-  cpu_gpu_array.gpu     = gpu_array;
-
-  return cpu_gpu_array;
-}
 
 int main() {
 #ifdef __MINGW32__
@@ -101,13 +66,13 @@ int main() {
   vfeBanzaiGetPointer(&storage_gpu_only, storage_gpu_only_mem_offset, &pixels_gpu_only, FF, LL);
   storage_gpu_only_mem_offset += (288/*mb*/ * 1024 * 1024);
 
-  gpu_extra_cpu_gpu_array pos_array = OffsetAllocateCpuGpuArray(
+  gpu_extra_cpu_gpu_array pos_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
     64/*mb*/ * 1024 * 1024,
     &storage_cpu_upload, &storage_cpu_upload_mem_offset,
     &storage_gpu_only,   &storage_gpu_only_mem_offset,
     FF, LL
   );
-  gpu_extra_cpu_gpu_array col_array = OffsetAllocateCpuGpuArray(
+  gpu_extra_cpu_gpu_array col_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
     64/*mb*/ * 1024 * 1024,
     &storage_cpu_upload, &storage_cpu_upload_mem_offset,
     &storage_gpu_only,   &storage_gpu_only_mem_offset,
@@ -329,7 +294,7 @@ int main() {
         1
       );
     }
-    reiiCommandMeshEndEx(ctx, list, outputdstex, outputmstex, outputmstex->texture);
+    reiiCommandMeshEndWithTale64BytesAlign(ctx, list, outputdstex, outputmstex, outputmstex->texture);
     RedStructMemberArray raw_pixels = {0};
     vfeBanzaiPointerGetRaw(&pixels_gpu_only, &raw_pixels, FF, LL);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
