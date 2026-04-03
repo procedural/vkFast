@@ -762,8 +762,8 @@ struct RayEx
 
 struct BVHContext
 {
-	void* (*malloc)(size_t size, void* userdata) = malloc64;
-	void (*free)(void* ptr, void* userdata) = free64;
+	void* (*cmalloc)(size_t size, void* userdata) = malloc64;
+	void (*cfree)(void* ptr, void* userdata) = free64;
 	void* userdata = nullptr;
 };
 
@@ -1699,13 +1699,13 @@ const bvhvec4& bvhvec4slice::operator[]( size_t i ) const
 
 void* BVHBase::AlignedAlloc( size_t size )
 {
-	return context.malloc ? context.malloc( size, context.userdata ) : nullptr;
+	return context.cmalloc ? context.cmalloc( size, context.userdata ) : nullptr;
 }
 
 void BVHBase::AlignedFree( void* ptr )
 {
-	if (context.free)
-		context.free( ptr, context.userdata );
+	if (context.cfree)
+		context.cfree( ptr, context.userdata );
 }
 
 void BVHBase::CopyBasePropertiesFrom( const BVHBase& original )
