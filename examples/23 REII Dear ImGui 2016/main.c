@@ -1,26 +1,17 @@
 #if 0
-clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c "../../extra/Dear ImGui 2016/imgui_megafile.cpp"
+clang++ -c "../../extra/Dear ImGui 2016/imgui_megafile.cpp"
+clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c imgui_megafile.o
 exit
 #endif
 
 #include "../../vkfast_ex.h"
 #include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
-
-#ifdef _WIN32
-#define GLFW_INCLUDE_NONE
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include "glfw-3.4.bin.WIN64/include/GLFW/glfw3.h" // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
-#include "glfw-3.4.bin.WIN64/include/GLFW/glfw3native.h" // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
-#pragma comment(lib, "../glfw-3.4.bin.WIN64/lib-vc2019/glfw3_mt.lib") // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
-#pragma comment(lib, "User32.lib")
-#pragma comment(lib, "Shell32.lib")
-#pragma comment(lib, "Gdi32.lib")
-#endif
-
+#define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
+#define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
+#include "../Common/vkfast_examples_common.h"
 // NOTE(Constantine): Dear ImGui 2016 needs GLFW.
 #include "../../extra/Dear ImGui 2016/imgui_reii.h"
-#include "../Common/vkfast_examples_common.h"
 
 int main() {
 #ifdef __MINGW32__
@@ -370,7 +361,9 @@ int main() {
   style->windowRounding    = 0;
   style->frameRounding     = 0;
 
-  // NOTE(Constantine): For VS 2019, make sure to copy NotoSans.ttf file to project's folder.
+  // NOTE(Constantine):
+  // For VS 2019, make sure to copy NotoSans.ttf file to project's folder,
+  // otherwise you'll get a runtime error at imgui_draw.cpp, line 1200
   float fontPixelSize = 22;
   ImFontAtlas_AddFontFromFileTTF(io->fonts, "NotoSans.ttf", fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
   imguiInvalidateFontTexture();

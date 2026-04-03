@@ -4,18 +4,8 @@ exit
 #endif
 
 #include "../../vkfast.h"
-
-#include <stdio.h> // For printf
-
-#include <shellscalingapi.h>   // For SetProcessDpiAwareness
-#pragma comment(lib, "shcore") // For SetProcessDpiAwareness
-
-#define countof(x) (sizeof(x) / sizeof((x)[0]))
-
-#define FF __FILE__
-#define LL __LINE__
-
-#include "glm/glm/glm.hpp"
+#define VKFAST_EXAMPLES_COMMON_INCLUDE_GLM
+#include "../Common/vkfast_examples_common.h"
 using namespace glm;
 
 int some_texture_channels_count = 3; // NOTE(Constantine): Hardcoded.
@@ -177,7 +167,7 @@ int main() {
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
   }
   
-  red32FileUnmap(texture_fd, texture_mh);
+  REDGPU_2_EXPECTFL(0 == red32FileUnmap(texture_fd, texture_mh, texture_data));
   texture_fd = NULL;
   texture_mh = NULL;
   texture_data_bytes_count = 0;

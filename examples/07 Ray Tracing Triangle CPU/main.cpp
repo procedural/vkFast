@@ -4,18 +4,8 @@ exit
 #endif
 
 #include "../../vkfast.h"
-
-#include <stdio.h> // For printf
-
-#include <shellscalingapi.h>   // For SetProcessDpiAwareness
-#pragma comment(lib, "shcore") // For SetProcessDpiAwareness
-
-#define countof(x) (sizeof(x) / sizeof((x)[0]))
-
-#define FF __FILE__
-#define LL __LINE__
-
-#include "glm/glm/glm.hpp"
+#define VKFAST_EXAMPLES_COMMON_INCLUDE_GLM
+#include "../Common/vkfast_examples_common.h"
 using namespace glm;
 
 vec3 intersectTriangle(vec3 p0, vec3 p1, vec3 p2, vec3 ray_pos, vec3 ray_dir) {

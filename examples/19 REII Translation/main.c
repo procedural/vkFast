@@ -6,18 +6,9 @@ exit
 #include "../../vkfast.h"
 #include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
+#define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
+#define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
 #include "../Common/vkfast_examples_common.h"
-
-#ifdef _WIN32
-#define GLFW_INCLUDE_NONE
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include "glfw-3.4.bin.WIN64/include/GLFW/glfw3.h" // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
-#include "glfw-3.4.bin.WIN64/include/GLFW/glfw3native.h" // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
-#pragma comment(lib, "../glfw-3.4.bin.WIN64/lib-vc2019/glfw3_mt.lib") // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
-#pragma comment(lib, "User32.lib")
-#pragma comment(lib, "Shell32.lib")
-#pragma comment(lib, "Gdi32.lib")
-#endif
 
 int main() {
 #ifdef __MINGW32__

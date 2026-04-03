@@ -4,17 +4,7 @@ exit
 #endif
 
 #include "../../vkfast.h"
-
-#include <stdio.h> // For printf
-#include <math.h>  // For sin, cos
-
-#include <shellscalingapi.h>   // For SetProcessDpiAwareness
-#pragma comment(lib, "shcore") // For SetProcessDpiAwareness
-
-#define countof(x) (sizeof(x) / sizeof((x)[0]))
-
-#define FF __FILE__
-#define LL __LINE__
+#include "../Common/vkfast_examples_common.h"
 
 int some_texture_channels_count = 3; // NOTE(Constantine): Hardcoded.
 int some_texture_w = 0;
@@ -264,11 +254,6 @@ vec3 colorTriangle(vec3 start, vec3 dir) {
   return makev3(r / 255.f, g / 255.f, b / 255.f);
 }
 
-#if defined(_MSC_VER) && defined(_DEBUG)
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
-
 int main() {
 #ifdef __MINGW32__
   SetProcessDPIAware();
@@ -376,7 +361,7 @@ int main() {
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
   }
   
-  red32FileUnmap(texture_fd, texture_mh);
+  REDGPU_2_EXPECTFL(0 == red32FileUnmap(texture_fd, texture_mh, texture_data));
   texture_fd = NULL;
   texture_mh = NULL;
   texture_data_bytes_count = 0;

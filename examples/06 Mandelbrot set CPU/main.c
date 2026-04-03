@@ -4,16 +4,7 @@ exit
 #endif
 
 #include "../../vkfast.h"
-
-#include <stdio.h> // For printf
-
-#include <shellscalingapi.h>   // For SetProcessDpiAwareness
-#pragma comment(lib, "shcore") // For SetProcessDpiAwareness
-
-#define countof(x) (sizeof(x) / sizeof((x)[0]))
-
-#define FF __FILE__
-#define LL __LINE__
+#include "../Common/vkfast_examples_common.h"
 
 int main() {
 #ifdef __MINGW32__

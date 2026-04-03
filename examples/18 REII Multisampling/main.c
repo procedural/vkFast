@@ -6,6 +6,7 @@ exit
 #include "../../vkfast.h"
 #include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
+#define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
 #include "../Common/vkfast_examples_common.h"
 
 int main() {

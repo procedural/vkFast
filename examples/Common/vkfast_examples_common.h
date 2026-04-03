@@ -2,6 +2,7 @@
 
 #include <stdio.h> // For printf
 #include <math.h>  // For sin, cos
+#include <time.h>  // For time
 
 #include <shellscalingapi.h>   // For SetProcessDpiAwareness
 #pragma comment(lib, "shcore") // For SetProcessDpiAwareness
@@ -16,28 +17,28 @@
 #include <crtdbg.h>
 #endif
 
-void RandomInit() {
+static void RandomInit() {
   srand(time(NULL));
 }
 
-float RandomRange(float min, float max) {
+static float RandomRange(float min, float max) {
   float n = rand() / (float)RAND_MAX;
   return min + n * (max - min);
 }
 
-void vec3Mulf(float * out, const float * v, float f) {
+static void vec3Mulf(float * out, const float * v, float f) {
   out[0] = v[0] * f;
   out[1] = v[1] * f;
   out[2] = v[2] * f;
 }
 
-void vec3Add(float * out, const float * v1, const float * v2) {
+static void vec3Add(float * out, const float * v1, const float * v2) {
   out[0] = v1[0] + v2[0];
   out[1] = v1[1] + v2[1];
   out[2] = v1[2] + v2[2];
 }
 
-void vec3Cross(float * out, const float * v1, const float * v2) {
+static void vec3Cross(float * out, const float * v1, const float * v2) {
   float v1x = v1[0];
   float v1y = v1[1];
   float v1z = v1[2];
@@ -51,7 +52,7 @@ void vec3Cross(float * out, const float * v1, const float * v2) {
   out[2] = (v1x * v2y) - (v2x * v1y);
 }
 
-void quatFromAxisAngle(float * out, const float * axis, float angle_rad) {
+static void quatFromAxisAngle(float * out, const float * axis, float angle_rad) {
   float s = (float)sin(angle_rad / 2.f);
   float c = (float)cos(angle_rad / 2.f);
 
@@ -61,7 +62,7 @@ void quatFromAxisAngle(float * out, const float * axis, float angle_rad) {
   out[3] = c;
 }
 
-void quatMul(float * out, const float * q1, const float * q2) {
+static void quatMul(float * out, const float * q1, const float * q2) {
   float q1x = q1[0];
   float q1y = q1[1];
   float q1z = q1[2];
@@ -78,7 +79,7 @@ void quatMul(float * out, const float * q1, const float * q2) {
   out[3] = q1w * q2w - (q1x * q2x + q1y * q2y + q1z * q2z);
 }
 
-void quatRotateVec3(float * out, const float * v, const float * q) {
+static void quatRotateVec3(float * out, const float * v, const float * q) {
   float v4[4] = { v[0],  v[1],  v[2], 0};
   float nq[4] = {-q[0], -q[1], -q[2], q[3]};
 
@@ -92,7 +93,7 @@ void quatRotateVec3(float * out, const float * v, const float * q) {
   out[2] = t2[2];
 }
 
-void quatRotateVec3Fast(float * out, const float * v, const float * q) {
+static void quatRotateVec3Fast(float * out, const float * v, const float * q) {
   // (cross(q.xyz, cross(q.xyz, v) + (v * q.w)) * 2.f) + v
   float vc[3] = {v[0], v[1], v[2]};
   vec3Cross(out, q, vc);
@@ -104,6 +105,7 @@ void quatRotateVec3Fast(float * out, const float * v, const float * q) {
   vec3Add(out, out, vc);
 }
 
+#ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
 static ReiiCpuScratchBuffer OffsetAllocateCpuScratchBuffer(uint64_t bytesCountToAllocate, gpu_storage_t * storage_cpu, uint64_t * storage_cpu_offset, const char * optionalFile, int optionalLine) {
   gpu_extra_banzai_pointer_t cpu_pointer = {0};
   vfeBanzaiGetPointer(storage_cpu, storage_cpu_offset[0], &cpu_pointer, optionalFile, optionalLine);
@@ -146,3 +148,31 @@ static gpu_extra_cpu_gpu_array OffsetAllocateCpuGpuArrayWithTale64BytesAlign(uin
   storage_gpu_offset[0] += storage_gpu_offset_tale;
   return out;
 }
+#endif // #ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
+
+#ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_GLM // https://github.com/g-truc/glm
+  #include "glm/glm/glm.hpp"
+#endif
+
+#ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3 // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
+  #ifdef _WIN32
+    #define GLFW_INCLUDE_NONE
+    #define GLFW_EXPOSE_NATIVE_WIN32
+    #include "glfw-3.4.bin.WIN64/include/GLFW/glfw3.h" 
+    #include "glfw-3.4.bin.WIN64/include/GLFW/glfw3native.h"
+    #pragma comment(lib, "../../Common/glfw-3.4.bin.WIN64/lib-vc2019/glfw3_mt.lib") // NOTE(Constantine): Path relative to example's vs2019/ folder.
+    #pragma comment(lib, "User32.lib")
+    #pragma comment(lib, "Shell32.lib")
+    #pragma comment(lib, "Gdi32.lib")
+  #else
+    #error
+  #endif
+#endif
+
+#ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_PROFILE // https://github.com/procedural/profile
+  #include "profile/profile.h"
+  #pragma comment(lib, "../../Common/profile/profiledll.lib") // NOTE(Constantine): Path relative to example's vs2019/ folder.
+#else
+  #define profileBegin(x)
+  #define profileEnd(x)
+#endif

@@ -5,24 +5,8 @@ exit
 
 #include "../../vkfast.h"
 #include "../../vkfast_ids.h"
-
-#include <stdio.h> // For printf
-
-#include <shellscalingapi.h>   // For SetProcessDpiAwareness
-#pragma comment(lib, "shcore") // For SetProcessDpiAwareness
-
-#ifdef _WIN32
-#define GLFW_INCLUDE_NONE
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include "glfw-3.4.bin.WIN64/include/GLFW/glfw3.h" // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
-#include "glfw-3.4.bin.WIN64/include/GLFW/glfw3native.h" // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
-#pragma comment(lib, "../glfw-3.4.bin.WIN64/lib-vc2019/glfw3_mt.lib") // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
-#endif
-
-#define countof(x) (sizeof(x) / sizeof((x)[0]))
-
-#define FF __FILE__
-#define LL __LINE__
+#define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
+#include "../Common/vkfast_examples_common.h"
 
 int main() {
 #ifdef __MINGW32__
@@ -58,7 +42,7 @@ int main() {
   gpu_handle_context_t ctx2 = vfContextInit(0, &ctx2params, FF, LL);
 
   vfWindowFullscreen(ctx1, window1_handle, "[vkFast] GLFW Two Windows Drawing: Window One", 700, 700, 0, FF, LL);
-  vfWindowFullscreen(ctx2, window2_handle, "[vkFast] GLFW Two Windows Drawing: Window Two", 500, 500, 1, FF, LL);
+  vfWindowFullscreen(ctx2, window2_handle, "[vkFast] GLFW Two Windows Drawing: Window Two", 500, 500, 0, FF, LL);
 
   while (glfwWindowShouldClose(window1) == 0 && glfwWindowShouldClose(window2) == 0) {
     glfwPollEvents();

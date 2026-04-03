@@ -5,18 +5,7 @@ exit
 
 #include "../../vkfast.h"
 #include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
-
-#include <stdio.h> // For printf
-
-#define countof(x) (sizeof(x) / sizeof((x)[0]))
-
-#define FF __FILE__
-#define LL __LINE__
-
-#if defined(_MSC_VER) && defined(_DEBUG)
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
+#include "../Common/vkfast_examples_common.h"
 
 int main() {
 #if defined(_MSC_VER) && defined(_DEBUG)
