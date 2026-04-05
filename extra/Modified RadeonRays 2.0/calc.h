@@ -103,7 +103,7 @@ static inline Calc::Device* calcCreateDevice(std::uint32_t idx)
         Anvil::Device* newDevice = new Anvil::Device( physical_device, required_extension_names, required_layer_names, false, true );
 
         // see if we have a compute device available
-        Calc::Device* toReturn = new Calc::Device( newDevice, true );
+        Calc::Device* toReturn = new Calc::Device( newDevice, false );
         bool initVkOk = (nullptr != toReturn) ? toReturn->InitializeVulkanResources() : false;
 
         if( initVkOk == false )

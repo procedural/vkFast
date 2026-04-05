@@ -41,7 +41,7 @@ int main() {
   GLFWwindow * window = glfwCreateWindow(window_w, window_h, "[vkFast] RT 3D Mesh Suzanne GPU RR 2.0 Low Level", 0, 0);
   void * window_handle = (void *)glfwGetWin32Window(window);
 
-  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
+  gpu_handle_context_t ctx = vfContextInit(0, NULL, FF, LL);
   vfWindowFullscreen(ctx, window_handle, "[vkFast] RT 3D Mesh Suzanne GPU RR 2.0 Low Level", 700, 700, 0, FF, LL);
 
   // Low level vkFast and REDGPU:
