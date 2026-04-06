@@ -1,0 +1,5 @@
+.vs/*
+x64/*
+*.vcxproj.user
+texture.ppm
+texture.png
