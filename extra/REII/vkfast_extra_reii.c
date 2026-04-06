@@ -634,6 +634,10 @@ GPU_API_PRE void GPU_API_POST reiiResetTextureMemory(gpu_handle_context_t contex
   textureMemory->bytesOffset = 0;
 }
 
+GPU_API_PRE uint64_t GPU_API_POST reiiGetTextureMemoryBytesOffset(ReiiHandleTextureMemory * textureMemory) {
+  return textureMemory->bytesOffset;
+}
+
 GPU_API_PRE void GPU_API_POST reiiCreateTextureFromTextureMemory(gpu_handle_context_t context, ReiiHandleTextureMemory * textureMemory, ReiiTextureBinding binding, ReiiHandleTexture * outTexture) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
