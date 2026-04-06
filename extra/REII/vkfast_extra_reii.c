@@ -745,9 +745,10 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
     REDGPU_2_EXPECTWG(height == h_power);
     REDGPU_2_EXPECTWG(width  == height);
   }
-  REDGPU_2_EXPECTWG(bindingTexture->generateMipLevels == 0 || !"TODO(Constantine): Generating mipmaps is not supported right now, use extra/ad_mipmap to generate and upload mip levels manually.");
-  REDGPU_2_EXPECTWG(bindingTexture->mipLevelsCount >= 1);
-  REDGPU_2_EXPECTWG(bindingTexture->mipLevelsCount <= ((int)log2(width) + 1));
+  REDGPU_2_EXPECTWG(bindingTexture->generateMipLevels == 0 || !"Mipmaps are not supported by REII.");
+  REDGPU_2_EXPECTWG(bindingTexture->mipLevelsCount == 1 || !"Mipmaps are not supported by REII.");
+  //REDGPU_2_EXPECTWG(bindingTexture->mipLevelsCount >= 1);
+  //REDGPU_2_EXPECTWG(bindingTexture->mipLevelsCount <= ((int)log2(width) + 1));
 
   RedFormat  format = RED_FORMAT_UNDEFINED;
   ReiiBool32 formatHasStencil = 0;
