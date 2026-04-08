@@ -147,17 +147,15 @@ extern "C"
 #if defined(_WIN32)
 __declspec(dllexport)
 #endif
-void profileBegin(const char * label) {
+void profileInsertBegin(const char * label, long long linux_seconds, long long linux_nanoseconds, long long windows_counter) {
   ProfileInternalSample sample;
 #if defined(__linux__)
-  struct timespec timespec;
-  clock_gettime(CLOCK_REALTIME, &timespec);
-  sample.seconds     = timespec.tv_sec;
-  sample.nanoseconds = timespec.tv_nsec;
+  sample.seconds     = (time_t)linux_seconds;
+  sample.nanoseconds = (long)linux_nanoseconds;
   sample.threadId    = (uint64_t)__PROFILE_PROCEDURE_6bf241eae_syscall(186);
 #endif
 #if defined(_WIN32)
-  QueryPerformanceCounter(&sample.counter);
+  sample.counter     = (LARGE_INTEGER)windows_counter;
   sample.threadId    = (uint64_t)GetCurrentThreadId();
 #endif
   if (label == 0) {
@@ -230,17 +228,15 @@ extern "C"
 #if defined(_WIN32)
 __declspec(dllexport)
 #endif
-void profileEnd(const char * label) {
+void profileInsertEnd(const char * label, long long linux_seconds, long long linux_nanoseconds, long long windows_counter) {
   ProfileInternalSample sample;
 #if defined(__linux__)
-  struct timespec timespec;
-  clock_gettime(CLOCK_REALTIME, &timespec);
-  sample.seconds     = timespec.tv_sec;
-  sample.nanoseconds = timespec.tv_nsec;
+  sample.seconds     = (time_t)linux_seconds;
+  sample.nanoseconds = (long)linux_nanoseconds;
   sample.threadId    = (uint64_t)__PROFILE_PROCEDURE_6bf241eae_syscall(186);
 #endif
 #if defined(_WIN32)
-  QueryPerformanceCounter(&sample.counter);
+  sample.counter     = (LARGE_INTEGER)windows_counter;
   sample.threadId    = (uint64_t)GetCurrentThreadId();
 #endif
   if (label == 0) {
@@ -290,4 +286,44 @@ void profileEnd(const char * label) {
       }
     }
   }
+}
+
+extern "C"
+#if defined(_WIN32)
+__declspec(dllexport)
+#endif
+void profileBegin(const char * label) {
+  long long linux_seconds;
+  long long linux_nanoseconds;
+  long long windows_counter;
+#if defined(__linux__)
+  struct timespec timespec;
+  clock_gettime(CLOCK_REALTIME, &timespec);
+  linux_seconds     = timespec.tv_sec;
+  linux_nanoseconds = timespec.tv_nsec;
+#endif
+#if defined(_WIN32)
+  QueryPerformanceCounter(&windows_counter);
+#endif
+  profileInsertBegin(label, linux_seconds, linux_nanoseconds, windows_counter);
+}
+
+extern "C"
+#if defined(_WIN32)
+__declspec(dllexport)
+#endif
+void profileEnd(const char * label) {
+  long long linux_seconds;
+  long long linux_nanoseconds;
+  long long windows_counter;
+#if defined(__linux__)
+  struct timespec timespec;
+  clock_gettime(CLOCK_REALTIME, &timespec);
+  linux_seconds     = timespec.tv_sec;
+  linux_nanoseconds = timespec.tv_nsec;
+#endif
+#if defined(_WIN32)
+  QueryPerformanceCounter(&windows_counter);
+#endif
+  profileInsertEnd(label, linux_seconds, linux_nanoseconds, windows_counter);
 }
