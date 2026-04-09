@@ -169,10 +169,11 @@ static gpu_extra_cpu_gpu_array OffsetAllocateCpuGpuArrayWithTale64BytesAlign(uin
   #endif
 #endif
 
-#ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_PROFILE // https://github.com/procedural/profile
-  #include "profile/profile.h"
-  #pragma comment(lib, "../../Common/profile/profiledll.lib") // NOTE(Constantine): Path relative to example's vs2019/ folder.
+#ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_PROFILE
+  #include "../../extra/Modified profile/profile.h"
 #else
   #define profileBegin(x)
   #define profileEnd(x)
+  #define profileInsertBegin(x, y, z, w)
+  #define profileInsertEnd(x, y, z, w)
 #endif
