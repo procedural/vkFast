@@ -4,11 +4,37 @@ exit
 #endif
 
 #include "../../vkfast.h"
+#include "../../vkfast_ids.h"
 #include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
+#define VKFAST_EXAMPLES_COMMON_INCLUDE_PROFILE
 #include "../Common/vkfast_examples_common.h"
+
+static void vfiGpuToCpuSignalsWaitToFinishAndTime(gpu_handle_context_t context, unsigned gpuToCpuSignalsCount, void ** gpuToCpuSignals, long long * outLinuxSecondsPerSignal, long long * outLinuxNanosecondsPerSignal, long long * outWindowsCounterPerSignal) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  for (unsigned i = 0; i < gpuToCpuSignalsCount; i += 1) {
+    RedHandleGpuToCpuSignal signal = (RedHandleGpuToCpuSignal)gpuToCpuSignals[i];
+    while (1) {
+      RedStatus status = RED_STATUS_GPU_TO_CPU_SIGNAL_UNSIGNALED;
+      redGpuToCpuSignalGetStatus(vkfast->context, vkfast->gpu, signal, &status, optionalFile, optionalLine, NULL);
+      if (status == RED_STATUS_GPU_TO_CPU_SIGNAL_SIGNALED) {
+        #ifdef _WIN32
+          QueryPerformanceCounter((LARGE_INTEGER *)&outWindowsCounterPerSignal[i]);
+        #else
+          #error TODO(Constantine): Other OS's
+        #endif
+        redGpuToCpuSignalUnsignal(vkfast->context, vkfast->gpu, signal, NULL, optionalFile, optionalLine, NULL);
+        break;
+      }
+    }
+  }
+}
 
 int main() {
 #ifdef __MINGW32__
@@ -234,6 +260,17 @@ int main() {
   }
   reiiStaticArrayEnd(ctx, instancePositions);
 
+  #define GPU_PERF_TRACE_SIGNALS_MAX_COUNT 5
+  RedHandleGpuToCpuSignal gpuPerfTraceSignals[GPU_PERF_TRACE_SIGNALS_MAX_COUNT] = {0};
+  // GPU perf trace
+  {
+    vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)ctx;
+    for (unsigned i = 0; i < GPU_PERF_TRACE_SIGNALS_MAX_COUNT; i += 1) {
+      redCreateGpuToCpuSignal(vkfast->context, vkfast->gpu, NULL, &gpuPerfTraceSignals[i], NULL, FF, LL, NULL);
+      REDGPU_2_EXPECTFL(gpuPerfTraceSignals[i] != NULL);
+    }
+  }
+
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
   ReiiHandleCommandList * list = &hlist;
@@ -269,6 +306,8 @@ int main() {
     if (vfWindowIsMinimized(ctx) || os_window_w == 0 || os_window_h == 0) {
       continue;
     }
+
+    profileBegin("Frame");
 
     LARGE_INTEGER t_start = {0};
     QueryPerformanceCounter(&t_start);
@@ -383,6 +422,21 @@ int main() {
     batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
     list->batch_id = batch;
     reiiCommandListReset(ctx, list);
+
+    // GPU perf trace
+    unsigned gpuPerfTraceIndex = 0;
+    vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)ctx;
+    RedTypeProcedureCallGpuToCpuSignalSignal addr_redCallGpuToCpuSignalSignal = NULL;
+    RedHandleCalls calls = NULL;
+    {
+      vf_handle_t * vfbatch = (vf_handle_t *)(void *)list->batch_id;
+      addr_redCallGpuToCpuSignalSignal = vfbatch->batch.addresses.redCallGpuToCpuSignalSignal;
+      calls = vfbatch->batch.calls.handle;
+    }
+
+    REDGPU_2_EXPECTFL(gpuPerfTraceIndex < GPU_PERF_TRACE_SIGNALS_MAX_COUNT);
+    addr_redCallGpuToCpuSignalSignal(calls, gpuPerfTraceSignals[gpuPerfTraceIndex++], 8192);
+
     reiiCommandSetViewportEx(ctx, list, 0, 0, window_w, window_h, 0, 1);
     reiiCommandSetScissor(ctx, list, 0, 0, window_w, window_h);
     reiiCommandClearTexture(ctx, list, outputdstex, outputmstex, outputmstex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
@@ -394,19 +448,65 @@ int main() {
     reiiCommandBindNewBindingsEnd(ctx, list);
     reiiCommandBindVariablesCopy(ctx, list, 0 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_pos);
     reiiCommandBindVariablesCopy(ctx, list, 1 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_quat);
+
+    REDGPU_2_EXPECTFL(gpuPerfTraceIndex < GPU_PERF_TRACE_SIGNALS_MAX_COUNT);
+    addr_redCallGpuToCpuSignalSignal(calls, gpuPerfTraceSignals[gpuPerfTraceIndex++], 8192);
+
     reiiCommandRenderTargetSet(ctx, list, outputdstex, outputmstex, outputmstex->texture);
     reiiCommandStaticArrayDrawInstanced(ctx, list, mesh, instanceCountX * instanceCountY * instanceCountZ);
     reiiCommandRenderTargetEnd(ctx, list);
+
+    REDGPU_2_EXPECTFL(gpuPerfTraceIndex < GPU_PERF_TRACE_SIGNALS_MAX_COUNT);
+    addr_redCallGpuToCpuSignalSignal(calls, gpuPerfTraceSignals[gpuPerfTraceIndex++], 8192);
+
     RedStructMemberArray raw_pixels = {0};
     vfeBanzaiPointerGetRaw(&pixels_gpu_only, &raw_pixels, FF, LL);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
+
+    REDGPU_2_EXPECTFL(gpuPerfTraceIndex < GPU_PERF_TRACE_SIGNALS_MAX_COUNT);
+    addr_redCallGpuToCpuSignalSignal(calls, gpuPerfTraceSignals[gpuPerfTraceIndex++], 8192);
+
     reiiCommandCopyFromColorTextureToStorageRaw(ctx, list, outputtex, &raw_pixels);
+
+    REDGPU_2_EXPECTFL(gpuPerfTraceIndex < GPU_PERF_TRACE_SIGNALS_MAX_COUNT);
+    addr_redCallGpuToCpuSignalSignal(calls, gpuPerfTraceSignals[gpuPerfTraceIndex++], 8192);
+
     vfBatchEnd(ctx, batch, FF, LL);
 
     uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+
+    // GPU perf trace
+    const char * gpuPerfTraceMarks[GPU_PERF_TRACE_SIGNALS_MAX_COUNT] = {
+      "GPU start cmd buf",
+      "GPU set pipeline state",
+      "GPU render triangles",
+      "GPU resolve MSAA",
+      "GPU copy from color tex to pixels buf"
+    };
+    long long gpuPerfTraceWindowsCounters[1 + GPU_PERF_TRACE_SIGNALS_MAX_COUNT] = {0};
+    #ifdef _WIN32
+      QueryPerformanceCounter((LARGE_INTEGER *)&gpuPerfTraceWindowsCounters[0]);
+    #else
+      #error TODO(Constantine): Other OS's
+    #endif
+    vfiGpuToCpuSignalsWaitToFinishAndTime(ctx, gpuPerfTraceIndex, gpuPerfTraceSignals, NULL, NULL, &gpuPerfTraceWindowsCounters[1]);
+    {
+      for (unsigned i = 0; i < gpuPerfTraceIndex; i += 1) {
+        REDGPU_2_EXPECTFL(gpuPerfTraceMarks[i] != NULL);
+        profileInsertBegin(gpuPerfTraceMarks[i], 0, 0, gpuPerfTraceWindowsCounters[i]);
+        profileInsertEnd(gpuPerfTraceMarks[i], 0, 0, gpuPerfTraceWindowsCounters[i+1]);
+      }
+    }
+
+    profileBegin("vfAsyncWaitToFinish()");
     vfAsyncWaitToFinish(ctx, wait, FF, LL);
+    profileEnd("vfAsyncWaitToFinish()");
+    profileBegin("vfAsyncDrawPixelsRaw()");
     vfAsyncDrawPixelsRaw(ctx, &raw_pixels, NULL, FF, LL);
+    profileEnd("vfAsyncDrawPixelsRaw()");
+    profileBegin("vfAsyncDrawWaitToFinish()");
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
+    profileEnd("vfAsyncDrawWaitToFinish()");
 
     mouse_x_prev = mouse_x;
     mouse_y_prev = mouse_y;
@@ -421,8 +521,17 @@ int main() {
       double milliseconds_fp = (double)(nanoseconds) / 1000000.0;
       //printf("Elapsed milliseconds: %f\n", milliseconds_fp);
     }
+
+    profileEnd("Frame");
   }
 
+  // GPU perf trace
+  {
+    vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)ctx;
+    for (unsigned i = 0; i < GPU_PERF_TRACE_SIGNALS_MAX_COUNT; i += 1) {
+      redDestroyGpuToCpuSignal(vkfast->context, vkfast->gpu, gpuPerfTraceSignals[i], FF, LL, NULL);
+    }
+  }
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, list);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputmstex);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);
