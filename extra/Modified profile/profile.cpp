@@ -16,7 +16,6 @@ exit
 #ifdef _WIN32
 #include <windows.h>
 #endif
-#define STB_SPRINTF_IMPLEMENTATION
 #include "stb_sprintf.h"
 
 #define PROFILE_MAX_STRING_LENGTH            67
@@ -155,8 +154,8 @@ void profileInsertBegin(const char * label, long long linux_seconds, long long l
   sample.threadId    = (uint64_t)__PROFILE_PROCEDURE_6bf241eae_syscall(186);
 #endif
 #if defined(_WIN32)
-  sample.counter     = (LARGE_INTEGER)windows_counter;
-  sample.threadId    = (uint64_t)GetCurrentThreadId();
+  sample.counter.QuadPart = (LONGLONG)windows_counter;
+  sample.threadId         = (uint64_t)GetCurrentThreadId();
 #endif
   if (label == 0) {
     sample.label[0] = 0;
@@ -236,8 +235,8 @@ void profileInsertEnd(const char * label, long long linux_seconds, long long lin
   sample.threadId    = (uint64_t)__PROFILE_PROCEDURE_6bf241eae_syscall(186);
 #endif
 #if defined(_WIN32)
-  sample.counter     = (LARGE_INTEGER)windows_counter;
-  sample.threadId    = (uint64_t)GetCurrentThreadId();
+  sample.counter.QuadPart = (LONGLONG)windows_counter;
+  sample.threadId         = (uint64_t)GetCurrentThreadId();
 #endif
   if (label == 0) {
     sample.label[0] = 0;
@@ -293,17 +292,17 @@ extern "C"
 __declspec(dllexport)
 #endif
 void profileBegin(const char * label) {
-  long long linux_seconds;
-  long long linux_nanoseconds;
-  long long windows_counter;
+  long long linux_seconds     = 0;
+  long long linux_nanoseconds = 0;
+  long long windows_counter   = 0;
 #if defined(__linux__)
   struct timespec timespec;
   clock_gettime(CLOCK_REALTIME, &timespec);
-  linux_seconds     = timespec.tv_sec;
-  linux_nanoseconds = timespec.tv_nsec;
+  linux_seconds     = (long long)timespec.tv_sec;
+  linux_nanoseconds = (long long)timespec.tv_nsec;
 #endif
 #if defined(_WIN32)
-  QueryPerformanceCounter(&windows_counter);
+  QueryPerformanceCounter((LARGE_INTEGER *)&windows_counter);
 #endif
   profileInsertBegin(label, linux_seconds, linux_nanoseconds, windows_counter);
 }
@@ -313,17 +312,17 @@ extern "C"
 __declspec(dllexport)
 #endif
 void profileEnd(const char * label) {
-  long long linux_seconds;
-  long long linux_nanoseconds;
-  long long windows_counter;
+  long long linux_seconds     = 0;
+  long long linux_nanoseconds = 0;
+  long long windows_counter   = 0;
 #if defined(__linux__)
   struct timespec timespec;
   clock_gettime(CLOCK_REALTIME, &timespec);
-  linux_seconds     = timespec.tv_sec;
-  linux_nanoseconds = timespec.tv_nsec;
+  linux_seconds     = (long long)timespec.tv_sec;
+  linux_nanoseconds = (long long)timespec.tv_nsec;
 #endif
 #if defined(_WIN32)
-  QueryPerformanceCounter(&windows_counter);
+  QueryPerformanceCounter((LARGE_INTEGER *)&windows_counter);
 #endif
   profileInsertEnd(label, linux_seconds, linux_nanoseconds, windows_counter);
 }
