@@ -53,10 +53,6 @@ int main() {
   uint64_t storage_cpu_upload_mem_offset = 0;
   uint64_t storage_cpu_readback_mem_offset = 0;
 
-  gpu_extra_banzai_pointer_t pixels_gpu_only = {0};
-  vfeBanzaiGetPointer(&storage_gpu_only, storage_gpu_only_mem_offset, &pixels_gpu_only, FF, LL);
-  storage_gpu_only_mem_offset += (288/*mb*/ * 1024 * 1024);
-
   gpu_extra_cpu_gpu_array mesh_vertex_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
     64/*mb*/ * 1024 * 1024,
     &storage_cpu_upload, &storage_cpu_upload_mem_offset,
@@ -397,15 +393,12 @@ int main() {
     reiiCommandRenderTargetSet(ctx, list, outputdstex, outputmstex, outputmstex->texture);
     reiiCommandStaticArrayDrawInstanced(ctx, list, mesh, instanceCountX * instanceCountY * instanceCountZ);
     reiiCommandRenderTargetEnd(ctx, list);
-    RedStructMemberArray raw_pixels = {0};
-    vfeBanzaiPointerGetRaw(&pixels_gpu_only, &raw_pixels, FF, LL);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
-    reiiCommandCopyFromColorTextureToStorageRaw(ctx, list, outputtex, &raw_pixels);
     vfBatchEnd(ctx, batch, FF, LL);
 
     uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
     vfAsyncWaitToFinish(ctx, wait, FF, LL);
-    vfAsyncDrawPixelsRaw(ctx, &raw_pixels, NULL, FF, LL);
+    vfAsyncDrawImageRaw(ctx, outputtex->image.handle, NULL, FF, LL);
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
 
     mouse_x_prev = mouse_x;
