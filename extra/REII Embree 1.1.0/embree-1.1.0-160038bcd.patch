@@ -1,0 +1,55 @@
+diff --git a/embree-1.1.0/CMakeLists.txt b/embree-1.1.0/CMakeLists.txt
+index b80e3fe..f0b9b6c 100644
+--- a/embree-1.1.0/CMakeLists.txt
++++ b/embree-1.1.0/CMakeLists.txt
+@@ -22,6 +22,8 @@ PROJECT(embree)
+ 
+ CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
+ 
++set(CMAKE_POSITION_INDEPENDENT_CODE ON)
++
+ IF(COMMAND cmake_policy)
+   CMAKE_POLICY(SET CMP0003 NEW)
+ ENDIF(COMMAND cmake_policy)
+diff --git a/embree-1.1.0/common/sys/stl/string.cpp b/embree-1.1.0/common/sys/stl/string.cpp
+index c49f0dd..df425bf 100644
+--- a/embree-1.1.0/common/sys/stl/string.cpp
++++ b/embree-1.1.0/common/sys/stl/string.cpp
+@@ -13,15 +13,3 @@
+ // See the License for the specific language governing permissions and      //
+ // limitations under the License.                                           //
+ // ======================================================================== //
+-
+-#include <algorithm>
+-#include <ctype.h>
+-#include "string.h"
+-
+-namespace std
+-{
+-  char to_lower(char c) { return char(tolower(int(c))); }
+-  char to_upper(char c) { return char(toupper(int(c))); }
+-  string strlwr(const string& s) { string dst(s); std::transform(dst.begin(), dst.end(), dst.begin(), to_lower); return dst; }
+-  string strupr(const string& s) { string dst(s); std::transform(dst.begin(), dst.end(), dst.begin(), to_upper); return dst; }
+-}
+diff --git a/embree-1.1.0/common/sys/stl/string.h b/embree-1.1.0/common/sys/stl/string.h
+index 50feee2..bf7d58e 100644
+--- a/embree-1.1.0/common/sys/stl/string.h
++++ b/embree-1.1.0/common/sys/stl/string.h
+@@ -24,11 +24,15 @@
+ #include <cstring>
+ #include <string.h>
+ #include <sstream>
++#include <algorithm>
++#include <ctype.h>
+ 
+ namespace std
+ {
+-  string strlwr(const string& s);
+-  string strupr(const string& s);
++  static inline char to_lower(char c) { return char(tolower(int(c))); }
++  static inline char to_upper(char c) { return char(toupper(int(c))); }
++  static inline string strlwr(const string& s) { string dst(s); std::transform(dst.begin(), dst.end(), dst.begin(), to_lower); return dst; }
++  static inline string strupr(const string& s) { string dst(s); std::transform(dst.begin(), dst.end(), dst.begin(), to_upper); return dst; }
+ 
+   template<typename T> __forceinline string stringOf( T const& v) {
+     stringstream s; s << v; return s.str();
