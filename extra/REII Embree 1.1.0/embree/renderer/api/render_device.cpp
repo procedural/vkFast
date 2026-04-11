@@ -156,6 +156,8 @@ namespace embree
   }
 
   RenderDevice::~RenderDevice() {
+    delete scheduler;
+    scheduler = NULL;
     rtcFreeMemory();
   }
 
