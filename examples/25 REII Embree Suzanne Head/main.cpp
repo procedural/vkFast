@@ -31,14 +31,14 @@
 #include "../../extra/REII Embree 1.1.0/include/renderer/api/handle.h"
 
 // NOTE(Constantine): Paths relative to example's vs2019/ folder:
-#if 0
-#pragma comment(lib, "../../../extra/REII Embree 1.1.0/embree/x64/Release/common.lib")
-#pragma comment(lib, "../../../extra/REII Embree 1.1.0/embree/x64/Release/renderer.lib")
-#pragma comment(lib, "../../../extra/REII Embree 1.1.0/embree/x64/Release/rtcore.lib")
-#else
+#ifdef _DEBUG
 #pragma comment(lib, "../../../extra/REII Embree 1.1.0/embree/x64/Debug/common.lib")
 #pragma comment(lib, "../../../extra/REII Embree 1.1.0/embree/x64/Debug/renderer.lib")
 #pragma comment(lib, "../../../extra/REII Embree 1.1.0/embree/x64/Debug/rtcore.lib")
+#else
+#pragma comment(lib, "../../../extra/REII Embree 1.1.0/embree/x64/Release/common.lib")
+#pragma comment(lib, "../../../extra/REII Embree 1.1.0/embree/x64/Release/renderer.lib")
+#pragma comment(lib, "../../../extra/REII Embree 1.1.0/embree/x64/Release/rtcore.lib")
 #endif
 
 float stack_verticesPosition[] = {
