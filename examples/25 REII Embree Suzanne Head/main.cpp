@@ -41,6 +41,9 @@
 #pragma comment(lib, "../../../extra/REII Embree 1.1.0/embree/x64/Release/rtcore.lib")
 #endif
 
+const size_t stack_verticesCount = 2904;
+const size_t stack_indicesCount  = 2904;
+
 float stack_verticesPosition[] = {
   0.351563, 0.242188, -0.828125,
   0.445313, 0.156250, -0.781250,
@@ -8934,10 +8937,6 @@ int main() {
   reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
   reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL);
 
-  float mesh_vertices[] = {
-    #include "../../extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
-  };
-
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
   ReiiHandleCommandList * list = &hlist;
@@ -9020,16 +9019,13 @@ int main() {
     //device->rtSetFloat1(material, "horizonScatteringFallOff", 10.0f);
     //device->rtCommit(material);
 
-    size_t verticesCount = 2904;
-    size_t indicesCount  = 2904;
-
     shape = device->rtNewShape("trianglemesh");
-    positions = device->rtNewData("immutable", verticesCount * (3 * 4), stack_verticesPosition);
-    normals = device->rtNewData("immutable", verticesCount * (3 * 4), stack_verticesNormal);
-    indices = device->rtNewData("immutable", indicesCount * 4, stack_verticesIndex);
-    device->rtSetArray(shape, "positions", "float3", positions, verticesCount, 3 * 4, 0);
-    device->rtSetArray(shape, "normals", "float3", normals, verticesCount, 3 * 4, 0);
-    device->rtSetArray(shape, "indices", "int3", indices, indicesCount / 3, 3 * 4, 0);
+    positions = device->rtNewData("immutable", stack_verticesCount * (3 * 4), stack_verticesPosition);
+    normals = device->rtNewData("immutable", stack_verticesCount * (3 * 4), stack_verticesNormal);
+    indices = device->rtNewData("immutable", stack_indicesCount * 4, stack_verticesIndex);
+    device->rtSetArray(shape, "positions", "float3", positions, stack_verticesCount, 3 * 4, 0);
+    device->rtSetArray(shape, "normals", "float3", normals, stack_verticesCount, 3 * 4, 0);
+    device->rtSetArray(shape, "indices", "int3", indices, stack_indicesCount / 3, 3 * 4, 0);
     device->rtCommit(shape);
     device->rtClear(shape);
 
@@ -9205,81 +9201,80 @@ int main() {
     // Embree
     {
       embree::AffineSpace3f camera_matrix = embree::AffineSpace3f::lookAtPoint(
-        /*pos*/   embree::Vec3f(camera_pos.x, camera_pos.y, camera_pos.z),
-        /*taget*/ embree::Vec3f(camera_pos.x+embree_dir_vec[0], camera_pos.y+embree_dir_vec[1], camera_pos.z+embree_dir_vec[2]),
-        /*up*/    embree::Vec3f(0, 1, 0)
+        /*pos*/    embree::Vec3f(camera_pos.x, camera_pos.y, camera_pos.z),
+        /*target*/ embree::Vec3f(camera_pos.x+embree_dir_vec[0], camera_pos.y+embree_dir_vec[1], camera_pos.z+embree_dir_vec[2]),
+        /*up*/     embree::Vec3f(0, 1, 0)
       );
       device->rtSetTransform(camera, "local2world", embree::copyToArray(camera_matrix));
-      device->rtSetFloat1(camera, "angle", 60);
+      device->rtSetFloat1(camera, "angle", 90);
       device->rtSetFloat1(camera, "aspectRatio", window_w / window_h);
       device->rtSetFloat1(camera, "focalDistance", 10);
       device->rtSetFloat1(camera, "lensRadius", 0.001);
       device->rtCommit(camera);
     }
 
-    device->rtRenderFrame(renderer, camera, scene, tonemapper, framebuffer, embree_frame);
-    embree_frame += 1;
-    device->rtSwapBuffers(framebuffer);
+    if (camera_is_enabled == 1) {
+      gpu_batch_info_t bindings_info = {0};
+      bindings_info.max_new_bindings_sets_count = 1;
+      bindings_info.max_storage_binds_count     = 2;
+      batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
+      list->batch_id = batch;
+      reiiCommandListReset(ctx, list);
+      reiiCommandSetViewportEx(ctx, list, 0, 0, window_w, window_h, 0, 1);
+      reiiCommandSetScissor(ctx, list, 0, 0, window_w, window_h);
+      reiiCommandClearTexture(ctx, list, outputdstex, outputmstex, outputmstex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
+      reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
+      reiiCommandBindNewBindingsSet(ctx, list, countof(slots), slots);
+      reiiCommandBindStorageRaw(ctx, list, 0, 1, &pos_array.gpu);
+      reiiCommandBindStorageRaw(ctx, list, 1, 1, &col_array.gpu);
+      reiiCommandBindNewBindingsEnd(ctx, list);
+      reiiCommandBindVariablesCopy(ctx, list, 0 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_pos);
+      reiiCommandBindVariablesCopy(ctx, list, 1 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_quat);
+      reiiCommandMeshSet(ctx, list);
+      for (int i = 0; i < stack_verticesCount; i += 1) {
+        reiiCommandMeshColor(ctx, list, i * 0.00025f, 0, 0.1f, 1);
+        reiiCommandMeshPosition(ctx, list,
+          stack_verticesPosition[i * 3 + 0],
+          stack_verticesPosition[i * 3 + 1],
+          stack_verticesPosition[i * 3 + 2],
+          1
+        );
+      }
+      reiiCommandMeshEndWithTale64BytesAlign(ctx, list, outputdstex, outputmstex, outputmstex->texture);
+      reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
+      vfBatchEnd(ctx, batch, FF, LL);
 
-    void * ptr = device->rtMapFrameBuffer(framebuffer);
-    memcpy(pixels.cpu_ptr, ptr, sizeof(float) * 4 * window_w * window_h);
-    device->rtUnmapFrameBuffer(framebuffer);
-    ptr = NULL;
+      uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+      vfAsyncWaitToFinish(ctx, wait, FF, LL);
+      vfAsyncDrawImageRaw(ctx, outputtex->image.handle, NULL, FF, LL);
+      vfAsyncDrawWaitToFinish(ctx, FF, LL);
+    } else {
+      device->rtRenderFrame(renderer, camera, scene, tonemapper, framebuffer, embree_frame);
+      embree_frame += 1;
+      device->rtSwapBuffers(framebuffer);
 
-    gpu_batch_info_t bindings_info = {0};
-    bindings_info.max_new_bindings_sets_count = 1;
-    bindings_info.max_storage_binds_count     = 2;
-    batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
-    vfBatchBindProgramPipelineCompute(ctx, batch, pp, FF, LL);
-    vfBatchBindNewBindingsSet(ctx, batch, countof(pp_slots), pp_slots, FF, LL);
-    vfBatchBindStorageRaw(ctx, batch, 0, 1, &pixels.cpu, FF, LL);
-    vfBatchBindStorageRaw(ctx, batch, 1, 1, &pixels.gpu, FF, LL);
-    vfBatchBindNewBindingsEnd(ctx, batch, FF, LL);
-    vfBatchCompute(ctx, batch, ((window_w * window_h) / 32) + 1, 1, 1, FF, LL);
-    vfBatchEnd(ctx, batch, FF, LL);
-    uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
-    vfAsyncWaitToFinish(ctx, wait, FF, LL);
+      void * ptr = device->rtMapFrameBuffer(framebuffer);
+      memcpy(pixels.cpu_ptr, ptr, sizeof(float) * 4 * window_w * window_h);
+      device->rtUnmapFrameBuffer(framebuffer);
+      ptr = NULL;
 
-    vfAsyncDrawPixelsRaw(ctx, &pixels.gpu, NULL, FF, LL);
-    vfAsyncDrawWaitToFinish(ctx, FF, LL);
+      gpu_batch_info_t bindings_info = {0};
+      bindings_info.max_new_bindings_sets_count = 1;
+      bindings_info.max_storage_binds_count     = 2;
+      batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
+      vfBatchBindProgramPipelineCompute(ctx, batch, pp, FF, LL);
+      vfBatchBindNewBindingsSet(ctx, batch, countof(pp_slots), pp_slots, FF, LL);
+      vfBatchBindStorageRaw(ctx, batch, 0, 1, &pixels.cpu, FF, LL);
+      vfBatchBindStorageRaw(ctx, batch, 1, 1, &pixels.gpu, FF, LL);
+      vfBatchBindNewBindingsEnd(ctx, batch, FF, LL);
+      vfBatchCompute(ctx, batch, ((window_w * window_h) / 32) + 1, 1, 1, FF, LL);
+      vfBatchEnd(ctx, batch, FF, LL);
+      uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+      vfAsyncWaitToFinish(ctx, wait, FF, LL);
 
-    #if 0
-    gpu_batch_info_t bindings_info = {0};
-    bindings_info.max_new_bindings_sets_count = 1;
-    bindings_info.max_storage_binds_count     = 2;
-    batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
-    list->batch_id = batch;
-    reiiCommandListReset(ctx, list);
-    reiiCommandSetViewportEx(ctx, list, 0, 0, window_w, window_h, 0, 1);
-    reiiCommandSetScissor(ctx, list, 0, 0, window_w, window_h);
-    reiiCommandClearTexture(ctx, list, outputdstex, outputmstex, outputmstex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
-    reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
-    reiiCommandBindNewBindingsSet(ctx, list, countof(slots), slots);
-    reiiCommandBindStorageRaw(ctx, list, 0, 1, &pos_array.gpu);
-    reiiCommandBindStorageRaw(ctx, list, 1, 1, &col_array.gpu);
-    reiiCommandBindNewBindingsEnd(ctx, list);
-    reiiCommandBindVariablesCopy(ctx, list, 0 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_pos);
-    reiiCommandBindVariablesCopy(ctx, list, 1 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_quat);
-    reiiCommandMeshSet(ctx, list);
-    for (int i = 0, mesh_vertices_count = countof(mesh_vertices) / 3; i < mesh_vertices_count; i += 1) {
-      float scale = 0.5f;
-      reiiCommandMeshColor(ctx, list, i * 0.00025f, 0, 0.1f, 1);
-      reiiCommandMeshPosition(ctx, list,
-        mesh_vertices[i * 3 + 0] * scale,
-        mesh_vertices[i * 3 + 1] * scale,
-        mesh_vertices[i * 3 + 2] * scale,
-        1
-      );
+      vfAsyncDrawPixelsRaw(ctx, &pixels.gpu, NULL, FF, LL);
+      vfAsyncDrawWaitToFinish(ctx, FF, LL);
     }
-    reiiCommandMeshEndWithTale64BytesAlign(ctx, list, outputdstex, outputmstex, outputmstex->texture);
-    reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
-    vfBatchEnd(ctx, batch, FF, LL);
-
-    uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
-    vfAsyncWaitToFinish(ctx, wait, FF, LL);
-    vfAsyncDrawImageRaw(ctx, outputtex->image.handle, NULL, FF, LL);
-    vfAsyncDrawWaitToFinish(ctx, FF, LL);
-    #endif
 
     mouse_x_prev = mouse_x;
     mouse_y_prev = mouse_y;
