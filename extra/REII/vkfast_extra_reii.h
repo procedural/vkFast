@@ -272,7 +272,7 @@ typedef struct ReiiHandleCommandList {
   RedCallProceduresAndAddresses callProceduresAndAddresses;
 } ReiiHandleCommandList;
 
-typedef struct ReiiHandleStaticArray {
+typedef struct ReiiHandleUnorderedArray {
   gpu_extra_cpu_gpu_array position;
   gpu_extra_cpu_gpu_array color;
   gpu_extra_cpu_gpu_array normal; // NOTE(Constantine): Treated as vec4, unlike in GL1.4-based REII that treats them as vec3.
@@ -283,7 +283,7 @@ typedef struct ReiiHandleStaticArray {
   uint64_t                colorVec4Count;
   uint64_t                normalVec4Count;
   uint64_t                texcoordVec4Count[REII_TEXCOORDS_MAX_COUNT];
-} ReiiHandleStaticArray;
+} ReiiHandleUnorderedArray;
 
 typedef enum gpu_extra_reii_destroy_type_e {
   GPU_EXTRA_REII_DESTROY_TYPE_UNDEFINED      = 0,
@@ -339,19 +339,19 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal                  (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandMeshPosition                (gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z, float w);
 GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTexture     (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * sourceMsaaColorTexture, ReiiHandleTexture * targetColorTexture);
 GPU_API_PRE void GPU_API_POST reiiCommandCopyFromColorTextureToStorageRaw (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * texture, RedStructMemberArray * storageRaw);
-GPU_API_PRE void GPU_API_POST reiiCommandStaticArrayDraw             (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticArray * staticArray);
-GPU_API_PRE void GPU_API_POST reiiCommandStaticArrayDrawInstanced    (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticArray * staticArray, unsigned instanceCount);
-GPU_API_PRE void GPU_API_POST reiiCommandStaticArrayDrawInstancedEx  (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleStaticArray * staticArray, unsigned instanceCount, unsigned vertexCount);
+GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDraw               (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleUnorderedArray * unorderedArray);
+GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstanced      (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleUnorderedArray * unorderedArray, unsigned instanceCount);
+GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstancedEx    (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleUnorderedArray * unorderedArray, unsigned instanceCount, unsigned vertexCount);
 
-// Static array
+// Unordered array
 
-GPU_API_PRE void GPU_API_POST reiiCreateStaticArray                   (gpu_handle_context_t context, ReiiHandleStaticArray * outStaticArray);
-GPU_API_PRE void GPU_API_POST reiiStaticArraySet                      (gpu_handle_context_t context, ReiiHandleStaticArray * staticArray);
-GPU_API_PRE void GPU_API_POST reiiStaticArrayEnd                      (gpu_handle_context_t context, ReiiHandleStaticArray * staticArray);
-GPU_API_PRE void GPU_API_POST reiiStaticArrayTexcoord                 (gpu_handle_context_t context, ReiiHandleStaticArray * staticArray, unsigned index, float x, float y, float z, float w);
-GPU_API_PRE void GPU_API_POST reiiStaticArrayColor                    (gpu_handle_context_t context, ReiiHandleStaticArray * staticArray, float r, float g, float b, float a);
-GPU_API_PRE void GPU_API_POST reiiStaticArrayNormal                   (gpu_handle_context_t context, ReiiHandleStaticArray * staticArray, float x, float y, float z);
-GPU_API_PRE void GPU_API_POST reiiStaticArrayPosition                 (gpu_handle_context_t context, ReiiHandleStaticArray * staticArray, float x, float y, float z, float w);
+GPU_API_PRE void GPU_API_POST reiiCreateUnorderedArray                (gpu_handle_context_t context, ReiiHandleUnorderedArray * outUnorderedArray);
+GPU_API_PRE void GPU_API_POST reiiUnorderedArraySet                   (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray);
+GPU_API_PRE void GPU_API_POST reiiUnorderedArrayEnd                   (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray);
+GPU_API_PRE void GPU_API_POST reiiUnorderedArrayTexcoord              (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned index, float x, float y, float z, float w);
+GPU_API_PRE void GPU_API_POST reiiUnorderedArrayColor                 (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, float r, float g, float b, float a);
+GPU_API_PRE void GPU_API_POST reiiUnorderedArrayNormal                (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, float x, float y, float z);
+GPU_API_PRE void GPU_API_POST reiiUnorderedArrayPosition              (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, float x, float y, float z, float w);
 
 // Destroy
 

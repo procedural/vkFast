@@ -187,48 +187,48 @@ int main() {
     #include "../../extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
   };
 
-  ReiiHandleStaticArray hmesh = {0};
-  ReiiHandleStaticArray * mesh = &hmesh;
+  ReiiHandleUnorderedArray hmesh = {0};
+  ReiiHandleUnorderedArray * mesh = &hmesh;
   mesh->position = mesh_vertex_array;
-  reiiCreateStaticArray(ctx, mesh);
-  reiiStaticArraySet(ctx, mesh);
+  reiiCreateUnorderedArray(ctx, mesh);
+  reiiUnorderedArraySet(ctx, mesh);
   for (int i = 0, mesh_vertices_count = countof(mesh_vertices) / 3; i < mesh_vertices_count; i += 1) {
-    reiiStaticArrayPosition(ctx, mesh, mesh_vertices[i * 3 + 0], mesh_vertices[i * 3 + 1], mesh_vertices[i * 3 + 2], 1);
+    reiiUnorderedArrayPosition(ctx, mesh, mesh_vertices[i * 3 + 0], mesh_vertices[i * 3 + 1], mesh_vertices[i * 3 + 2], 1);
   }
-  reiiStaticArrayEnd(ctx, mesh);
+  reiiUnorderedArrayEnd(ctx, mesh);
 
   const int instanceCountX = 25;
   const int instanceCountY = 25;
   const int instanceCountZ = 25;
   RandomInit();
 
-  ReiiHandleStaticArray hinstanceColors = {0};
-  ReiiHandleStaticArray * instanceColors = &hinstanceColors;
+  ReiiHandleUnorderedArray hinstanceColors = {0};
+  ReiiHandleUnorderedArray * instanceColors = &hinstanceColors;
   instanceColors->texcoord[0] = instance_color_array;
-  reiiCreateStaticArray(ctx, instanceColors);
-  reiiStaticArraySet(ctx, instanceColors);
+  reiiCreateUnorderedArray(ctx, instanceColors);
+  reiiUnorderedArraySet(ctx, instanceColors);
   for (int k = 0; k < instanceCountZ; k += 1) {
     for (int j = 0; j < instanceCountY; j += 1) {
       for (int i = 0; i < instanceCountX; i += 1) {
-        reiiStaticArrayTexcoord(ctx, instanceColors, 0, RandomRange(0.15f, 0.45f), RandomRange(0.15f, 0.45f), RandomRange(0.25f, 1.f), 1);
+        reiiUnorderedArrayTexcoord(ctx, instanceColors, 0, RandomRange(0.15f, 0.45f), RandomRange(0.15f, 0.45f), RandomRange(0.25f, 1.f), 1);
       }
     }
   }
-  reiiStaticArrayEnd(ctx, instanceColors);
+  reiiUnorderedArrayEnd(ctx, instanceColors);
 
-  ReiiHandleStaticArray hinstancePositions = {0};
-  ReiiHandleStaticArray * instancePositions = &hinstancePositions;
+  ReiiHandleUnorderedArray hinstancePositions = {0};
+  ReiiHandleUnorderedArray * instancePositions = &hinstancePositions;
   instancePositions->texcoord[0] = instance_position_array;
-  reiiCreateStaticArray(ctx, instancePositions);
-  reiiStaticArraySet(ctx, instancePositions);
+  reiiCreateUnorderedArray(ctx, instancePositions);
+  reiiUnorderedArraySet(ctx, instancePositions);
   for (int k = 0; k < instanceCountZ; k += 1) {
     for (int j = 0; j < instanceCountY; j += 1) {
       for (int i = 0; i < instanceCountX; i += 1) {
-        reiiStaticArrayTexcoord(ctx, instancePositions, 0, i * 3.f, j * 3.f, k * 3.f, RandomRange(0.05f, 0.45f));
+        reiiUnorderedArrayTexcoord(ctx, instancePositions, 0, i * 3.f, j * 3.f, k * 3.f, RandomRange(0.05f, 0.45f));
       }
     }
   }
-  reiiStaticArrayEnd(ctx, instancePositions);
+  reiiUnorderedArrayEnd(ctx, instancePositions);
 
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
@@ -391,7 +391,7 @@ int main() {
     reiiCommandBindVariablesCopy(ctx, list, 0 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_pos);
     reiiCommandBindVariablesCopy(ctx, list, 1 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_quat);
     reiiCommandRenderTargetSet(ctx, list, outputdstex, outputmstex, outputmstex->texture);
-    reiiCommandStaticArrayDrawInstanced(ctx, list, mesh, instanceCountX * instanceCountY * instanceCountZ);
+    reiiCommandUnorderedArrayDrawInstanced(ctx, list, mesh, instanceCountX * instanceCountY * instanceCountZ);
     reiiCommandRenderTargetEnd(ctx, list);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     vfBatchEnd(ctx, batch, FF, LL);
