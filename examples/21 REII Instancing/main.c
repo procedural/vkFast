@@ -204,13 +204,13 @@ int main() {
 
   ReiiHandleStaticArray hinstanceColors = {0};
   ReiiHandleStaticArray * instanceColors = &hinstanceColors;
-  instanceColors->color = instance_color_array;
+  instanceColors->texcoord[0] = instance_color_array;
   reiiCreateStaticArray(ctx, instanceColors);
   reiiStaticArraySet(ctx, instanceColors);
   for (int k = 0; k < instanceCountZ; k += 1) {
     for (int j = 0; j < instanceCountY; j += 1) {
       for (int i = 0; i < instanceCountX; i += 1) {
-        reiiStaticArrayColor(ctx, instanceColors, RandomRange(0.15f, 0.45f), RandomRange(0.15f, 0.45f), RandomRange(0.25f, 1.f), 1);
+        reiiStaticArrayTexcoord(ctx, instanceColors, 0, RandomRange(0.15f, 0.45f), RandomRange(0.15f, 0.45f), RandomRange(0.25f, 1.f), 1);
       }
     }
   }
@@ -218,13 +218,13 @@ int main() {
 
   ReiiHandleStaticArray hinstancePositions = {0};
   ReiiHandleStaticArray * instancePositions = &hinstancePositions;
-  instancePositions->position = instance_position_array;
+  instancePositions->texcoord[0] = instance_position_array;
   reiiCreateStaticArray(ctx, instancePositions);
   reiiStaticArraySet(ctx, instancePositions);
   for (int k = 0; k < instanceCountZ; k += 1) {
     for (int j = 0; j < instanceCountY; j += 1) {
       for (int i = 0; i < instanceCountX; i += 1) {
-        reiiStaticArrayPosition(ctx, instancePositions, i * 3.f, j * 3.f, k * 3.f, RandomRange(0.05f, 0.45f));
+        reiiStaticArrayTexcoord(ctx, instancePositions, 0, i * 3.f, j * 3.f, k * 3.f, RandomRange(0.05f, 0.45f));
       }
     }
   }
@@ -385,8 +385,8 @@ int main() {
     reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
     reiiCommandBindNewBindingsSet(ctx, list, countof(slots), slots);
     reiiCommandBindStorageRaw(ctx, list, 0, 1, &mesh->position.gpu);
-    reiiCommandBindStorageRaw(ctx, list, 1, 1, &instanceColors->color.gpu);
-    reiiCommandBindStorageRaw(ctx, list, 2, 1, &instancePositions->position.gpu);
+    reiiCommandBindStorageRaw(ctx, list, 1, 1, &instanceColors->texcoord[0].gpu);
+    reiiCommandBindStorageRaw(ctx, list, 2, 1, &instancePositions->texcoord[0].gpu);
     reiiCommandBindNewBindingsEnd(ctx, list);
     reiiCommandBindVariablesCopy(ctx, list, 0 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_pos);
     reiiCommandBindVariablesCopy(ctx, list, 1 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_quat);
