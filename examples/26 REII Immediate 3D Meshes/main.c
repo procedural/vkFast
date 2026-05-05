@@ -404,9 +404,9 @@ int main() {
       float offset_z = 0.f;
 
       for (int i = 0; i < par_mesh->ntriangles; i += 1) {
-        const uint64_t tri_vert0_idx = par_mesh->triangles[i * 3 + 0];
+        const uint64_t tri_vert2_idx = par_mesh->triangles[i * 3 + 0];
         const uint64_t tri_vert1_idx = par_mesh->triangles[i * 3 + 1];
-        const uint64_t tri_vert2_idx = par_mesh->triangles[i * 3 + 2];
+        const uint64_t tri_vert0_idx = par_mesh->triangles[i * 3 + 2];
 
         reiiCommandMeshColor(ctx, list, i * 0.00025f, 0, 0.1f, 1);
         reiiCommandMeshPosition(ctx, list,
@@ -441,9 +441,9 @@ int main() {
       float offset_z = 0.f;
 
       for (int i = 0; i < par_mesh->ntriangles; i += 1) {
-        const uint64_t tri_vert0_idx = par_mesh->triangles[i * 3 + 0];
+        const uint64_t tri_vert2_idx = par_mesh->triangles[i * 3 + 0];
         const uint64_t tri_vert1_idx = par_mesh->triangles[i * 3 + 1];
-        const uint64_t tri_vert2_idx = par_mesh->triangles[i * 3 + 2];
+        const uint64_t tri_vert0_idx = par_mesh->triangles[i * 3 + 2];
 
         reiiCommandMeshColor(ctx, list, i * 0.0025f, 0, 0.1f, 1);
         reiiCommandMeshPosition(ctx, list,
@@ -478,9 +478,9 @@ int main() {
       float offset_z = 0.f;
 
       for (int i = 0; i < par_mesh->ntriangles; i += 1) {
-        const uint64_t tri_vert0_idx = par_mesh->triangles[i * 3 + 0];
+        const uint64_t tri_vert2_idx = par_mesh->triangles[i * 3 + 0];
         const uint64_t tri_vert1_idx = par_mesh->triangles[i * 3 + 1];
-        const uint64_t tri_vert2_idx = par_mesh->triangles[i * 3 + 2];
+        const uint64_t tri_vert0_idx = par_mesh->triangles[i * 3 + 2];
 
         reiiCommandMeshColor(ctx, list, i * 0.0025f, 0, 0.1f, 1);
         reiiCommandMeshPosition(ctx, list,
@@ -524,9 +524,9 @@ int main() {
         const par_shapes_mesh * par_mesh = par_meshes[j];
 
         for (int i = 0; i < par_mesh->ntriangles; i += 1) {
-          const uint64_t tri_vert0_idx = par_mesh->triangles[i * 3 + 0];
+          const uint64_t tri_vert2_idx = par_mesh->triangles[i * 3 + 0];
           const uint64_t tri_vert1_idx = par_mesh->triangles[i * 3 + 1];
-          const uint64_t tri_vert2_idx = par_mesh->triangles[i * 3 + 2];
+          const uint64_t tri_vert0_idx = par_mesh->triangles[i * 3 + 2];
 
           reiiCommandMeshColor(ctx, list, i * 0.0025f, 0, 0.1f, 1);
           reiiCommandMeshPosition(ctx, list,
