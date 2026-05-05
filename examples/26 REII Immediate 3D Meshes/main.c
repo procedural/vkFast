@@ -374,6 +374,15 @@ int main() {
     reiiCommandBindVariablesCopy(ctx, list, 0 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_pos);
     reiiCommandBindVariablesCopy(ctx, list, 1 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_quat);
     reiiCommandMeshSet(ctx, list);
+    // Draw colored triangle
+    {
+      reiiCommandMeshColor(ctx, list, 1, 0, 0, 1);
+      reiiCommandMeshPosition(ctx, list, 1,1,0, 1);
+      reiiCommandMeshColor(ctx, list, 0, 1, 0, 1);
+      reiiCommandMeshPosition(ctx, list, 0,2,0, 1);
+      reiiCommandMeshColor(ctx, list, 0, 0, 1, 1);
+      reiiCommandMeshPosition(ctx, list, 0,1,1, 1);
+    }
     // Draw suzanne head
     for (int i = 0, mesh_vertices_count = countof(mesh_vertices) / 3; i < mesh_vertices_count; i += 1) {
       float scale = 0.5f;
