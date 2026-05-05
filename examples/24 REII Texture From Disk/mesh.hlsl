@@ -48,7 +48,9 @@ interpolated main(uint vid: SV_VertexID, uint iid: SV_InstanceID) {
 #ifdef FS
 render main(interpolated input) {
   render output;
-  output.color = texture.Sample(tsampler, input.uv);
+  float4 c = texture.Sample(tsampler, input.uv);
+  c *= c; // Gamma correcting texture colors loaded from disk.
+  output.color = c;
   return output;
 }
 #endif
