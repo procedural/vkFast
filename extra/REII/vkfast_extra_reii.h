@@ -285,6 +285,11 @@ typedef struct ReiiHandleUnorderedArray {
   uint64_t                texcoordVec4Count[REII_TEXCOORDS_MAX_COUNT];
 } ReiiHandleUnorderedArray;
 
+typedef struct ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState {
+  uint64_t programCompute;
+  uint64_t programPipeline;
+} ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState;
+
 typedef enum gpu_extra_reii_destroy_type_e {
   GPU_EXTRA_REII_DESTROY_TYPE_UNDEFINED      = 0,
   GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE     = 1,
@@ -338,6 +343,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshColor                   (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal                  (gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z);
 GPU_API_PRE void GPU_API_POST reiiCommandMeshPosition                (gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z, float w);
 GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTexture     (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * sourceMsaaColorTexture, ReiiHandleTexture * targetColorTexture);
+GPU_API_PRE void GPU_API_POST reiiCommandGammaCorrectColorTextureToTheInversePowerOf2 (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * colorTexture, int doDoubleGammaCorrection, int doSwapRedAndBlue, ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState * state);
 GPU_API_PRE void GPU_API_POST reiiCommandCopyFromColorTextureToStorageRaw (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * texture, RedStructMemberArray * storageRaw);
 GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDraw               (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleUnorderedArray * unorderedArray);
 GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstanced      (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleUnorderedArray * unorderedArray, unsigned instanceCount);

@@ -40,6 +40,7 @@ int main() {
   gpu_context_optional_parameters_t optional_parameters = {0};
   optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
 
+  const int doDoubleGammaCorrection = 0;
   // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
   gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
   vfWindowFullscreen(ctx, window_handle, "[vkFast] REII Rotation", window_w, window_h, 0, FF, LL);
@@ -52,10 +53,6 @@ int main() {
   uint64_t storage_gpu_only_mem_offset = 0;
   uint64_t storage_cpu_upload_mem_offset = 0;
   uint64_t storage_cpu_readback_mem_offset = 0;
-
-  gpu_extra_banzai_pointer_t pixels_gpu_only = {0};
-  vfeBanzaiGetPointer(&storage_gpu_only, storage_gpu_only_mem_offset, &pixels_gpu_only, FF, LL);
-  storage_gpu_only_mem_offset += (288/*mb*/ * 1024 * 1024);
 
   gpu_extra_cpu_gpu_array pos_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
     64/*mb*/ * 1024 * 1024,
@@ -94,7 +91,7 @@ int main() {
   mesh_state_compile_info.state_multisample_count     = RED_MULTISAMPLE_COUNT_BITFLAG_4;
   mesh_state_compile_info.output_depth_stencil_enable = 1;
   mesh_state_compile_info.output_depth_stencil_format = RED_FORMAT_DEPTH_32_FLOAT;
-  mesh_state_compile_info.output_color_format         = RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1;
+  mesh_state_compile_info.output_color_format         = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
   mesh_state_compile_info.variables_slot              = 2;
   mesh_state_compile_info.variables_bytes_count       = 2 * sizeof(ReiiVec4);
   mesh_state_compile_info.struct_members_count        = countof(slots);
@@ -189,6 +186,8 @@ int main() {
   list->mutable_outputs_array.capacity = countof(mutable_outputs_array);
   list->dynamic_mesh_position          = pos_array;
   list->dynamic_mesh_color             = col_array;
+
+  ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState gammaCorrectionStaticState = {0};
 
   ReiiVec4   camera_pos  = {0, 0, -2.f};
   ReiiVec4   camera_quat = {0, 0, 0, 1};
@@ -327,8 +326,9 @@ int main() {
     }
 
     gpu_batch_info_t bindings_info = {0};
-    bindings_info.max_new_bindings_sets_count = 1;
+    bindings_info.max_new_bindings_sets_count = 2;
     bindings_info.max_storage_binds_count     = 2;
+    bindings_info.max_texture_rw_binds_count  = 1;
     batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
     list->batch_id = batch;
     reiiCommandListReset(ctx, list);
@@ -354,15 +354,13 @@ int main() {
       );
     }
     reiiCommandMeshEndWithTale64BytesAlign(ctx, list, outputdstex, outputmstex, outputmstex->texture);
-    RedStructMemberArray raw_pixels = {0};
-    vfeBanzaiPointerGetRaw(&pixels_gpu_only, &raw_pixels, FF, LL);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
-    reiiCommandCopyFromColorTextureToStorageRaw(ctx, list, outputtex, &raw_pixels);
+    reiiCommandGammaCorrectColorTextureToTheInversePowerOf2(ctx, list, outputtex, doDoubleGammaCorrection, 1, &gammaCorrectionStaticState);
     vfBatchEnd(ctx, batch, FF, LL);
 
     uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
     vfAsyncWaitToFinish(ctx, wait, FF, LL);
-    vfAsyncDrawPixelsRaw(ctx, &raw_pixels, NULL, FF, LL);
+    vfAsyncDrawImageRaw(ctx, outputtex->image.handle, NULL, FF, LL);
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
 
     mouse_x_prev = mouse_x;
@@ -376,10 +374,12 @@ int main() {
       LONGLONG elapsedTicks = t_end.QuadPart - t_start.QuadPart;
       LONGLONG nanoseconds = (elapsedTicks * 1000000000LL) / frequency.QuadPart;
       double milliseconds_fp = (double)(nanoseconds) / 1000000.0;
-      printf("Elapsed milliseconds: %f\n", milliseconds_fp);
+      //printf("Elapsed milliseconds: %f\n", milliseconds_fp);
     }
   }
 
+  vfIdDestroy(1, &gammaCorrectionStaticState.programPipeline, FF, LL);
+  vfIdDestroy(1, &gammaCorrectionStaticState.programCompute, FF, LL);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, list);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputmstex);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);

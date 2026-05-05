@@ -439,7 +439,7 @@ static inline void imguiCreateDeviceObjects() {
   mesh_state_compile_info.state_multisample_count     = RED_MULTISAMPLE_COUNT_BITFLAG_1;
   mesh_state_compile_info.output_depth_stencil_enable = 0;
   mesh_state_compile_info.output_depth_stencil_format = RED_FORMAT_DEPTH_32_FLOAT;
-  mesh_state_compile_info.output_color_format         = RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1;
+  mesh_state_compile_info.output_color_format         = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
   mesh_state_compile_info.variables_slot              = 3;
   mesh_state_compile_info.variables_bytes_count       = 0;
   mesh_state_compile_info.struct_members_count        = _countof(slots);

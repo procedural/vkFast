@@ -1771,6 +1771,7 @@ static uint64_t vfInternalBatchBegin(gpu_handle_context_t context, uint64_t exis
       "optionalUserData", NULL
     );
     REDGPU_2_EXPECTWG(currentStructSamplers.handleDeclaration != NULL);
+    REDGPU_2_EXPECTWG(currentStructSamplers.handle != NULL || !"red2StructsMemorySuballocateStruct() call returned NULL. Ran out of vfBatchBegin()::batch_bindings_info::max_new_bindings_sets_count and vfBatchBegin()::batch_bindings_info::max_sampler_binds_count memory to allocate?");
     handle->batch.currentStructSamplers = currentStructSamplers;
   }
 
@@ -1908,6 +1909,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(gpu_handle_context_t con
     "optionalUserData", NULL
   );
   REDGPU_2_EXPECTWG(structure.handleDeclaration != NULL);
+  REDGPU_2_EXPECTWG(structure.handle != NULL || !"red2StructsMemorySuballocateStruct() call returned NULL. Ran out of vfBatchBegin()::batch_bindings_info::max_new_bindings_sets_count and all the other vfBatchBegin()::batch_bindings_info::max_* memory to allocate?");
   batch->batch.currentStruct = structure;
 
   np(redCallSetProcedureParameters,
