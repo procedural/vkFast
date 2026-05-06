@@ -1,0 +1,100 @@
+import os
+import bpy
+import bmesh
+import struct
+import datetime
+
+EXPORT_DIRECTORY = os.path.join(os.path.expanduser("~"), "Desktop", "BlenderMeshHeaders", datetime.datetime.today().strftime("%d_%b_%Y_%Hh_%Mm_%Ss"))
+
+selected_objects = bpy.context.selected_objects
+sort_keys = dict(zip(selected_objects, [o.name for o in selected_objects]))
+selected_objects.sort(key=sort_keys.get)
+
+def UVFromVertex(uv_layer, v):
+  for l in v.link_loops:
+    return l[uv_layer].uv
+  return Vector((0.0, 0.0))
+
+if len(selected_objects) > 0:
+  if not os.path.exists(EXPORT_DIRECTORY):
+    os.makedirs(EXPORT_DIRECTORY)
+
+  enums_header_file      = open(os.path.join(EXPORT_DIRECTORY, "mesh_enums.h"), "w")
+  indices_header_file    = open(os.path.join(EXPORT_DIRECTORY, "mesh_indices.h"), "w")
+  verts_header_file      = open(os.path.join(EXPORT_DIRECTORY, "mesh_vertices.h"), "w")
+  uvs_header_file        = open(os.path.join(EXPORT_DIRECTORY, "mesh_uvs.h"), "w")
+  normals_header_file    = open(os.path.join(EXPORT_DIRECTORY, "mesh_normals.h"), "w")
+  submesh_tri_begin_file = open(os.path.join(EXPORT_DIRECTORY, "submesh_tri_begin.h"), "w")
+  submesh_tri_end_file   = open(os.path.join(EXPORT_DIRECTORY, "submesh_tri_end.h"), "w")
+  submesh_xform_scale               = open(os.path.join(EXPORT_DIRECTORY, "submesh_xform_scale.h"), "w")
+  submesh_xform_rotation_quaternion = open(os.path.join(EXPORT_DIRECTORY, "submesh_xform_rotation_quaternion.h"), "w")
+  submesh_xform_translation         = open(os.path.join(EXPORT_DIRECTORY, "submesh_xform_translation.h"), "w")
+
+  vert_counter        = 0
+  submesh_tri_counter = 0
+
+  for obj in selected_objects:
+    if obj.type == "MESH":
+      bm = bmesh.new()
+      bm.from_mesh(obj.data)
+      bmesh.ops.triangulate(bm, faces=bm.faces, quad_method='BEAUTY', ngon_method='BEAUTY')
+      split_edges = []
+      for e in bm.edges:
+        if e.seam:
+          split_edges.append(e)
+      bmesh.ops.split_edges(bm, edges=split_edges)
+      
+      enums_header_file.write('%s,\n' % (obj.name.upper()))
+      
+      submesh_tri_begin_file.write('%i,\n' % (submesh_tri_counter))
+      
+      for f in bm.faces:
+        vi0 = vert_counter + f.verts[0].index
+        vi1 = vert_counter + f.verts[1].index
+        vi2 = vert_counter + f.verts[2].index
+
+        indices_header_file.write('%d, %d, %d,\n' % (vi0, vi1, vi2))
+
+        submesh_tri_counter += 1
+      
+      submesh_tri_end_file.write('%i,\n' % (submesh_tri_counter))
+      
+      for v in bm.verts:
+        vpx = v.co.x
+        vpy = v.co.y
+        vpz = v.co.z
+
+        vnx = v.normal.x
+        vny = v.normal.y
+        vnz = v.normal.z
+
+        verts_header_file.write(   f"{vpx:+.9f}, {vpy:+.9f}, {vpz:+.9f}, 0.0,\n" )
+        normals_header_file.write( f"{vnx:+.9f}, {vny:+.9f}, {vnz:+.9f}, 0.0,\n" )
+
+        vert_counter += 1
+
+      active_uv_layer = bm.loops.layers.uv.active
+      
+      for v in bm.verts:
+        uv = UVFromVertex(active_uv_layer, v)
+        uvs_header_file.write(f"{uv.x:+.9f}, {uv.y:+.9f},\n")
+
+      m = obj.matrix_world
+      s = m.to_scale()
+      r = m.to_quaternion()
+      t = m.to_translation()
+
+      submesh_xform_scale.write(               f"{s.x:+.9f}, {s.y:+.9f}, {s.z:+.9f}, 0.0,\n"        )
+      submesh_xform_rotation_quaternion.write( f"{r.x:+.9f}, {r.y:+.9f}, {r.z:+.9f}, {r.w:+.9f},\n" )
+      submesh_xform_translation.write(         f"{t.x:+.9f}, {t.y:+.9f}, {t.z:+.9f}, 0.0,\n"        )
+
+  enums_header_file.close()
+  indices_header_file.close()
+  verts_header_file.close()
+  uvs_header_file.close()
+  normals_header_file.close()
+  submesh_tri_begin_file.close()
+  submesh_tri_end_file.close()
+  submesh_xform_scale.close()
+  submesh_xform_rotation_quaternion.close()
+  submesh_xform_translation.close()
