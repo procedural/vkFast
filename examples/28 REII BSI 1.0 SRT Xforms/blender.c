@@ -33,6 +33,15 @@ struct float4 blender_submesh_xform_rotation_quaternion[] = {
 struct float4 blender_submesh_xform_translation[] = {
   #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/submesh_xform_translation.h"
 };
+struct float4 blender_camera_xform_scale[] = {
+  #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/camera_xform_scale.h"
+};
+struct float4 blender_camera_xform_rotation_quaternion[] = {
+  #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/camera_xform_rotation_quaternion.h"
+};
+struct float4 blender_camera_xform_translation[] = {
+  #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/camera_xform_translation.h"
+};
 
 uint64_t countof_blender_mesh_indices = countof(blender_mesh_indices);
 uint64_t countof_blender_mesh_normals = countof(blender_mesh_normals);
@@ -43,3 +52,6 @@ uint64_t countof_blender_submesh_tri_end = countof(blender_submesh_tri_end);
 uint64_t countof_blender_submesh_xform_scale = countof(blender_submesh_xform_scale);
 uint64_t countof_blender_submesh_xform_rotation_quaternion = countof(blender_submesh_xform_rotation_quaternion);
 uint64_t countof_blender_submesh_xform_translation = countof(blender_submesh_xform_translation);
+uint64_t countof_blender_camera_xform_scale = countof(blender_camera_xform_scale);
+uint64_t countof_blender_camera_xform_rotation_quaternion = countof(blender_camera_xform_rotation_quaternion);
+uint64_t countof_blender_camera_xform_translation = countof(blender_camera_xform_translation);

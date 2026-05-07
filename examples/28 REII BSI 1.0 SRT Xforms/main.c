@@ -21,6 +21,11 @@ enum blender_mesh_enums {
   BLENDER_MESH_ENUMS_COUNT
 };
 
+enum blender_camera_enums {
+  #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/camera_enums.h"
+  BLENDER_CAMERA_ENUMS_COUNT
+};
+
 extern struct int3 blender_mesh_indices[];
 extern struct float4 blender_mesh_normals[];
 extern struct float2 blender_mesh_uvs[];
@@ -30,6 +35,9 @@ extern uint64_t blender_submesh_tri_end[];
 extern struct float4 blender_submesh_xform_scale[];
 extern struct float4 blender_submesh_xform_rotation_quaternion[];
 extern struct float4 blender_submesh_xform_translation[];
+extern struct float4 blender_camera_xform_scale[];
+extern struct float4 blender_camera_xform_rotation_quaternion[];
+extern struct float4 blender_camera_xform_translation[];
 
 extern uint64_t countof_blender_mesh_indices;
 extern uint64_t countof_blender_mesh_normals;
@@ -40,6 +48,9 @@ extern uint64_t countof_blender_submesh_tri_end;
 extern uint64_t countof_blender_submesh_xform_scale;
 extern uint64_t countof_blender_submesh_xform_rotation_quaternion;
 extern uint64_t countof_blender_submesh_xform_translation;
+extern uint64_t countof_blender_camera_xform_scale;
+extern uint64_t countof_blender_camera_xform_rotation_quaternion;
+extern uint64_t countof_blender_camera_xform_translation;
 
 int main() {
 #ifdef __MINGW32__
@@ -257,6 +268,64 @@ int main() {
     blender_submesh_xform_translation[i] = t;
   }
 
+  for (uint64_t i = 0, count = countof_blender_camera_xform_rotation_quaternion; i < count; i += 1) {
+    struct float4 r = blender_camera_xform_rotation_quaternion[i];
+
+    // Mirror everything from Blender coordinates to Vulkan coordinates
+
+    r.x *= -1.f;
+    r.w *= -1.f;
+
+    // Rotate everything from Blender coordinates to Vulkan coordinates
+
+    struct float4 q = {0, 0, 0, 1};
+    float axis[3] = {1, 0, 0};
+    quatFromAxisAngle(&q.x, axis, -90.f * (M_PI/180.f));
+    quatMul(&r.x, &q.x, &r.x);
+
+    // Rotate camera in 180 degrees in local Y axis because Vulkan cameras look in the direction of -Z axis
+
+    {
+      struct float4 q = {0, 0, 0, 1};
+      float axis[3] = {0, 1, 0};
+      quatRotateVec3Fast(axis, axis, &r.x); // NOTE(Constantine): Rotate global Y axis to be camera's local Y axis
+      quatFromAxisAngle(&q.x, axis, 180.f * (M_PI/180.f));
+      quatMul(&r.x, &q.x, &r.x);
+    }
+
+    // Store back
+
+    blender_camera_xform_rotation_quaternion[i] = r;
+  }
+
+  for (uint64_t i = 0, count = countof_blender_camera_xform_translation; i < count; i += 1) {
+    struct float4 t = blender_camera_xform_translation[i];
+
+    // Mirror everything from Blender coordinates to Vulkan coordinates
+
+    t.x *= -1.f;
+
+    // Rotate everything from Blender coordinates to Vulkan coordinates
+
+    struct float4 q = {0, 0, 0, 1};
+    float axis[3] = {1, 0, 0};
+    quatFromAxisAngle(&q.x, axis, -90.f * (M_PI/180.f));
+    quatRotateVec3Fast(&t.x, &t.x, &q.x);
+
+    // Store back
+
+    blender_camera_xform_translation[i] = t;
+  }
+
+  REDGPU_2_EXPECTFL(BLENDER_CAMERA_ENUMS_COUNT > 0);
+  float cam_tx = blender_camera_xform_translation[0].x;
+  float cam_ty = blender_camera_xform_translation[0].y;
+  float cam_tz = blender_camera_xform_translation[0].z;
+  float cam_qx = blender_camera_xform_rotation_quaternion[0].x;
+  float cam_qy = blender_camera_xform_rotation_quaternion[0].y;
+  float cam_qz = blender_camera_xform_rotation_quaternion[0].z;
+  float cam_qw = blender_camera_xform_rotation_quaternion[0].w;
+
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
   ReiiHandleCommandList * list = &hlist;
@@ -268,8 +337,8 @@ int main() {
 
   ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState gammaCorrectionStaticState = {0};
 
-  ReiiVec4   camera_pos  = {0, 0, -2.f};
-  ReiiVec4   camera_quat = {0, 0, 0, 1};
+  ReiiVec4   camera_pos  = {cam_tx, cam_ty, cam_tz};
+  ReiiVec4   camera_quat = {cam_qx, cam_qy, cam_qz, cam_qw};
   ReiiBool32 camera_is_enabled = 1;
   if (camera_is_enabled == 1) {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
