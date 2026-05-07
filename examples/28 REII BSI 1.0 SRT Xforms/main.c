@@ -12,6 +12,35 @@ exit
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
 #include "../Common/vkfast_examples_common.h"
 
+struct int3   { int   x, y, z; };
+struct float2 { float x, y; };
+struct float4 { float x, y, z, w; };
+
+enum blender_mesh_enums {
+  #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/mesh_enums.h"
+  BLENDER_MESH_ENUMS_COUNT
+};
+
+extern struct int3 blender_mesh_indices[];
+extern struct float4 blender_mesh_normals[];
+extern struct float2 blender_mesh_uvs[];
+extern struct float4 blender_mesh_vertices[];
+extern uint64_t blender_submesh_tri_begin[];
+extern uint64_t blender_submesh_tri_end[];
+extern struct float4 blender_submesh_xform_scale[];
+extern struct float4 blender_submesh_xform_rotation_quaternion[];
+extern struct float4 blender_submesh_xform_translation[];
+
+extern uint64_t countof_blender_mesh_indices;
+extern uint64_t countof_blender_mesh_normals;
+extern uint64_t countof_blender_mesh_uvs;
+extern uint64_t countof_blender_mesh_vertices;
+extern uint64_t countof_blender_submesh_tri_begin;
+extern uint64_t countof_blender_submesh_tri_end;
+extern uint64_t countof_blender_submesh_xform_scale;
+extern uint64_t countof_blender_submesh_xform_rotation_quaternion;
+extern uint64_t countof_blender_submesh_xform_translation;
+
 int main() {
 #ifdef __MINGW32__
   SetProcessDPIAware();
@@ -177,43 +206,19 @@ int main() {
     #include "../../extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
   };
 
-  struct int3   { int   x, y, z; };
-  struct float2 { float x, y; };
-  struct float4 { float x, y, z, w; };
+  for (uint64_t i = 0, count = countof_blender_mesh_vertices; i < count; i += 1) {
+    struct float4 v = blender_mesh_vertices[i];
 
-  enum blender_mesh_enums {
-    #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/mesh_enums.h"
-    BLENDER_MESH_ENUMS_COUNT
-  };
-  struct int3 blender_mesh_indices[] = {
-    #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/mesh_indices.h"
-  };
-  struct float4 blender_mesh_normals[] = {
-    #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/mesh_normals.h"
-  };
-  struct float2 blender_mesh_uvs[] = {
-    #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/mesh_uvs.h"
-  };
-  struct float4 blender_mesh_vertices[] = {
-    #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/mesh_vertices.h"
-  };
-  uint64_t blender_submesh_tri_begin[] = {
-    #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/submesh_tri_begin.h"
-  };
-  uint64_t blender_submesh_tri_end[] = {
-    #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/submesh_tri_end.h"
-  };
-  struct float4 blender_submesh_xform_scale[] = {
-    #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/submesh_xform_scale.h"
-  };
-  struct float4 blender_submesh_xform_rotation_quaternion[] = {
-    #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/submesh_xform_rotation_quaternion.h"
-  };
-  struct float4 blender_submesh_xform_translation[] = {
-    #include "../27 REII Blender Simple Importer 1.0/BlenderMeshHeaders/06_May_2026_21h_44m_54s/submesh_xform_translation.h"
-  };
+    // Mirror everything from Blender coordinates to Vulkan coordinates
 
-  for (uint64_t i = 0, count = countof(blender_submesh_xform_rotation_quaternion); i < count; i += 1) {
+    v.x *= -1.f;
+
+    // Store back
+
+    blender_mesh_vertices[i] = v;
+  }
+
+  for (uint64_t i = 0, count = countof_blender_submesh_xform_rotation_quaternion; i < count; i += 1) {
     struct float4 r = blender_submesh_xform_rotation_quaternion[i];
 
     // Mirror everything from Blender coordinates to Vulkan coordinates
@@ -225,7 +230,7 @@ int main() {
 
     struct float4 q = {0, 0, 0, 1};
     float axis[3] = {1, 0, 0};
-    quatFromAxisAngle(&q.x, &axis, -90.f * (M_PI/180.f));
+    quatFromAxisAngle(&q.x, axis, -90.f * (M_PI/180.f));
     quatMul(&r.x, &q.x, &r.x);
 
     // Store back
@@ -233,7 +238,7 @@ int main() {
     blender_submesh_xform_rotation_quaternion[i] = r;
   }
 
-  for (uint64_t i = 0, count = countof(blender_submesh_xform_translation); i < count; i += 1) {
+  for (uint64_t i = 0, count = countof_blender_submesh_xform_translation; i < count; i += 1) {
     struct float4 t = blender_submesh_xform_translation[i];
 
     // Mirror everything from Blender coordinates to Vulkan coordinates
@@ -244,7 +249,7 @@ int main() {
 
     struct float4 q = {0, 0, 0, 1};
     float axis[3] = {1, 0, 0};
-    quatFromAxisAngle(&q.x, &axis, -90.f * (M_PI/180.f));
+    quatFromAxisAngle(&q.x, axis, -90.f * (M_PI/180.f));
     quatRotateVec3Fast(&t.x, &t.x, &q.x);
 
     // Store back
