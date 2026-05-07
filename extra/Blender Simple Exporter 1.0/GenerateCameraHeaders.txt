@@ -1,0 +1,38 @@
+import os
+import bpy
+import bmesh
+import struct
+import datetime
+
+EXPORT_DIRECTORY = os.path.join(os.path.expanduser("~"), "Desktop", "BlenderMeshHeaders", datetime.datetime.today().strftime("%d_%b_%Y_%Hh_%Mm_%Ss"))
+
+selected_objects = bpy.context.selected_objects
+sort_keys = dict(zip(selected_objects, [o.name for o in selected_objects]))
+selected_objects.sort(key=sort_keys.get)
+
+if len(selected_objects) > 0:
+  if not os.path.exists(EXPORT_DIRECTORY):
+    os.makedirs(EXPORT_DIRECTORY)
+
+  camera_enums_header_file         = open(os.path.join(EXPORT_DIRECTORY, "camera_enums.h"), "w")
+  camera_xform_scale               = open(os.path.join(EXPORT_DIRECTORY, "camera_xform_scale.h"), "w")
+  camera_xform_rotation_quaternion = open(os.path.join(EXPORT_DIRECTORY, "camera_xform_rotation_quaternion.h"), "w")
+  camera_xform_translation         = open(os.path.join(EXPORT_DIRECTORY, "camera_xform_translation.h"), "w")
+
+  for obj in selected_objects:
+    if obj.type == "CAMERA":
+      camera_enums_header_file.write('%s,\n' % (obj.name.upper().replace(".", "_")))
+
+      m = obj.matrix_world
+      s = m.to_scale()
+      r = m.to_quaternion()
+      t = m.to_translation()
+
+      camera_xform_scale.write(               f"{s.x:+.9f}, {s.y:+.9f}, {s.z:+.9f}, 0.0,\n"        )
+      camera_xform_rotation_quaternion.write( f"{r.x:+.9f}, {r.y:+.9f}, {r.z:+.9f}, {r.w:+.9f},\n" )
+      camera_xform_translation.write(         f"{t.x:+.9f}, {t.y:+.9f}, {t.z:+.9f}, 0.0,\n"        )
+
+  camera_enums_header_file.close()
+  camera_xform_scale.close()
+  camera_xform_rotation_quaternion.close()
+  camera_xform_translation.close()
