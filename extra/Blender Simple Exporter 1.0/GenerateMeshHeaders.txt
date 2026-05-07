@@ -44,7 +44,7 @@ if len(selected_objects) > 0:
           split_edges.append(e)
       bmesh.ops.split_edges(bm, edges=split_edges)
       
-      enums_header_file.write('%s,\n' % (obj.name.upper()))
+      enums_header_file.write('%s,\n' % (obj.name.upper().replace(".", "_")))
       
       submesh_tri_begin_file.write('%i,\n' % (submesh_tri_counter))
       
