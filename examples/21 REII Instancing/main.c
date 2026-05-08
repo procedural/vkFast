@@ -240,9 +240,14 @@ int main() {
 
   ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState gammaCorrectionStaticState = {0};
 
-  ReiiVec4   camera_pos  = {0, 0, -2.f};
+  ReiiVec4   camera_pos  = {0, 0, 0};
   ReiiVec4   camera_quat = {0, 0, 0, 1};
   ReiiBool32 camera_is_enabled = 1;
+
+  camera_pos.x = (instanceCountX * 3.f) / 2.f;
+  camera_pos.y = (instanceCountY * 3.f) / 2.f;
+  camera_pos.z = -25.f;
+
   if (camera_is_enabled == 1) {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   }
@@ -374,6 +379,17 @@ int main() {
       vec3Mulf(move_vec_normalized, move_vec_normalized, camera_move_speed);
 
       vec3Add(&camera_pos.x, &camera_pos.x, move_vec_normalized);
+    }
+
+    if (0) {
+      // NOTE(Constantine)(08 May 2026): Stutter test.
+      static float disabled_camera_ping_pong = 0.45f;
+      if (camera_is_enabled == 0) {
+        camera_pos.x += disabled_camera_ping_pong;
+        if (camera_pos.x < -5.f || camera_pos.x > ((instanceCountX * 3.f) + 5.f)) {
+          disabled_camera_ping_pong *= -1.f;
+        }
+      }
     }
 
     gpu_batch_info_t bindings_info = {0};
