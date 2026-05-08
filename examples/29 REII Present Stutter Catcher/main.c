@@ -5,6 +5,7 @@ exit
 #endif
 
 #include "../../vkfast_ex.h"
+#include "../../vkfast_ids.h"
 #include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
@@ -201,9 +202,9 @@ int main() {
   }
   reiiUnorderedArrayEnd(ctx, mesh);
 
-  const int instanceCountX = 25;
-  const int instanceCountY = 25;
-  const int instanceCountZ = 25;
+  const int instanceCountX = 15;
+  const int instanceCountY = 15;
+  const int instanceCountZ = 15;
   RandomInit();
 
   ReiiHandleUnorderedArray hinstanceColors = {0};
@@ -326,6 +327,14 @@ int main() {
 
   unsigned frame = 0;
 
+  #define MILLISECONDS_ARRAY_MAX_CAPTURE_FRAMES_COUNT 600
+  int   milliseconds_arrayIndex = 0;
+  float milliseconds_maxTime = 0;
+  float milliseconds[MILLISECONDS_ARRAY_MAX_CAPTURE_FRAMES_COUNT] = {0};
+  int   milliseconds_isCapturing = 1;
+  int   camera_animation_is_enabled = 1;
+  int   milliseconds_clearOnWrap = 1;
+
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
 
@@ -413,6 +422,7 @@ int main() {
     const float mouse_move_sensitivity = 0.0035f;
     const float camera_move_speed      = 0.5f;
     if (mouse_right_mouse_button_state == GLFW_PRESS && mouse_right_mouse_button_state != mouse_right_mouse_button_state_prev) {
+      camera_animation_is_enabled = 0;
       camera_is_enabled = !camera_is_enabled;
       glfwSetInputMode(window, GLFW_CURSOR, camera_is_enabled == 1 ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     } else if (camera_is_enabled == 1) {
@@ -473,7 +483,7 @@ int main() {
     }
 
     static float disabled_camera_ping_pong = 0.45f;
-    if (1 && camera_is_enabled == 0) {
+    if (camera_animation_is_enabled == 1) {
       camera_pos.x += disabled_camera_ping_pong;
       if (camera_pos.x < -5.f || camera_pos.x > ((instanceCountX * 3.f) + 5.f)) {
         disabled_camera_ping_pong *= -1.f;
@@ -582,6 +592,82 @@ int main() {
       }
     }
 
+    // Present Stutter Catcher UI
+    {
+      enum ImGuiCol_
+      {
+          ImGuiCol_Text,
+          ImGuiCol_TextDisabled,
+          ImGuiCol_WindowBg,              // Background of normal windows
+          ImGuiCol_ChildWindowBg,         // Background of child windows
+          ImGuiCol_PopupBg,               // Background of popups, menus, tooltips windows
+          ImGuiCol_Border,
+          ImGuiCol_BorderShadow,
+          ImGuiCol_FrameBg,               // Background of checkbox, radio button, plot, slider, text input
+          ImGuiCol_FrameBgHovered,
+          ImGuiCol_FrameBgActive,
+          ImGuiCol_TitleBg,
+          ImGuiCol_TitleBgCollapsed,
+          ImGuiCol_TitleBgActive,
+          ImGuiCol_MenuBarBg,
+          ImGuiCol_ScrollbarBg,
+          ImGuiCol_ScrollbarGrab,
+          ImGuiCol_ScrollbarGrabHovered,
+          ImGuiCol_ScrollbarGrabActive,
+          ImGuiCol_ComboBg,
+          ImGuiCol_CheckMark,
+          ImGuiCol_SliderGrab,
+          ImGuiCol_SliderGrabActive,
+          ImGuiCol_Button,
+          ImGuiCol_ButtonHovered,
+          ImGuiCol_ButtonActive,
+          ImGuiCol_Header,
+          ImGuiCol_HeaderHovered,
+          ImGuiCol_HeaderActive,
+          ImGuiCol_Column,
+          ImGuiCol_ColumnHovered,
+          ImGuiCol_ColumnActive,
+          ImGuiCol_ResizeGrip,
+          ImGuiCol_ResizeGripHovered,
+          ImGuiCol_ResizeGripActive,
+          ImGuiCol_CloseButton,
+          ImGuiCol_CloseButtonHovered,
+          ImGuiCol_CloseButtonActive,
+          ImGuiCol_PlotLines,
+          ImGuiCol_PlotLinesHovered,
+          ImGuiCol_PlotHistogram,
+          ImGuiCol_PlotHistogramHovered,
+          ImGuiCol_TextSelectedBg,
+          ImGuiCol_ModalWindowDarkening,  // darken entire screen when a modal window is active
+          ImGuiCol_COUNT
+      };
+
+      vf_handle_context_t * context = (vf_handle_context_t *)ctx;
+      igText("GPU name: %s", context->gpuInfo->gpuName);
+      igCheckbox("Capture frame times", &milliseconds_isCapturing);
+      if (igCheckbox("Camera animation", &camera_animation_is_enabled)) {
+        if (camera_animation_is_enabled == 1) {
+          if (camera_pos.x < -5.f) {
+            camera_pos.x = -5.f;
+          }
+          if (camera_pos.x > ((instanceCountX * 3.f) + 5.f)) {
+            camera_pos.x = (instanceCountX * 3.f) + 5.f;
+          }
+        }
+      }
+      igCheckbox("Clear all inserted frames on insert index wrap", &milliseconds_clearOnWrap);
+      igText("Next frame insert index: %d", milliseconds_arrayIndex);
+      if (igButton("Clear all inserted frames", (ImVec2){0, 0})) {
+        milliseconds_maxTime = 0;
+        for (int i = 0; i < MILLISECONDS_ARRAY_MAX_CAPTURE_FRAMES_COUNT; i += 1) {
+          milliseconds[i] = 0;
+        }
+      }
+      style->colors[ImGuiCol_PlotHistogramHovered] = (ImVec4){1.f, 0.f, 0.f, 1.f};
+      ImVec2 graph_size = {0, 80};
+      igPlotHistogram("Frame times", milliseconds, MILLISECONDS_ARRAY_MAX_CAPTURE_FRAMES_COUNT, 0, NULL, 0, milliseconds_maxTime, graph_size, 4);
+    }
+
     static bool showTestWindow = 1;
     igShowTestWindow(&showTestWindow);
 #if 0
@@ -682,11 +768,27 @@ int main() {
     LARGE_INTEGER t_end = {0};
     QueryPerformanceCounter(&t_end);
 
-    {
+    if (milliseconds_isCapturing == 1) {
       LONGLONG elapsedTicks = t_end.QuadPart - t_start.QuadPart;
       LONGLONG nanoseconds = (elapsedTicks * 1000000000LL) / frequency.QuadPart;
       double milliseconds_fp = (double)(nanoseconds) / 1000000.0;
       //printf("Elapsed milliseconds: %f\n", milliseconds_fp);
+
+      {
+        if (frame > 1 && milliseconds_maxTime < (float)milliseconds_fp) {
+          milliseconds_maxTime = (float)milliseconds_fp;
+        }
+        milliseconds[milliseconds_arrayIndex] = (float)milliseconds_fp;
+        milliseconds_arrayIndex += 1;
+        milliseconds_arrayIndex %= MILLISECONDS_ARRAY_MAX_CAPTURE_FRAMES_COUNT;
+
+        if (milliseconds_clearOnWrap == 1 && milliseconds_arrayIndex == 0) {
+          milliseconds_maxTime = 0;
+          for (int i = 0; i < MILLISECONDS_ARRAY_MAX_CAPTURE_FRAMES_COUNT; i += 1) {
+            milliseconds[i] = 0;
+          }
+        }
+      }
     }
   }
 
