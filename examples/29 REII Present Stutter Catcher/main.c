@@ -473,7 +473,7 @@ int main() {
     }
 
     static float disabled_camera_ping_pong = 0.45f;
-    if (camera_is_enabled == 0) {
+    if (1 && camera_is_enabled == 0) {
       camera_pos.x += disabled_camera_ping_pong;
       if (camera_pos.x < -5.f || camera_pos.x > ((instanceCountX * 3.f) + 5.f)) {
         disabled_camera_ping_pong *= -1.f;
