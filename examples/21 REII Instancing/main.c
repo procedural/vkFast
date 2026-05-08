@@ -398,6 +398,7 @@ int main() {
     reiiCommandUnorderedArrayDrawInstanced(ctx, list, mesh, instanceCountX * instanceCountY * instanceCountZ);
     reiiCommandRenderTargetEnd(ctx, list);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
+    vfBatchBarrierMemory(ctx, batch, FF, LL);
     reiiCommandGammaCorrectColorTextureToTheInversePowerOf2(ctx, list, outputtex, doDoubleGammaCorrection, 1, &gammaCorrectionStaticState);
     vfBatchEnd(ctx, batch, FF, LL);
 

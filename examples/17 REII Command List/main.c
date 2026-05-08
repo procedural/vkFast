@@ -228,6 +228,7 @@ int main() {
       );
     }
     reiiCommandMeshEndWithTale64BytesAlign(ctx, list, NULL, outputtex, outputtex->texture);
+    vfBatchBarrierMemory(ctx, batch, FF, LL);
     reiiCommandGammaCorrectColorTextureToTheInversePowerOf2(ctx, list, outputtex, doDoubleGammaCorrection, 1, &gammaCorrectionStaticState);
     vfBatchEnd(ctx, batch, FF, LL);
 
