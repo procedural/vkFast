@@ -27,4 +27,5 @@ git checkout -- "../25 REII Embree Suzanne Head/vs2019/main.vcxproj"
 git checkout -- "../26 REII Immediate 3D Meshes/vs2019/main.vcxproj"
 git checkout -- "../27 REII Blender Simple Importer 1.0/vs2019/main.vcxproj"
 git checkout -- "../28 REII BSI 1.0 SRT Xforms/vs2019/main.vcxproj"
+git checkout -- "../29 REII Present Stutter Catcher/vs2019/main.vcxproj"
 pause
