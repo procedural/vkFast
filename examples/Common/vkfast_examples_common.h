@@ -1,8 +1,9 @@
 #pragma once
 
-#include <stdio.h> // For printf
-#include <math.h>  // For sin, cos
-#include <time.h>  // For time
+#include <stdio.h>  // For printf
+#include <math.h>   // For sin, cos
+#include <time.h>   // For time
+#include <stdlib.h> // For rand
 
 #include <shellscalingapi.h>   // For SetProcessDpiAwareness
 #pragma comment(lib, "shcore") // For SetProcessDpiAwareness
