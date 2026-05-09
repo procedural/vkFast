@@ -17,6 +17,7 @@
     <ClCompile Include="..\..\..\extra\CPU GPU Array\vkfast_extra_cpu_gpu_array.c" />
     <ClCompile Include="..\..\..\extra\Dear ImGui 2016\imgui_megafile.cpp" />
     <ClCompile Include="..\..\..\extra\REII\vkfast_extra_reii.c" />
+    <ClCompile Include="..\..\Common\font_droid_sans_mono.c" />
     <ClCompile Include="C:\RedGpuSDK\redgpu.c" />
     <ClCompile Include="C:\RedGpuSDK\redgpu_2.c" />
     <ClCompile Include="C:\RedGpuSDK\redgpu_32.c" />

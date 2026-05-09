@@ -14,6 +14,9 @@ exit
 // NOTE(Constantine): Dear ImGui 2016 needs GLFW.
 #include "../../extra/Dear ImGui 2016/imgui_reii.h"
 
+extern size_t        gFontDroidSansMonoFontGetBytesCount();
+extern unsigned char gFontDroidSansMonoFont[];
+
 int main() {
 #ifdef __MINGW32__
   SetProcessDPIAware();
@@ -282,11 +285,13 @@ int main() {
   style->windowRounding    = 0;
   style->frameRounding     = 0;
 
-  // NOTE(Constantine):
-  // For VS 2019, make sure to copy NotoSans.ttf file to project's folder,
-  // otherwise you'll get a runtime error at imgui_draw.cpp, line 1200
   float fontPixelSize = 22;
-  ImFontAtlas_AddFontFromFileTTF(io->fonts, "NotoSans.ttf", fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
+  size_t fontDataBytesCount = gFontDroidSansMonoFontGetBytesCount();
+  char * fontData = malloc(fontDataBytesCount);
+  REDGPU_2_EXPECTFL(fontData != NULL);
+  memcpy(fontData, gFontDroidSansMonoFont, fontDataBytesCount);
+  struct ImFont * imfont = ImFontAtlas_AddFontFromMemoryTTF(io->fonts, fontData, fontDataBytesCount, fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
+  // free(fontData); // NOTE(Constantine): Commented out intentionally, "ownership of font_data is transfered by Dear ImGui by default".
   imguiInvalidateFontTexture();
   imguiCreateFontTexture();
   REDGPU_2_EXPECTFL(ImFontAtlas_GetFontsCount(io->fonts) == 2);
@@ -367,7 +372,10 @@ int main() {
         ImFontAtlas_Clear(io->fonts);
         imguiInvalidateFontTexture();
         ImFontAtlas_AddFontDefault(io->fonts, NULL);
-        ImFontAtlas_AddFontFromFileTTF(io->fonts, "NotoSans.ttf", fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
+        fontData = malloc(fontDataBytesCount);
+        REDGPU_2_EXPECTFL(fontData != NULL);
+        memcpy(fontData, gFontDroidSansMonoFont, fontDataBytesCount);
+        imfont = ImFontAtlas_AddFontFromMemoryTTF(io->fonts, fontData, fontDataBytesCount, fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
         imguiCreateFontTexture();
         REDGPU_2_EXPECTFL(ImFontAtlas_GetFontsCount(io->fonts) == 2);
         ImFontAtlas_SetFontAsDefault(io->fonts, 1);
