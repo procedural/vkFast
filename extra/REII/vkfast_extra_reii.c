@@ -1108,6 +1108,7 @@ GPU_API_PRE void GPU_API_POST reiiBatchImageSetUsableStateEx(gpu_handle_context_
   imageUsage.imageLevelsCount       = -1;
   imageUsage.imageLayersFirst       = 0;
   imageUsage.imageLayersCount       = -1;
+  // TODO(Constantine): Replace with red2CallUsageAliasOrderBarrier that won't allocate/free memory internally.
   np(redCallUsageAliasOrderBarrier,
     "address", batch->batch.addresses.redCallUsageAliasOrderBarrier,
     "calls", batch->batch.calls.handle,

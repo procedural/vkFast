@@ -2457,6 +2457,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
       imageUsage.imageLevelsCount       = -1;
       imageUsage.imageLayersFirst       = 0;
       imageUsage.imageLayersCount       = -1;
+      // TODO(Constantine): Replace with red2CallUsageAliasOrderBarrier that won't allocate/free memory internally.
       np(redCallUsageAliasOrderBarrier,
         "address", addresses.redCallUsageAliasOrderBarrier,
         "calls", calls->handle,
@@ -2552,6 +2553,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
       imageUsage.imageLevelsCount       = -1;
       imageUsage.imageLayersFirst       = 0;
       imageUsage.imageLayersCount       = -1;
+      // TODO(Constantine): Replace with red2CallUsageAliasOrderBarrier that won't allocate/free memory internally.
       np(redCallUsageAliasOrderBarrier,
         "address", addresses.redCallUsageAliasOrderBarrier,
         "calls", calls->handle,
