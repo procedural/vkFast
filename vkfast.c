@@ -1988,6 +1988,7 @@ GPU_API_PRE void GPU_API_POST vfBatchBindStorage(gpu_handle_context_t context, u
 
   REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was vfBatchBindNewBindingsSet() ever called previously?");
 
+  // TODO(Constantine): Hot path, to remove.
   // To free
   RedStructMemberArray * arrays = (RedStructMemberArray *)red32MemoryCalloc(storage_ids_count * sizeof(RedStructMemberArray));
   REDGPU_2_EXPECTWG(arrays != NULL);
@@ -2211,6 +2212,7 @@ static uint64_t vfInternalAsyncBatchExecute(gpu_handle_context_t context, RedHan
 
   RedHandleGpu gpu = vkfast->gpu;
 
+  // TODO(Constantine): Hot path, to remove.
   // To free
   RedHandleCalls * calls = (RedHandleCalls *)red32MemoryCalloc(batch_ids_count * sizeof(RedHandleCalls));
   REDGPU_2_EXPECTWG(calls != NULL);
