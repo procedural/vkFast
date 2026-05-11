@@ -1,3 +1,9 @@
+#if 0
+pacman -Sy --needed mingw-w64-x86_64-vulkan-loader
+clang -c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c && clang++ -DRR_STATIC_LIBRARY -c -I"..\../extra/Modified Vulkan/include/" "../../extra/Modified RadeonRays 2.0/*.cpp" && clang++ -DRR_STATIC_LIBRARY main.cpp *.o ../Common/glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3.a -lgdi32 -lvulkan-1
+exit
+#endif
+
 #include "../../vkfast.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #include "../Common/vkfast_examples_common.h"
@@ -49,31 +55,6 @@ int main() {
   };
   
   const uint64_t vertex_count = (sizeof(suzanne) / sizeof(float)) / 3;
-  // To free
-  bvhvec4 * vertex = (bvhvec4 *)red32MemoryCalloc(sizeof(bvhvec4) * vertex_count);
-  REDGPU_2_EXPECTFL(vertex != NULL);
-
-  for (uint64_t i = 0; i < vertex_count; i += 1) {
-    vertex[i].x = suzanne[i * 3 + 0];
-    vertex[i].y = suzanne[i * 3 + 1];
-    vertex[i].z = suzanne[i * 3 + 2];
-    vertex[i].w = 0;
-  }
-
-  BVH8_CPU bvh;
-  bvh.Build(vertex, vertex_count / 3);
-
-  BVH tlas;
-  BLASInstance instances[1];
-  BVHBase * blas[1] = {&bvh};
-  instances[0] = BLASInstance(0);
-  instances[0].transform[0]  = 1.f; // Scale X
-  instances[0].transform[5]  = 1.f; // Scale Y
-  instances[0].transform[10] = 1.f; // Scale Z
-  instances[0].transform[3]  = 0.f; // Translation X
-  instances[0].transform[7]  = 0.f; // Translation Y
-  instances[0].transform[11] = 0.f; // Translation Z
-  tlas.Build(instances, countof(instances), blas, countof(blas));
 
   // NOTE(Constantine): MSAA
   // "19.2.4 Specification of Sample Positions":
@@ -380,9 +361,6 @@ int main() {
 
   red32MemoryFree(vertex_index);
   vertex_index = NULL;
-
-  red32MemoryFree(vertex);
-  vertex = NULL;
 
   vfContextDeinit(ctx, FF, LL);
   glfwTerminate();

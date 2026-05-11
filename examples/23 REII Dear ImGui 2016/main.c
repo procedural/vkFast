@@ -1,6 +1,6 @@
 #if 0
-clang++ -c "../../extra/Dear ImGui 2016/imgui_megafile.cpp"
-clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c imgui_megafile.o
+clang++ -shared -fvisibility=hidden "../../extra/Dear ImGui 2016/imgui_megafile.cpp" -o libimgui.so
+clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c libimgui.so ../Common/glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3.a -lgdi32
 exit
 #endif
 

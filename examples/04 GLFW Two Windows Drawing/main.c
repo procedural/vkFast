@@ -1,5 +1,5 @@
 #if 0
-clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3dll.a
+clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c ../Common/glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3.a -lgdi32
 exit
 #endif
 

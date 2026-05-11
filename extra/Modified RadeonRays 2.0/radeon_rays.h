@@ -28,7 +28,8 @@ THE SOFTWARE.
 #include "matrix.h"
 #include "ray.h"
 #include "mathutils.h"
-        
+#include <stdint.h> // For uint32_t
+
 #define RADEONRAYS_API_VERSION 2.0
 
 #if !RR_STATIC_LIBRARY
@@ -148,7 +149,7 @@ namespace RadeonRays
         /******************************************
         API lifetime management
         ******************************************/
-        static IntersectionApi* Create(std::uint32_t devidx);
+        static IntersectionApi* Create(uint32_t devidx);
 
         // Deallocation
         static void Delete(IntersectionApi* api);

@@ -1,8 +1,4 @@
-#if 0
-cd vs2019
-cl /EHsc ../main.cpp ../../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c /arch:AVX2 /openmp /link /stack:64000000
-exit
-#endif
+// cd vs2019 && cl /EHsc ../main.cpp ../../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c /arch:AVX2 /openmp /link /stack:64000000
 
 #include "../../vkfast.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3

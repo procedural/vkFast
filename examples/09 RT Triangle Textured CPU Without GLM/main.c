@@ -288,13 +288,11 @@ int main() {
 
   void * texture_fd = NULL;
   void * texture_mh = NULL;
-  size_t texture_data_bytes_count = 0;
   void * texture_data = NULL;
   // To close
-  red32FileMap((const short unsigned int *)L"texture.ppm", &texture_fd, &texture_mh, &texture_data_bytes_count, &texture_data);
+  red32FileMap((const short unsigned int *)L"texture.ppm", &texture_fd, &texture_mh, &texture_data);
   REDGPU_2_EXPECTFL(texture_fd != NULL || !"'texture.ppm' not found. Have you copied it from the previous example? Also, if you're running the example from Visual Studio, copy the 'texture.ppm' texture to this example's vs2019/ folder.");
   REDGPU_2_EXPECTFL(texture_mh != NULL);
-  REDGPU_2_EXPECTFL(texture_data_bytes_count != 0);
   REDGPU_2_EXPECTFL(texture_data != NULL);
   some_texture_w = 256; // NOTE(Constantine): Hardcoded.
   some_texture_h = 256; // NOTE(Constantine): Hardcoded.
@@ -364,7 +362,6 @@ int main() {
   REDGPU_2_EXPECTFL(0 == red32FileUnmap(texture_fd, texture_mh, texture_data));
   texture_fd = NULL;
   texture_mh = NULL;
-  texture_data_bytes_count = 0;
   texture_data = NULL;
 
   red32MemoryFree(pix);

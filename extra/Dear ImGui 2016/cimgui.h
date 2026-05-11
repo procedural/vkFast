@@ -1,6 +1,8 @@
 #pragma once
 
-#if defined _WIN32 || defined __CYGWIN__
+#if defined __MINGW32__
+#define API __attribute__ ((visibility ("default")))
+#elif defined _WIN32 || defined __CYGWIN__
 #define API __declspec(dllexport)
 #else
 #define API

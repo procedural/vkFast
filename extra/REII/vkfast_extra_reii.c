@@ -19,7 +19,8 @@
 #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
 #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
 
-#include <stdio.h> // For _popen, _pclose
+#include <stdio.h>   // For _popen, _pclose
+#include <Windows.h> // GetFileSizeEx
 
 #define REII_INTERNAL_MAX_SAMPLERS_COUNT 4000
 
@@ -508,15 +509,20 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx(gpu_handle_context_t cont
 
   void * vs_fh   = (void *)-1;
   void * vs_fmap = (void *)-1;
-  size_t vs_spv_bytes_count = 0;
   void * vs_spv  = NULL;
-  REDGPU_2_EXPECTWG(0 == red32FileMap(compiledSpvFilepathVS, &vs_fh, &vs_fmap, &vs_spv_bytes_count, &vs_spv));
+  REDGPU_2_EXPECTWG(0 == red32FileMap(compiledSpvFilepathVS, &vs_fh, &vs_fmap, &vs_spv));
 
   void * fs_fh   = (void *)-1;
   void * fs_fmap = (void *)-1;
-  size_t fs_spv_bytes_count = 0;
   void * fs_spv  = NULL;
-  REDGPU_2_EXPECTWG(0 == red32FileMap(compiledSpvFilepathFS, &fs_fh, &fs_fmap, &fs_spv_bytes_count, &fs_spv));
+  REDGPU_2_EXPECTWG(0 == red32FileMap(compiledSpvFilepathFS, &fs_fh, &fs_fmap, &fs_spv));
+
+  size_t vs_spv_bytes_count = 0;
+  size_t fs_spv_bytes_count = 0;
+  GetFileSizeEx(vs_fh, (PLARGE_INTEGER)&vs_spv_bytes_count);
+  GetFileSizeEx(fs_fh, (PLARGE_INTEGER)&fs_spv_bytes_count);
+  REDGPU_2_EXPECTWG(vs_spv_bytes_count > 0);
+  REDGPU_2_EXPECTWG(fs_spv_bytes_count > 0);
 
   state->programVertex.program_binary_bytes_count   = vs_spv_bytes_count;
   state->programVertex.program_binary               = vs_spv;

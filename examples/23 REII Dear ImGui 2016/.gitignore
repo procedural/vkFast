@@ -4,3 +4,6 @@ a.exe
 glfw3.dll
 *.o
 *.spv
+*.so
+imgui.ini
+NotoSans.ttf

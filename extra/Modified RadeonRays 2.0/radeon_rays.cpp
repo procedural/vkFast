@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 namespace RadeonRays
 {
-    IntersectionApi* IntersectionApi::Create(std::uint32_t devidx)
+    IntersectionApi* IntersectionApi::Create(uint32_t devidx)
     {
         calcInitializeInstance();
 
