@@ -1,3 +1,5 @@
+#define M_PI 3.14159265358979323846
+
 #include "../../vkfast.h"
 #include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
@@ -8785,7 +8787,6 @@ int main() {
 
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
   GLFWwindow * window = glfwCreateWindow(window_w, window_h, "[vkFast] REII Embree Suzanne Head", 0, 0);
   void * window_handle = (void *)glfwGetWin32Window(window);
 
@@ -8857,7 +8858,7 @@ int main() {
   mesh_state_compile_info.output_depth_stencil_format = RED_FORMAT_DEPTH_32_FLOAT;
   mesh_state_compile_info.output_color_format         = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
   mesh_state_compile_info.variables_slot              = 2;
-  mesh_state_compile_info.variables_bytes_count       = 2 * sizeof(ReiiVec4);
+  mesh_state_compile_info.variables_bytes_count       = (2 * sizeof(ReiiVec4)) + (2 * sizeof(float));
   mesh_state_compile_info.struct_members_count        = countof(slots);
   mesh_state_compile_info.struct_members              = slots;
   ReiiMeshState mesh_state                                  = {0};
@@ -9068,7 +9069,7 @@ int main() {
     gpu_program_pipeline_compute_info_t pp_info = {0};
     pp_info.compute_program       = cs;
     pp_info.variables_slot        = 2;
-    pp_info.variables_bytes_count = 0;
+    pp_info.variables_bytes_count = 2 * sizeof(float);
     pp_info.struct_members_count  = countof(pp_slots);
     pp_info.struct_members        = pp_slots;
     pp = vfProgramPipelineCreateCompute(ctx, &pp_info, FF, LL);
@@ -9118,6 +9119,9 @@ int main() {
         reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0);
         reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
         reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL);
+
+        device->rtDecRef(framebuffer);
+        framebuffer = device->rtNewFrameBuffer("RGB_FLOAT32", window_w, window_h, 1);
       }
 
       previous_window_w = window_w;
@@ -9201,6 +9205,18 @@ int main() {
       vec3Add(&camera_pos.x, &camera_pos.x, move_vec_normalized);
     }
 
+    // FOV
+    double fov_deg = 90.0;
+    float fov_x = 0.f;
+    float fov_y = 0.f;
+    {
+      double deg_to_rad = fov_deg * (M_PI / 180.0);
+      double fov = 1.0 / tan(deg_to_rad / 2.0);
+      double aspect_ratio = window_w / (double)window_h;
+      fov_x = fov / aspect_ratio;
+      fov_y = fov;
+    }
+
     // Embree
     {
       embree::AffineSpace3f camera_matrix = embree::AffineSpace3f::lookAtPoint(
@@ -9209,8 +9225,8 @@ int main() {
         /*up*/     embree::Vec3f(0, 1, 0)
       );
       device->rtSetTransform(camera, "local2world", embree::copyToArray(camera_matrix));
-      device->rtSetFloat1(camera, "angle", 90);
-      device->rtSetFloat1(camera, "aspectRatio", window_w / window_h);
+      device->rtSetFloat1(camera, "angle", fov_deg);
+      device->rtSetFloat1(camera, "aspectRatio", window_w / (float)window_h);
       device->rtSetFloat1(camera, "focalDistance", 10);
       device->rtSetFloat1(camera, "lensRadius", 0.001);
       device->rtCommit(camera);
@@ -9234,6 +9250,8 @@ int main() {
       reiiCommandBindNewBindingsEnd(ctx, list);
       reiiCommandBindVariablesCopy(ctx, list, 0 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_pos);
       reiiCommandBindVariablesCopy(ctx, list, 1 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_quat);
+      float fov_xy[2] = {fov_x, fov_y};
+      reiiCommandBindVariablesCopy(ctx, list, 2 * sizeof(ReiiVec4), sizeof(fov_xy), fov_xy);
       reiiCommandMeshSet(ctx, list);
       for (int i = 0; i < stack_verticesCount; i += 1) {
         reiiCommandMeshColor(ctx, list, i * 0.00025f, 0, 0.1f, 1);
@@ -9274,6 +9292,8 @@ int main() {
       vfBatchBindStorageRaw(ctx, batch, 0, 1, &pixels.cpu, FF, LL);
       vfBatchBindStorageRaw(ctx, batch, 1, 1, &pixels.gpu, FF, LL);
       vfBatchBindNewBindingsEnd(ctx, batch, FF, LL);
+      float window_wh[2] = {window_w, window_h};
+      reiiCommandBindVariablesCopy(ctx, list, 0, sizeof(window_wh), window_wh);
       vfBatchCompute(ctx, batch, ((window_w * window_h) / 32) + 1, 1, 1, FF, LL);
       vfBatchEnd(ctx, batch, FF, LL);
       RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);

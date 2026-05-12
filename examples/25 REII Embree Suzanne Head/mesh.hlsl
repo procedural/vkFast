@@ -16,6 +16,8 @@ struct render {
 struct Variables {
   float4 camera_pos;
   float4 camera_quat;
+  float  fov_x;
+  float  fov_y;
 };
 [[vk::push_constant]] ConstantBuffer<Variables> variables;
 
@@ -36,8 +38,8 @@ interpolated main(uint vid: SV_VertexID, uint iid: SV_InstanceID) {
   float3 rotated    = quatRotateVec3Fast(translated, quatNeg(variables.camera_quat));
 
   interpolated output;
-  output.position.x = rotated.x;
-  output.position.y = rotated.y;
+  output.position.x = rotated.x * variables.fov_x;
+  output.position.y = rotated.y * variables.fov_y;
   output.position.z = 0.1;
   output.position.w = rotated.z;
   output.color      = col;
