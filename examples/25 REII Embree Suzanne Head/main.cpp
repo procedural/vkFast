@@ -9250,7 +9250,8 @@ int main() {
       reiiCommandGammaCorrectColorTextureToTheInversePowerOf2(ctx, list, outputtex, doDoubleGammaCorrection, 1, &gammaCorrectionStaticState);
       vfBatchEnd(ctx, batch, FF, LL);
 
-      uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+      RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
+      uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, FF, LL);
       vfAsyncWaitToFinish(ctx, wait, FF, LL);
       vfAsyncDrawImageRaw(ctx, outputtex->image.handle, NULL, FF, LL);
       vfAsyncDrawWaitToFinish(ctx, FF, LL);
@@ -9275,7 +9276,8 @@ int main() {
       vfBatchBindNewBindingsEnd(ctx, batch, FF, LL);
       vfBatchCompute(ctx, batch, ((window_w * window_h) / 32) + 1, 1, 1, FF, LL);
       vfBatchEnd(ctx, batch, FF, LL);
-      uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+      RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
+      uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, FF, LL);
       vfAsyncWaitToFinish(ctx, wait, FF, LL);
 
       vfAsyncDrawPixelsRaw(ctx, &pixels.gpu, NULL, FF, LL);

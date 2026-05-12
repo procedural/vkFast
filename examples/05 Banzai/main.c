@@ -39,7 +39,8 @@ int main() {
   uint64_t copy = vfBatchBegin(ctx, 0, NULL, NULL, FF, LL);
   vfeBanzaiBatchPointerCopyFromCpuToGpu(ctx, copy, &storage_input_cpu, &storage_input_gpu, 2 * 4*sizeof(float), FF, LL);
   vfBatchEnd(ctx, copy, FF, LL);
-  uint64_t async = vfAsyncBatchExecute(ctx, 1, &copy, FF, LL);
+  RedHandleCalls copyRaw = vfBatchGetRawHandle(ctx, copy, FF, LL);
+  uint64_t async = vfAsyncBatchExecuteRaw(ctx, 1, &copyRaw, FF, LL);
   vfAsyncWaitToFinish(ctx, async, FF, LL);
 
   #include "add.cs.h"
@@ -81,7 +82,7 @@ int main() {
     batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
     vfBatchBindProgramPipelineCompute(ctx, batch, pp, FF, LL);
     vfBatchBindNewBindingsSet(ctx, batch, countof(slots), slots, FF, LL);
-    vfBatchBindStorage(ctx, batch, 0, 1, &storage_gpu_only.id, FF, LL);
+    vfBatchBindStorageSingle(ctx, batch, 0, storage_gpu_only.id, FF, LL);
     vfBatchBindNewBindingsEnd(ctx, batch, FF, LL);
     struct Variables variables = {0};
     variables.ptr_offset_storage_input_gpu  = (unsigned)(uint64_t)storage_input_gpu.bytes_first;
@@ -97,7 +98,8 @@ int main() {
     vfBatchBarrierCpuReadback(ctx, batch, FF, LL);
     vfBatchEnd(ctx, batch, FF, LL);
 
-    uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+    RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
+    uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, FF, LL);
     vfAsyncWaitToFinish(ctx, wait, FF, LL);
 
     // NOTE(Constantine): Expected result: 20 30 50 130 (20 31 57 124 + salt)"

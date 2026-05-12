@@ -631,7 +631,8 @@ int main() {
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     vfBatchEnd(ctx, batch, FF, LL);
     {
-      uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+      RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
+      uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, FF, LL);
       vfAsyncWaitToFinish(ctx, wait, FF, LL);
     }
 
@@ -642,7 +643,8 @@ int main() {
     reiiCommandGammaCorrectColorTextureToTheInversePowerOf2(ctx, list, outputtex, doDoubleGammaCorrection, 1, &gammaCorrectionStaticState);
     vfBatchEnd(ctx, batch, FF, LL);
     {
-      uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+      RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
+      uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, FF, LL);
       vfAsyncWaitToFinish(ctx, wait, FF, LL);
     }
 

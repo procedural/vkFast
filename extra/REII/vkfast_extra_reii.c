@@ -1114,20 +1114,22 @@ GPU_API_PRE void GPU_API_POST reiiBatchImageSetUsableStateEx(gpu_handle_context_
   imageUsage.imageLevelsCount       = -1;
   imageUsage.imageLayersFirst       = 0;
   imageUsage.imageLayersCount       = -1;
-  // TODO(Constantine): Replace with red2CallUsageAliasOrderBarrier that won't allocate/free memory internally.
-  np(redCallUsageAliasOrderBarrier,
-    "address", batch->batch.addresses.redCallUsageAliasOrderBarrier,
-    "calls", batch->batch.calls.handle,
-    "context", vkfast->context,
-    "arrayUsagesCount", 0,
-    "arrayUsages", NULL,
-    "imageUsagesCount", 1,
-    "imageUsages", &imageUsage,
-    "aliasesCount", 0,
-    "aliases", NULL,
-    "ordersCount", 0,
-    "orders", NULL,
-    "dependencyByRegion", 0
+  Red2UsageImageTempCallStruct imageUsageTempStruct = {0};
+  red2CallUsageAliasOrderBarrier(
+    /*address*/ batch->batch.addresses.redCallUsageAliasOrderBarrier,
+    /*calls*/ batch->batch.calls.handle,
+    /*context*/ vkfast->context,
+    /*arrayUsagesCount*/ 0,
+    /*arrayUsages*/ NULL,
+    /*arrayTempCallStructs*/ NULL,
+    /*imageUsagesCount*/ 1,
+    /*imageUsages*/ &imageUsage,
+    /*imageTempCallStructs*/ &imageUsageTempStruct,
+    /*aliasesCount*/ 0,
+    /*aliases*/ NULL,
+    /*ordersCount*/ 0,
+    /*orders*/ NULL,
+    /*dependencyByRegion*/ 0
   );
 }
 
@@ -1207,7 +1209,8 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpuEx(gpu_handle_conte
   }
 
   vfBatchEnd(context, batch, optionalFile, optionalLine);
-  uint64_t async = vfAsyncBatchExecuteEx(context, queueToSubmitCopyCommands, 1, &batch, optionalFile, optionalLine);
+  RedHandleCalls batchRaw = vfBatchGetRawHandle(context, batch, optionalFile, optionalLine);
+  uint64_t async = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, optionalFile, optionalLine);
   vfAsyncWaitToFinish(context, async, optionalFile, optionalLine);
   vfIdDestroy(1, &batch, optionalFile, optionalLine);
 }
@@ -1253,7 +1256,8 @@ GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpuEx(gpu_handle_context_t cont
   reiiBatchImageCopyFromCpuEx(context, batch, bindingTexture->image.handle, imageParts, bindingLevel, bindingLayer, 0, 0, width, height, texels);
 
   vfBatchEnd(context, batch, optionalFile, optionalLine);
-  uint64_t async = vfAsyncBatchExecuteEx(context, queueToSubmitCopyCommands, 1, &batch, optionalFile, optionalLine);
+  RedHandleCalls batchRaw = vfBatchGetRawHandle(context, batch, optionalFile, optionalLine);
+  uint64_t async = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, optionalFile, optionalLine);
   vfAsyncWaitToFinish(context, async, optionalFile, optionalLine);
   vfIdDestroy(1, &batch, optionalFile, optionalLine);
 }
@@ -2502,7 +2506,8 @@ GPU_API_PRE void GPU_API_POST reiiUnorderedArrayEnd(gpu_handle_context_t context
     }
   }
   vfBatchEnd(context, unorderedArray->batchId, optionalFile, optionalLine);
-  uint64_t wait = vfAsyncBatchExecute(context, 1, &unorderedArray->batchId, optionalFile, optionalLine);
+  RedHandleCalls batchRaw = vfBatchGetRawHandle(context, unorderedArray->batchId, optionalFile, optionalLine);
+  uint64_t wait = vfAsyncBatchExecuteRaw(context, 1, &batchRaw, optionalFile, optionalLine);
   vfAsyncWaitToFinish(context, wait, optionalFile, optionalLine);
   vfIdDestroy(1, &unorderedArray->batchId, optionalFile, optionalLine);
   unorderedArray->batchId = 0;

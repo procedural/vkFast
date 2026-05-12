@@ -326,11 +326,12 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
   }
   vfBatchEnd(globalImguiState->gpuContext, globalImguiState->gpuBatch, __FILE__, __LINE__);
 
+  RedHandleCalls batchRaw = vfBatchGetRawHandle(globalImguiState->gpuContext, globalImguiState->gpuBatch, __FILE__, __LINE__);
   uint64_t wait = 0;
   if (globalImguiState->gpuOptionalQueue == NULL) {
-    wait = vfAsyncBatchExecute(globalImguiState->gpuContext, 1, &globalImguiState->gpuBatch, __FILE__, __LINE__);
+    wait = vfAsyncBatchExecuteRaw(globalImguiState->gpuContext, 1, &batchRaw, __FILE__, __LINE__);
   } else {
-    wait = vfAsyncBatchExecuteEx(globalImguiState->gpuContext, globalImguiState->gpuOptionalQueue, 1, &globalImguiState->gpuBatch, __FILE__, __LINE__);
+    wait = vfAsyncBatchExecuteRawEx(globalImguiState->gpuContext, globalImguiState->gpuOptionalQueue, 1, &batchRaw, __FILE__, __LINE__);
   }
   vfAsyncWaitToFinish(globalImguiState->gpuContext, wait, __FILE__, __LINE__);
 }

@@ -1980,51 +1980,6 @@ GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(gpu_handle_context_t con
   );
 }
 
-GPU_API_PRE void GPU_API_POST vfBatchBindStorage(gpu_handle_context_t context, uint64_t batch_id, int slot, int storage_ids_count, const uint64_t * storage_ids, const char * optionalFile, int optionalLine) {
-  vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
-  vf_handle_context_t * vkfast = batch->vkfast;
-  RedHandleGpu gpu = vkfast->gpu;
-  REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
-
-  REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was vfBatchBindNewBindingsSet() ever called previously?");
-
-  // TODO(Constantine): Hot path, to remove.
-  // To free
-  RedStructMemberArray * arrays = (RedStructMemberArray *)red32MemoryCalloc(storage_ids_count * sizeof(RedStructMemberArray));
-  REDGPU_2_EXPECTWG(arrays != NULL);
-
-  for (int i = 0; i < storage_ids_count; i += 1) {
-    vf_handle_t * storage = (vf_handle_t *)(void *)storage_ids[i];
-    REDGPU_2_EXPECTWG(storage->handle_id == VF_HANDLE_ID_STORAGE);
-
-    arrays[i] = storage->storage.arrayRangeInfo;
-  }
-
-  RedStructMember member = {0};
-  member.setTo35   = 35;
-  member.setTo0    = 0;
-  member.structure = batch->batch.currentStruct.handle;
-  member.slot      = slot;
-  member.first     = 0;
-  member.count     = storage_ids_count;
-  member.type      = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
-  member.textures  = NULL;
-  member.arrays    = arrays;
-  member.setTo00   = 0;
-  np(redStructsSet,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "structsMembersCount", 1,
-    "structsMembers", &member,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
-  );
-
-  red32MemoryFree(arrays);
-  arrays = NULL;
-}
-
 GPU_API_PRE void GPU_API_POST vfBatchBindStorageRaw(gpu_handle_context_t context, uint64_t batch_id, int slot, int storage_raw_count, const RedStructMemberArray * storage_raw, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
   vf_handle_context_t * vkfast = batch->vkfast;
@@ -2053,6 +2008,12 @@ GPU_API_PRE void GPU_API_POST vfBatchBindStorageRaw(gpu_handle_context_t context
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
+}
+
+GPU_API_PRE void GPU_API_POST vfBatchBindStorageSingle(gpu_handle_context_t context, uint64_t batch_id, int slot, uint64_t storage_id, const char * optionalFile, int optionalLine) {
+  RedStructMemberArray storageRaw = {0};
+  vfStorageGetRaw(context, storage_id, &storageRaw, optionalFile, optionalLine);
+  vfBatchBindStorageRaw(context, batch_id, slot, 1, &storageRaw, optionalFile, optionalLine);
 }
 
 GPU_API_PRE void GPU_API_POST vfBatchBindTextureRWEx(gpu_handle_context_t context, uint64_t batch_id, int slot, int textures_rw_count, const RedStructMemberTexture * textures_rw, const char * optionalFile, int optionalLine) {
@@ -2194,35 +2155,19 @@ GPU_API_PRE void GPU_API_POST vfBatchEnd(gpu_handle_context_t context, uint64_t 
   batch->batch.currentProcedureParametersCompute = NULL;
 }
 
-GPU_API_PRE void GPU_API_POST vfBatchGetRaw(gpu_handle_context_t context, uint64_t batch_id, RedCalls * out_batch_raw, const char * optionalFile, int optionalLine) {
+GPU_API_PRE RedHandleCalls GPU_API_POST vfBatchGetRawHandle(gpu_handle_context_t context, uint64_t batch_id, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
   vf_handle_context_t * vkfast = batch->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
 
-  out_batch_raw[0] = batch->batch.calls;
+  return batch->batch.calls.handle;
 }
 
-static uint64_t vfInternalAsyncBatchExecute(gpu_handle_context_t context, RedHandleQueue queue, uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optionalFile, int optionalLine) {
-  if (batch_ids_count == 0) {
-    return 0;
-  }
-
+static uint64_t vfInternalAsyncBatchExecuteRaw(gpu_handle_context_t context, RedHandleQueue queue, uint64_t batch_calls_count, const RedHandleCalls * batch_calls, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
-
-  // TODO(Constantine): Hot path, to remove.
-  // To free
-  RedHandleCalls * calls = (RedHandleCalls *)red32MemoryCalloc(batch_ids_count * sizeof(RedHandleCalls));
-  REDGPU_2_EXPECTWG(calls != NULL);
-
-  for (int i = 0; i < batch_ids_count; i += 1) {
-    vf_handle_t * batch = (vf_handle_t *)(void *)batch_ids[i];
-    REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
-
-    calls[i] = batch->batch.calls.handle;
-  }
 
   // To destroy
   RedHandleCpuSignal cpuSignal = NULL;
@@ -2245,8 +2190,8 @@ static uint64_t vfInternalAsyncBatchExecute(gpu_handle_context_t context, RedHan
   timelines[0].waitForAndUnsignalGpuSignalsCount = 0;
   timelines[0].waitForAndUnsignalGpuSignals      = NULL;
   timelines[0].setTo65536                        = NULL;
-  timelines[0].callsCount                        = batch_ids_count;
-  timelines[0].calls                             = calls;
+  timelines[0].callsCount                        = batch_calls_count;
+  timelines[0].calls                             = batch_calls;
   timelines[0].signalGpuSignalsCount             = 0;
   timelines[0].signalGpuSignals                  = NULL;
   np(redQueueSubmit,
@@ -2262,19 +2207,16 @@ static uint64_t vfInternalAsyncBatchExecute(gpu_handle_context_t context, RedHan
     "optionalUserData", NULL
   );
 
-  red32MemoryFree(calls);
-  calls = NULL;
-
   return (uint64_t)(void *)cpuSignal;
 }
 
-GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecute(gpu_handle_context_t context, uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optionalFile, int optionalLine) {
+GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecuteRaw(gpu_handle_context_t context, uint64_t batch_raw_count, const RedHandleCalls * batch_raw, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-  return vfInternalAsyncBatchExecute(context, vkfast->mainQueue, batch_ids_count, batch_ids, optionalFile, optionalLine);
+  return vfInternalAsyncBatchExecuteRaw(context, vkfast->mainQueue, batch_raw_count, batch_raw, optionalFile, optionalLine);
 }
 
-GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecuteEx(gpu_handle_context_t context, RedHandleQueue queue, uint64_t batch_ids_count, const uint64_t * batch_ids, const char * optionalFile, int optionalLine) {
-  return vfInternalAsyncBatchExecute(context, queue, batch_ids_count, batch_ids, optionalFile, optionalLine);
+GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecuteRawEx(gpu_handle_context_t context, RedHandleQueue queue, uint64_t batch_raw_count, const RedHandleCalls * batch_raw, const char * optionalFile, int optionalLine) {
+  return vfInternalAsyncBatchExecuteRaw(context, queue, batch_raw_count, batch_raw, optionalFile, optionalLine);
 }
 
 GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(gpu_handle_context_t context, uint64_t async_id, const char * optionalFile, int optionalLine) {
@@ -2457,20 +2399,22 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
       imageUsage.imageLevelsCount       = -1;
       imageUsage.imageLayersFirst       = 0;
       imageUsage.imageLayersCount       = -1;
-      // TODO(Constantine): Replace with red2CallUsageAliasOrderBarrier that won't allocate/free memory internally.
-      np(redCallUsageAliasOrderBarrier,
-        "address", addresses.redCallUsageAliasOrderBarrier,
-        "calls", calls->handle,
-        "context", vkfast->context,
-        "arrayUsagesCount", 0,
-        "arrayUsages", NULL,
-        "imageUsagesCount", 1,
-        "imageUsages", &imageUsage,
-        "aliasesCount", 0,
-        "aliases", NULL,
-        "ordersCount", 0,
-        "orders", NULL,
-        "dependencyByRegion", 0
+      Red2UsageImageTempCallStruct imageUsageTempStruct = {0};
+      red2CallUsageAliasOrderBarrier(
+        /*address*/ addresses.redCallUsageAliasOrderBarrier,
+        /*calls*/ calls->handle,
+        /*context*/ vkfast->context,
+        /*arrayUsagesCount*/ 0,
+        /*arrayUsages*/ NULL,
+        /*arrayTempCallStructs*/ NULL,
+        /*imageUsagesCount*/ 1,
+        /*imageUsages*/ &imageUsage,
+        /*imageTempCallStructs*/ &imageUsageTempStruct,
+        /*aliasesCount*/ 0,
+        /*aliases*/ NULL,
+        /*ordersCount*/ 0,
+        /*orders*/ NULL,
+        /*dependencyByRegion*/ 0
       );
     }
 
@@ -2553,20 +2497,22 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
       imageUsage.imageLevelsCount       = -1;
       imageUsage.imageLayersFirst       = 0;
       imageUsage.imageLayersCount       = -1;
-      // TODO(Constantine): Replace with red2CallUsageAliasOrderBarrier that won't allocate/free memory internally.
-      np(redCallUsageAliasOrderBarrier,
-        "address", addresses.redCallUsageAliasOrderBarrier,
-        "calls", calls->handle,
-        "context", vkfast->context,
-        "arrayUsagesCount", 0,
-        "arrayUsages", NULL,
-        "imageUsagesCount", 1,
-        "imageUsages", &imageUsage,
-        "aliasesCount", 0,
-        "aliases", NULL,
-        "ordersCount", 0,
-        "orders", NULL,
-        "dependencyByRegion", 0
+      Red2UsageImageTempCallStruct imageUsageTempStruct = {0};
+      red2CallUsageAliasOrderBarrier(
+        /*address*/ addresses.redCallUsageAliasOrderBarrier,
+        /*calls*/ calls->handle,
+        /*context*/ vkfast->context,
+        /*arrayUsagesCount*/ 0,
+        /*arrayUsages*/ NULL,
+        /*arrayTempCallStructs*/ NULL,
+        /*imageUsagesCount*/ 1,
+        /*imageUsages*/ &imageUsage,
+        /*imageTempCallStructs*/ &imageUsageTempStruct,
+        /*aliasesCount*/ 0,
+        /*aliases*/ NULL,
+        /*ordersCount*/ 0,
+        /*orders*/ NULL,
+        /*dependencyByRegion*/ 0
       );
     }
 

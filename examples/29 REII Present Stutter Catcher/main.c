@@ -550,8 +550,8 @@ int main() {
 
       vf_handle_context_t * context = (vf_handle_context_t *)ctx;
       igText("GPU name: %s", context->gpuInfo->gpuName);
-      igCheckbox("Capture frame times", &milliseconds_isCapturing);
-      if (igCheckbox("Camera animation", &camera_animation_is_enabled)) {
+      igCheckbox("Capture frame times", (bool *)&milliseconds_isCapturing);
+      if (igCheckbox("Camera animation", (bool *)&camera_animation_is_enabled)) {
         if (camera_animation_is_enabled == 1) {
           if (camera_pos.x < -5.f) {
             camera_pos.x = -5.f;
@@ -561,7 +561,7 @@ int main() {
           }
         }
       }
-      igCheckbox("Clear all inserted frames on insert index wrap", &milliseconds_clearOnWrap);
+      igCheckbox("Clear all inserted frames on insert index wrap", (bool *)&milliseconds_clearOnWrap);
       igText("Next frame insert index: %d", milliseconds_arrayIndex);
       if (igButton("Clear all inserted frames", (ImVec2){0, 0})) {
         milliseconds_maxTime = 0;
@@ -647,7 +647,8 @@ int main() {
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     vfBatchEnd(ctx, batch, FF, LL);
     {
-      uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+      RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
+      uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, FF, LL);
       vfAsyncWaitToFinish(ctx, wait, FF, LL);
     }
 
@@ -658,7 +659,8 @@ int main() {
     reiiCommandGammaCorrectColorTextureToTheInversePowerOf2(ctx, list, outputtex, doDoubleGammaCorrection, 1, &gammaCorrectionStaticState);
     vfBatchEnd(ctx, batch, FF, LL);
     {
-      uint64_t wait = vfAsyncBatchExecute(ctx, 1, &batch, FF, LL);
+      RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
+      uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, FF, LL);
       vfAsyncWaitToFinish(ctx, wait, FF, LL);
     }
 
