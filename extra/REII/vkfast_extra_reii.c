@@ -1115,21 +1115,21 @@ GPU_API_PRE void GPU_API_POST reiiBatchImageSetUsableStateEx(gpu_handle_context_
   imageUsage.imageLayersFirst       = 0;
   imageUsage.imageLayersCount       = -1;
   Red2UsageImageTempCallStruct imageUsageTempStruct = {0};
-  red2CallUsageAliasOrderBarrier(
-    /*address*/ batch->batch.addresses.redCallUsageAliasOrderBarrier,
-    /*calls*/ batch->batch.calls.handle,
-    /*context*/ vkfast->context,
-    /*arrayUsagesCount*/ 0,
-    /*arrayUsages*/ NULL,
-    /*arrayTempCallStructs*/ NULL,
-    /*imageUsagesCount*/ 1,
-    /*imageUsages*/ &imageUsage,
-    /*imageTempCallStructs*/ &imageUsageTempStruct,
-    /*aliasesCount*/ 0,
-    /*aliases*/ NULL,
-    /*ordersCount*/ 0,
-    /*orders*/ NULL,
-    /*dependencyByRegion*/ 0
+  np(red2CallUsageAliasOrderBarrier,
+    "address", batch->batch.addresses.redCallUsageAliasOrderBarrier,
+    "calls", batch->batch.calls.handle,
+    "context", vkfast->context,
+    "arrayUsagesCount", 0,
+    "arrayUsages", NULL,
+    "arrayTempCallStructs", NULL,
+    "imageUsagesCount", 1,
+    "imageUsages", &imageUsage,
+    "imageTempCallStructs", &imageUsageTempStruct,
+    "aliasesCount", 0,
+    "aliases", NULL,
+    "ordersCount", 0,
+    "orders", NULL,
+    "dependencyByRegion", 0
   );
 }
 
