@@ -19,7 +19,7 @@
 #endif
 
 static void RandomInit() {
-  srand(time(NULL));
+  srand((unsigned)time(NULL));
 }
 
 static float RandomRange(float min, float max) {
@@ -161,7 +161,9 @@ static gpu_extra_cpu_gpu_array OffsetAllocateCpuGpuArrayWithTale64BytesAlign(uin
     #define GLFW_EXPOSE_NATIVE_WIN32
     #include "glfw-3.4.bin.WIN64/include/GLFW/glfw3.h" 
     #include "glfw-3.4.bin.WIN64/include/GLFW/glfw3native.h"
+    #ifndef VKFAST_EXAMPLES_COMMON_DO_NOT_LINK_GLFW3
     #pragma comment(lib, "../../Common/glfw-3.4.bin.WIN64/lib-vc2019/glfw3_mt.lib") // NOTE(Constantine): Path relative to example's vs2019/ folder.
+    #endif
     #pragma comment(lib, "User32.lib")
     #pragma comment(lib, "Shell32.lib")
     #pragma comment(lib, "Gdi32.lib")
