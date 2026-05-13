@@ -1,0 +1,2 @@
+cl /c /Zi /Fd"vkFast.pdb" /EHsc ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c
+lib *.obj /out:vkFast.lib
