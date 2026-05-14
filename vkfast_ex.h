@@ -9,7 +9,7 @@ extern "C" {
 typedef struct gpu_context_ex2_parameters_t {
   uint64_t  external_VkInstance;       // NOTE(Constantine): Make sure the VK_KHR_get_physical_device_properties2 instance extension is enabled on this external VkInstance.
   uint64_t  external_VkPhysicalDevice;
-  uint64_t  external_VkDevice;
+  uint64_t  external_VkDevice;         // NOTE(Constantine): Make sure the VK_KHR_maintenance1 device extension is enabled on this external VkDevice.
   RedBool32 exposeOnlyOneGpu;
   RedBool32 exposeOnlyOneQueue;
 } gpu_context_ex2_parameters_t;
