@@ -1,2 +1,2 @@
-cl /c /Zi /Fd"vkFast.pdb" /EHsc ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c
+cl /c /Zi /Fd"vkFast.pdb" /EHsc ../../vkfast.c ../REII/vkfast_extra_reii.c "../CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../Banzai/vkfast_extra_banzai.c ../Banzai/vkfast_extra_banzai_pointer.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c
 lib *.obj /out:vkFast.lib
