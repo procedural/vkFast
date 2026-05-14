@@ -1777,22 +1777,13 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindVariablesCopy(gpu_handle_context_t 
   );
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
+GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSetEx(gpu_handle_context_t context, ReiiHandleCommandList * list, RedHandleTexture depthStencilTexture, unsigned depthStencilWidth, unsigned depthStencilHeight, RedFormat depthStencilFormat, RedMultisampleCountBitflag depthStencilMultisampleCount, RedHandleTexture colorTexture, unsigned colorWidth, unsigned colorHeight, RedFormat colorFormat, RedMultisampleCountBitflag colorMultisampleCount) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
-
-  unsigned                   depthStencilWidth            = 0;
-  unsigned                   depthStencilHeight           = 0;
-  RedFormat                  depthStencilFormat           = RED_FORMAT_UNDEFINED;
-  RedMultisampleCountBitflag depthStencilMultisampleCount = (RedMultisampleCountBitflag)0;
-  unsigned                   colorWidth                   = 0;
-  unsigned                   colorHeight                  = 0;
-  RedFormat                  colorFormat                  = RED_FORMAT_UNDEFINED;
-  RedMultisampleCountBitflag colorMultisampleCount        = (RedMultisampleCountBitflag)0;
 
   RedOutputMembers            outputMembers            = {0};
   RedOutputDeclarationMembers outputDeclarationMembers = {0};
@@ -1811,31 +1802,19 @@ GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet(gpu_handle_context_t co
   outputDeclarationMembers.colorsEndProcedureOutputOp[0]             = RED_END_PROCEDURE_OUTPUT_OP_PRESERVE;
   outputDeclarationMembers.colorsSharesMemoryWithAnotherMember[0]    = 0;
   if (depthStencilTexture != NULL) {
-    depthStencilWidth            = depthStencilTexture->width;
-    depthStencilHeight           = depthStencilTexture->height;
-    depthStencilFormat           = depthStencilTexture->format;
-    depthStencilMultisampleCount = depthStencilTexture->msaaCount;
-
     outputDeclarationMembers.depthStencilEnable           = 1;
     outputDeclarationMembers.depthStencilFormat           = depthStencilFormat;
     outputDeclarationMembers.depthStencilMultisampleCount = depthStencilMultisampleCount;
 
-    outputMembers.depthStencil = depthStencilTexture->texture;
+    outputMembers.depthStencil = depthStencilTexture;
   }
   if (colorTexture != NULL) {
-    REDGPU_2_EXPECTWG(colorTextureHandle != NULL);
-
-    colorWidth            = colorTexture->width;
-    colorHeight           = colorTexture->height;
-    colorFormat           = colorTexture->format;
-    colorMultisampleCount = colorTexture->msaaCount;
-
     outputDeclarationMembers.colorsCount                   = 1;
     outputDeclarationMembers.colorsFormat[0]               = colorFormat;
     outputDeclarationMembers.colorsMultisampleCount[0]     = colorMultisampleCount;
 
     outputMembers.colorsCount = 1;
-    outputMembers.colors[0]   = colorTextureHandle;
+    outputMembers.colors[0]   = colorTexture;
   }
 
   if (depthStencilWidth != 0 && depthStencilHeight != 0 && colorWidth != 0 && colorHeight != 0) {
@@ -1873,6 +1852,32 @@ GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet(gpu_handle_context_t co
   REDGPU_2_EXPECTWG(list->mutable_outputs_array.items[list->mutable_outputs_array.count-1].handleDeclaration != NULL);
 }
 
+GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
+  RedHandleTexture           depthStencilTextureHandle    = NULL;
+  unsigned                   depthStencilWidth            = 0;
+  unsigned                   depthStencilHeight           = 0;
+  RedFormat                  depthStencilFormat           = RED_FORMAT_UNDEFINED;
+  RedMultisampleCountBitflag depthStencilMultisampleCount = (RedMultisampleCountBitflag)0;
+  unsigned                   colorWidth                   = 0;
+  unsigned                   colorHeight                  = 0;
+  RedFormat                  colorFormat                  = RED_FORMAT_UNDEFINED;
+  RedMultisampleCountBitflag colorMultisampleCount        = (RedMultisampleCountBitflag)0;
+  if (depthStencilTexture != NULL) {
+    depthStencilTextureHandle    = depthStencilTexture->texture;
+    depthStencilWidth            = depthStencilTexture->width;
+    depthStencilHeight           = depthStencilTexture->height;
+    depthStencilFormat           = depthStencilTexture->format;
+    depthStencilMultisampleCount = depthStencilTexture->msaaCount;
+  }
+  if (colorTexture != NULL) {
+    colorWidth            = colorTexture->width;
+    colorHeight           = colorTexture->height;
+    colorFormat           = colorTexture->format;
+    colorMultisampleCount = colorTexture->msaaCount;
+  }
+  reiiCommandRenderTargetSetEx(context, list, depthStencilTextureHandle, depthStencilWidth, depthStencilHeight, depthStencilFormat, depthStencilMultisampleCount, colorTextureHandle, colorWidth, colorHeight, colorFormat, colorMultisampleCount);
+}
+
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetEnd(gpu_handle_context_t context, ReiiHandleCommandList * list) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
@@ -1897,7 +1902,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshSet(gpu_handle_context_t context, R
   }
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExact(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExactEx(gpu_handle_context_t context, ReiiHandleCommandList * list, RedHandleTexture depthStencilTexture, unsigned depthStencilWidth, unsigned depthStencilHeight, RedFormat depthStencilFormat, RedMultisampleCountBitflag depthStencilMultisampleCount, RedHandleTexture colorTexture, unsigned colorWidth, unsigned colorHeight, RedFormat colorFormat, RedMultisampleCountBitflag colorMultisampleCount) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -1968,7 +1973,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExact(gpu_handle_context_t conte
   // NOTE(Constantine)(Mar 19, 2026): Yes, I should: AMD RX 550 needs this barrier to wait for copies to finish.
   vfBatchBarrierMemory(context, list->batch_id, optionalFile, optionalLine);
 
-  reiiCommandRenderTargetSet(context, list, depthStencilTexture, colorTexture, colorTextureHandle);
+  reiiCommandRenderTargetSetEx(context, list, depthStencilTexture, depthStencilWidth, depthStencilHeight, depthStencilFormat, depthStencilMultisampleCount, colorTexture, colorWidth, colorHeight, colorFormat, colorMultisampleCount);
   npfp(redCallProcedure, list->callProceduresAndAddresses.redCallProcedure,
     "calls", batch->batch.calls.handle,
     "vertexCount", dynamicMeshPositionCopyVec4Count,
@@ -1979,11 +1984,37 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExact(gpu_handle_context_t conte
   reiiCommandRenderTargetEnd(context, list);
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndWithTale64BytesAlign(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExact(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
+  RedHandleTexture           depthStencilTextureHandle    = NULL;
+  unsigned                   depthStencilWidth            = 0;
+  unsigned                   depthStencilHeight           = 0;
+  RedFormat                  depthStencilFormat           = RED_FORMAT_UNDEFINED;
+  RedMultisampleCountBitflag depthStencilMultisampleCount = (RedMultisampleCountBitflag)0;
+  unsigned                   colorWidth                   = 0;
+  unsigned                   colorHeight                  = 0;
+  RedFormat                  colorFormat                  = RED_FORMAT_UNDEFINED;
+  RedMultisampleCountBitflag colorMultisampleCount        = (RedMultisampleCountBitflag)0;
+  if (depthStencilTexture != NULL) {
+    depthStencilTextureHandle    = depthStencilTexture->texture;
+    depthStencilWidth            = depthStencilTexture->width;
+    depthStencilHeight           = depthStencilTexture->height;
+    depthStencilFormat           = depthStencilTexture->format;
+    depthStencilMultisampleCount = depthStencilTexture->msaaCount;
+  }
+  if (colorTexture != NULL) {
+    colorWidth            = colorTexture->width;
+    colorHeight           = colorTexture->height;
+    colorFormat           = colorTexture->format;
+    colorMultisampleCount = colorTexture->msaaCount;
+  }
+  reiiCommandMeshEndExactEx(context, list, depthStencilTextureHandle, depthStencilWidth, depthStencilHeight, depthStencilFormat, depthStencilMultisampleCount, colorTextureHandle, colorWidth, colorHeight, colorFormat, colorMultisampleCount);
+}
+
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndWithTale64BytesAlignEx(gpu_handle_context_t context, ReiiHandleCommandList * list, RedHandleTexture depthStencilTexture, unsigned depthStencilWidth, unsigned depthStencilHeight, RedFormat depthStencilFormat, RedMultisampleCountBitflag depthStencilMultisampleCount, RedHandleTexture colorTexture, unsigned colorWidth, unsigned colorHeight, RedFormat colorFormat, RedMultisampleCountBitflag colorMultisampleCount) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
-  reiiCommandMeshEndExact(context, list, depthStencilTexture, colorTexture, colorTextureHandle);
+  reiiCommandMeshEndExactEx(context, list, depthStencilTexture, depthStencilWidth, depthStencilHeight, depthStencilFormat, depthStencilMultisampleCount, colorTexture, colorWidth, colorHeight, colorFormat, colorMultisampleCount);
 
   while (REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(list->dynamicMeshPositionVec4Offset * sizeof(ReiiVec4), 64) > 0) {
     if ((list->dynamicMeshPositionVec4Offset * sizeof(ReiiVec4)) >= list->dynamic_mesh_position.cpu.arrayRangeBytesCount) {
@@ -2011,6 +2042,32 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshEndWithTale64BytesAlign(gpu_handle_
       list->dynamicMeshTexcoordVec4Offset[i] += 1;
     }
   }
+}
+
+GPU_API_PRE void GPU_API_POST reiiCommandMeshEndWithTale64BytesAlign(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
+  RedHandleTexture           depthStencilTextureHandle    = NULL;
+  unsigned                   depthStencilWidth            = 0;
+  unsigned                   depthStencilHeight           = 0;
+  RedFormat                  depthStencilFormat           = RED_FORMAT_UNDEFINED;
+  RedMultisampleCountBitflag depthStencilMultisampleCount = (RedMultisampleCountBitflag)0;
+  unsigned                   colorWidth                   = 0;
+  unsigned                   colorHeight                  = 0;
+  RedFormat                  colorFormat                  = RED_FORMAT_UNDEFINED;
+  RedMultisampleCountBitflag colorMultisampleCount        = (RedMultisampleCountBitflag)0;
+  if (depthStencilTexture != NULL) {
+    depthStencilTextureHandle    = depthStencilTexture->texture;
+    depthStencilWidth            = depthStencilTexture->width;
+    depthStencilHeight           = depthStencilTexture->height;
+    depthStencilFormat           = depthStencilTexture->format;
+    depthStencilMultisampleCount = depthStencilTexture->msaaCount;
+  }
+  if (colorTexture != NULL) {
+    colorWidth            = colorTexture->width;
+    colorHeight           = colorTexture->height;
+    colorFormat           = colorTexture->format;
+    colorMultisampleCount = colorTexture->msaaCount;
+  }
+  reiiCommandMeshEndWithTale64BytesAlignEx(context, list, depthStencilTextureHandle, depthStencilWidth, depthStencilHeight, depthStencilFormat, depthStencilMultisampleCount, colorTextureHandle, colorWidth, colorHeight, colorFormat, colorMultisampleCount);
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandMeshTexcoord(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned index, float x, float y, float z, float w) {
