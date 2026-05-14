@@ -2164,16 +2164,13 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshPosition(gpu_handle_context_t conte
   list->dynamicMeshPositionVec4Offset += 1;
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTexture(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * sourceMsaaColorTexture, ReiiHandleTexture * targetColorTexture) {
+GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTextureEx(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * sourceMsaaColorTexture, RedHandleTexture targetColorTexture) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
-
-  REDGPU_2_EXPECTWG(sourceMsaaColorTexture->width  == targetColorTexture->width);
-  REDGPU_2_EXPECTWG(sourceMsaaColorTexture->height == targetColorTexture->height);
 
   RedOutputDeclarationMembers outputDeclarationMembers = {0};
   outputDeclarationMembers.depthStencilEnable                        = 0;
@@ -2202,7 +2199,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTexture(gpu_handle_cont
   outputMembers.colors[0]   = sourceMsaaColorTexture->texture;
 
   RedOutputMembersResolveTargets outputMembersResolveTargets = {0};
-  outputMembersResolveTargets.colors[0] = targetColorTexture->texture;
+  outputMembersResolveTargets.colors[0] = targetColorTexture;
 
   np(red2CallSetProcedureOutput,
     "address", list->callProceduresAndAddresses.redCallSetProcedureOutput,
@@ -2216,8 +2213,8 @@ GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTexture(gpu_handle_cont
     "dependencyByRegionAllowUsageAliasOrderBarriers", 0,
     "outputMembers", &outputMembers,
     "outputMembersResolveTargets", &outputMembersResolveTargets,
-    "width", targetColorTexture->width,
-    "height", targetColorTexture->height,
+    "width", sourceMsaaColorTexture->width,
+    "height", sourceMsaaColorTexture->height,
     "depthClearValue", 0,
     "stencilClearValue", 0,
     "colorsClearValuesFloat", NULL,
@@ -2233,6 +2230,10 @@ GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTexture(gpu_handle_cont
     "address", list->callProceduresAndAddresses.redCallEndProcedureOutput,
     "calls", batch->batch.calls.handle
   );
+}
+
+GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTexture(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * sourceMsaaColorTexture, ReiiHandleTexture * targetColorTexture) {
+  reiiCommandResolveMsaaColorTextureEx(context, list, sourceMsaaColorTexture, targetColorTexture->texture);
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandGammaCorrectColorTextureToTheInversePowerOf2(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * colorTexture, int doDoubleGammaCorrection, int doSwapRedAndBlue, ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState * state) {
