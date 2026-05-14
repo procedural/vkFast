@@ -28,12 +28,14 @@ void buildCommandBuffer()
       gpu_context_optional_parameters_t optional_parameters = {0};
       optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
 
-      gpu_context_ex2_import_parameters_t import_parameters = {0};
-      import_parameters.external_VkInstance       = (uint64_t)instance;
-      import_parameters.external_VkPhysicalDevice = (uint64_t)physicalDevice;
-      import_parameters.external_VkDevice         = (uint64_t)device;
+      gpu_context_ex2_parameters_t ex2_parameters = {0};
+      ex2_parameters.external_VkInstance       = (uint64_t)instance;
+      ex2_parameters.external_VkPhysicalDevice = (uint64_t)physicalDevice;
+      ex2_parameters.external_VkDevice         = (uint64_t)device;
+      ex2_parameters.exposeOnlyOneGpu          = 1;
+      ex2_parameters.exposeOnlyOneQueue        = 1;
 
-      ctx = vfContextInitEx2(1, 0, &optional_parameters, &import_parameters, FF, LL);
+      ctx = vfContextInitEx2(1, 0, &optional_parameters, &ex2_parameters, FF, LL);
     }
 
     gpu_batch_info_t bindings_info = {0};
