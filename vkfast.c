@@ -78,7 +78,7 @@ static RedBool32 vfRedGpuDebugCallback(RedDebugCallbackSeverity severity, RedDeb
   return 0;
 }
 
-static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const gpu_context_ex2_import_parameters_t * import_parameters, const char * optionalFile, int optionalLine) {
+static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const gpu_context_ex2_parameters_t * optional_ex2_parameters, const char * optionalFile, int optionalLine) {
   if (enable_debug_mode) {
     vfInternalPrint("[vkFast][Debug] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
   }
@@ -112,22 +112,29 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
 
   RedContext context = vkfast->context;
   if (context == NULL) {
+    RedContextOptionalSettingsContextFromVk            contextFromVk            = {0};
+    RedContextOptionalSettings0                        optionalSettings0        = {0};
     RedContextOptionalSettingsCreateContextPerformance createContextPerformance = {0};
-    RedContextOptionalSettingsContextFromVk            contextFromVk = {0};
     void * optionalSettings = NULL;
-    if (import_parameters != NULL) {
-      createContextPerformance.settings         = RED_CONTEXT_OPTIONAL_SETTINGS_CREATE_CONTEXT_PERFORMANCE;
-      createContextPerformance.next             = NULL;
-      createContextPerformance.exposeOnlyOneGpu = 1;
-
+    if (optional_ex2_parameters != NULL) {
       contextFromVk.settings             = RED_CONTEXT_OPTIONAL_SETTINGS_CONTEXT_FROM_VK;
-      contextFromVk.next                 = &createContextPerformance;
-      contextFromVk.instance             = import_parameters->external_VkInstance;
+      contextFromVk.next                 = NULL;
+      contextFromVk.instance             = optional_ex2_parameters->external_VkInstance;
       contextFromVk.physicalDevicesCount = 1;
-      contextFromVk.physicalDevices      = (uint64_t *)&import_parameters->external_VkPhysicalDevice;
-      contextFromVk.devices              = (uint64_t *)&import_parameters->external_VkDevice;
+      contextFromVk.physicalDevices      = (uint64_t *)&optional_ex2_parameters->external_VkPhysicalDevice;
+      contextFromVk.devices              = (uint64_t *)&optional_ex2_parameters->external_VkDevice;
 
-      optionalSettings = &contextFromVk;
+      optionalSettings0.settings                      = RED_CONTEXT_OPTIONAL_SETTINGS_0;
+      optionalSettings0.next                          = optional_ex2_parameters->external_VkInstance == 0 ? NULL : &contextFromVk;
+      optionalSettings0.skipCheckingContextLayers     = 0;
+      optionalSettings0.skipCheckingContextExtensions = 0;
+      optionalSettings0.gpusExposeOnlyOneQueue        = optional_ex2_parameters->exposeOnlyOneQueue;
+
+      createContextPerformance.settings         = RED_CONTEXT_OPTIONAL_SETTINGS_CREATE_CONTEXT_PERFORMANCE;
+      createContextPerformance.next             = &optionalSettings0;
+      createContextPerformance.exposeOnlyOneGpu = optional_ex2_parameters->exposeOnlyOneGpu;
+
+      optionalSettings = &createContextPerformance;
     }
     #ifdef _WIN32
     unsigned extensions[] = {
@@ -763,8 +770,8 @@ GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInitEx(int enable_debug_m
   return vfInternalContextInit(enable_debug_mode, gpu_index, optional_parameters, NULL, optionalFile, optionalLine);
 }
 
-GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInitEx2(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const gpu_context_ex2_import_parameters_t * import_parameters, const char * optionalFile, int optionalLine) {
-  return vfInternalContextInit(enable_debug_mode, 0, optional_parameters, import_parameters, optionalFile, optionalLine);
+GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInitEx2(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const gpu_context_ex2_parameters_t * optional_ex2_parameters, const char * optionalFile, int optionalLine) {
+  return vfInternalContextInit(enable_debug_mode, 0, optional_parameters, optional_ex2_parameters, optionalFile, optionalLine);
 }
 
 GPU_API_PRE void GPU_API_POST vfIdDestroy(uint64_t ids_count, const uint64_t * ids, const char * optionalFile, int optionalLine) {
