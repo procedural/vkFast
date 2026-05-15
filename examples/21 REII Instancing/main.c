@@ -231,6 +231,9 @@ int main() {
   }
   reiiUnorderedArrayEnd(ctx, instancePositions);
 
+  gpu_thread_t gpu_thread = NULL;
+  vfGpuThreadCreate(ctx, NULL, &gpu_thread, FF, LL);
+
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
   ReiiHandleCommandList * list = &hlist;
@@ -283,6 +286,8 @@ int main() {
       if (window_w != previous_window_w || window_h != previous_window_h) {
         // Recreate output textures then.
 
+        vfAllQueuesWaitIdle(ctx, FF, LL);
+
         reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputmstex);
         reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);
         reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputdstex);
@@ -307,6 +312,10 @@ int main() {
         reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0);
         reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
         reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL);
+
+        vfGpuThreadDestroy(ctx, gpu_thread);
+        gpu_thread = NULL;
+        vfGpuThreadCreate(ctx, NULL, &gpu_thread, FF, LL);
       }
 
       previous_window_w = window_w;
@@ -418,10 +427,14 @@ int main() {
     reiiCommandGammaCorrectColorTextureToTheInversePowerOf2(ctx, list, outputtex, doDoubleGammaCorrection, 1, &gammaCorrectionStaticState);
     vfBatchEnd(ctx, batch, FF, LL);
 
+    gpu_thread_t gpu_threads[2] = {gpu_thread};
+    unsigned gpu_threads_65536[2] = {65536, 65536};
+
     RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
-    uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, FF, LL);
+    uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, 1, NULL, gpu_threads, gpu_threads_65536, FF, LL);
     vfAsyncWaitToFinish(ctx, wait, FF, LL);
-    vfAsyncDrawImageRaw(ctx, outputtex->image.handle, NULL, FF, LL);
+
+    vfAsyncDrawImageRaw(ctx, outputtex->image.handle, NULL, 2, gpu_threads, gpu_threads_65536, FF, LL);
     vfAsyncDrawWaitToFinish(ctx, FF, LL);
 
     mouse_x_prev = mouse_x;
@@ -439,6 +452,9 @@ int main() {
     }
   }
 
+  vfAllQueuesWaitIdle(ctx, FF, LL);
+
+  vfGpuThreadDestroy(ctx, gpu_thread);
   vfIdDestroy(1, &gammaCorrectionStaticState.programPipeline, FF, LL);
   vfIdDestroy(1, &gammaCorrectionStaticState.programCompute, FF, LL);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, list);

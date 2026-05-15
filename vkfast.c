@@ -702,6 +702,20 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
     REDGPU_2_EXPECTWG(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)memoryCpuReadback_mapped_void_ptr, gpuInfo->minMemoryAllocateBytesAlignment)); // NOTE(Constantine): Start address is guaranteed to be aligned.
   }
 
+  RedCalls presentCopyCalls = {0};
+  np(redCreateCallsReusable,
+    "context", context,
+    "gpu", gpu,
+    "handleName", "vkFast_presentCopyCalls",
+    "queueFamilyIndex", gpuInfo->queuesFamilyIndex[vkfast->presentQueueIndex],
+    "outCalls", &presentCopyCalls,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+  REDGPU_2_EXPECTWG(presentCopyCalls.handle != NULL);
+
   REDGPU_2_EXPECTWG(gpuInfo->minArrayRORWStructMemberRangeBytesAlignment <= 64);
 
   // Filling
@@ -737,24 +751,15 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
   vkfast->windowHandle = NULL;
   vkfast->screenWidth = 0;
   vkfast->screenHeight = 0;
-  vkfast->presentQueueIndex = 0;
+  vkfast->presentQueueIndex;
   vkfast->surface = NULL;
   vkfast->present = NULL;
   vkfast->presentImages[0] = NULL;
   vkfast->presentImages[1] = NULL;
   vkfast->presentImages[2] = NULL;
-  vkfast->presentCpuSignals[0] = NULL;
-  vkfast->presentCpuSignals[1] = NULL;
-  vkfast->presentCpuSignals[2] = NULL;
-  vkfast->presentGpuSignals[0] = NULL;
-  vkfast->presentGpuSignals[1] = NULL;
-  vkfast->presentGpuSignals[2] = NULL;
-  vkfast->presentGpuSignalsQueuePresent[0] = NULL;
-  vkfast->presentGpuSignalsQueuePresent[1] = NULL;
-  vkfast->presentGpuSignalsQueuePresent[2] = NULL;
-  vkfast->presentCopyCalls[0] = REDGPU_32_STRUCT(RedCalls, 0);
-  vkfast->presentCopyCalls[1] = REDGPU_32_STRUCT(RedCalls, 0);
-  vkfast->presentCopyCalls[2] = REDGPU_32_STRUCT(RedCalls, 0);
+  vkfast->presentCpuSignal = NULL;
+  vkfast->presentGpuSignal = NULL;
+  vkfast->presentCopyCalls = presentCopyCalls;
   vkfast->presentPixelsCpuUpload_memory_allocation_size = internalMemoryAllocationSizeCpuVisiblePresentPixels;
   vkfast->presentPixelsCpuUpload_memory_and_array = REDGPU_32_STRUCT(Red2Array, 0);
   vkfast->presentPixelsCpuUpload_void_ptr_original = NULL;
@@ -898,7 +903,7 @@ GPU_API_PRE void GPU_API_POST vfIdDestroy(uint64_t ids_count, const uint64_t * i
 GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
-  vfAsyncDrawWaitToFinish(context, optionalFile, optionalLine);
+  vfAllQueuesWaitIdle(context, optionalFile, optionalLine);
 
   // NOTE(Constantine): WSI.
   {
@@ -933,57 +938,38 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
       "optionalUserData", NULL
     );
 
-    for (int i = 0; i < 3; i += 1) {
-      np(red2DestroyHandle,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "handleType", RED_HANDLE_TYPE_CALLS,
-        "handle", vkfast->presentCopyCalls[i].handle,
-        "optionalHandle2", vkfast->presentCopyCalls[i].memory,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
-      );
-    }
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_CALLS,
+      "handle", vkfast->presentCopyCalls.handle,
+      "optionalHandle2", vkfast->presentCopyCalls.memory,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
 
-    for (int i = 0; i < 3; i += 1) {
-      np(red2DestroyHandle,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "handleType", RED_HANDLE_TYPE_CPU_SIGNAL,
-        "handle", vkfast->presentCpuSignals[i],
-        "optionalHandle2", NULL,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
-      );
-    }
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_CPU_SIGNAL,
+      "handle", vkfast->presentCpuSignal,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
 
-    for (int i = 0; i < 3; i += 1) {
-      np(red2DestroyHandle,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "handleType", RED_HANDLE_TYPE_GPU_SIGNAL,
-        "handle", vkfast->presentGpuSignals[i],
-        "optionalHandle2", NULL,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
-      );
-    }
-
-    for (int i = 0; i < 3; i += 1) {
-      np(red2DestroyHandle,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "handleType", RED_HANDLE_TYPE_GPU_SIGNAL,
-        "handle", vkfast->presentGpuSignalsQueuePresent[i],
-        "optionalHandle2", NULL,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
-      );
-    }
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_GPU_SIGNAL,
+      "handle", vkfast->presentGpuSignal,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
 
     np(red2DestroyHandle,
       "context", vkfast->context,
@@ -1216,54 +1202,6 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, const char * o
   // and present pixels CPU upload resources, since they're pre-allocated for the worst case
   // window resolution of 8kx8k, currently).
   {
-    for (int i = 0; i < 3; i += 1) {
-      if (vkfast->presentCpuSignals[i] != NULL) {
-        np(red2DestroyHandle,
-          "context", vkfast->context,
-          "gpu", vkfast->gpu,
-          "handleType", RED_HANDLE_TYPE_CPU_SIGNAL,
-          "handle", vkfast->presentCpuSignals[i],
-          "optionalHandle2", NULL,
-          "optionalFile", optionalFile,
-          "optionalLine", optionalLine,
-          "optionalUserData", NULL
-        );
-        vkfast->presentCpuSignals[i] = NULL;
-      }
-    }
-
-    for (int i = 0; i < 3; i += 1) {
-      if (vkfast->presentGpuSignals[i] != NULL) {
-        np(red2DestroyHandle,
-          "context", vkfast->context,
-          "gpu", vkfast->gpu,
-          "handleType", RED_HANDLE_TYPE_GPU_SIGNAL,
-          "handle", vkfast->presentGpuSignals[i],
-          "optionalHandle2", NULL,
-          "optionalFile", optionalFile,
-          "optionalLine", optionalLine,
-          "optionalUserData", NULL
-        );
-        vkfast->presentGpuSignals[i] = NULL;
-      }
-    }
-
-    for (int i = 0; i < 3; i += 1) {
-      if (vkfast->presentGpuSignalsQueuePresent[i] != NULL) {
-        np(red2DestroyHandle,
-          "context", vkfast->context,
-          "gpu", vkfast->gpu,
-          "handleType", RED_HANDLE_TYPE_GPU_SIGNAL,
-          "handle", vkfast->presentGpuSignalsQueuePresent[i],
-          "optionalHandle2", NULL,
-          "optionalFile", optionalFile,
-          "optionalLine", optionalLine,
-          "optionalUserData", NULL
-        );
-        vkfast->presentGpuSignalsQueuePresent[i] = NULL;
-      }
-    }
-
     if (vkfast->present != NULL) {
       np(red2DestroyHandle,
         "context", vkfast->context,
@@ -1305,67 +1243,6 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, const char * o
     "optionalUserData", NULL
   );
   REDGPU_2_EXPECTWG(present != NULL);
-
-  for (int i = 0; i < 3; i += 1) {
-    np(redCreateCpuSignal,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleName", "vkFast_present_cpuSignal",
-      "createSignaled", 1,
-      "outCpuSignal", &vkfast->presentCpuSignals[i],
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-    REDGPU_2_EXPECTWG(vkfast->presentCpuSignals[i] != NULL);
-  }
-
-  for (int i = 0; i < 3; i += 1) {
-    np(redCreateGpuSignal,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleName", "vkFast_present_gpuSignal",
-      "outGpuSignal", &presentGpuSignals[i],
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-    REDGPU_2_EXPECTWG(presentGpuSignals[i] != NULL);
-  }
-
-  for (int i = 0; i < 3; i += 1) {
-    np(redCreateGpuSignal,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleName", "vkFast_present_gpuSignalQueuePresent",
-      "outGpuSignal", &presentGpuSignalsQueuePresent[i],
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-    REDGPU_2_EXPECTWG(presentGpuSignalsQueuePresent[i] != NULL);
-  }
-
-  for (int i = 0; i < 3; i += 1) {
-    if (vkfast->presentCopyCalls[i].handle == NULL) {
-      np(redCreateCalls,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "handleName", "vkFast_present_copyCalls",
-        "queueFamilyIndex", vkfast->gpuInfo->queuesFamilyIndex[vkfast->presentQueueIndex],
-        "outCalls", &vkfast->presentCopyCalls[i],
-        "outStatuses", NULL,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
-      );
-      REDGPU_2_EXPECTWG(vkfast->presentCopyCalls[i].handle != NULL);
-      REDGPU_2_EXPECTWG(vkfast->presentCopyCalls[i].memory != NULL);
-    }
-  }
 
   if (vkfast->presentPixelsCpuUpload_memory_and_array.array.handle == NULL && vkfast->presentPixelsCpuUpload_memory_allocation_size > 0) {
     np(red2CreateArray,
@@ -1411,18 +1288,9 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, const char * o
   vkfast->presentImages[0] = presentImages[0];
   vkfast->presentImages[1] = presentImages[1];
   vkfast->presentImages[2] = presentImages[2];
-  vkfast->presentCpuSignals[0];
-  vkfast->presentCpuSignals[1];
-  vkfast->presentCpuSignals[2];
-  vkfast->presentGpuSignals[0] = presentGpuSignals[0];
-  vkfast->presentGpuSignals[1] = presentGpuSignals[1];
-  vkfast->presentGpuSignals[2] = presentGpuSignals[2];
-  vkfast->presentGpuSignalsQueuePresent[0] = presentGpuSignalsQueuePresent[0];
-  vkfast->presentGpuSignalsQueuePresent[1] = presentGpuSignalsQueuePresent[1];
-  vkfast->presentGpuSignalsQueuePresent[2] = presentGpuSignalsQueuePresent[2];
-  vkfast->presentCopyCalls[0];
-  vkfast->presentCopyCalls[1];
-  vkfast->presentCopyCalls[2];
+  vkfast->presentCpuSignal;
+  vkfast->presentGpuSignal;
+  vkfast->presentCopyCalls;
 
   int isRebuilded = 1;
   return isRebuilded;
@@ -2184,6 +2052,42 @@ GPU_API_PRE void GPU_API_POST vfBatchEnd(gpu_handle_context_t context, uint64_t 
   batch->batch.currentProcedureParametersCompute = NULL;
 }
 
+GPU_API_PRE void GPU_API_POST vfGpuThreadCreate(gpu_handle_context_t context, const char * optional_debug_name, gpu_thread_t * gpu_thread, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  RedHandleGpuSignal gpuSignal = NULL;
+  np(redCreateGpuSignal,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "handleName", optional_debug_name,
+    "outGpuSignal", &gpuSignal,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+  REDGPU_2_EXPECTWG(gpuSignal != NULL);
+
+  gpu_thread[0] = gpuSignal;
+}
+
+GPU_API_PRE void GPU_API_POST vfGpuThreadDestroy(gpu_handle_context_t context, gpu_thread_t gpu_thread) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  np(red2DestroyHandle,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "handleType", RED_HANDLE_TYPE_GPU_SIGNAL,
+    "handle", gpu_thread,
+    "optionalHandle2", NULL,
+    "optionalFile", NULL,
+    "optionalLine", 0,
+    "optionalUserData", NULL
+  );
+}
+
 GPU_API_PRE RedHandleCalls GPU_API_POST vfBatchGetRawHandle(gpu_handle_context_t context, uint64_t batch_id, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
   vf_handle_context_t * vkfast = batch->vkfast;
@@ -2193,7 +2097,7 @@ GPU_API_PRE RedHandleCalls GPU_API_POST vfBatchGetRawHandle(gpu_handle_context_t
   return batch->batch.calls.handle;
 }
 
-static uint64_t vfInternalAsyncBatchExecuteRaw(gpu_handle_context_t context, RedHandleQueue queue, uint64_t batch_calls_count, const RedHandleCalls * batch_calls, const char * optionalFile, int optionalLine) {
+static uint64_t vfInternalAsyncBatchExecuteRaw(gpu_handle_context_t context, RedHandleQueue queue, uint64_t batch_calls_count, const RedHandleCalls * batch_calls, unsigned gpu_threads_count, gpu_thread_t * gpu_threads_inout, gpu_thread_t * gpu_threads_out, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
@@ -2216,13 +2120,13 @@ static uint64_t vfInternalAsyncBatchExecuteRaw(gpu_handle_context_t context, Red
   RedGpuTimeline timelines[1] = {0};
   timelines[0].setTo4                            = 4;
   timelines[0].setTo0                            = 0;
-  timelines[0].waitForAndUnsignalGpuSignalsCount = 0;
-  timelines[0].waitForAndUnsignalGpuSignals      = NULL;
-  timelines[0].setTo65536                        = NULL;
+  timelines[0].waitForAndUnsignalGpuSignalsCount = gpu_threads_inout != NULL ? gpu_threads_count : 0;
+  timelines[0].waitForAndUnsignalGpuSignals      = gpu_threads_inout;
+  timelines[0].setTo65536                        = gpu_threads_array_of_65536_int_values;
   timelines[0].callsCount                        = batch_calls_count;
   timelines[0].calls                             = batch_calls;
-  timelines[0].signalGpuSignalsCount             = 0;
-  timelines[0].signalGpuSignals                  = NULL;
+  timelines[0].signalGpuSignalsCount             = (gpu_threads_inout != NULL || gpu_threads_out != NULL) ? (gpu_threads_count) : 0;
+  timelines[0].signalGpuSignals                  = (gpu_threads_inout != NULL || gpu_threads_out != NULL) ? (gpu_threads_inout != NULL ? gpu_threads_inout : gpu_threads_out) : NULL;
   np(redQueueSubmit,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
@@ -2239,13 +2143,13 @@ static uint64_t vfInternalAsyncBatchExecuteRaw(gpu_handle_context_t context, Red
   return (uint64_t)(void *)cpuSignal;
 }
 
-GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecuteRaw(gpu_handle_context_t context, uint64_t batch_raw_count, const RedHandleCalls * batch_raw, const char * optionalFile, int optionalLine) {
+GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecuteRaw(gpu_handle_context_t context, uint64_t batch_raw_count, const RedHandleCalls * batch_raw, unsigned gpu_threads_count, gpu_thread_t * gpu_threads_inout, gpu_thread_t * gpu_threads_out, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-  return vfInternalAsyncBatchExecuteRaw(context, vkfast->mainQueue, batch_raw_count, batch_raw, optionalFile, optionalLine);
+  return vfInternalAsyncBatchExecuteRaw(context, vkfast->mainQueue, batch_raw_count, batch_raw, gpu_threads_count, gpu_threads_inout, gpu_threads_out, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
 }
 
-GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecuteRawEx(gpu_handle_context_t context, RedHandleQueue queue, uint64_t batch_raw_count, const RedHandleCalls * batch_raw, const char * optionalFile, int optionalLine) {
-  return vfInternalAsyncBatchExecuteRaw(context, queue, batch_raw_count, batch_raw, optionalFile, optionalLine);
+GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecuteRawEx(gpu_handle_context_t context, RedHandleQueue queue, uint64_t batch_raw_count, const RedHandleCalls * batch_raw, unsigned gpu_threads_count, gpu_thread_t * gpu_threads_inout, gpu_thread_t * gpu_threads_out, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
+  return vfInternalAsyncBatchExecuteRaw(context, queue, batch_raw_count, batch_raw, gpu_threads_count, gpu_threads_inout, gpu_threads_out, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
 }
 
 GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(gpu_handle_context_t context, uint64_t async_id, const char * optionalFile, int optionalLine) {
@@ -2281,7 +2185,7 @@ GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(gpu_handle_context_t context, 
   );
 }
 
-static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, const void * copy_pixels, int * out_optional_is_pixels_copy_finished_cpu_signal_index, RedBool32 optional_copy_image, RedHandleImage optional_image_to_copy, const char * optionalFile, int optionalLine) {
+static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, const void * copy_pixels, int * out_optional_is_pixels_copy_finished_cpu_signal_index, RedBool32 optional_copy_image, RedHandleImage optional_image_to_copy, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads_in, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
@@ -2289,20 +2193,32 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
   unsigned presentImageIndex = 0;
   RedStatuses presentGetImageIndexStatuses = {0};
 
-  // NOTE(Constantine): Swap gpu signal begin.
-  RedHandleGpuSignal swapGpuSignal = NULL;
-  {
-    np(redCreateGpuSignal,
+  if (vkfast->presentCpuSignal == NULL) {
+    np(redCreateCpuSignal,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
-      "handleName", "vkFast_present_gpuSignal",
-      "outGpuSignal", &swapGpuSignal,
+      "handleName", "vkFast_presentCpuSignal",
+      "createSignaled", 0,
+      "outCpuSignal", &vkfast->presentCpuSignal,
       "outStatuses", NULL,
       "optionalFile", optionalFile,
       "optionalLine", optionalLine,
       "optionalUserData", NULL
     );
-    REDGPU_2_EXPECTWG(swapGpuSignal != NULL);
+    REDGPU_2_EXPECTWG(vkfast->presentCpuSignal != NULL);
+  }
+  if (vkfast->presentGpuSignal == NULL) {
+    np(redCreateGpuSignal,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleName", "vkFast_presentGpuSignal",
+      "outGpuSignal", &vkfast->presentGpuSignal,
+      "outStatuses", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    REDGPU_2_EXPECTWG(vkfast->presentGpuSignal != NULL);
   }
 
   np(redPresentGetImageIndex,
@@ -2310,13 +2226,29 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
     "gpu", vkfast->gpu,
     "present", vkfast->present,
     "signalCpuSignal", NULL,
-    "signalGpuSignal", swapGpuSignal,
+    "signalGpuSignal", vkfast->presentGpuSignal,
     "outImageIndex", &presentImageIndex,
     "outStatuses", &presentGetImageIndexStatuses,
     "optionalFile", optionalFile,
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
+
+  REDGPU_2_EXPECTWG(gpu_threads_count_plus_one_empty >= 1);
+  gpu_threads_in[gpu_threads_count_plus_one_empty-1] = vkfast->presentGpuSignal;
+
+  // NOTE(Constantine): Extra wait
+  {
+    gpu_batch_info_t bindings_info = {0};
+    uint64_t batch = vfBatchBegin(context, 0, &bindings_info, NULL, optionalFile, optionalLine);
+    vfBatchBarrierMemory(context, batch, optionalFile, optionalLine);
+    vfBatchEnd(context, batch, optionalFile, optionalLine);
+
+    RedHandleCalls batchRaw = vfBatchGetRawHandle(context, batch, optionalFile, optionalLine);
+    uint64_t wait = vfAsyncBatchExecuteRaw(context, 1, &batchRaw, gpu_threads_count_plus_one_empty, gpu_threads_in, NULL, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
+    vfAsyncWaitToFinish(context, wait, optionalFile, optionalLine);
+    vfIdDestroy(1, &batch, optionalFile, optionalLine);
+  }
 
   if (out_optional_is_pixels_copy_finished_cpu_signal_index != NULL) {
     out_optional_is_pixels_copy_finished_cpu_signal_index[0] = presentImageIndex;
@@ -2325,59 +2257,49 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
   REDGPU_2_EXPECTWG(presentGetImageIndexStatuses.status == RED_STATUS_SUCCESS || presentGetImageIndexStatuses.status == RED_STATUS_PRESENT_IS_SUBOPTIMAL);
   REDGPU_2_EXPECTWG(presentGetImageIndexStatuses.statusError == RED_STATUS_SUCCESS || presentGetImageIndexStatuses.statusError == RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE);
   if (presentGetImageIndexStatuses.status == RED_STATUS_PRESENT_IS_SUBOPTIMAL || presentGetImageIndexStatuses.statusError == RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE) {
-    // NOTE(Constantine): Destroy swap-aborted gpu signal.
+    // NOTE(Constantine): Present queue wait idle
+    np(redQueuePresent,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "queue", vkfast->gpuInfo->queues[vkfast->presentQueueIndex],
+      "waitForAndUnsignalGpuSignalsCount", 0,
+      "waitForAndUnsignalGpuSignals", NULL,
+      "presentsCount", 0,
+      "presents", NULL,
+      "presentsImageIndex", NULL,
+      "outPresentsStatus", NULL,
+      "outStatuses", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+
+    // NOTE(Constantine): Destroy aborted cpu and gpu signals.
     np(red2DestroyHandle,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_GPU_SIGNAL,
-      "handle", swapGpuSignal,
+      "handleType", RED_HANDLE_TYPE_CPU_SIGNAL,
+      "handle", vkfast->presentCpuSignal,
       "optionalHandle2", NULL,
       "optionalFile", optionalFile,
       "optionalLine", optionalLine,
       "optionalUserData", NULL
     );
+    vkfast->presentCpuSignal = NULL;
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_GPU_SIGNAL,
+      "handle", vkfast->presentGpuSignal,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    vkfast->presentGpuSignal = NULL;
 
     int isRebuilded = vfInternalRebuildPresent(context, optionalFile, optionalLine);
     return isRebuilded;
-  }
-
-  // NOTE(Constantine): Swap gpu signal end.
-  {
-    np(redCpuSignalWait,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "cpuSignalsCount", 1,
-      "cpuSignals", &vkfast->presentCpuSignals[presentImageIndex],
-      "waitAll", 1,
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-
-    np(redCpuSignalUnsignal,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "cpuSignalsCount", 1,
-      "cpuSignals", &vkfast->presentCpuSignals[presentImageIndex],
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-
-    RedHandleGpuSignal oldGpuSignal = vkfast->presentGpuSignals[presentImageIndex];
-    vkfast->presentGpuSignals[presentImageIndex] = swapGpuSignal;
-    np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_GPU_SIGNAL,
-      "handle", oldGpuSignal,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
   }
 
   if (copy_pixels != NULL) {
@@ -2385,7 +2307,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
     red32MemoryCopy(vkfast->presentPixelsCpuUpload_void_ptr_original, copy_pixels, sizeof(unsigned char) * 4 * vkfast->screenHeight * vkfast->screenWidth);
   }
 
-  RedCalls * calls = &vkfast->presentCopyCalls[presentImageIndex];
+  RedCalls * calls = &vkfast->presentCopyCalls;
 
   {
     RedCallProceduresAndAddresses addresses = {0};
@@ -2558,24 +2480,23 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
   }
 
   {
-    unsigned arrayOf65536[1] = {65536};
     RedGpuTimeline timelines[1] = {0};
     timelines[0].setTo4                            = 4;
     timelines[0].setTo0                            = 0;
-    timelines[0].waitForAndUnsignalGpuSignalsCount = 1;
-    timelines[0].waitForAndUnsignalGpuSignals      = &vkfast->presentGpuSignals[presentImageIndex];
-    timelines[0].setTo65536                        = arrayOf65536;
+    timelines[0].waitForAndUnsignalGpuSignalsCount = gpu_threads_count_plus_one_empty;
+    timelines[0].waitForAndUnsignalGpuSignals      = gpu_threads_in;
+    timelines[0].setTo65536                        = gpu_threads_array_of_65536_int_values;
     timelines[0].callsCount                        = 1;
     timelines[0].calls                             = &calls->handle;
-    timelines[0].signalGpuSignalsCount             = 1;
-    timelines[0].signalGpuSignals                  = &vkfast->presentGpuSignalsQueuePresent[presentImageIndex];
+    timelines[0].signalGpuSignalsCount             = gpu_threads_count_plus_one_empty;
+    timelines[0].signalGpuSignals                  = gpu_threads_in;
     np(redQueueSubmit,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
       "queue", vkfast->gpuInfo->queues[vkfast->presentQueueIndex],
       "timelinesCount", 1,
       "timelines", timelines,
-      "signalCpuSignal", vkfast->presentCpuSignals[presentImageIndex],
+      "signalCpuSignal", vkfast->presentCpuSignal,
       "outStatuses", NULL,
       "optionalFile", optionalFile,
       "optionalLine", optionalLine,
@@ -2589,8 +2510,8 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
     "context", vkfast->context,
     "gpu", vkfast->gpu,
     "queue", vkfast->gpuInfo->queues[vkfast->presentQueueIndex],
-    "waitForAndUnsignalGpuSignalsCount", 1,
-    "waitForAndUnsignalGpuSignals", &vkfast->presentGpuSignalsQueuePresent[presentImageIndex],
+    "waitForAndUnsignalGpuSignalsCount", gpu_threads_count_plus_one_empty,
+    "waitForAndUnsignalGpuSignals", gpu_threads_in,
     "presentsCount", 1,
     "presents", &vkfast->present,
     "presentsImageIndex", &presentImageIndex,
@@ -2604,6 +2525,47 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
   REDGPU_2_EXPECTWG(queuePresentStatuses.status == RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(queuePresentStatuses.statusError == RED_STATUS_SUCCESS || queuePresentStatuses.statusError == RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE);
   if (queuePresentStatus == RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE || queuePresentStatuses.statusError == RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE) {
+    // NOTE(Constantine): Present queue wait idle
+    np(redQueuePresent,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "queue", vkfast->gpuInfo->queues[vkfast->presentQueueIndex],
+      "waitForAndUnsignalGpuSignalsCount", 0,
+      "waitForAndUnsignalGpuSignals", NULL,
+      "presentsCount", 0,
+      "presents", NULL,
+      "presentsImageIndex", NULL,
+      "outPresentsStatus", NULL,
+      "outStatuses", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+
+    // NOTE(Constantine): Destroy aborted cpu and gpu signals.
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_CPU_SIGNAL,
+      "handle", vkfast->presentCpuSignal,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    vkfast->presentCpuSignal = NULL;
+    np(red2DestroyHandle,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "handleType", RED_HANDLE_TYPE_GPU_SIGNAL,
+      "handle", vkfast->presentGpuSignal,
+      "optionalHandle2", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    vkfast->presentGpuSignal = NULL;
+
     int isRebuilded = vfInternalRebuildPresent(context, optionalFile, optionalLine);
     return isRebuilded;
   }
@@ -2612,7 +2574,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
   return isRebuilded;
 }
 
-GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, int * out_optional_is_pixels_copy_finished_cpu_signal_index, const char * optionalFile, int optionalLine) {
+GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, int * out_optional_is_pixels_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads_in, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
@@ -2622,26 +2584,26 @@ GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const vo
   presentPixels_storage_raw.arrayRangeBytesFirst = 0;
   presentPixels_storage_raw.arrayRangeBytesCount = vkfast->presentPixelsCpuUpload_memory_allocation_size;
 
-  int isRebuilded = vfInternalAsyncDrawPixels(context, &presentPixels_storage_raw, pixels, out_optional_is_pixels_copy_finished_cpu_signal_index, 0, NULL, optionalFile, optionalLine);
+  int isRebuilded = vfInternalAsyncDrawPixels(context, &presentPixels_storage_raw, pixels, out_optional_is_pixels_copy_finished_cpu_signal_index, 0, NULL, gpu_threads_count_plus_one_empty, gpu_threads_in, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   return isRebuilded;
 }
 
-GPU_API_PRE int GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, int * out_optional_is_pixels_copy_finished_cpu_signal_index, const char * optionalFile, int optionalLine) {
+GPU_API_PRE int GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, int * out_optional_is_pixels_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads_in, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   vf_handle_t * storage = (vf_handle_t *)(void *)pixels_storage_id;
   vf_handle_context_t * vkfast = storage->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(storage->handle_id == VF_HANDLE_ID_STORAGE);
-  int isRebuilded = vfInternalAsyncDrawPixels(context, &storage->storage.arrayRangeInfo, NULL, out_optional_is_pixels_copy_finished_cpu_signal_index, 0, NULL, optionalFile, optionalLine);
+  int isRebuilded = vfInternalAsyncDrawPixels(context, &storage->storage.arrayRangeInfo, NULL, out_optional_is_pixels_copy_finished_cpu_signal_index, 0, NULL, gpu_threads_count_plus_one_empty, gpu_threads_in, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   return isRebuilded;
 }
 
-GPU_API_PRE int GPU_API_POST vfAsyncDrawPixelsRaw(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, int * out_optional_is_pixels_copy_finished_cpu_signal_index, const char * optionalFile, int optionalLine) {
-  int isRebuilded = vfInternalAsyncDrawPixels(context, pixels_storage_raw, NULL, out_optional_is_pixels_copy_finished_cpu_signal_index, 0, NULL, optionalFile, optionalLine);
+GPU_API_PRE int GPU_API_POST vfAsyncDrawPixelsRaw(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, int * out_optional_is_pixels_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads_in, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
+  int isRebuilded = vfInternalAsyncDrawPixels(context, pixels_storage_raw, NULL, out_optional_is_pixels_copy_finished_cpu_signal_index, 0, NULL, gpu_threads_count_plus_one_empty, gpu_threads_in, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   return isRebuilded;
 }
 
-GPU_API_PRE int GPU_API_POST vfAsyncDrawImageRaw(gpu_handle_context_t context, RedHandleImage image_raw, int * out_optional_is_image_copy_finished_cpu_signal_index, const char * optionalFile, int optionalLine) {
-  int isRebuilded = vfInternalAsyncDrawPixels(context, NULL, NULL, out_optional_is_image_copy_finished_cpu_signal_index, 1, image_raw, optionalFile, optionalLine);
+GPU_API_PRE int GPU_API_POST vfAsyncDrawImageRaw(gpu_handle_context_t context, RedHandleImage image_raw, int * out_optional_is_image_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads_in, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
+  int isRebuilded = vfInternalAsyncDrawPixels(context, NULL, NULL, out_optional_is_image_copy_finished_cpu_signal_index, 1, image_raw, gpu_threads_count_plus_one_empty, gpu_threads_in, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   return isRebuilded;
 }
 
@@ -2650,8 +2612,33 @@ GPU_API_PRE void GPU_API_POST vfAsyncDrawWaitToFinish(gpu_handle_context_t conte
 
   RedHandleGpu gpu = vkfast->gpu;
 
-  RedStatus queuePresentStatus = RED_STATUS_SUCCESS;
-  RedStatuses queuePresentStatuses = {0};
+  if (vkfast->presentCpuSignal == NULL || vkfast->presentGpuSignal == NULL) {
+    return;
+  }
+
+  np(redCpuSignalWait,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "cpuSignalsCount", 1,
+    "cpuSignals", &vkfast->presentCpuSignal,
+    "waitAll", 1,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+  np(redCpuSignalUnsignal,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "cpuSignalsCount", 1,
+    "cpuSignals", &vkfast->presentCpuSignal,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  // NOTE(Constantine): Present queue wait idle for present gpu signals to become unsignaled
   np(redQueuePresent,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
@@ -2661,21 +2648,41 @@ GPU_API_PRE void GPU_API_POST vfAsyncDrawWaitToFinish(gpu_handle_context_t conte
     "presentsCount", 0,
     "presents", NULL,
     "presentsImageIndex", NULL,
-    "outPresentsStatus", &queuePresentStatus,
-    "outStatuses", &queuePresentStatuses,
+    "outPresentsStatus", NULL,
+    "outStatuses", NULL,
     "optionalFile", optionalFile,
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
-  REDGPU_2_EXPECTWG(queuePresentStatus == RED_STATUS_SUCCESS);
-  REDGPU_2_EXPECTWG(queuePresentStatuses.status == RED_STATUS_SUCCESS);
-  REDGPU_2_EXPECTWG(queuePresentStatuses.statusError == RED_STATUS_SUCCESS);
 }
 
-GPU_API_PRE RedHandleCpuSignal * GPU_API_POST vfAsyncDrawGetCpuSignals(gpu_handle_context_t context) {
+GPU_API_PRE RedHandleCpuSignal GPU_API_POST vfAsyncDrawGetCpuSignal(gpu_handle_context_t context) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   // NOTE(Constantine):
-  // Do not destroy and do not unsignal these CPU signals on the user side.
-  return vkfast->presentCpuSignals;
+  // Do not destroy and do not unsignal this CPU signal on the user side.
+  return vkfast->presentCpuSignal;
+}
+
+GPU_API_PRE void GPU_API_POST vfAllQueuesWaitIdle(gpu_handle_context_t context, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  // NOTE(Constantine): All queues wait idle
+  for (unsigned i = 0; i < vkfast->gpuInfo->queuesCount; i += 1) {
+    np(redQueuePresent,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "queue", vkfast->gpuInfo->queues[i],
+      "waitForAndUnsignalGpuSignalsCount", 0,
+      "waitForAndUnsignalGpuSignals", NULL,
+      "presentsCount", 0,
+      "presents", NULL,
+      "presentsImageIndex", NULL,
+      "outPresentsStatus", NULL,
+      "outStatuses", NULL,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+  }
 }

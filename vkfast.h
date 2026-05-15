@@ -104,6 +104,8 @@ typedef struct gpu_batch_info_t {
   int max_sampler_binds_count;
 } gpu_batch_info_t;
 
+typedef RedHandleGpuSignal gpu_thread_t;
+
 #ifndef GPU_API_PRE
 #define GPU_API_PRE
 #endif
@@ -142,15 +144,18 @@ GPU_API_PRE void GPU_API_POST vfBatchCompute(gpu_handle_context_t context, uint6
 GPU_API_PRE void GPU_API_POST vfBatchBarrierMemory(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchBarrierCpuReadback(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchEnd(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfGpuThreadCreate(gpu_handle_context_t context, const char * optional_debug_name, gpu_thread_t * gpu_thread, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfGpuThreadDestroy(gpu_handle_context_t context, gpu_thread_t gpu_thread);
 GPU_API_PRE RedHandleCalls GPU_API_POST vfBatchGetRawHandle(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecuteRaw(gpu_handle_context_t context, uint64_t batch_raw_count, const RedHandleCalls * batch_raw, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecuteRaw(gpu_handle_context_t context, uint64_t batch_raw_count, const RedHandleCalls * batch_raw, unsigned gpu_threads_count, gpu_thread_t * gpu_threads_inout, gpu_thread_t * gpu_threads_out, const unsigned * gpu_threads_array_of_65536_int_values, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(gpu_handle_context_t context, uint64_t async_id, const char * optional_file, int optional_line);
-GPU_API_PRE int  GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, int * out_optional_is_pixels_copy_finished_cpu_signal_index, const char * optional_file, int optional_line);
-GPU_API_PRE int  GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, int * out_optional_is_pixels_copy_finished_cpu_signal_index, const char * optional_file, int optional_line);
-GPU_API_PRE int  GPU_API_POST vfAsyncDrawPixelsRaw(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, int * out_optional_is_pixels_copy_finished_cpu_signal_index, const char * optional_file, int optional_line);
-GPU_API_PRE int  GPU_API_POST vfAsyncDrawImageRaw(gpu_handle_context_t context, RedHandleImage image_raw, int * out_optional_is_image_copy_finished_cpu_signal_index, const char * optional_file, int optional_line);
+GPU_API_PRE int  GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, int * out_optional_is_pixels_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads_in, const unsigned * gpu_threads_array_of_65536_int_values, const char * optional_file, int optional_line);
+GPU_API_PRE int  GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, int * out_optional_is_pixels_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads_in, const unsigned * gpu_threads_array_of_65536_int_values, const char * optional_file, int optional_line);
+GPU_API_PRE int  GPU_API_POST vfAsyncDrawPixelsRaw(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, int * out_optional_is_pixels_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads_in, const unsigned * gpu_threads_array_of_65536_int_values, const char * optional_file, int optional_line);
+GPU_API_PRE int  GPU_API_POST vfAsyncDrawImageRaw(gpu_handle_context_t context, RedHandleImage image_raw, int * out_optional_is_image_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads_in, const unsigned * gpu_threads_array_of_65536_int_values, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfAsyncDrawWaitToFinish(gpu_handle_context_t context, const char * optional_file, int optional_line);
-GPU_API_PRE RedHandleCpuSignal * GPU_API_POST vfAsyncDrawGetCpuSignals(gpu_handle_context_t context);
+GPU_API_PRE RedHandleCpuSignal GPU_API_POST vfAsyncDrawGetCpuSignal(gpu_handle_context_t context);
+GPU_API_PRE void GPU_API_POST vfAllQueuesWaitIdle(gpu_handle_context_t context, const char * optional_file, int optional_line);
 
 #ifdef __cplusplus
 }
