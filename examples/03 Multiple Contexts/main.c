@@ -26,6 +26,11 @@ int main() {
   ctx2params.optional_pointer_to_custom_vf_handle_context = (void *)&vfctx2;
   gpu_handle_context_t ctx2 = vfContextInit(0, &ctx2params, FF, LL);
 
+  const unsigned array65536[2] = {65536, 65536};
+
+  gpu_thread_t gpu_thread = NULL;
+  vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
+
   gpu_storage_info_t storage_info = {0};
   storage_info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
   storage_info.bytes_count  = 2 * 4*sizeof(float);
@@ -49,7 +54,7 @@ int main() {
   vfBatchStorageCopyFromCpuToGpu(ctx, copy, storage_input_cpu.id, storage_input_gpu.id, FF, LL);
   vfBatchEnd(ctx, copy, FF, LL);
   RedHandleCalls copyRaw = vfBatchGetRawHandle(ctx, copy, FF, LL);
-  uint64_t async = vfAsyncBatchExecuteRaw(ctx, 1, &copyRaw, FF, LL);
+  uint64_t async = vfAsyncBatchExecuteRaw(ctx, 1, &copyRaw, 1, &gpu_thread, array65536, FF, LL);
   vfAsyncWaitToFinish(ctx, async, FF, LL);
 
   gpu_storage_info_t storage_output_info = {0};
@@ -110,7 +115,7 @@ int main() {
     vfBatchEnd(ctx, batch, FF, LL);
 
     RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
-    uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, FF, LL);
+    uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, 1, &gpu_thread, array65536, FF, LL);
     vfAsyncWaitToFinish(ctx, wait, FF, LL);
 
     // NOTE(Constantine): Expected result: 20 30 50 130 (20 31 57 124 + salt)"
@@ -125,7 +130,10 @@ int main() {
     REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].z == 50);
     REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].w == 130);
   }
-  
+
+  vfAllQueuesWaitIdle(ctx, FF, LL);
+
+  vfGpuThreadDestroy(ctx, gpu_thread);
   uint64_t ids[] = {
     storage_input_cpu.id,
     storage_input_gpu.id,

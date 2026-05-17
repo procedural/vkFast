@@ -41,8 +41,15 @@ int main() {
   ctx2params.optional_pointer_to_custom_vf_handle_context = (void *)&vfctx2;
   gpu_handle_context_t ctx2 = vfContextInit(0, &ctx2params, FF, LL);
 
-  vfWindowFullscreen(ctx1, window1_handle, "[vkFast] GLFW Two Windows Drawing: Window One", 700, 700, 0, FF, LL);
-  vfWindowFullscreen(ctx2, window2_handle, "[vkFast] GLFW Two Windows Drawing: Window Two", 500, 500, 0, FF, LL);
+  const unsigned array65536[2] = {65536, 65536};
+
+  gpu_thread_t gpu_thread_ctx1 = NULL;
+  gpu_thread_t gpu_thread_ctx2 = NULL;
+  vfGpuThreadCreate(ctx1, 1, &gpu_thread_ctx1, NULL, FF, LL);
+  vfGpuThreadCreate(ctx2, 1, &gpu_thread_ctx2, NULL, FF, LL);
+
+  vfWindowFullscreen(ctx1, window1_handle, "[vkFast] GLFW Two Windows Drawing: Window One", 700, 700, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
+  vfWindowFullscreen(ctx2, window2_handle, "[vkFast] GLFW Two Windows Drawing: Window Two", 500, 500, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
 
   while (glfwWindowShouldClose(window1) == 0 && glfwWindowShouldClose(window2) == 0) {
     glfwPollEvents();
@@ -110,13 +117,19 @@ int main() {
         }
       }
 
-      vfDrawPixels(ctx, pixels, NULL, FF, LL);
-      vfAsyncDrawWaitToFinish(ctx, FF, LL);
+      gpu_thread_t gpu_threads[2] = {i == 0 ? gpu_thread_ctx1 : gpu_thread_ctx2, 0};
+      vfDrawPixels(ctx, pixels, NULL, 2, gpu_threads, array65536, FF, LL);
 
       red32MemoryFree(pixels);
       pixels = NULL;
     }
   }
+
+  vfAllQueuesWaitIdle(ctx1, FF, LL);
+  vfAllQueuesWaitIdle(ctx2, FF, LL);
+
+  vfGpuThreadDestroy(ctx1, gpu_thread_ctx1);
+  vfGpuThreadDestroy(ctx2, gpu_thread_ctx2);
 
   vfContextDeinit(ctx2, FF, LL);
   vfContextDeinit(ctx1, FF, LL);
