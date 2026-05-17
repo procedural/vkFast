@@ -180,6 +180,8 @@ int main() {
     vfDrawPixels(ctx, pix->pixels, NULL, 2, gpu_threads, array65536, FF, LL);
   }
   
+  vfAllQueuesWaitIdle(ctx, FF, LL);
+
   red32MemoryFree(pix);
   pix = NULL;
 
