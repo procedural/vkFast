@@ -144,7 +144,7 @@ GPU_API_PRE void GPU_API_POST vfBatchCompute(gpu_handle_context_t context, uint6
 GPU_API_PRE void GPU_API_POST vfBatchBarrierMemory(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchBarrierCpuReadback(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchEnd(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfGpuThreadCreate(gpu_handle_context_t context, unsigned gpu_threads_count, const char ** optional_gpu_threads_debug_name, gpu_thread_t * out_gpu_threads, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfGpuThreadCreate(gpu_handle_context_t context, unsigned gpu_threads_count, gpu_thread_t * out_gpu_threads, const char ** optional_gpu_threads_debug_name, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfGpuThreadDestroy(gpu_handle_context_t context, gpu_thread_t gpu_thread);
 GPU_API_PRE RedHandleCalls GPU_API_POST vfBatchGetRawHandle(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecuteRaw(gpu_handle_context_t context, uint64_t batch_raw_count, const RedHandleCalls * batch_raw, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optional_file, int optional_line);
