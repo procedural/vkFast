@@ -2163,7 +2163,7 @@ GPU_API_PRE void GPU_API_POST vfGpuThreadCreate(gpu_handle_context_t context, un
     np(redQueueSubmit,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
-      "queue", vkfast->gpuInfo->queues[vkfast->presentQueueIndex],
+      "queue", vkfast->mainQueue,
       "timelinesCount", 1,
       "timelines", timelines,
       "signalCpuSignal", tempCpuSignal,
