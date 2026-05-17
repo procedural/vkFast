@@ -232,7 +232,7 @@ int main() {
   reiiUnorderedArrayEnd(ctx, instancePositions);
 
   gpu_thread_t gpu_thread = NULL;
-  vfGpuThreadCreate(ctx, NULL, &gpu_thread, FF, LL);
+  vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
 
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
@@ -315,7 +315,7 @@ int main() {
 
         vfGpuThreadDestroy(ctx, gpu_thread);
         gpu_thread = NULL;
-        vfGpuThreadCreate(ctx, NULL, &gpu_thread, FF, LL);
+        vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
       }
 
       previous_window_w = window_w;
@@ -431,11 +431,10 @@ int main() {
     unsigned gpu_threads_65536[2] = {65536, 65536};
 
     RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
-    uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, 1, NULL, gpu_threads, gpu_threads_65536, FF, LL);
+    uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, 1, gpu_threads, gpu_threads_65536, FF, LL);
     vfAsyncWaitToFinish(ctx, wait, FF, LL);
 
     vfAsyncDrawImageRaw(ctx, outputtex->image.handle, NULL, 2, gpu_threads, gpu_threads_65536, FF, LL);
-    vfAsyncDrawWaitToFinish(ctx, FF, LL);
 
     mouse_x_prev = mouse_x;
     mouse_y_prev = mouse_y;

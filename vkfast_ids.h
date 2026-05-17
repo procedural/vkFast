@@ -63,7 +63,8 @@ typedef struct vf_handle_context_t {
   RedHandlePresent   present;
   RedHandleImage     presentImages[3];
   RedHandleCpuSignal presentCpuSignal;
-  RedHandleGpuSignal presentGpuSignal;
+  RedHandleGpuSignal presentGpuSignalAcquire;
+  RedHandleGpuSignal presentGpuSignalSubmit;
   RedCalls           presentCopyCalls;
   uint64_t           presentPixelsCpuUpload_memory_allocation_size;
   Red2Array          presentPixelsCpuUpload_memory_and_array;
