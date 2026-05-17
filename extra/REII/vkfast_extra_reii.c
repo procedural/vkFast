@@ -1168,7 +1168,7 @@ GPU_API_PRE void GPU_API_POST reiiBatchImageCopyFromCpuEx(gpu_handle_context_t c
   );
 }
 
-GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpuEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands) {
+GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpuEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -1210,12 +1210,12 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpuEx(gpu_handle_conte
 
   vfBatchEnd(context, batch, optionalFile, optionalLine);
   RedHandleCalls batchRaw = vfBatchGetRawHandle(context, batch, optionalFile, optionalLine);
-  uint64_t async = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, 0, NULL, NULL, optionalFile, optionalLine);
+  uint64_t async = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   vfAsyncWaitToFinish(context, async, optionalFile, optionalLine);
   vfIdDestroy(1, &batch, optionalFile, optionalLine);
 }
 
-GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpuEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands) {
+GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpuEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -1257,23 +1257,23 @@ GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpuEx(gpu_handle_context_t cont
 
   vfBatchEnd(context, batch, optionalFile, optionalLine);
   RedHandleCalls batchRaw = vfBatchGetRawHandle(context, batch, optionalFile, optionalLine);
-  uint64_t async = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, 0, NULL, NULL, optionalFile, optionalLine);
+  uint64_t async = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   vfAsyncWaitToFinish(context, async, optionalFile, optionalLine);
   vfIdDestroy(1, &batch, optionalFile, optionalLine);
 }
 
-GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels) {
+GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpu(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
 
-  reiiTextureDefineAndCopyFromCpuEx(context, binding, bindingTexture, bindingLevel, bindingTexelFormat, width, height, texelsFormat, texelsType, texelsBytesAlignment, texels, vkfast->mainQueueFamilyIndex, vkfast->mainQueue);
+  reiiTextureDefineAndCopyFromCpuEx(context, binding, bindingTexture, bindingLevel, bindingTexelFormat, width, height, texelsFormat, texelsType, texelsBytesAlignment, texels, vkfast->mainQueueFamilyIndex, vkfast->mainQueue, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values);
 }
 
-GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels) {
+GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpu(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   RedHandleGpu gpu = vkfast->gpu;
 
-  reiiTextureCopyFromCpuEx(context, binding, bindingTexture, bindingLevel, bindingX, bindingY, width, height, texelsFormat, texelsType, texelsBytesAlignment, texels, vkfast->mainQueueFamilyIndex, vkfast->mainQueue);
+  reiiTextureCopyFromCpuEx(context, binding, bindingTexture, bindingLevel, bindingX, bindingY, width, height, texelsFormat, texelsType, texelsBytesAlignment, texels, vkfast->mainQueueFamilyIndex, vkfast->mainQueue, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values);
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandListReset(gpu_handle_context_t context, ReiiHandleCommandList * list) {
