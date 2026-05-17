@@ -1,7 +1,9 @@
 #pragma once
 
-#include "C:/RedGpuSDK/redgpu_2.h"  // Source: https://github.com/redgpu/redgpu
-#include "C:/RedGpuSDK/redgpu_32.h" // Source: https://github.com/redgpu/redgpu2
+#include "C:/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
+#include "C:/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
+#include "C:/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
+#include "C:/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
 
 #ifdef __cplusplus
 extern "C" {
@@ -121,7 +123,7 @@ GPU_API_PRE RedContext GPU_API_POST vfContextGetRaw(gpu_handle_context_t context
 GPU_API_PRE void GPU_API_POST vfContextResetAndInvalidateAllStorages(gpu_handle_context_t context, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfIdDestroy(uint64_t ids_count, const uint64_t * ids, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, unsigned draw_queue_index, const char * optional_file, int optional_line);
+GPU_API_PRE int  GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, unsigned draw_queue_index, RedPresentVsyncMode present_vsync_mode, const char * optional_file, int optional_line);
 GPU_API_PRE int  GPU_API_POST vfWindowLoop(gpu_handle_context_t context);
 GPU_API_PRE int  GPU_API_POST vfWindowIsMinimized(gpu_handle_context_t context);
 GPU_API_PRE void GPU_API_POST vfWindowGetSize(gpu_handle_context_t context, int * out_window_width, int * out_window_height);

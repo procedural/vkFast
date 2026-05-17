@@ -1,12 +1,9 @@
 #pragma once
 
-// Sources:
-// https://github.com/redgpu/redgpu
-// https://github.com/redgpu/redgpu2
-#include "C:/RedGpuSDK/redgpu.h"
-#include "C:/RedGpuSDK/redgpu_2.h"
-#include "C:/RedGpuSDK/redgpu_32.h"
-#include "C:/RedGpuSDK/redgpu_wsi.h"
+#include "C:/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
+#include "C:/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
+#include "C:/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
+#include "C:/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,6 +66,8 @@ typedef struct vf_handle_context_t {
   uint64_t           presentPixelsCpuUpload_memory_allocation_size;
   Red2Array          presentPixelsCpuUpload_memory_and_array;
   void *             presentPixelsCpuUpload_void_ptr_original;
+
+  RedPresentVsyncMode presentVsyncMode;
 } vf_handle_context_t;
 
 typedef struct vf_handle_storage_t {

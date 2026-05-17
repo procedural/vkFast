@@ -43,7 +43,7 @@ int main() {
   const int doDoubleGammaCorrection = 0;
   // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
   gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
-  vfWindowFullscreen(ctx, window_handle, "[vkFast] REII Instancing", window_w, window_h, 0, FF, LL);
+  vfWindowFullscreen(ctx, window_handle, "[vkFast] REII Instancing", window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
 
   const unsigned array65536[2] = {65536, 65536};
 
@@ -282,10 +282,22 @@ int main() {
     LARGE_INTEGER t_start = {0};
     QueryPerformanceCounter(&t_start);
 
+    int doPresentRebuild = 0;
+    if (glfwGetKey(window, GLFW_KEY_1)) {
+      const char * window_title = "[vkFast] REII Instancing (VSync Off)";
+      doPresentRebuild = vfWindowFullscreen(ctx, window_handle, window_title, window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_OFF, FF, LL);
+      glfwSetWindowTitle(window, window_title);
+    }
+    if (glfwGetKey(window, GLFW_KEY_2)) {
+      const char * window_title = "[vkFast] REII Instancing (VSync On)";
+      doPresentRebuild = vfWindowFullscreen(ctx, window_handle, window_title, window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
+      glfwSetWindowTitle(window, window_title);
+    }
+
     {
       vfWindowGetSize(ctx, &window_w, &window_h);
 
-      if (window_w != previous_window_w || window_h != previous_window_h) {
+      if (window_w != previous_window_w || window_h != previous_window_h || doPresentRebuild == 1) {
         // Recreate output textures then.
 
         vfAllQueuesWaitIdle(ctx, FF, LL);
