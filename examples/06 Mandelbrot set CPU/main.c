@@ -22,7 +22,12 @@ int main() {
   REDGPU_2_EXPECTFL(windowMonitorArea[3] == window_h);
 
   gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
-  vfWindowFullscreen(ctx, NULL, "[vkFast] Mandelbrot set CPU", window_w, window_h, 0, FF, LL);
+  vfWindowFullscreen(ctx, NULL, "[vkFast] Mandelbrot set CPU", window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
+
+  const unsigned array65536[2] = {65536, 65536};
+
+  gpu_thread_t gpu_thread = NULL;
+  vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
 
   struct Pixels {
     unsigned char pixels[window_h][window_w][4];
@@ -74,10 +79,14 @@ int main() {
         pixels[iy * window_w * 4 + ix * 4 + 3] = 255;
       }
     }
-    vfDrawPixels(ctx, pix->pixels, NULL, FF, LL);
-    vfAsyncDrawWaitToFinish(ctx, FF, LL);
+    gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
+    vfDrawPixels(ctx, pix->pixels, NULL, 2, gpu_threads, array65536, FF, LL);
   }
   
+  vfAllQueuesWaitIdle(ctx, FF, LL);
+
+  vfGpuThreadDestroy(ctx, gpu_thread);
+
   red32MemoryFree(pix);
   pix = NULL;
 
