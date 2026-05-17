@@ -2396,7 +2396,7 @@ GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(gpu_handle_context_t context, 
   );
 }
 
-static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, const void * copy_pixels, int * out_optional_is_pixels_copy_finished_cpu_signal_index, RedBool32 optional_copy_image, RedHandleImage optional_image_to_copy, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
+static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, const void * copy_pixels, int * out_optional_internal_present_image_index, RedBool32 optional_copy_image, RedHandleImage optional_image_to_copy, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
@@ -2458,8 +2458,8 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
     "optionalUserData", NULL
   );
 
-  if (out_optional_is_pixels_copy_finished_cpu_signal_index != NULL) {
-    out_optional_is_pixels_copy_finished_cpu_signal_index[0] = presentImageIndex;
+  if (out_optional_internal_present_image_index != NULL) {
+    out_optional_internal_present_image_index[0] = presentImageIndex;
   }
 
   REDGPU_2_EXPECTWG(presentGetImageIndexStatuses.status == RED_STATUS_SUCCESS || presentGetImageIndexStatuses.status == RED_STATUS_PRESENT_IS_SUBOPTIMAL);
@@ -2875,7 +2875,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
   return isRebuilded;
 }
 
-GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, int * out_optional_is_pixels_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
+GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, int * out_optional_internal_present_image_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
@@ -2885,21 +2885,21 @@ GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const vo
   presentPixels_storage_raw.arrayRangeBytesFirst = 0;
   presentPixels_storage_raw.arrayRangeBytesCount = vkfast->presentPixelsCpuUpload_memory_allocation_size;
 
-  int isRebuilded = vfInternalAsyncDrawPixels(context, &presentPixels_storage_raw, pixels, out_optional_is_pixels_copy_finished_cpu_signal_index, 0, NULL, gpu_threads_count_plus_one_empty, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
+  int isRebuilded = vfInternalAsyncDrawPixels(context, &presentPixels_storage_raw, pixels, out_optional_internal_present_image_index, 0, NULL, gpu_threads_count_plus_one_empty, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   return isRebuilded;
 }
 
-GPU_API_PRE int GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, int * out_optional_is_pixels_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
+GPU_API_PRE int GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, int * out_optional_internal_present_image_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   vf_handle_t * storage = (vf_handle_t *)(void *)pixels_storage_id;
   vf_handle_context_t * vkfast = storage->vkfast;
   RedHandleGpu gpu = vkfast->gpu;
   REDGPU_2_EXPECTWG(storage->handle_id == VF_HANDLE_ID_STORAGE);
-  int isRebuilded = vfInternalAsyncDrawPixels(context, &storage->storage.arrayRangeInfo, NULL, out_optional_is_pixels_copy_finished_cpu_signal_index, 0, NULL, gpu_threads_count_plus_one_empty, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
+  int isRebuilded = vfInternalAsyncDrawPixels(context, &storage->storage.arrayRangeInfo, NULL, out_optional_internal_present_image_index, 0, NULL, gpu_threads_count_plus_one_empty, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   return isRebuilded;
 }
 
-GPU_API_PRE int GPU_API_POST vfAsyncDrawPixelsRaw(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, int * out_optional_is_pixels_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
-  int isRebuilded = vfInternalAsyncDrawPixels(context, pixels_storage_raw, NULL, out_optional_is_pixels_copy_finished_cpu_signal_index, 0, NULL, gpu_threads_count_plus_one_empty, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
+GPU_API_PRE int GPU_API_POST vfAsyncDrawPixelsRaw(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, int * out_optional_internal_present_image_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
+  int isRebuilded = vfInternalAsyncDrawPixels(context, pixels_storage_raw, NULL, out_optional_internal_present_image_index, 0, NULL, gpu_threads_count_plus_one_empty, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   return isRebuilded;
 }
 
