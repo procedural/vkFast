@@ -433,7 +433,12 @@ int main() {
   void * window_handle = (void *)glfwGetWin32Window(window);
 
   gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
-  vfWindowFullscreen(ctx, window_handle, "[vkFast] RT 3D Mesh Stanford Bunny CPU Slow BVH", 700, 700, 0, FF, LL);
+  vfWindowFullscreen(ctx, window_handle, "[vkFast] RT 3D Mesh Stanford Bunny CPU Slow BVH", 700, 700, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
+
+  const unsigned array65536[2] = {65536, 65536};
+
+  gpu_thread_t gpu_thread = NULL;
+  vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
 
   struct Pixels {
     unsigned char pixels[window_h][window_w][4];
@@ -713,12 +718,16 @@ int main() {
       }
     }
 
-    vfDrawPixels(ctx, pix->pixels, NULL, FF, LL);
-    vfAsyncDrawWaitToFinish(ctx, FF, LL);
+    gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
+    vfDrawPixels(ctx, pix->pixels, NULL, 2, gpu_threads, array65536, FF, LL);
 
     mouse_x_prev = mouse_x;
     mouse_y_prev = mouse_y;
   }
+
+  vfAllQueuesWaitIdle(ctx, FF, LL);
+
+  vfGpuThreadDestroy(ctx, gpu_thread);
 
   red32MemoryFree(pix);
   pix = NULL;
