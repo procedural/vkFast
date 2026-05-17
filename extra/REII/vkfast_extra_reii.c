@@ -1210,7 +1210,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpuEx(gpu_handle_conte
 
   vfBatchEnd(context, batch, optionalFile, optionalLine);
   RedHandleCalls batchRaw = vfBatchGetRawHandle(context, batch, optionalFile, optionalLine);
-  uint64_t async = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, 0, NULL, NULL, NULL, optionalFile, optionalLine);
+  uint64_t async = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, 0, NULL, NULL, optionalFile, optionalLine);
   vfAsyncWaitToFinish(context, async, optionalFile, optionalLine);
   vfIdDestroy(1, &batch, optionalFile, optionalLine);
 }
@@ -1257,7 +1257,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpuEx(gpu_handle_context_t cont
 
   vfBatchEnd(context, batch, optionalFile, optionalLine);
   RedHandleCalls batchRaw = vfBatchGetRawHandle(context, batch, optionalFile, optionalLine);
-  uint64_t async = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, 0, NULL, NULL, NULL, optionalFile, optionalLine);
+  uint64_t async = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, 0, NULL, NULL, optionalFile, optionalLine);
   vfAsyncWaitToFinish(context, async, optionalFile, optionalLine);
   vfIdDestroy(1, &batch, optionalFile, optionalLine);
 }
