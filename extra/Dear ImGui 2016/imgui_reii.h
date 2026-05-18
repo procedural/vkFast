@@ -214,6 +214,7 @@ typedef struct ImguiState {
   gpu_extra_cpu_gpu_array gpuDynamicMeshColor;
   Red2Output *            gpuMutableOutputsArray;
   ReiiHandleTexture *     gpuOutputTexture;
+  gpu_thread_t            gpuThread;
   unsigned                gpuOptionalQueueFamilyIndex;
   RedHandleQueue          gpuOptionalQueue;
   double                  time;
@@ -328,10 +329,11 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
 
   RedHandleCalls batchRaw = vfBatchGetRawHandle(globalImguiState->gpuContext, globalImguiState->gpuBatch, __FILE__, __LINE__);
   uint64_t wait = 0;
+  unsigned array65536[1] = {65536};
   if (globalImguiState->gpuOptionalQueue == NULL) {
-    wait = vfAsyncBatchExecuteRaw(globalImguiState->gpuContext, 1, &batchRaw, __FILE__, __LINE__);
+    wait = vfAsyncBatchExecuteRaw(globalImguiState->gpuContext, 1, &batchRaw, 1, &globalImguiState->gpuThread, array65536, __FILE__, __LINE__);
   } else {
-    wait = vfAsyncBatchExecuteRawEx(globalImguiState->gpuContext, globalImguiState->gpuOptionalQueue, 1, &batchRaw, __FILE__, __LINE__);
+    wait = vfAsyncBatchExecuteRawEx(globalImguiState->gpuContext, globalImguiState->gpuOptionalQueue, 1, &batchRaw, 1, &globalImguiState->gpuThread, array65536, __FILE__, __LINE__);
   }
   vfAsyncWaitToFinish(globalImguiState->gpuContext, wait, __FILE__, __LINE__);
 }
@@ -406,7 +408,8 @@ static inline void imguiCreateFontTexture() {
   reiiTextureSetStateMipmap(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas, 0);
   reiiTextureSetStateMipmapLevelsCount(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas, 1);
   memcpy(globalImguiState->gpuFontAtlasScratchBuffer.cpu_scratch_buffer_ptr, data, width * height * bpp);
-  reiiTextureDefineAndCopyFromCpu(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, width, height, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, &globalImguiState->gpuFontAtlasScratchBuffer);
+  unsigned array65536[1] = {65536};
+  reiiTextureDefineAndCopyFromCpu(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, width, height, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, &globalImguiState->gpuFontAtlasScratchBuffer, 1, &globalImguiState->gpuThread, array65536);
 
   ImFontAtlas_SetTexID(io->fonts, (void *)(intptr_t)&globalImguiState->gpuFontAtlas);
 }
@@ -576,6 +579,7 @@ static inline void imguiInit(
   uint64_t                mutableOutputsArrayMaxCapacity,
   Red2Output *            mutableOutputsArray,
   ReiiHandleTexture *     outputTexture,
+  gpu_thread_t            gpuThread,
   unsigned                optionalQueueFamilyIndex,
   RedHandleQueue          optionalQueue
 )
@@ -591,6 +595,7 @@ static inline void imguiInit(
   globalImguiState->gpuDynamicMeshColor         = dynamicMeshColor;
   globalImguiState->gpuMutableOutputsArray      = mutableOutputsArray;
   globalImguiState->gpuOutputTexture            = outputTexture;
+  globalImguiState->gpuThread                   = gpuThread;
   globalImguiState->gpuOptionalQueueFamilyIndex = optionalQueueFamilyIndex;
   globalImguiState->gpuOptionalQueue            = optionalQueue;
 
