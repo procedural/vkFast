@@ -42,7 +42,12 @@ int main() {
   const int doDoubleGammaCorrection = 0;
   // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
   gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
-  vfWindowFullscreen(ctx, window_handle, "[vkFast] REII Blender Simple Importer 1.0", window_w, window_h, 0, FF, LL);
+  vfWindowFullscreen(ctx, window_handle, "[vkFast] REII Blender Simple Importer 1.0", window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
+
+  const unsigned array65536[2] = {65536, 65536};
+
+  gpu_thread_t gpu_thread = NULL;
+  vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
 
   gpu_storage_t storage_gpu_only     = {0};
   gpu_storage_t storage_cpu_upload   = {0};
@@ -152,7 +157,7 @@ int main() {
   reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 4);
   reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0);
   reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 1);
-  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0, REII_TEXTURE_TEXEL_FORMAT_DS, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_DS, REII_TEXTURE_TEXEL_TYPE_FLOAT, 4, NULL);
+  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0, REII_TEXTURE_TEXEL_FORMAT_DS, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_DS, REII_TEXTURE_TEXEL_TYPE_FLOAT, 4, NULL, 1, &gpu_thread, array65536);
 
   ReiiHandleTextureMemory outputTexMemory = {0};
   reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_COLOR, (288/*mb*/ * 1024 * 1024), &outputTexMemory);
@@ -161,7 +166,7 @@ int main() {
   reiiCreateTextureFromTextureMemory(ctx, &outputTexMemory, REII_TEXTURE_BINDING_2D, &houtputtex);
   reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0);
   reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputtex, 1);
-  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL);
+  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
 
   ReiiHandleTextureMemory outputMSTexMemory = {0};
   reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_COLOR_MSAA, (288/*mb*/ * 1024 * 1024), &outputMSTexMemory);
@@ -171,7 +176,7 @@ int main() {
   reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 4);
   reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0);
   reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
-  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL);
+  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
 
   float suzanne_head_vertices[] = {
     #include "../../extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
@@ -259,6 +264,12 @@ int main() {
       if (window_w != previous_window_w || window_h != previous_window_h) {
         // Recreate output textures then.
 
+        vfAllQueuesWaitIdle(ctx, FF, LL);
+
+        vfGpuThreadDestroy(ctx, gpu_thread);
+        gpu_thread = NULL;
+        vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
+
         reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputmstex);
         reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);
         reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputdstex);
@@ -271,18 +282,18 @@ int main() {
         reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 4);
         reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0);
         reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 1);
-        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0, REII_TEXTURE_TEXEL_FORMAT_DS, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_DS, REII_TEXTURE_TEXEL_TYPE_FLOAT, 4, NULL);
+        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0, REII_TEXTURE_TEXEL_FORMAT_DS, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_DS, REII_TEXTURE_TEXEL_TYPE_FLOAT, 4, NULL, 1, &gpu_thread, array65536);
 
         reiiCreateTextureFromTextureMemory(ctx, &outputTexMemory, REII_TEXTURE_BINDING_2D, &houtputtex);
         reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0);
         reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputtex, 1);
-        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL);
+        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
 
         reiiCreateTextureFromTextureMemory(ctx, &outputMSTexMemory, REII_TEXTURE_BINDING_2D, &houtputmstex);
         reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 4);
         reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0);
         reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
-        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL);
+        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
       }
 
       previous_window_w = window_w;
@@ -437,7 +448,7 @@ int main() {
 
           struct float4 q = {0, 0, 0, 1};
           float axis[3] = {1, 0, 0};
-          quatFromAxisAngle(&q.x, &axis, -90.f * (M_PI/180.f));
+          quatFromAxisAngle(&q.x, axis, -90.f * (M_PI/180.f));
           quatRotateVec3Fast(&v0.x, &v0.x, &q.x);
           quatRotateVec3Fast(&v1.x, &v1.x, &q.x);
           quatRotateVec3Fast(&v2.x, &v2.x, &q.x);
@@ -466,16 +477,20 @@ int main() {
     vfBatchEnd(ctx, batch, FF, LL);
 
     RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
-    uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, FF, LL);
+    uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, 1, &gpu_thread, array65536, FF, LL);
     vfAsyncWaitToFinish(ctx, wait, FF, LL);
-    vfAsyncDrawImageRaw(ctx, outputtex->image.handle, NULL, FF, LL);
-    vfAsyncDrawWaitToFinish(ctx, FF, LL);
+
+    gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
+    vfAsyncDrawImageRaw(ctx, outputtex->image.handle, NULL, 2, gpu_threads, array65536, FF, LL);
 
     mouse_x_prev = mouse_x;
     mouse_y_prev = mouse_y;
     mouse_right_mouse_button_state_prev = mouse_right_mouse_button_state;
   }
 
+  vfAllQueuesWaitIdle(ctx, FF, LL);
+
+  vfGpuThreadDestroy(ctx, gpu_thread);
   vfIdDestroy(1, &gammaCorrectionStaticState.programPipeline, FF, LL);
   vfIdDestroy(1, &gammaCorrectionStaticState.programCompute, FF, LL);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, list);
