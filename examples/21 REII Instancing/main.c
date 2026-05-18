@@ -302,6 +302,10 @@ int main() {
 
         vfAllQueuesWaitIdle(ctx, FF, LL);
 
+        vfGpuThreadDestroy(ctx, gpu_thread);
+        gpu_thread = NULL;
+        vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
+
         reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputmstex);
         reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);
         reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputdstex);
@@ -326,10 +330,6 @@ int main() {
         reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0);
         reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
         reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
-
-        vfGpuThreadDestroy(ctx, gpu_thread);
-        gpu_thread = NULL;
-        vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
       }
 
       previous_window_w = window_w;

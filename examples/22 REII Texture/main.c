@@ -365,6 +365,12 @@ int main() {
       if (window_w != previous_window_w || window_h != previous_window_h) {
         // Recreate output textures then.
 
+        vfAllQueuesWaitIdle(ctx, FF, LL);
+
+        vfGpuThreadDestroy(ctx, gpu_thread);
+        gpu_thread = NULL;
+        vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
+
         reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputmstex);
         reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);
         reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputdstex);
