@@ -182,10 +182,11 @@ int main() {
   
   vfAllQueuesWaitIdle(ctx, FF, LL);
 
+  vfGpuThreadDestroy(ctx, gpu_thread);
+
   red32MemoryFree(pix);
   pix = NULL;
 
-  vfGpuThreadDestroy(ctx, gpu_thread);
   uint64_t ids[] = {
     storage_input_cpu.id,
     storage_input_gpu.id,
