@@ -820,7 +820,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
       "layersCount", binding == REII_TEXTURE_BINDING_2D ? 1 : 6,
       "multisampleCount", bindingTexture->msaaCount,
       "restrictToAccess", 0,
-      "initialQueueFamilyIndex", vkfast->mainQueueFamilyIndex,
+      "initialQueueFamilyIndex", vkfast->gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
       "dedicate", bindingTexture->textureMemory->texturesUseTheirOwnDedicatedMemory,
       "outImage", &image,
       "outStatuses", NULL,
@@ -1168,7 +1168,7 @@ GPU_API_PRE void GPU_API_POST reiiBatchImageCopyFromCpuEx(gpu_handle_context_t c
   );
 }
 
-GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpuEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
+GPU_API_PRE uint64_t GPU_API_POST reiiTextureDefineAndCopyFromCpuBatchEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -1209,13 +1209,22 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpuEx(gpu_handle_conte
   }
 
   vfBatchEnd(context, batch, optionalFile, optionalLine);
+
+  return batch;
+}
+
+GPU_API_PRE void GPU_API_POST reiiTextureDefineAndCopyFromCpuEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  uint64_t batch = reiiTextureDefineAndCopyFromCpuBatchEx(context, binding, bindingTexture, bindingLevel, bindingTexelFormat, width, height, texelsFormat, texelsType, texelsBytesAlignment, texels, queueFamilyIndexToSubmitCopyCommands, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values);
   RedHandleCalls batchRaw = vfBatchGetRawHandle(context, batch, optionalFile, optionalLine);
-  uint64_t async = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
-  vfAsyncWaitToFinish(context, async, optionalFile, optionalLine);
+  uint64_t wait = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
+  vfAsyncWaitToFinish(context, wait, optionalFile, optionalLine);
   vfIdDestroy(1, &batch, optionalFile, optionalLine);
 }
 
-GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpuEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
+GPU_API_PRE uint64_t GPU_API_POST reiiTextureCopyFromCpuBatchEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -1256,9 +1265,19 @@ GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpuEx(gpu_handle_context_t cont
   reiiBatchImageCopyFromCpuEx(context, batch, bindingTexture->image.handle, imageParts, bindingLevel, bindingLayer, 0, 0, width, height, texels);
 
   vfBatchEnd(context, batch, optionalFile, optionalLine);
+  
+  return batch;
+}
+
+GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpuEx(gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  uint64_t batch = reiiTextureCopyFromCpuBatchEx(context, binding, bindingTexture, bindingLevel, bindingX, bindingY, width, height, texelsFormat, texelsType, texelsBytesAlignment, texels, queueFamilyIndexToSubmitCopyCommands, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values);
+
   RedHandleCalls batchRaw = vfBatchGetRawHandle(context, batch, optionalFile, optionalLine);
-  uint64_t async = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
-  vfAsyncWaitToFinish(context, async, optionalFile, optionalLine);
+  uint64_t wait = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
+  vfAsyncWaitToFinish(context, wait, optionalFile, optionalLine);
   vfIdDestroy(1, &batch, optionalFile, optionalLine);
 }
 
@@ -2502,15 +2521,21 @@ GPU_API_PRE void GPU_API_POST reiiCreateUnorderedArray(gpu_handle_context_t cont
   RedHandleGpu gpu = vkfast->gpu;
 }
 
-GPU_API_PRE void GPU_API_POST reiiUnorderedArraySet(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray) {
+GPU_API_PRE void GPU_API_POST reiiUnorderedArraySetEx(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned queueFamilyIndexToSubmitCopyCommands) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
   gpu_batch_info_t bindings_info = {0};
-  unorderedArray->batchId = vfBatchBegin(context, 0, &bindings_info, NULL, optionalFile, optionalLine);
+  unorderedArray->batchId = vfBatchBeginEx(context, 0, &bindings_info, queueFamilyIndexToSubmitCopyCommands, NULL, optionalFile, optionalLine);
 }
 
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayEnd(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray) {
+GPU_API_PRE void GPU_API_POST reiiUnorderedArraySet(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  reiiUnorderedArraySetEx(context, unorderedArray, vkfast->mainQueueFamilyIndex);
+}
+
+GPU_API_PRE uint64_t GPU_API_POST reiiUnorderedArrayEndBatchEx(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -2564,11 +2589,28 @@ GPU_API_PRE void GPU_API_POST reiiUnorderedArrayEnd(gpu_handle_context_t context
     }
   }
   vfBatchEnd(context, unorderedArray->batchId, optionalFile, optionalLine);
-  RedHandleCalls batchRaw = vfBatchGetRawHandle(context, unorderedArray->batchId, optionalFile, optionalLine);
-  uint64_t wait = vfAsyncBatchExecuteRaw(context, 1, &batchRaw, 0, NULL, NULL, NULL, optionalFile, optionalLine);
-  vfAsyncWaitToFinish(context, wait, optionalFile, optionalLine);
-  vfIdDestroy(1, &unorderedArray->batchId, optionalFile, optionalLine);
+
+  uint64_t batch = unorderedArray->batchId;
   unorderedArray->batchId = 0;
+
+  return batch;
+}
+
+GPU_API_PRE void GPU_API_POST reiiUnorderedArrayEndEx(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, RedHandleQueue queueToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  uint64_t batch = reiiUnorderedArrayEndBatchEx(context, unorderedArray, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values);
+
+  RedHandleCalls batchRaw = vfBatchGetRawHandle(context, batch, optionalFile, optionalLine);
+  uint64_t wait = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
+  vfAsyncWaitToFinish(context, wait, optionalFile, optionalLine);
+  vfIdDestroy(1, &batch, optionalFile, optionalLine);
+}
+
+GPU_API_PRE void GPU_API_POST reiiUnorderedArrayEnd(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  reiiUnorderedArrayEndEx(context, unorderedArray, vkfast->mainQueue, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values);
 }
 
 GPU_API_PRE void GPU_API_POST reiiUnorderedArrayTexcoord(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned index, float x, float y, float z, float w) {

@@ -253,9 +253,8 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
     "optionalLine", optionalLine
   );
 
-  RedHandleGpu   gpu                  = gpuInfo->gpu;
-  unsigned       mainQueueFamilyIndex = gpuInfo->queuesFamilyIndex[vkfast->mainQueueIndex];
-  RedHandleQueue mainQueue            = gpuInfo->queues[vkfast->mainQueueIndex];            // NOTE(Constantine): Picking the first available GPU queue by default.
+  RedHandleGpu   gpu       = gpuInfo->gpu;
+  RedHandleQueue mainQueue = gpuInfo->queues[vkfast->mainQueueIndex];
 
   unsigned specificMemoryTypesGpuVram     = -1;
   unsigned specificMemoryTypesCpuUpload   = -1;
@@ -610,7 +609,7 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
       "bytesCount", internalMemoryAllocationSizeGpuVramArrays,
       "structuredBufferElementBytesCount", 0,
       "restrictToAccess", 0,
-      "initialQueueFamilyIndex", gpuInfo->queuesCount > 1 ? -1 : (unsigned)gpuInfo->queuesFamilyIndex[0],
+      "initialQueueFamilyIndex", gpuInfo->queuesCount > 1 ? -1 : (unsigned)gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
       "maxAllowedOverallocationBytesCount", 0,
       "dedicate", 0,
       "mappable", 0,
@@ -634,7 +633,7 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
       "bytesCount", internalMemoryAllocationSizeCpuVisible,
       "structuredBufferElementBytesCount", 0,
       "restrictToAccess", RED_ACCESS_BITFLAG_COPY_R,
-      "initialQueueFamilyIndex", gpuInfo->queuesCount > 1 ? -1 : (unsigned)gpuInfo->queuesFamilyIndex[0],
+      "initialQueueFamilyIndex", gpuInfo->queuesCount > 1 ? -1 : (unsigned)gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
       "maxAllowedOverallocationBytesCount", 0, // NOTE(Constantine): Intel UHD Graphics 730 on Windows 10 aligns CPU visible allocations to 64 bytes.
       "dedicate", 0,
       "mappable", 1,
@@ -672,7 +671,7 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
       "bytesCount", internalMemoryAllocationSizeCpuReadback,
       "structuredBufferElementBytesCount", 0,
       "restrictToAccess", RED_ACCESS_BITFLAG_CPU_RW,
-      "initialQueueFamilyIndex", gpuInfo->queuesCount > 1 ? -1 : (unsigned)gpuInfo->queuesFamilyIndex[0],
+      "initialQueueFamilyIndex", gpuInfo->queuesCount > 1 ? -1 : (unsigned)gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
       "maxAllowedOverallocationBytesCount", 0, // NOTE(Constantine): Intel UHD Graphics 730 on Windows 10 aligns CPU visible allocations to 64 bytes.
       "dedicate", 0,
       "mappable", 1,
@@ -726,10 +725,10 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
   vkfast->context = context;
   vkfast->gpuInfo = gpuInfo;
   vkfast->gpuIndex;
-  vkfast->gpu = gpu;
+  vkfast->gpu = gpu; // NOTE(Constantine): If vkfast->gpuIndex is changed on the user side, vkfast->gpu must be changed by the user too.
   vkfast->mainQueueIndex;
-  vkfast->mainQueueFamilyIndex = mainQueueFamilyIndex;
-  vkfast->mainQueue = mainQueue;
+  vkfast->mainQueueFamilyIndex;
+  vkfast->mainQueue = mainQueue; // NOTE(Constantine): If vkfast->mainQueueIndex is changed on the user side, vkfast->mainQueue must be changed by the user too.
   vkfast->specificMemoryTypesGpuVram = specificMemoryTypesGpuVram;
   vkfast->specificMemoryTypesCpuUpload = specificMemoryTypesCpuUpload;
   vkfast->specificMemoryTypesCpuReadback = specificMemoryTypesCpuReadback;
@@ -1334,7 +1333,7 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyn
       "bytesCount", vkfast->presentPixelsCpuUpload_memory_allocation_size,
       "structuredBufferElementBytesCount", 0,
       "restrictToAccess", RED_ACCESS_BITFLAG_COPY_R,
-      "initialQueueFamilyIndex", vkfast->gpuInfo->queuesCount > 1 ? -1 : (unsigned)vkfast->gpuInfo->queuesFamilyIndex[0],
+      "initialQueueFamilyIndex", vkfast->gpuInfo->queuesCount > 1 ? -1 : (unsigned)vkfast->gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
       "maxAllowedOverallocationBytesCount", 0, // NOTE(Constantine): Intel UHD Graphics 730 on Windows 10 aligns CPU visible allocations to 64 bytes.
       "dedicate", 0,
       "mappable", 1,
@@ -1662,7 +1661,7 @@ static uint64_t vfInternalBatchBegin(gpu_handle_context_t context, uint64_t exis
       "context", vkfast->context,
       "gpu", vkfast->gpu,
       "handleName", optional_debug_name,
-      "queueFamilyIndex", queue_family_index,
+      "queueFamilyIndex", vkfast->gpuInfo->queuesFamilyIndex[queue_family_index],
       "outCalls", &calls,
       "outStatuses", NULL,
       "optionalFile", optionalFile,
