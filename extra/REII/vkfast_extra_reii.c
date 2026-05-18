@@ -1098,11 +1098,6 @@ GPU_API_PRE void GPU_API_POST reiiBatchImageSetUsableStateEx(gpu_handle_context_
 
   vf_handle_t * batch = (vf_handle_t *)(void *)batchId;
 
-  np(red2CallGlobalOrderBarrier,
-    "address", batch->batch.addresses.redCallUsageAliasOrderBarrier,
-    "calls", batch->batch.calls.handle
-  );
-
   RedUsageImage imageUsage = {0};
   imageUsage.barrierSplit           = RED_BARRIER_SPLIT_NONE;
   imageUsage.oldAccessStages        = 0;
