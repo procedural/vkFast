@@ -201,7 +201,7 @@ int main() {
   for (int i = 0, mesh_vertices_count = countof(mesh_vertices) / 3; i < mesh_vertices_count; i += 1) {
     reiiUnorderedArrayPosition(ctx, mesh, mesh_vertices[i * 3 + 0], mesh_vertices[i * 3 + 1], mesh_vertices[i * 3 + 2], 1);
   }
-  reiiUnorderedArrayEnd(ctx, mesh);
+  reiiUnorderedArrayEnd(ctx, mesh, 1, &gpu_thread, array65536);
 
   const int instanceCountX = 25;
   const int instanceCountY = 25;
@@ -220,7 +220,7 @@ int main() {
       }
     }
   }
-  reiiUnorderedArrayEnd(ctx, instanceColors);
+  reiiUnorderedArrayEnd(ctx, instanceColors, 1, &gpu_thread, array65536);
 
   ReiiHandleUnorderedArray hinstancePositions = {0};
   ReiiHandleUnorderedArray * instancePositions = &hinstancePositions;
@@ -234,7 +234,7 @@ int main() {
       }
     }
   }
-  reiiUnorderedArrayEnd(ctx, instancePositions);
+  reiiUnorderedArrayEnd(ctx, instancePositions, 1, &gpu_thread, array65536);
 
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
