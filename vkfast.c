@@ -2525,9 +2525,9 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
       RedUsageImage imageUsage = {0};
       imageUsage.barrierSplit           = RED_BARRIER_SPLIT_NONE;
       imageUsage.oldAccessStages        = 0;
-      imageUsage.newAccessStages        = RED_ACCESS_STAGE_BITFLAG_COPY;
+      imageUsage.newAccessStages        = 0;
       imageUsage.oldAccess              = 0;
-      imageUsage.newAccess              = RED_ACCESS_BITFLAG_COPY_W;
+      imageUsage.newAccess              = 0;
       imageUsage.oldState               = RED_STATE_UNUSABLE; // NOTE(Constantine): Optimization.
       imageUsage.newState               = RED_STATE_USABLE;
       imageUsage.queueFamilyIndexSource = -1;
@@ -2556,6 +2556,11 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
         "dependencyByRegion", 0
       );
     }
+
+    np(red2CallGlobalOrderBarrier,
+      "address", addresses.redCallUsageAliasOrderBarrier,
+      "calls", calls->handle
+    );
 
     if (optional_copy_image == 1) {
       // NOTE(Constantine):
@@ -2622,9 +2627,9 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
     {
       RedUsageImage imageUsage = {0};
       imageUsage.barrierSplit           = RED_BARRIER_SPLIT_NONE;
-      imageUsage.oldAccessStages        = RED_ACCESS_STAGE_BITFLAG_COPY;
+      imageUsage.oldAccessStages        = 0;
       imageUsage.newAccessStages        = 0;
-      imageUsage.oldAccess              = RED_ACCESS_BITFLAG_COPY_W;
+      imageUsage.oldAccess              = 0;
       imageUsage.newAccess              = 0;
       imageUsage.oldState               = RED_STATE_USABLE;
       imageUsage.newState               = RED_STATE_PRESENT;
@@ -2654,6 +2659,11 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
         "dependencyByRegion", 0
       );
     }
+
+    np(red2CallGlobalOrderBarrier,
+      "address", addresses.redCallUsageAliasOrderBarrier,
+      "calls", calls->handle
+    );
 
     np(redCallsEnd,
       "context", vkfast->context,
