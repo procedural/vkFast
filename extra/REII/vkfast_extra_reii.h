@@ -11,14 +11,6 @@ typedef unsigned ReiiBool32;
 
 #define REII_TEXCOORDS_MAX_COUNT 8
 
-typedef struct ReiiRgba8 {
-  unsigned char r, g, b, a;
-} ReiiRgba8;
-
-typedef struct ReiiVec4 {
-  float x, y, z, w;
-} ReiiVec4;
-
 typedef enum ReiiTextureBinding {
   REII_TEXTURE_BINDING_2D              = 0x0DE1,
   REII_TEXTURE_BINDING_CUBE            = 0x8513,

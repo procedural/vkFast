@@ -18,6 +18,14 @@
 #include <crtdbg.h>
 #endif
 
+typedef struct ReiiRgba8 {
+  unsigned char r, g, b, a;
+} ReiiRgba8;
+
+typedef struct ReiiVec4 {
+  float x, y, z, w;
+} ReiiVec4;
+
 static void RandomInit() {
   srand((unsigned)time(NULL));
 }
