@@ -6,9 +6,6 @@
 
 #include "../../extra/Ray/Ray.h"
 
-#include <fstream> // For std::ofstream
-void WriteTGA(const Ray::color_rgba_t * data, int pitch, int w, int h, int bpp, const char * name);
-
 std::vector<uint8_t> GenerateCheckerboard(const int res, const int square_size) {
   std::vector<uint8_t> ret(4 * res * res);
 
@@ -42,10 +39,13 @@ int main() {
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 #endif
 
+  const int window_w = 700;
+  const int window_h = 700;
+
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-  GLFWwindow * window = glfwCreateWindow(700, 700, "[vkFast] Ray Denoising", NULL, NULL);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  GLFWwindow * window = glfwCreateWindow(window_w, window_h, "[vkFast] Ray Denoising", NULL, NULL);
   void * window_handle = (void *)glfwGetWin32Window(window);
 
   gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
@@ -58,13 +58,10 @@ int main() {
 
   // Ray
 
-  const int IMG_W = 256, IMG_H = 256;
-  const int SAMPLE_COUNT = 256;
-
   // Initial frame resolution, can be changed later
   Ray::settings_t s;
-  s.w = IMG_W;
-  s.h = IMG_H;
+  s.w = window_w;
+  s.h = window_h;
 
   // Additional Ray::eRendererType parameter can be passed (Vulkan GPU renderer created by default)
   Ray::RendererBase * renderer = Ray::CreateRenderer(s, &Ray::g_stdout_log);
@@ -263,36 +260,28 @@ int main() {
 
   const bool EnableHighQualityDenoising = true;
 
-  // Render image
-  {
-    // Create region contex for frame, setup to use whole frame
-    auto region = Ray::RegionContext{{0, 0, IMG_W, IMG_H}};
-    for (int i = 0; i < SAMPLE_COUNT; i++) {
-      // Each call performs one iteration, blocks until finished
-      renderer->RenderScene(*scene, region);
-    }
+  // Render region
+  auto region = Ray::RegionContext{{0, 0, window_w, window_h}};
 
-    // Denoising...
+  // Camera
 
-    if (EnableHighQualityDenoising) {
-      // Initialize neural denoiser
-      const Ray::unet_filter_properties_t unet_props = renderer->InitUNetFilter(true);
-      for (int pass = 0; pass < unet_props.pass_count; ++pass) {
-          renderer->DenoiseImage(pass, region);
-      }
-    } else {
-      // Run simple NLM filter
-      renderer->DenoiseImage(region);
-    }
+  ReiiVec4 camera_pos  = {-0.278f, 0.273f, 0.8f};
+  ReiiVec4 camera_quat = {0, 1, 0, 0}; // Rotated 180 degrees in Y axis
+  int camera_is_enabled = 0;
+  if (camera_is_enabled == 1) {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   }
-  // Done.
 
-  // Get rendered image pixels in 32-bit floating point RGBA format
-  const Ray::color_data_rgba_t pixels = renderer->get_pixels_ref();
+  glfwPollEvents();
+  double mouse_x = 0;
+  double mouse_y = 0;
+  glfwGetCursorPos(window, &mouse_x, &mouse_y);
+  double mouse_x_prev = mouse_x;
+  double mouse_y_prev = mouse_y;
+  int    mouse_right_mouse_button_state_prev = 0;
 
-  // Save image
-  WriteTGA(pixels.ptr, pixels.pitch, IMG_W, IMG_H, 3, "denoising.tga");
-  // Image saved as denoising.tga
+  int previous_window_w = window_w;
+  int previous_window_h = window_h;
 
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
@@ -303,6 +292,77 @@ int main() {
 
     if (vfWindowIsMinimized(ctx) || os_window_w == 0 || os_window_h == 0) {
       continue;
+    }
+
+    glfwGetCursorPos(window, &mouse_x, &mouse_y);
+
+    int mouse_right_mouse_button_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2);
+
+    // NOTE(Constantine):
+    // Camera quaternion rotation and translation.
+    const float mouse_move_sensitivity = 0.0035f;
+    const float camera_move_speed      = 0.01f;
+    float camera_side_vec[3] = {1, 0, 0};
+    float   camera_up_vec[3] = {0, 1, 0};
+    float  camera_dir_vec[3] = {0, 0, 1};
+    float camera_move_vec_normalized[3] = {0, 0, 0};
+    float mouse_move_x = mouse_move_sensitivity * (float)(mouse_x_prev - mouse_x); // NOTE(Constantine): Inverted than usual.
+    float mouse_move_y = mouse_move_sensitivity * (float)(mouse_y - mouse_y_prev);
+    int camera_is_disabled = glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
+
+    quatRotateVec3Fast(camera_side_vec, camera_side_vec, &camera_quat.x);
+    quatRotateVec3Fast(  camera_up_vec,   camera_up_vec, &camera_quat.x);
+    quatRotateVec3Fast( camera_dir_vec,  camera_dir_vec, &camera_quat.x);
+
+    if (mouse_right_mouse_button_state == GLFW_PRESS && mouse_right_mouse_button_state != mouse_right_mouse_button_state_prev) {
+      camera_is_enabled = !camera_is_enabled;
+      glfwSetInputMode(window, GLFW_CURSOR, camera_is_enabled == 1 ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+    } else if (camera_is_enabled == 1) {
+      float key_f = glfwGetKey(window, GLFW_KEY_W);
+      float key_b = glfwGetKey(window, GLFW_KEY_S);
+
+      float key_r = glfwGetKey(window, GLFW_KEY_D);
+      float key_l = glfwGetKey(window, GLFW_KEY_A);
+
+      float key_u = glfwGetKey(window, GLFW_KEY_E);
+      float key_d = glfwGetKey(window, GLFW_KEY_Q);
+
+      float rot_x[4];
+      float rot_y[4];
+
+      float axis_x[3] = {1, 0, 0};
+      float axis_y[3] = {0, 1, 0};
+      quatFromAxisAngle(rot_y, axis_y, mouse_move_x);
+      quatFromAxisAngle(rot_x, axis_x, mouse_move_y);
+
+      quatMul(&camera_quat.x, &camera_quat.x, rot_x);
+      quatMul(&camera_quat.x, rot_y, &camera_quat.x);
+
+      float side_vec[3] = {1, 0, 0};
+      float   up_vec[3] = {0, 1, 0};
+      float  dir_vec[3] = {0, 0, 1};
+      vec3Mulf(side_vec, camera_side_vec, key_l - key_r); // NOTE(Constantine): Inverted than usual.
+      vec3Mulf(  up_vec,   camera_up_vec, key_u - key_d);
+      vec3Mulf( dir_vec,  camera_dir_vec, key_f - key_b);
+
+      vec3Add(camera_move_vec_normalized, camera_move_vec_normalized, side_vec);
+      vec3Add(camera_move_vec_normalized, camera_move_vec_normalized,   up_vec);
+      vec3Add(camera_move_vec_normalized, camera_move_vec_normalized,  dir_vec);
+
+      float move_vec_len = sqrtf(
+        camera_move_vec_normalized[0] * camera_move_vec_normalized[0] +
+        camera_move_vec_normalized[1] * camera_move_vec_normalized[1] +
+        camera_move_vec_normalized[2] * camera_move_vec_normalized[2]
+      );
+      if (move_vec_len != 0) {
+        camera_move_vec_normalized[0] /= move_vec_len;
+        camera_move_vec_normalized[1] /= move_vec_len;
+        camera_move_vec_normalized[2] /= move_vec_len;
+      }
+
+      vec3Mulf(camera_move_vec_normalized, camera_move_vec_normalized, camera_move_speed);
+
+      vec3Add(&camera_pos.x, &camera_pos.x, camera_move_vec_normalized);
     }
 
     // Now let's draw pixels
@@ -319,50 +379,70 @@ int main() {
     double mouse_y = 0;
     glfwGetCursorPos(window, &mouse_x, &mouse_y);
 
-    // Clear pixels:
-    for (int y = 0; y < window_h; y += 1) {
-      for (int x = 0; x < window_w; x += 1) {
-        pixels[y * window_w * 4 + x * 4 + 0] = 0;
-        pixels[y * window_w * 4 + x * 4 + 1] = 0;
-        pixels[y * window_w * 4 + x * 4 + 2] = 0;
-        pixels[y * window_w * 4 + x * 4 + 3] = 0;
+    cam_desc.type = Ray::eCamType::Persp;
+    cam_desc.origin[0] = camera_pos.x;
+    cam_desc.origin[1] = camera_pos.y;
+    cam_desc.origin[2] = camera_pos.z;
+    cam_desc.fwd[0] = camera_dir_vec[0];
+    cam_desc.fwd[1] = camera_dir_vec[1];
+    cam_desc.fwd[2] = camera_dir_vec[2];
+    cam_desc.fov = 39.1463f;
+    scene->SetCamera(cam, cam_desc);
+
+    if (camera_is_disabled == 1) {
+      Ray::color_rgba_t clearColor = {0};
+      renderer->Clear(clearColor);
+      for (int i = 0; i < 4; i += 1) {
+        // NOTE(Constantine): Pre-render at least 4 samples for the initial image not to look too dark.
+        renderer->RenderScene(*scene, region);
       }
     }
+    renderer->RenderScene(*scene, region);
+
+    if (0) {
+      // Denoising...
+      if (EnableHighQualityDenoising) {
+        // Initialize neural denoiser
+        const Ray::unet_filter_properties_t unet_props = renderer->InitUNetFilter(true);
+        for (int pass = 0; pass < unet_props.pass_count; ++pass) {
+          renderer->DenoiseImage(pass, region);
+        }
+      } else {
+        // Run simple NLM filter
+        renderer->DenoiseImage(region);
+      }
+    }
+
+    // Get rendered image pixels in 32-bit floating point RGBA format
+    const Ray::color_data_rgba_t raypixels = renderer->get_pixels_ref();
+
+    #define float_to_byte(val) \
+      (((val) <= 0.0f) ? 0 : (((val) > (1.0f - 0.5f / 255.0f)) ? 255 : uint8_t((255.0f * (val)) + 0.5f)))
+
     // Draw pixels:
     for (int y = 0; y < window_h; y += 1) {
       for (int x = 0; x < window_w; x += 1) {
-        // NOTE(Constantine):
-        // The automatic DPI scaling is disabled with SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE), but
-        // with DPI scaling, 1920x1080 screen resolution with a desktop scaling of, say, 1.25 is equal to 1536x864 (draw coords: 1535x863).
-        if (y == 0) {
-          pixels[y * window_w * 4 + x * 4 + 0] = 255;
-          pixels[y * window_w * 4 + x * 4 + 1] = 0;
-          pixels[y * window_w * 4 + x * 4 + 2] = 0;
-          pixels[y * window_w * 4 + x * 4 + 3] = 255;
-        } else if (x == 0) {
-          pixels[y * window_w * 4 + x * 4 + 0] = 0;
-          pixels[y * window_w * 4 + x * 4 + 1] = 255;
-          pixels[y * window_w * 4 + x * 4 + 2] = 0;
-          pixels[y * window_w * 4 + x * 4 + 3] = 255;
-        } else if (y == mouse_y) {
-          pixels[y * window_w * 4 + x * 4 + 0] = 0;
-          pixels[y * window_w * 4 + x * 4 + 1] = 0;
-          pixels[y * window_w * 4 + x * 4 + 2] = 255;
-          pixels[y * window_w * 4 + x * 4 + 3] = 255;
-        } else if (x == mouse_x) {
-          pixels[y * window_w * 4 + x * 4 + 0] = 255;
-          pixels[y * window_w * 4 + x * 4 + 1] = 255;
-          pixels[y * window_w * 4 + x * 4 + 2] = 255;
-          pixels[y * window_w * 4 + x * 4 + 3] = 255;
-        }
+        float r = raypixels.ptr[y * raypixels.pitch + x].v[0];
+        float g = raypixels.ptr[y * raypixels.pitch + x].v[1];
+        float b = raypixels.ptr[y * raypixels.pitch + x].v[2];
+        pixels[y * window_w * 4 + x * 4 + 0] = float_to_byte(b);
+        pixels[y * window_w * 4 + x * 4 + 1] = float_to_byte(g);
+        pixels[y * window_w * 4 + x * 4 + 2] = float_to_byte(r);
+        pixels[y * window_w * 4 + x * 4 + 3] = 255;
       }
     }
+
+    #undef float_to_byte
 
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
     vfDrawPixels(ctx, pixels, NULL, 2, gpu_threads, array65536, FF, LL);
 
     red32MemoryFree(pixels);
     pixels = NULL;
+
+    mouse_x_prev = mouse_x;
+    mouse_y_prev = mouse_y;
+    mouse_right_mouse_button_state_prev = mouse_right_mouse_button_state;
   }
 
   vfAllQueuesWaitIdle(ctx, FF, LL);
@@ -374,49 +454,4 @@ int main() {
 
   vfContextDeinit(ctx, FF, LL);
   vfExit(0);
-}
-
-void WriteTGA(const Ray::color_rgba_t * data, int pitch, const int w, const int h, const int bpp, const char * name) {
-  #define float_to_byte(val) \
-    (((val) <= 0.0f) ? 0 : (((val) > (1.0f - 0.5f / 255.0f)) ? 255 : uint8_t((255.0f * (val)) + 0.5f)))
-
-  if (!pitch) {
-    pitch = w;
-  }
-
-  std::ofstream file(name, std::ios::binary);
-
-  unsigned char header[18] = {0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-  header[12] = w & 0xFF;
-  header[13] = (w >> 8) & 0xFF;
-  header[14] = (h)&0xFF;
-  header[15] = (h >> 8) & 0xFF;
-  header[16] = bpp * 8;
-  header[17] |= (1 << 5); // set origin to upper left corner
-
-  file.write((char *)&header[0], sizeof(header));
-
-  auto out_data = std::make_unique<uint8_t[]>(size_t(w) * h * bpp);
-  for (int j = 0; j < h; ++j) {
-    for (int i = 0; i < w; ++i) {
-      out_data[(j * w + i) * bpp + 0] = float_to_byte(data[j * pitch + i].v[2]);
-      out_data[(j * w + i) * bpp + 1] = float_to_byte(data[j * pitch + i].v[1]);
-      out_data[(j * w + i) * bpp + 2] = float_to_byte(data[j * pitch + i].v[0]);
-      if (bpp == 4) {
-        out_data[i * 4 + 3] = float_to_byte(data[j * pitch + i].v[3]);
-      }
-    }
-  }
-
-  file.write((const char *)&out_data[0], size_t(w) * h * bpp);
-
-  static const char footer[26] =
-    "\0\0\0\0"         // no extension area
-    "\0\0\0\0"         // no developer directory
-    "TRUEVISION-XFILE" // yep, this is a TGA file
-    ".";
-  file.write(footer, sizeof(footer));
-
-  #undef float_to_byte
 }
