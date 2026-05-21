@@ -239,11 +239,6 @@ typedef struct ReiiHandleTexture {
   RedHandleTexture           textureCubeFace[6];
 } ReiiHandleTexture;
 
-typedef struct ReiiCpuScratchBuffer {
-  void *               cpu_scratch_buffer_ptr;
-  RedStructMemberArray cpu_scratch_buffer;
-} ReiiCpuScratchBuffer;
-
 typedef struct ReiiHandleCommandList {
   uint64_t                      batch_id;
   Red2CallsMutableOutputsArray  mutable_outputs_array;

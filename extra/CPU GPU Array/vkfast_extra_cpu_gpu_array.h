@@ -6,6 +6,11 @@
 extern "C" {
 #endif
 
+typedef struct ReiiCpuScratchBuffer {
+  void *               cpu_scratch_buffer_ptr;
+  RedStructMemberArray cpu_scratch_buffer;
+} ReiiCpuScratchBuffer;
+
 typedef struct gpu_extra_cpu_gpu_array {
   void *               cpu_ptr;
   RedStructMemberArray cpu;
