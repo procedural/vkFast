@@ -483,7 +483,7 @@ int main() {
       }
     }
 
-    Ray::GpuImage gpu_image = renderer->get_native_raw_pixels();
+    Ray::GpuImage gpu_image = renderer->get_native_raw_final_pixels();
 
     gpu_batch_info_t bindings_info = {0};
     bindings_info.max_new_bindings_sets_count = 1;
