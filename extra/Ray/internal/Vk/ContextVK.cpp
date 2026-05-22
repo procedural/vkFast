@@ -73,7 +73,8 @@ void Ray::Vk::Context::Destroy() {
         api_.vkDestroyCommandPool(device_, temp_command_pool_, nullptr);
 
         if (!external_) {
-            api_.vkDestroyDevice(device_, nullptr);
+            // NOTE(Constantine): vkFast destroys it.
+            //api_.vkDestroyDevice(device_, nullptr);
         }
 
         if (debug_callback_) {
@@ -81,7 +82,8 @@ void Ray::Vk::Context::Destroy() {
         }
 
         if (!external_) {
-            api_.vkDestroyInstance(instance_, nullptr);
+            // NOTE(Constantine): vkFast destroys it.
+            //api_.vkDestroyInstance(instance_, nullptr);
         }
     }
 }
@@ -361,6 +363,9 @@ bool Ray::Vk::Context::Init(ILog *log, const VulkanDevice &vk_device, const Vulk
     return true;
 }
 
+// NOTE(Constantine):
+void * VKFAST_EXTRA_RAY_HACK_VK_INSTANCE;
+
 bool Ray::Vk::Context::InitVkInstance(const Api &api, VkInstance &instance, const char *enabled_layers[],
                                       const int enabled_layers_count, int validation_level, ILog *log) {
     if (validation_level) { // Find validation layer
@@ -398,6 +403,13 @@ bool Ray::Vk::Context::InitVkInstance(const Api &api, VkInstance &instance, cons
     if (validation_level) {
         desired_extensions.push_back(VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME);
     }
+
+    #ifdef _WIN32
+    desired_extensions.push_back("VK_KHR_surface");
+    desired_extensions.push_back("VK_KHR_win32_surface");
+    #else
+    #error TODO(Constantine): Other OS's.
+    #endif
 
     const uint32_t number_required_extensions = 0;
     const uint32_t number_optional_extensions = desired_extensions.size() - number_required_extensions;
@@ -472,6 +484,8 @@ bool Ray::Vk::Context::InitVkInstance(const Api &api, VkInstance &instance, cons
         log->Error("Failed to create vulkan instance");
         return false;
     }
+
+    VKFAST_EXTRA_RAY_HACK_VK_INSTANCE = (void *)instance;
 
     return true;
 }
@@ -722,6 +736,10 @@ void Ray::Vk::Context::CheckVkPhysicalDeviceFeatures(
     out_subgroup_size_control_supported = subgroup_size_control_supported;
 }
 
+// NOTE(Constantine:
+void * VKFAST_EXTRA_RAY_HACK_VK_PHYSICAL_DEVICE;
+void * VKFAST_EXTRA_RAY_HACK_VK_DEVICE;
+
 bool Ray::Vk::Context::InitVkDevice(const Api &api, VkDevice &device, VkPhysicalDevice physical_device,
                                     const uint32_t graphics_family_index, const bool enable_raytracing,
                                     const bool enable_ray_query, const bool enable_fp16, const bool enable_int64,
@@ -787,6 +805,8 @@ bool Ray::Vk::Context::InitVkDevice(const Api &api, VkDevice &device, VkPhysical
     if (enable_subgroup_size_control) {
         device_extensions.push_back(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
     }
+
+    device_extensions.push_back("VK_KHR_swapchain");
 
     device_info.enabledExtensionCount = device_extensions.size();
     device_info.ppEnabledExtensionNames = device_extensions.cdata();
@@ -914,6 +934,9 @@ bool Ray::Vk::Context::InitVkDevice(const Api &api, VkDevice &device, VkPhysical
         log->Error("Failed to create logical device!");
         return false;
     }
+
+    VKFAST_EXTRA_RAY_HACK_VK_PHYSICAL_DEVICE = (void *)physical_device;
+    VKFAST_EXTRA_RAY_HACK_VK_DEVICE          = (void *)device;
 
     return true;
 }

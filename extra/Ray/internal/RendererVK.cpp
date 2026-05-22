@@ -365,6 +365,9 @@ void Ray::Vk::Renderer::Clear(const color_rgba_t &c) {
     }
 }
 
+// NOTE(Constantine):
+void * VKFAST_EXTRA_RAY_HACK_QUEUE_SUBMIT_VK_SEMAPHORE;
+
 void Ray::Vk::Renderer::RenderScene(const SceneBase &scene, RegionContext &region) {
     const auto &s = dynamic_cast<const Vk::Scene &>(scene);
 
@@ -773,6 +776,8 @@ void Ray::Vk::Renderer::RenderScene(const SceneBase &scene, RegionContext &regio
 
         submit_info.signalSemaphoreCount = 1;
         submit_info.pSignalSemaphores = &ctx_->render_finished_semaphore(ctx_->backend_frame);
+
+        VKFAST_EXTRA_RAY_HACK_QUEUE_SUBMIT_VK_SEMAPHORE = submit_info.pSignalSemaphores[0];
 
         const VkResult res = ctx_->api().vkQueueSubmit(ctx_->graphics_queue(), 1, &submit_info,
                                                        ctx_->in_flight_fence(ctx_->backend_frame));
