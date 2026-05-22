@@ -330,6 +330,7 @@ class Renderer : public RendererBase {
     const shl1_data_t *get_sh_data_ref() const override { return &sh_data_host_[0]; }
 
     GpuImage get_native_raw_pixels() const override;
+    GpuImage get_native_raw_final_pixels() const override;
 
     void set_native_raw_pixels_state(const eGPUResState state) override {
         raw_filtered_buf_.resource_state = eResState(state);

@@ -167,6 +167,9 @@ class RendererBase {
     /// Returns native GPU image that holds rendered pixels
     virtual GpuImage get_native_raw_pixels() const { return {}; }
 
+    /// Returns native GPU image that holds final rendered pixels
+    virtual GpuImage get_native_raw_final_pixels() const { return {}; }
+
     /// Allows to set native GPU image state
     virtual void set_native_raw_pixels_state(const eGPUResState) {}
 

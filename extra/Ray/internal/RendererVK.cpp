@@ -1829,6 +1829,11 @@ Ray::GpuImage Ray::Vk::Renderer::get_native_raw_pixels() const {
                     eGPUResState(raw_filtered_buf_.resource_state)};
 }
 
+Ray::GpuImage Ray::Vk::Renderer::get_native_raw_final_pixels() const {
+    return GpuImage{final_buf_.handle().img, final_buf_.handle().views[0],
+                    eGPUResState(final_buf_.resource_state)};
+}
+
 bool Ray::Vk::Renderer::InitUNetFilterPipelines(
     const std::function<void(int, int, ParallelForFunction &&)> &parallel_for) {
     ILog *log = ctx_->log();

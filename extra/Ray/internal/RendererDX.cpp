@@ -1571,6 +1571,11 @@ Ray::GpuImage Ray::Dx::Renderer::get_native_raw_pixels() const {
                     raw_filtered_buf_.handle().views_ref.offset, eGPUResState(raw_filtered_buf_.resource_state)};
 }
 
+Ray::GpuImage Ray::Dx::Renderer::get_native_raw_final_pixels() const {
+    return GpuImage{final_buf_.handle().img, final_buf_.handle().views_ref.heap,
+                    final_buf_.handle().views_ref.offset, eGPUResState(final_buf_.resource_state)};
+}
+
 bool Ray::Dx::Renderer::InitUNetFilterPipelines(
     const std::function<void(int, int, ParallelForFunction &&)> &parallel_for) {
     ILog *log = ctx_->log();
