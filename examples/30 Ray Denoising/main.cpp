@@ -375,10 +375,6 @@ int main() {
     unsigned char * pixels = (unsigned char *)red32MemoryCalloc(4 * window_h * window_w);
     REDGPU_2_EXPECTFL(pixels != NULL);
 
-    double mouse_x = 0;
-    double mouse_y = 0;
-    glfwGetCursorPos(window, &mouse_x, &mouse_y);
-
     cam_desc.type = Ray::eCamType::Persp;
     cam_desc.origin[0] = camera_pos.x;
     cam_desc.origin[1] = camera_pos.y;
