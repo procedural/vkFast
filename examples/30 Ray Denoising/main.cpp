@@ -392,6 +392,7 @@ int main() {
     if (camera_is_disabled == 1) {
       Ray::color_rgba_t clearColor = {0};
       renderer->Clear(clearColor);
+      region.Clear();
       for (int i = 0; i < 4; i += 1) {
         // NOTE(Constantine): Pre-render at least 4 samples for the initial image not to look too dark.
         renderer->RenderScene(*scene, region);
