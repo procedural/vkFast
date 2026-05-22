@@ -39,6 +39,10 @@ int main() {
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 #endif
 
+#if defined(_MSC_VER) && defined(_DEBUG)
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
   const int window_w = 700;
   const int window_h = 700;
 
@@ -450,5 +454,5 @@ int main() {
   delete renderer;
 
   vfContextDeinit(ctx, FF, LL);
-  vfExit(0);
+  glfwTerminate();
 }
