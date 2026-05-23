@@ -1,3 +1,5 @@
+//#define VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
+
 #ifdef _WIN32
 #define GPU_API_PRE __declspec(dllexport)
 #define GPU_API_POST
@@ -73,8 +75,10 @@ static RedBool32 vfRedGpuDebugCallback(RedDebugCallbackSeverity severity, RedDeb
   }
   vfInternalPrint("[vkFast][Debug callback] ");
   vfInternalPrint(data->message);
+  #ifndef VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
   MessageBoxA(NULL, data->message, "[vkFast][Debug callback]", MB_OK);
   red32Exit(1);
+  #endif
   return 0;
 }
 
@@ -138,7 +142,10 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
     }
     #ifdef _WIN32
     unsigned extensions[] = {
-      RED_SDK_EXTENSION_WSI_WIN32
+      RED_SDK_EXTENSION_WSI_WIN32,
+      #ifdef VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
+      RED_SDK_EXTENSION_RAY_TRACING,
+      #endif
     };
     #endif
     np(redCreateContext,
