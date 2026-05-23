@@ -85,13 +85,13 @@ namespace vks
 	*
 	* @throw Throws an exception if memTypeFound is null and no memory type could be found that supports the requested properties
 	*/
-	uint32_t VulkanDevice::getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32 *memTypeFound) const
+	uint32_t VulkanDevice::getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties_, VkBool32 *memTypeFound) const
 	{
 		for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
 		{
 			if ((typeBits & 1) == 1)
 			{
-				if ((memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+				if ((memoryProperties.memoryTypes[i].propertyFlags & properties_) == properties_)
 				{
 					if (memTypeFound)
 					{
@@ -174,7 +174,7 @@ namespace vks
 	*
 	* @return VkResult of the device creation call
 	*/
-	VkResult VulkanDevice::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures, std::vector<const char*> enabledExtensions, void* pNextChain, bool useSwapChain, VkQueueFlags requestedQueueTypes)
+	VkResult VulkanDevice::createLogicalDevice(VkPhysicalDeviceFeatures2 enabledFeatures_, const std::vector<const char*>& enabledExtensions, void* pNextChain, bool useSwapChain, VkQueueFlags requestedQueueTypes)
 	{			
 		// Desired queues need to be requested upon logical device creation
 		// Due to differing queue family configurations of Vulkan implementations this can be a bit tricky, especially if the application
@@ -257,16 +257,14 @@ namespace vks
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());;
 		deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
-		deviceCreateInfo.pEnabledFeatures = &enabledFeatures;
+
+		deviceCreateInfo.pNext = &enabledFeatures_;
+		deviceCreateInfo.pEnabledFeatures = nullptr;
+
 		
 		// If a pNext(Chain) has been passed, we need to add it to the device creation info
-		VkPhysicalDeviceFeatures2 physicalDeviceFeatures2{};
 		if (pNextChain) {
-			physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-			physicalDeviceFeatures2.features = enabledFeatures;
-			physicalDeviceFeatures2.pNext = pNextChain;
-			deviceCreateInfo.pEnabledFeatures = nullptr;
-			deviceCreateInfo.pNext = &physicalDeviceFeatures2;
+			enabledFeatures_.pNext = pNextChain;
 		}
 
 #if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK)) && defined(VK_KHR_portability_subset)
@@ -290,7 +288,7 @@ namespace vks
 			deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 		}
 
-		this->enabledFeatures = enabledFeatures;
+		this->enabledFeatures = enabledFeatures_;
 
 		VkResult result = vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &logicalDevice);
 		if (result != VK_SUCCESS) 

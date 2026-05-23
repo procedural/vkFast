@@ -201,11 +201,11 @@ void VulkanSwapChain::initSurface(screen_context_t screen_context, screen_window
 * @param device Logical representation of the device to create the swapchain for
 *
 */
-void VulkanSwapChain::connect(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device)
+void VulkanSwapChain::connect(VkInstance instance_, VkPhysicalDevice physicalDevice_, VkDevice device_)
 {
-	this->instance = instance;
-	this->physicalDevice = physicalDevice;
-	this->device = device;
+	this->instance = instance_;
+	this->physicalDevice = physicalDevice_;
+	this->device = device_;
 }
 
 /** 
@@ -215,7 +215,7 @@ void VulkanSwapChain::connect(VkInstance instance, VkPhysicalDevice physicalDevi
 * @param height Pointer to the height of the swapchain (may be adjusted to fit the requirements of the swapchain)
 * @param vsync (Optional) Can be used to force vsync-ed rendering (by using VK_PRESENT_MODE_FIFO_KHR as presentation mode)
 */
-void VulkanSwapChain::create(uint32_t *width, uint32_t *height, bool vsync, bool fullscreen)
+void VulkanSwapChain::create(uint32_t *width, uint32_t *height, bool vsync, bool fullscreen_)
 {
 	// Store the current swap chain handle so we can use it later on to ease up recreation
 	VkSwapchainKHR oldSwapchain = swapChain;
@@ -282,10 +282,12 @@ void VulkanSwapChain::create(uint32_t *width, uint32_t *height, bool vsync, bool
 	uname(&sysInfo);
 	// SRS - When vsync is on, use minImageCount when not in fullscreen or when running on Apple Silcon
 	// This forces swapchain image acquire frame rate to match display vsync frame rate
-	if (vsync && (!fullscreen || strcmp(sysInfo.machine, "arm64") == 0))
+	if (vsync && (!fullscreen_ || strcmp(sysInfo.machine, "arm64") == 0))
 	{
 		desiredNumberOfSwapchainImages = surfCaps.minImageCount;
 	}
+#else
+	(void)fullscreen_;
 #endif
 	if ((surfCaps.maxImageCount > 0) && (desiredNumberOfSwapchainImages > surfCaps.maxImageCount))
 	{

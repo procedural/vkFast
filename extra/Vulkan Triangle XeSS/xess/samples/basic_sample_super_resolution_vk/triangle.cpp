@@ -7,9 +7,12 @@
 *	Except in a few cases (swap chain setup e.g.)
 *
 * Copyright (C) 2016-2023 by Sascha Willems - www.saschawillems.de
+* Copyright (C) 2024 Intel Corporation
 *
 * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
 */
+
+//#define USE_LOWRES_MV 1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,17 +21,23 @@
 #include <fstream>
 #include <vector>
 #include <exception>
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <Windows.h>
 
 #include <vulkan/vulkan.h>
 #include "vulkanexamplebase.h"
 
+// XeSS-related utilities
+#include "utils.h"
+
+#include "xess/xess_vk.h"
+
 // Set to "true" to enable Vulkan's validation layers (see vulkandebug.cpp for details)
+#if defined(_DEBUG)
+#define ENABLE_VALIDATION true
+#else
 #define ENABLE_VALIDATION false
+#endif
+
 // We want to keep GPU and CPU busy. To do that we may start building a new command buffer while the previous one is still being executed
 // This number defines how many frames may be worked on simultaneously at once
 #define MAX_CONCURRENT_FRAMES 2
@@ -36,118 +45,253 @@
 class VulkanExample : public VulkanExampleBase
 {
 public:
+
+	VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT mutableDescriptorFeatures{};
+	VkPhysicalDeviceShaderFloat16Int8Features shaderFloat16IntFeatures{};
+	VkPhysicalDeviceShaderIntegerDotProductFeatures shaderIntegerDotProductFeatures{};
+
 	// Vertex layout used in this example
 	struct Vertex {
 		float position[3];
-		float color[3];
+		float color[4];
 	};
 
 	// Vertex buffer and attributes
 	struct {
-		VkDeviceMemory memory; // Handle to the device memory for this buffer
-		VkBuffer buffer;       // Handle to the Vulkan buffer object that the memory is bound to
-	} vertices;
-
-	// Index buffer
-	struct {
-		VkDeviceMemory memory;
-		VkBuffer buffer;
-		uint32_t count;
-	} indices;
+		VkDeviceMemory memory = VK_NULL_HANDLE; // Handle to the device memory for this buffer
+		VkBuffer buffer = VK_NULL_HANDLE;       // Handle to the Vulkan buffer object that the memory is bound to
+		uint32_t count = 0;
+	} vertices{};
 
 	// Uniform buffer block object
 	struct UniformBuffer {
-		VkDeviceMemory memory;
-		VkBuffer buffer;
+		VkDeviceMemory memory = VK_NULL_HANDLE;
+		VkBuffer buffer = VK_NULL_HANDLE;
 		// The descriptor set stores the resources bound to the binding points in a shader
 		// It connects the binding points of the different shaders with the buffers and images used for those bindings
-		VkDescriptorSet descriptorSet;
+		VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
 		// We keep a pointer to the mapped buffer, so we can easily update it's contents via a memcpy
 		uint8_t* mapped{ nullptr };
 	};
 	// We use one UBO per frame, so we can have a frame overlap and make sure that uniforms aren't updated while still in use
 	std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> uniformBuffers;
 
-	// For simplicity we use the same uniform block layout as in the shader:
-	//
-	//	layout(set = 0, binding = 0) uniform UBO
-	//	{
-	//		mat4 projectionMatrix;
-	//		mat4 modelMatrix;
-	//		mat4 viewMatrix;
-	//	} ubo;
-	//
-	// This way we can just memcopy the ubo data to the ubo
-	// Note: You should use data types that align with the GPU in order to avoid manual padding (vec4, mat4)
-	struct ShaderData {
-		glm::mat4 projectionMatrix;
-		glm::mat4 modelMatrix;
-		glm::mat4 viewMatrix;
-	};
-
 	// The pipeline layout is used by a pipeline to access the descriptor sets
 	// It defines interface (without binding any actual data) between the shader stages used by the pipeline and the shader resources
 	// A pipeline layout can be shared among multiple pipelines as long as their interfaces match
-	VkPipelineLayout pipelineLayout;
+	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+
+	VkPipelineLayout fsqPipelineLayout = VK_NULL_HANDLE;
 
 	// Pipelines (often called "pipeline state objects") are used to bake all states that affect a pipeline
 	// While in OpenGL every state can be changed at (almost) any time, Vulkan requires to layout the graphics (and compute) pipeline states upfront
 	// So for each combination of non-dynamic pipeline states you need a new pipeline (there are a few exceptions to this not discussed here)
 	// Even though this adds a new dimension of planning ahead, it's a great opportunity for performance optimizations by the driver
-	VkPipeline pipeline;
+	VkPipeline pipeline = VK_NULL_HANDLE;
+
+	// Pipeline for rendering velocity buffer
+	VkPipeline velocityPipeline = VK_NULL_HANDLE;
+
+	// Pipeline for full screen quad
+	VkPipeline fsqPipeline = VK_NULL_HANDLE;
+
+	// Pipeline for full screen quad with velocity scaling
+	VkPipeline fsqVelocityPipeline = VK_NULL_HANDLE;
 
 	// The descriptor set layout describes the shader binding layout (without actually referencing descriptor)
 	// Like the pipeline layout it's pretty much a blueprint and can be used with different descriptor sets as long as their layout matches
-	VkDescriptorSetLayout descriptorSetLayout;
+	VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+
+	VkDescriptorSetLayout fsqDescriptorSetLayout = VK_NULL_HANDLE;
+
+	VkDescriptorSet fsqDescriptorSet = VK_NULL_HANDLE;
+
+	VkSampler fsqSampler = VK_NULL_HANDLE;
 
 	// Synchronization primitives
 	// Synchronization is an important concept of Vulkan that OpenGL mostly hid away. Getting this right is crucial to using Vulkan.
 
 	// Semaphores are used to coordinate operations within the graphics queue and ensure correct command ordering
-	std::array<VkSemaphore, MAX_CONCURRENT_FRAMES> presentCompleteSemaphores;
-	std::array<VkSemaphore, MAX_CONCURRENT_FRAMES> renderCompleteSemaphores;
+	std::vector<VkSemaphore> presentCompleteSemaphores;
+	std::vector<VkSemaphore> renderCompleteSemaphores;
 
-	VkCommandPool commandPool;
-	std::array<VkCommandBuffer, MAX_CONCURRENT_FRAMES> commandBuffers;
-	std::array<VkFence, MAX_CONCURRENT_FRAMES> waitFences;
+	VkCommandPool commandPool = VK_NULL_HANDLE;
+	std::array<VkCommandBuffer, MAX_CONCURRENT_FRAMES> commandBuffers{ VK_NULL_HANDLE };
+	std::array<VkFence, MAX_CONCURRENT_FRAMES> waitFences{ VK_NULL_HANDLE };
 
+	uint32_t currentPresentSemaphore = 0;
 	uint32_t currentFrame = 0;
+
+	xess_2d_t xessInputResolution = { 0u, 0u };
+
+	// For simplicity we use the same uniform block layout as in the shader:
+	//
+	// This way we can just memcopy the ubo data to the ubo
+	// Note: You should use data types that align with the GPU in order to avoid manual padding (vec4, mat4)
+	struct ShaderData {
+		glm::vec4 offset;
+		glm::vec4 velocity;
+		glm::vec4 resolution;
+	};
+
+	ShaderData m_uniformBufferData;
+
+	bool m_pause = false;
+
+	// Last time the previous shader data was updated
+	std::chrono::time_point<std::chrono::high_resolution_clock> last_shader_data_time;
+
+	// Jitter
+	std::vector<std::pair<float, float>> m_haltonPointSet;
+	std::size_t m_haltonIndex = 0;
+	float jitter[2];
+
+	const xess_quality_settings_t xessQuality = XESS_QUALITY_SETTING_PERFORMANCE;
+
+	xess_context_handle_t xessContext = nullptr;
+
+	struct FrameBufferAttachment {
+		VkImage image = VK_NULL_HANDLE;
+		VkDeviceMemory mem = VK_NULL_HANDLE;
+		VkImageView view = VK_NULL_HANDLE;
+		VkFormat format = VK_FORMAT_UNDEFINED;
+		void destroy(VkDevice device_)
+		{
+			vkDestroyImage(device_, image, nullptr);
+			vkDestroyImageView(device_, view, nullptr);
+			vkFreeMemory(device_, mem, nullptr);
+		}
+	};
+
+	struct FrameBuffer {
+		int32_t width, height;
+		VkFramebuffer frameBuffer = VK_NULL_HANDLE;
+		VkRenderPass renderPass = VK_NULL_HANDLE;
+		void setSize(int32_t w, int32_t h)
+		{
+			this->width = w;
+			this->height = h;
+		}
+		void destroy(VkDevice device_)
+		{
+			vkDestroyFramebuffer(device_, frameBuffer, nullptr);
+			vkDestroyRenderPass(device_, renderPass, nullptr);
+		}
+	};
+
+	struct {
+		struct Offscreen : public FrameBuffer {
+			FrameBufferAttachment color, depth;
+		} render;
+		struct Velocity : public FrameBuffer {
+			FrameBufferAttachment velocity;
+		} velocity;
+	} offscreenFrameBuffers;
+
+	uint32_t velocityWidth = 0;
+	uint32_t velocityHeight = 0;
+
+	FrameBufferAttachment xessOutput;
+
+	enum class OutputIndex
+	{
+		kColor,
+		kVelocity,
+		kXeSSOutput,
+	} outputIndex = OutputIndex::kXeSSOutput;
 
 	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
 	{
-		title = "Vulkan Example - Basic indexed triangle";
+		title = "XeSS-SR VK basic sample";
 		// To keep things simple, we don't use the UI overlay from the framework
 		settings.overlay = false;
 		// Setup a default look-at camera
 		camera.type = Camera::CameraType::lookat;
 		camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
 		camera.setRotation(glm::vec3(0.0f));
-		camera.setPerspective(60.0f, (float)width / (float)height, 1.0f, 256.0f);
 		// Values not set here are initialized in the base class constructor
+
+		m_haltonPointSet = Utils::GenerateHalton(2, 3, 1, 32);
+
+		m_uniformBufferData.offset = glm::vec4(0.f);
+		m_uniformBufferData.resolution = glm::vec4(0.f);
+		m_uniformBufferData.velocity = glm::vec4(0.f);
+
+		// Require Vulkan 1.1
+		apiVersion = VK_API_VERSION_1_1;
 	}
 
 	~VulkanExample()
 	{
+		auto status = xessDestroyContext(xessContext);
+		assert(status == XESS_RESULT_SUCCESS);
+		(void)status;
+
 		// Clean up used Vulkan resources
 		// Note: Inherited destructor cleans up resources stored in base class
 		vkDestroyPipeline(device, pipeline, nullptr);
+		vkDestroyPipeline(device, velocityPipeline, nullptr);
+		vkDestroyPipeline(device, fsqPipeline, nullptr);
+		vkDestroyPipeline(device, fsqVelocityPipeline, nullptr);
+
+		offscreenFrameBuffers.render.destroy(device);
+		offscreenFrameBuffers.render.color.destroy(device);
+		offscreenFrameBuffers.render.depth.destroy(device);
+
+		offscreenFrameBuffers.velocity.destroy(device);
+		offscreenFrameBuffers.velocity.velocity.destroy(device);
+
+		xessOutput.destroy(device);
 
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
+		vkDestroySampler(device, fsqSampler, nullptr);
+
+		vkDestroyPipelineLayout(device, fsqPipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(device, fsqDescriptorSetLayout, nullptr);
+
+
 		vkDestroyBuffer(device, vertices.buffer, nullptr);
 		vkFreeMemory(device, vertices.memory, nullptr);
 
-		vkDestroyBuffer(device, indices.buffer, nullptr);
-		vkFreeMemory(device, indices.memory, nullptr);
+		vkDestroyCommandPool(device, commandPool, nullptr);
 
 		for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++)
 		{
 			vkDestroyFence(device, waitFences[i], nullptr);
-			vkDestroySemaphore(device, presentCompleteSemaphores[i], nullptr);
-			vkDestroySemaphore(device, renderCompleteSemaphores[i], nullptr);
 			vkDestroyBuffer(device, uniformBuffers[i].buffer, nullptr);
 			vkFreeMemory(device, uniformBuffers[i].memory, nullptr);
+		}
+		for (size_t i = 0; i < presentCompleteSemaphores.size(); i++)
+		{
+			vkDestroySemaphore(device, renderCompleteSemaphores[i], nullptr);
+			vkDestroySemaphore(device, presentCompleteSemaphores[i], nullptr);
+		}
+	}
+
+	void keyReleased(uint32_t key) // override
+	{
+		auto oldOutputIndex = outputIndex;
+		switch (key)
+		{
+			case KEY_1:
+				outputIndex = OutputIndex::kColor;
+				break;
+			case KEY_2:
+				outputIndex = OutputIndex::kVelocity;
+				break;
+			case KEY_3:
+				outputIndex = OutputIndex::kXeSSOutput;
+				break;
+			case VK_SPACE:
+				m_pause = !m_pause;
+				break;
+		}
+		if (oldOutputIndex != outputIndex)
+		{
+			vkQueueWaitIdle(queue);
+			updateFsqDescriptorSet();
 		}
 	}
 
@@ -171,22 +315,193 @@ public:
 			typeBits >>= 1;
 		}
 
-		throw "Could not find a suitable memory type!";
+		throw std::runtime_error("Could not find a suitable memory type!");
+	}
+
+	void getEnabledFeatures() override
+	{
+		void* features = &enabledFeatures;
+		auto status = xessVKGetRequiredDeviceFeatures(instance, physicalDevice, &features);
+		if (status != XESS_RESULT_SUCCESS)
+		{
+			throw std::runtime_error("Unable to get required XeSS device features");
+		}
+	}
+
+	void getEnabledExtensions() override
+	{
+		uint32_t extensionCount;
+		const char*const* extensions;
+
+		auto status = xessVKGetRequiredDeviceExtensions(instance, physicalDevice, &extensionCount, &extensions);
+		if (status != XESS_RESULT_SUCCESS)
+		{
+			throw std::runtime_error("Unable to get required XeSS device extensions");
+		}
+		for (size_t extensionIdx = 0; extensionIdx < extensionCount; ++extensionIdx)
+		{
+			if (std::find(enabledDeviceExtensions.begin(), enabledDeviceExtensions.end(), extensions[extensionIdx]) == enabledDeviceExtensions.end())
+			{
+				enabledDeviceExtensions.push_back(extensions[extensionIdx]);
+			}
+		}
+	}
+
+	void setupXess()
+	{
+		auto status = xessVKCreateContext(instance, physicalDevice, device, &xessContext);
+		if (status != XESS_RESULT_SUCCESS)
+		{
+			throw std::runtime_error("Unable to create XeSS context");
+		}
+
+		if (XESS_RESULT_WARNING_OLD_DRIVER == xessIsOptimalDriver(xessContext))
+		{
+			MessageBox(NULL, L"Please install the latest graphics driver from your vendor for optimal Intel(R) XeSS performance and visual quality", L"Important notice", MB_OK | MB_TOPMOST | MB_ICONINFORMATION);
+		}
+
+		xess_properties_t props;
+		xess_2d_t outputResoulution = { width, height };
+		status = xessGetProperties(xessContext, &outputResoulution, &props);
+		if (status != XESS_RESULT_SUCCESS)
+		{
+			throw std::runtime_error("Unable to get XeSS props");
+		}
+
+		xess_version_t xefx_version;
+		status = xessGetIntelXeFXVersion(xessContext, &xefx_version);
+		if (status != XESS_RESULT_SUCCESS)
+		{
+			throw std::runtime_error("Unable to get XeFX version");
+		}
+#if 0
+		D3D12_HEAP_DESC textures_heap_desc{ props.tempTextureHeapSize,
+			{D3D12_HEAP_TYPE_DEFAULT, D3D12_CPU_PAGE_PROPERTY_UNKNOWN, D3D12_MEMORY_POOL_UNKNOWN, 0, 0},
+			0, D3D12_HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES };
+
+		m_device->CreateHeap(&textures_heap_desc, IID_PPV_ARGS(&m_texturesHeap));
+		m_texturesHeap->SetName(L"xess_textures_heap");
+
+		m_uavDescriptorSize =
+			m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+#endif
+		xess_vk_init_params_t params = {
+			/* Output width and height */
+			{width, height},
+			/* Quality setting */
+			xessQuality,
+			/* Initialization flags. */
+			#if defined(USE_LOWRES_MV)
+			XESS_INIT_FLAG_NONE,
+			#else
+			XESS_INIT_FLAG_HIGH_RES_MV,
+			#endif
+			/* Specfies the node mask for internally created resources on
+			 * multi-adapter systems. */
+			0,
+			/* Specfies the node visibility mask for internally created resources
+			 * on multi-adapter systems. */
+			0,
+			/* Optional externally allocated buffers storage for XeSS-SR. If NULL the
+			 * storage is allocated internally. If allocated, the heap type must be
+			 * D3D12_HEAP_TYPE_DEFAULT. This heap is not accessed by the CPU. */
+			nullptr,
+			/* Offset in the externally allocated heap for temporary buffers storage. */
+			0,
+			/* Optional externally allocated textures storage for XeSS-SR. If NULL the
+			 * storage is allocated internally. If allocated, the heap type must be
+			 * D3D12_HEAP_TYPE_DEFAULT. This heap is not accessed by the CPU. */
+			nullptr,
+			/* Offset in the externally allocated heap for temporary textures storage. */
+			0,
+			/* No pipeline library */
+			NULL
+		};
+
+		status = xessVKInit(xessContext, &params);
+		if (status != XESS_RESULT_SUCCESS)
+		{
+			throw std::runtime_error("Unable to get XeSS props");
+		}
+
+		// Get optimal input resolution
+		xess_2d_t outputResolution = { width, height };
+		status = xessGetInputResolution(xessContext, &outputResolution, xessQuality, &xessInputResolution);
+
+		if (status != XESS_RESULT_SUCCESS)
+		{
+			throw std::runtime_error("Unable to get XeSS props");
+		}
+		camera.setPerspective(60.0f, (float)xessInputResolution.x / (float)xessInputResolution.y, 1.0f, 256.0f);
+
+		// Xess output
+		createAttachment(VK_FORMAT_R16G16B16A16_UNORM, VK_IMAGE_USAGE_STORAGE_BIT, &xessOutput, width, height);
+	}
+
+	// Create a frame buffer attachment
+	void createAttachment(
+		VkFormat format,
+		VkImageUsageFlags usage,
+		FrameBufferAttachment* attachment,
+		uint32_t width_,
+		uint32_t height_)
+	{
+		VkImageAspectFlags aspectMask = 0;
+
+		attachment->format = format;
+
+		if (usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT || usage & VK_IMAGE_USAGE_STORAGE_BIT)
+		{
+			aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		}
+		if (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+		{
+			// the view is also going to be used by XeSS, so it needs single aspect (without stencil)
+			aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		}
+
+		assert(aspectMask > 0);
+
+		VkImageCreateInfo image = vks::initializers::imageCreateInfo();
+		image.imageType = VK_IMAGE_TYPE_2D;
+		image.format = format;
+		image.extent.width = width_;
+		image.extent.height = height_;
+		image.extent.depth = 1;
+		image.mipLevels = 1;
+		image.arrayLayers = 1;
+		image.samples = VK_SAMPLE_COUNT_1_BIT;
+		image.tiling = VK_IMAGE_TILING_OPTIMAL;
+		image.usage = usage | VK_IMAGE_USAGE_SAMPLED_BIT;
+
+		VkMemoryAllocateInfo memAlloc = vks::initializers::memoryAllocateInfo();
+		VkMemoryRequirements memReqs;
+
+		VK_CHECK_RESULT(vkCreateImage(device, &image, nullptr, &attachment->image));
+		vkGetImageMemoryRequirements(device, attachment->image, &memReqs);
+		memAlloc.allocationSize = memReqs.size;
+		memAlloc.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &attachment->mem));
+		VK_CHECK_RESULT(vkBindImageMemory(device, attachment->image, attachment->mem, 0));
+
+		VkImageViewCreateInfo imageView = vks::initializers::imageViewCreateInfo();
+		imageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		imageView.format = format;
+		imageView.subresourceRange = {};
+		imageView.subresourceRange.aspectMask = aspectMask;
+		imageView.subresourceRange.baseMipLevel = 0;
+		imageView.subresourceRange.levelCount = 1;
+		imageView.subresourceRange.baseArrayLayer = 0;
+		imageView.subresourceRange.layerCount = 1;
+		imageView.image = attachment->image;
+		VK_CHECK_RESULT(vkCreateImageView(device, &imageView, nullptr, &attachment->view));
 	}
 
 	// Create the Vulkan synchronization primitives used in this example
 	void createSynchronizationPrimitives()
 	{
-		for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
-			
-			// Semaphores (Used for correct command ordering)
-			VkSemaphoreCreateInfo semaphoreCI{};
-			semaphoreCI.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-			// Semaphore used to ensure that image presentation is complete before starting to submit again
-			VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCI, nullptr, &presentCompleteSemaphores[i]));
-			// Semaphore used to ensure that all commands submitted have been finished before submitting the image to the queue
-			VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCI, nullptr, &renderCompleteSemaphores[i]));
-
+		for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++)
+		{
 			// Fences (Used to check draw command buffer completion)
 			VkFenceCreateInfo fenceCI{};
 			fenceCI.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -194,6 +509,17 @@ public:
 			fenceCI.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 			VK_CHECK_RESULT(vkCreateFence(device, &fenceCI, nullptr, &waitFences[i]));
 
+		}
+		presentCompleteSemaphores.resize(swapChain.imageCount);
+		renderCompleteSemaphores.resize(swapChain.imageCount);
+		for (size_t i = 0; i < presentCompleteSemaphores.size(); ++i)
+		{
+			VkSemaphoreCreateInfo semaphoreCI{};
+			semaphoreCI.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+			// Semaphore used to ensure that image presentation is complete before starting to submit again
+			VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCI, nullptr, &presentCompleteSemaphores[i]));
+			// Semaphore used to ensure that all commands submitted have been finished before submitting the image to the queue
+			VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCI, nullptr, &renderCompleteSemaphores[i]));
 		}
 	}
 
@@ -220,17 +546,15 @@ public:
 		//	what should be done a real-world application, where you should allocate large chunks of memory at once instead.
 
 		// Setup vertices
+		float aspectRatio = static_cast<float>(xessInputResolution.x) / static_cast<float>(xessInputResolution.y);
 		std::vector<Vertex> vertexBuffer{
-			{ {  1.0f,  1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-			{ { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-			{ {  0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+			{{0.0f, -0.25f * aspectRatio, 0.01f}, {1.0f, 0.0f, 0.0f, 1.0f}},
+			{{0.25f, 0.25f * aspectRatio, 0.5f}, {0.0f, 1.0f, 0.0f, 1.0f}},
+			{{-0.25f, 0.25f * aspectRatio, 0.2f}, {0.0f, 0.0f, 1.0f, 1.0f}}
 		};
 		uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(Vertex);
 
-		// Setup indices
-		std::vector<uint32_t> indexBuffer{ 0, 1, 2 };
-		indices.count = static_cast<uint32_t>(indexBuffer.size());
-		uint32_t indexBufferSize = indices.count * sizeof(uint32_t);
+		vertices.count = static_cast<uint32_t>(vertexBuffer.size());
 
 		VkMemoryAllocateInfo memAlloc{};
 		memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -256,7 +580,6 @@ public:
 
 		struct {
 			StagingBuffer vertices;
-			StagingBuffer indices;
 		} stagingBuffers;
 
 		void* data;
@@ -290,32 +613,7 @@ public:
 		VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &vertices.memory));
 		VK_CHECK_RESULT(vkBindBufferMemory(device, vertices.buffer, vertices.memory, 0));
 
-		// Index buffer
-		VkBufferCreateInfo indexbufferCI{};
-		indexbufferCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		indexbufferCI.size = indexBufferSize;
-		indexbufferCI.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-		// Copy index data to a buffer visible to the host (staging buffer)
-		VK_CHECK_RESULT(vkCreateBuffer(device, &indexbufferCI, nullptr, &stagingBuffers.indices.buffer));
-		vkGetBufferMemoryRequirements(device, stagingBuffers.indices.buffer, &memReqs);
-		memAlloc.allocationSize = memReqs.size;
-		memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &stagingBuffers.indices.memory));
-		VK_CHECK_RESULT(vkMapMemory(device, stagingBuffers.indices.memory, 0, indexBufferSize, 0, &data));
-		memcpy(data, indexBuffer.data(), indexBufferSize);
-		vkUnmapMemory(device, stagingBuffers.indices.memory);
-		VK_CHECK_RESULT(vkBindBufferMemory(device, stagingBuffers.indices.buffer, stagingBuffers.indices.memory, 0));
-
-		// Create destination buffer with device only visibility
-		indexbufferCI.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		VK_CHECK_RESULT(vkCreateBuffer(device, &indexbufferCI, nullptr, &indices.buffer));
-		vkGetBufferMemoryRequirements(device, indices.buffer, &memReqs);
-		memAlloc.allocationSize = memReqs.size;
-		memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &indices.memory));
-		VK_CHECK_RESULT(vkBindBufferMemory(device, indices.buffer, indices.memory, 0));
-
-		// Buffer copies have to be submitted to a queue, so we need a command buffer for them
+				// Buffer copies have to be submitted to a queue, so we need a command buffer for them
 		// Note: Some devices offer a dedicated transfer queue (with only the transfer bit set) that may be faster when doing lots of copies
 		VkCommandBuffer copyCmd;
 
@@ -333,16 +631,13 @@ public:
 		// Vertex buffer
 		copyRegion.size = vertexBufferSize;
 		vkCmdCopyBuffer(copyCmd, stagingBuffers.vertices.buffer, vertices.buffer, 1, &copyRegion);
-		// Index buffer
-		copyRegion.size = indexBufferSize;
-		vkCmdCopyBuffer(copyCmd, stagingBuffers.indices.buffer, indices.buffer,	1, &copyRegion);
 		VK_CHECK_RESULT(vkEndCommandBuffer(copyCmd));
 
 		// Submit the command buffer to the queue to finish the copy
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &copyCmd;
+		VkSubmitInfo submitInfo_{};
+		submitInfo_.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo_.commandBufferCount = 1;
+		submitInfo_.pCommandBuffers = &copyCmd;
 
 		// Create fence to ensure that the command buffer has finished executing
 		VkFenceCreateInfo fenceCI{};
@@ -352,7 +647,7 @@ public:
 		VK_CHECK_RESULT(vkCreateFence(device, &fenceCI, nullptr, &fence));
 
 		// Submit to the queue
-		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
+		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo_, fence));
 		// Wait for the fence to signal that command buffer has finished executing
 		VK_CHECK_RESULT(vkWaitForFences(device, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 
@@ -363,15 +658,13 @@ public:
 		// Note: Staging buffer must not be deleted before the copies have been submitted and executed
 		vkDestroyBuffer(device, stagingBuffers.vertices.buffer, nullptr);
 		vkFreeMemory(device, stagingBuffers.vertices.memory, nullptr);
-		vkDestroyBuffer(device, stagingBuffers.indices.buffer, nullptr);
-		vkFreeMemory(device, stagingBuffers.indices.memory, nullptr);
 	}
 
 	// Descriptors are allocated from a pool, that tells the implementation how many and what types of descriptors we are going to use (at maximum)
 	void createDescriptorPool()
 	{
 		// We need to tell the API the number of max. requested descriptors per type
-		VkDescriptorPoolSize descriptorTypeCounts[1];
+		VkDescriptorPoolSize descriptorTypeCounts[2];
 		// This example only one descriptor type (uniform buffer)
 		descriptorTypeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		// We have one buffer (and as such descriptor) per frame
@@ -381,16 +674,20 @@ public:
 		// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		// typeCounts[1].descriptorCount = 2;
 
+
+		descriptorTypeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		descriptorTypeCounts[1].descriptorCount = 1;
+
 		// Create the global descriptor pool
 		// All descriptors used in this example are allocated from this pool
 		VkDescriptorPoolCreateInfo descriptorPoolCI{};
 		descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		descriptorPoolCI.pNext = nullptr;
-		descriptorPoolCI.poolSizeCount = 1;
+		descriptorPoolCI.poolSizeCount = 2;
 		descriptorPoolCI.pPoolSizes = descriptorTypeCounts;
 		// Set the max. number of descriptor sets that can be requested from this pool (requesting beyond this limit will result in an error)
 		// Our sample will create one set per uniform buffer per frame
-		descriptorPoolCI.maxSets = MAX_CONCURRENT_FRAMES;
+		descriptorPoolCI.maxSets = MAX_CONCURRENT_FRAMES + 1;
 		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolCI, nullptr, &descriptorPool));
 	}
 
@@ -403,7 +700,7 @@ public:
 		VkDescriptorSetLayoutBinding layoutBinding{};
 		layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		layoutBinding.descriptorCount = 1;
-		layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		layoutBinding.pImmutableSamplers = nullptr;
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
@@ -413,6 +710,16 @@ public:
 		descriptorLayoutCI.pBindings = &layoutBinding;
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayoutCI, nullptr, &descriptorSetLayout));
 
+
+		VkDescriptorSetLayoutBinding fsqLayoutBinding{};
+		fsqLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		fsqLayoutBinding.descriptorCount = 1;
+		fsqLayoutBinding.stageFlags =  VK_SHADER_STAGE_FRAGMENT_BIT;
+		fsqLayoutBinding.pImmutableSamplers = nullptr;
+
+		descriptorLayoutCI.pBindings = &fsqLayoutBinding;
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayoutCI, nullptr, &fsqDescriptorSetLayout));
+
 		// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
 		// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
 		VkPipelineLayoutCreateInfo pipelineLayoutCI{};
@@ -421,10 +728,13 @@ public:
 		pipelineLayoutCI.setLayoutCount = 1;
 		pipelineLayoutCI.pSetLayouts = &descriptorSetLayout;
 		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCI, nullptr, &pipelineLayout));
+
+		pipelineLayoutCI.pSetLayouts = &fsqDescriptorSetLayout;
+		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCI, nullptr, &fsqPipelineLayout));
 	}
 
 	// Shaders access data using descriptor sets that "point" at our uniform buffers
-	// The descriptor sets make use of the descriptor set layouts created above 
+	// The descriptor sets make use of the descriptor set layouts created above
 	void createDescriptorSets()
 	{
 		// Allocate one descriptor set per frame from the global descriptor pool
@@ -440,7 +750,7 @@ public:
 			// For every binding point used in a shader there needs to be one
 			// descriptor set matching that binding point
 			VkWriteDescriptorSet writeDescriptorSet{};
-			
+
 			// The buffer's information is passed using a descriptor info structure
 			VkDescriptorBufferInfo bufferInfo{};
 			bufferInfo.buffer = uniformBuffers[i].buffer;
@@ -455,56 +765,56 @@ public:
 			writeDescriptorSet.dstBinding = 0;
 			vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
 		}
+
+
+		{
+			VkDescriptorSetAllocateInfo allocInfo{};
+			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			allocInfo.descriptorPool = descriptorPool;
+			allocInfo.descriptorSetCount = 1;
+			allocInfo.pSetLayouts = &fsqDescriptorSetLayout;
+			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &fsqDescriptorSet));
+
+			updateFsqDescriptorSet();
+		}
 	}
 
-	// Create the depth (and stencil) buffer attachments used by our framebuffers
-	// Note: Override of virtual function in the base class and called from within VulkanExampleBase::prepare
-	void setupDepthStencil()
+	void updateFsqDescriptorSet()
 	{
-		// Create an optimal image used as the depth stencil attachment
-		VkImageCreateInfo imageCI{};
-		imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageCI.imageType = VK_IMAGE_TYPE_2D;
-		imageCI.format = depthFormat;
-		// Use example's height and width
-		imageCI.extent = { width, height, 1 };
-		imageCI.mipLevels = 1;
-		imageCI.arrayLayers = 1;
-		imageCI.samples = VK_SAMPLE_COUNT_1_BIT;
-		imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
-		imageCI.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-		imageCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		VK_CHECK_RESULT(vkCreateImage(device, &imageCI, nullptr, &depthStencil.image));
+		// Update the descriptor set determining the shader binding points
+			// For every binding point used in a shader there needs to be one
+			// descriptor set matching that binding point
+		VkWriteDescriptorSet writeDescriptorSet{};
 
-		// Allocate memory for the image (device local) and bind it to our image
-		VkMemoryAllocateInfo memAlloc{};
-		memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		VkMemoryRequirements memReqs;
-		vkGetImageMemoryRequirements(device, depthStencil.image, &memReqs);
-		memAlloc.allocationSize = memReqs.size;
-		memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &depthStencil.mem));
-		VK_CHECK_RESULT(vkBindImageMemory(device, depthStencil.image, depthStencil.mem, 0));
-
-		// Create a view for the depth stencil image
-		// Images aren't directly accessed in Vulkan, but rather through views described by a subresource range
-		// This allows for multiple views of one image with differing ranges (e.g. for different layers)
-		VkImageViewCreateInfo depthStencilViewCI{};
-		depthStencilViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		depthStencilViewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		depthStencilViewCI.format = depthFormat;
-		depthStencilViewCI.subresourceRange = {};
-		depthStencilViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-		// Stencil aspect should only be set on depth + stencil formats (VK_FORMAT_D16_UNORM_S8_UINT..VK_FORMAT_D32_SFLOAT_S8_UINT)
-		if (depthFormat >= VK_FORMAT_D16_UNORM_S8_UINT) {
-			depthStencilViewCI.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		// The image + sampler  information is passed using a descriptor info structure
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.sampler = fsqSampler;
+		switch (outputIndex)
+		{
+		case OutputIndex::kColor:
+			imageInfo.imageView = offscreenFrameBuffers.render.color.view;
+			break;
+		case OutputIndex::kVelocity:
+			imageInfo.imageView = offscreenFrameBuffers.velocity.velocity.view;
+			break;
+		case OutputIndex::kXeSSOutput:
+			imageInfo.imageView = xessOutput.view;
+			break;
+		default:
+			assert(!"Unrecognized outputIndex value");
+			imageInfo.imageView = xessOutput.view;
 		}
-		depthStencilViewCI.subresourceRange.baseMipLevel = 0;
-		depthStencilViewCI.subresourceRange.levelCount = 1;
-		depthStencilViewCI.subresourceRange.baseArrayLayer = 0;
-		depthStencilViewCI.subresourceRange.layerCount = 1;
-		depthStencilViewCI.image = depthStencil.image;
-		VK_CHECK_RESULT(vkCreateImageView(device, &depthStencilViewCI, nullptr, &depthStencil.view));
+
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		// Binding 0 : Uniform buffer
+		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSet.dstSet = fsqDescriptorSet;
+		writeDescriptorSet.descriptorCount = 1;
+		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writeDescriptorSet.pImageInfo = &imageInfo;
+		writeDescriptorSet.dstBinding = 0;
+		vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
 	}
 
 	// Create a frame buffer for each swap chain image
@@ -515,11 +825,9 @@ public:
 		frameBuffers.resize(swapChain.imageCount);
 		for (size_t i = 0; i < frameBuffers.size(); i++)
 		{
-			std::array<VkImageView, 2> attachments;
+			std::array<VkImageView, 1> attachments;
 			// Color attachment is the view of the swapchain image
 			attachments[0] = swapChain.buffers[i].view;
-			// Depth/Stencil attachment is the same for all frame buffers due to how depth works with current GPUs
-			attachments[1] = depthStencil.view;         
 
 			VkFramebufferCreateInfo frameBufferCI{};
 			frameBufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -545,7 +853,7 @@ public:
 		// This example will use a single render pass with one subpass
 
 		// Descriptors for the attachments used by this renderpass
-		std::array<VkAttachmentDescription, 2> attachments{};
+		std::array<VkAttachmentDescription, 1> attachments{};
 
 		// Color attachment
 		attachments[0].format = swapChain.colorFormat;                                  // Use the color format selected by the swapchain
@@ -556,32 +864,19 @@ public:
 		attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;               // Same for store
 		attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                       // Layout at render pass start. Initial doesn't matter, so we use undefined
 		attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;                   // Layout to which the attachment is transitioned when the render pass is finished
-		                                                                                // As we want to present the color buffer to the swapchain, we transition to PRESENT_KHR
-		// Depth attachment
-		attachments[1].format = depthFormat;                                           // A proper depth format is selected in the example base
-		attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
-		attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;                           // Clear depth at start of first subpass
-		attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;                     // We don't need depth after render pass has finished (DONT_CARE may result in better performance)
-		attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;                // No stencil
-		attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;              // No Stencil
-		attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                      // Layout at render pass start. Initial doesn't matter, so we use undefined
-		attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; // Transition to depth/stencil attachment
 
 		// Setup attachment references
 		VkAttachmentReference colorReference{};
 		colorReference.attachment = 0;                                    // Attachment 0 is color
 		colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Attachment layout used as color during the subpass
 
-		VkAttachmentReference depthReference{};
-		depthReference.attachment = 1;                                            // Attachment 1 is color
-		depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; // Attachment used as depth/stencil used during the subpass
 
 		// Setup a single subpass reference
 		VkSubpassDescription subpassDescription{};
 		subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpassDescription.colorAttachmentCount = 1;                            // Subpass uses one color attachment
 		subpassDescription.pColorAttachments = &colorReference;                 // Reference to the color attachment in slot 0
-		subpassDescription.pDepthStencilAttachment = &depthReference;           // Reference to the depth attachment in slot 1
+		subpassDescription.pDepthStencilAttachment = nullptr;                   // Reference to the depth attachment in slot 1
 		subpassDescription.inputAttachmentCount = 0;                            // Input attachments can be used to sample from contents of a previous subpass
 		subpassDescription.pInputAttachments = nullptr;                         // (Input attachments not used by this example)
 		subpassDescription.preserveAttachmentCount = 0;                         // Preserved attachments can be used to loop (and preserve) attachments through subpasses
@@ -594,25 +889,15 @@ public:
 		// Each subpass dependency will introduce a memory and execution dependency between the source and dest subpass described by
 		// srcStageMask, dstStageMask, srcAccessMask, dstAccessMask (and dependencyFlags is set)
 		// Note: VK_SUBPASS_EXTERNAL is a special constant that refers to all commands executed outside of the actual renderpass)
-		std::array<VkSubpassDependency, 2> dependencies;
+		std::array<VkSubpassDependency, 1> dependencies;
 
-		// Does the transition from final to initial layout for the depth an color attachments
-		// Depth attachment
 		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 		dependencies[0].dstSubpass = 0;
-		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-		dependencies[0].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-		dependencies[0].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-		dependencies[0].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[0].srcAccessMask = 0;
+		dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
 		dependencies[0].dependencyFlags = 0;
-		// Color attachment
-		dependencies[1].srcSubpass = VK_SUBPASS_EXTERNAL;
-		dependencies[1].dstSubpass = 0;
-		dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependencies[1].srcAccessMask = 0;
-		dependencies[1].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-		dependencies[1].dependencyFlags = 0;
 
 		// Create the actual renderpass
 		VkRenderPassCreateInfo renderPassCI{};
@@ -631,7 +916,7 @@ public:
 	// This function loads such a shader from a binary file and returns a shader module structure
 	VkShaderModule loadSPIRVShader(std::string filename)
 	{
-		size_t shaderSize;
+		size_t shaderSize = 0;
 		char* shaderCode{ nullptr };
 
 #if defined(__ANDROID__)
@@ -680,6 +965,174 @@ public:
 		}
 	}
 
+	void prepareOffscreenFramebuffers()
+	{
+
+#if defined(USE_LOWRES_MV)
+		velocityWidth = xessInputResolution.x;
+		velocityHeight = xessInputResolution.y;
+#else
+		velocityWidth = width;
+		velocityHeight = height;
+#endif
+
+		offscreenFrameBuffers.render.setSize(xessInputResolution.x, xessInputResolution.y);
+
+		offscreenFrameBuffers.velocity.setSize(velocityWidth, velocityHeight);
+
+		// Find a suitable depth format
+		VkFormat attDepthFormat;
+		VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physicalDevice, &attDepthFormat);
+		assert(validDepthFormat);
+		(void)validDepthFormat;
+
+		// Color buffer
+		createAttachment(VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, &offscreenFrameBuffers.render.color, xessInputResolution.x, xessInputResolution.y);
+		createAttachment(attDepthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, &offscreenFrameBuffers.render.depth, xessInputResolution.x, xessInputResolution.y);
+
+		// Velocity
+		createAttachment(VK_FORMAT_R16G16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, &offscreenFrameBuffers.velocity.velocity, velocityWidth, velocityHeight);
+
+		// Render passes
+		{
+			std::array<VkAttachmentDescription, 2> attachmentDescs = {};
+
+			// Init attachment properties
+			for (uint32_t i = 0; i < static_cast<uint32_t>(attachmentDescs.size()); i++)
+			{
+				attachmentDescs[i].samples = VK_SAMPLE_COUNT_1_BIT;
+				attachmentDescs[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+				attachmentDescs[i].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+				attachmentDescs[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				attachmentDescs[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+#if defined(USE_LOWRES_MV)
+				attachmentDescs[i].finalLayout = (i == 1) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+#else
+				attachmentDescs[i].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+#endif
+			}
+
+			// Formats
+			attachmentDescs[0].format = offscreenFrameBuffers.render.color.format;
+			attachmentDescs[1].format = offscreenFrameBuffers.render.depth.format;
+
+			std::vector<VkAttachmentReference> colorReferences;
+			colorReferences.push_back({ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+
+			VkAttachmentReference depthReference = {};
+			depthReference.attachment = 1;
+			depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkSubpassDescription subpass = {};
+			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpass.pColorAttachments = colorReferences.data();
+			subpass.colorAttachmentCount = static_cast<uint32_t>(colorReferences.size());
+			subpass.pDepthStencilAttachment = &depthReference;
+
+			// Use subpass dependencies for attachment layout transitions
+			std::array<VkSubpassDependency, 2> dependencies;
+
+			VkPipelineStageFlags attachmentWriteStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			VkAccessFlags attachmentAccess = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[0].dstSubpass = 0;
+			dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			dependencies[0].dstStageMask = attachmentWriteStages;
+			dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			dependencies[0].dstAccessMask = attachmentAccess;
+			dependencies[0].dependencyFlags = 0u;
+
+			dependencies[1].srcSubpass = 0;
+			dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[1].srcStageMask = attachmentWriteStages;
+			dependencies[1].dstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			dependencies[1].srcAccessMask = attachmentAccess;
+			dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			dependencies[1].dependencyFlags = 0u;
+
+			VkRenderPassCreateInfo renderPassInfo = {};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassInfo.pAttachments = attachmentDescs.data();
+			renderPassInfo.attachmentCount = static_cast<uint32_t>(attachmentDescs.size());
+			renderPassInfo.subpassCount = 1;
+			renderPassInfo.pSubpasses = &subpass;
+			renderPassInfo.dependencyCount = 2;
+			renderPassInfo.pDependencies = dependencies.data();
+			VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &offscreenFrameBuffers.render.renderPass));
+
+			std::array<VkImageView, 2> attachments;
+			attachments[0] = offscreenFrameBuffers.render.color.view;
+			attachments[1] = offscreenFrameBuffers.render.depth.view;
+
+			VkFramebufferCreateInfo fbufCreateInfo = vks::initializers::framebufferCreateInfo();
+			fbufCreateInfo.renderPass = offscreenFrameBuffers.render.renderPass;
+			fbufCreateInfo.pAttachments = attachments.data();
+			fbufCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+			fbufCreateInfo.width = offscreenFrameBuffers.render.width;
+			fbufCreateInfo.height = offscreenFrameBuffers.render.height;
+			fbufCreateInfo.layers = 1;
+			VK_CHECK_RESULT(vkCreateFramebuffer(device, &fbufCreateInfo, nullptr, &offscreenFrameBuffers.render.frameBuffer));
+		}
+
+		// Velocity
+		{
+			VkAttachmentDescription attachmentDescription{};
+			attachmentDescription.format = offscreenFrameBuffers.velocity.velocity.format;
+			attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+			attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+			VkAttachmentReference colorReference = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+
+			VkSubpassDescription subpass = {};
+			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpass.pColorAttachments = &colorReference;
+			subpass.colorAttachmentCount = 1;
+
+			std::array<VkSubpassDependency, 2> dependencies;
+
+			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[0].dstSubpass = 0;
+			dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			dependencies[0].dstAccessMask =  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			dependencies[0].dependencyFlags = 0u;
+
+			dependencies[1].srcSubpass = 0;
+			dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[1].dstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			dependencies[1].srcAccessMask =  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			dependencies[1].dependencyFlags = 0u;
+
+			VkRenderPassCreateInfo renderPassInfo = {};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassInfo.pAttachments = &attachmentDescription;
+			renderPassInfo.attachmentCount = 1;
+			renderPassInfo.subpassCount = 1;
+			renderPassInfo.pSubpasses = &subpass;
+			renderPassInfo.dependencyCount = 2;
+			renderPassInfo.pDependencies = dependencies.data();
+			VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &offscreenFrameBuffers.velocity.renderPass));
+
+			VkFramebufferCreateInfo fbufCreateInfo = vks::initializers::framebufferCreateInfo();
+			fbufCreateInfo.renderPass = offscreenFrameBuffers.velocity.renderPass;
+			fbufCreateInfo.pAttachments = &offscreenFrameBuffers.velocity.velocity.view;
+			fbufCreateInfo.attachmentCount = 1;
+			fbufCreateInfo.width = offscreenFrameBuffers.velocity.width;
+			fbufCreateInfo.height = offscreenFrameBuffers.velocity.height;
+			fbufCreateInfo.layers = 1;
+			VK_CHECK_RESULT(vkCreateFramebuffer(device, &fbufCreateInfo, nullptr, &offscreenFrameBuffers.velocity.frameBuffer));
+		}
+	}
+
 	void createPipelines()
 	{
 		// Create the graphics pipeline used in this example
@@ -692,7 +1145,7 @@ public:
 		// The layout used for this pipeline (can be shared among multiple pipelines using the same layout)
 		pipelineCI.layout = pipelineLayout;
 		// Renderpass this pipeline is attached to
-		pipelineCI.renderPass = renderPass;
+		pipelineCI.renderPass = offscreenFrameBuffers.render.renderPass;
 
 		// Construct the different states making up the pipeline
 
@@ -748,7 +1201,7 @@ public:
 		depthStencilStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		depthStencilStateCI.depthTestEnable = VK_TRUE;
 		depthStencilStateCI.depthWriteEnable = VK_TRUE;
-		depthStencilStateCI.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+		depthStencilStateCI.depthCompareOp = VK_COMPARE_OP_ALWAYS;
 		depthStencilStateCI.depthBoundsTestEnable = VK_FALSE;
 		depthStencilStateCI.back.failOp = VK_STENCIL_OP_KEEP;
 		depthStencilStateCI.back.passOp = VK_STENCIL_OP_KEEP;
@@ -777,7 +1230,7 @@ public:
 		std::array<VkVertexInputAttributeDescription, 2> vertexInputAttributs;
 		// These match the following shader layout (see triangle.vert):
 		//	layout (location = 0) in vec3 inPos;
-		//	layout (location = 1) in vec3 inColor;
+		//	layout (location = 1) in vec4 inColor;
 		// Attribute location 0: Position
 		vertexInputAttributs[0].binding = 0;
 		vertexInputAttributs[0].location = 0;
@@ -787,8 +1240,8 @@ public:
 		// Attribute location 1: Color
 		vertexInputAttributs[1].binding = 0;
 		vertexInputAttributs[1].location = 1;
-		// Color attribute is three 32 bit signed (SFLOAT) floats (R32 G32 B32)
-		vertexInputAttributs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		// Color attribute is three 32 bit signed (SFLOAT) floats (R32 G32 B32 A32)
+		vertexInputAttributs[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
 		vertexInputAttributs[1].offset = offsetof(Vertex, color);
 
 		// Vertex input state used for pipeline creation
@@ -842,6 +1295,39 @@ public:
 		// Shader modules are no longer needed once the graphics pipeline has been created
 		vkDestroyShaderModule(device, shaderStages[0].module, nullptr);
 		vkDestroyShaderModule(device, shaderStages[1].module, nullptr);
+
+		// Vertex shader
+		shaderStages[0].module = loadSPIRVShader(getShadersPath() + "triangle/velocity.vert.spv");
+		// Fragment shader
+		shaderStages[1].module = loadSPIRVShader(getShadersPath() + "triangle/velocity.frag.spv");
+
+		pipelineCI.renderPass = offscreenFrameBuffers.velocity.renderPass;
+
+		// Create rendering pipeline using the specified states
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCI, nullptr, &velocityPipeline));
+
+		// Shader modules are no longer needed once the graphics pipeline has been created
+		vkDestroyShaderModule(device, shaderStages[0].module, nullptr);
+		vkDestroyShaderModule(device, shaderStages[1].module, nullptr);
+
+		// Vertex shader
+		shaderStages[0].module = loadSPIRVShader(getShadersPath() + "triangle/quad.vert.spv");
+		// Fragment shader
+		shaderStages[1].module = loadSPIRVShader(getShadersPath() + "triangle/quad.frag.spv");
+
+		pipelineCI.renderPass = renderPass;
+		pipelineCI.layout = fsqPipelineLayout;
+
+		// Create rendering pipeline using the specified states
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCI, nullptr, &fsqPipeline));
+
+		vkDestroyShaderModule(device, shaderStages[1].module, nullptr);
+		shaderStages[1].module = loadSPIRVShader(getShadersPath() + "triangle/quad-velocity.frag.spv");
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCI, nullptr, &fsqVelocityPipeline));
+
+		// Shader modules are no longer needed once the graphics pipelines have been created
+		vkDestroyShaderModule(device, shaderStages[0].module, nullptr);
+		vkDestroyShaderModule(device, shaderStages[1].module, nullptr);
 	}
 
 	void createUniformBuffers()
@@ -884,16 +1370,39 @@ public:
 
 	}
 
+	void createSampler()
+	{
+		// Create sampler
+		VkSamplerCreateInfo samplerCI = vks::initializers::samplerCreateInfo();
+		samplerCI.magFilter = VK_FILTER_LINEAR;
+		samplerCI.minFilter = VK_FILTER_LINEAR;
+		samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		samplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerCI.mipLodBias = 0.0f;
+		samplerCI.maxAnisotropy = 1.0f;
+		samplerCI.compareOp = VK_COMPARE_OP_NEVER;
+		samplerCI.minLod = 0.0f;
+		samplerCI.maxLod = 1.0f;
+		samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+		VK_CHECK_RESULT(vkCreateSampler(device, &samplerCI, nullptr, &fsqSampler));
+	}
+
 	void prepare()
 	{
+		setupXess();
 		VulkanExampleBase::prepare();
+		prepareOffscreenFramebuffers();
 		createSynchronizationPrimitives();
 		createCommandBuffers();
 		createVertexBuffer();
 		createUniformBuffers();
+		createSampler();
 		createDescriptorSetLayout();
 		createDescriptorPool();
 		createDescriptorSets();
+
 		createPipelines();
 		prepared = true;
 	}
@@ -909,7 +1418,7 @@ public:
 		// Get the next swap chain image from the implementation
 		// Note that the implementation is free to return the images in any order, so we must use the acquire function and can't just cycle through the images
 		uint32_t imageIndex;
-		VkResult result = vkAcquireNextImageKHR(device, swapChain.swapChain, UINT64_MAX, presentCompleteSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+		VkResult result = vkAcquireNextImageKHR(device, swapChain.swapChain, UINT64_MAX, presentCompleteSemaphores[currentPresentSemaphore], VK_NULL_HANDLE, &imageIndex);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			windowResize();
 			return;
@@ -918,14 +1427,43 @@ public:
 		}
 
 		// Update the uniform buffer for the next frame
-		ShaderData shaderData{};
-		shaderData.projectionMatrix = camera.matrices.perspective;
-		shaderData.viewMatrix = camera.matrices.view;
-		shaderData.modelMatrix = glm::mat4(1.0f);
+		if (last_shader_data_time.time_since_epoch().count() == 0)
+		{
+			last_shader_data_time = std::chrono::high_resolution_clock::now();
+		}
+
+		auto current_time = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed_seconds = current_time - last_shader_data_time;
+		last_shader_data_time = current_time;
+
+		const double speed = 1. / 2; //4 second for screen
+		float translationSpeed = m_pause ? 0.f : (float)(speed * elapsed_seconds.count());
+		const float offsetBounds = 1.25f;
+
+		m_uniformBufferData.offset.x += translationSpeed;
+		if (m_uniformBufferData.offset.x > offsetBounds)
+		{
+			m_uniformBufferData.offset.x = -offsetBounds;
+		}
+
+		auto haltonValue = m_haltonPointSet[m_haltonIndex];
+		m_haltonIndex = (m_haltonIndex + 1) % m_haltonPointSet.size();
+
+		jitter[0] = haltonValue.first;
+		jitter[1] = haltonValue.second;
+
+		m_uniformBufferData.offset.z = jitter[0];
+		m_uniformBufferData.offset.w = jitter[1];
+
+		m_uniformBufferData.resolution.x = (float)xessInputResolution.x;
+		m_uniformBufferData.resolution.y = (float)xessInputResolution.y;
+
+		m_uniformBufferData.velocity.x = -translationSpeed * ((float)width / 2.f);
+
 
 		// Copy the current matrices to the current frame's uniform buffer
 		// Note: Since we requested a host coherent memory type for the uniform buffer, the write is instantly visible to the GPU
-		memcpy(uniformBuffers[currentBuffer].mapped, &shaderData, sizeof(ShaderData));
+		memcpy(uniformBuffers[currentBuffer].mapped, &m_uniformBufferData, sizeof(m_uniformBufferData));
 
 		VK_CHECK_RESULT(vkResetFences(device, 1, &waitFences[currentFrame]));
 
@@ -942,20 +1480,20 @@ public:
 		// Set clear values for all framebuffer attachments with loadOp set to clear
 		// We use two attachments (color and depth) that are cleared at the start of the subpass and as such we need to set clear values for both
 		VkClearValue clearValues[2];
-		clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 1.0f } };
-		clearValues[1].depthStencil = { 1.0f, 0 };
+		clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+		clearValues[1].depthStencil = { 0.0f, 0 };
 
 		VkRenderPassBeginInfo renderPassBeginInfo{};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassBeginInfo.pNext = nullptr;
-		renderPassBeginInfo.renderPass = renderPass;
+		renderPassBeginInfo.renderPass = offscreenFrameBuffers.render.renderPass;
 		renderPassBeginInfo.renderArea.offset.x = 0;
 		renderPassBeginInfo.renderArea.offset.y = 0;
-		renderPassBeginInfo.renderArea.extent.width = width;
-		renderPassBeginInfo.renderArea.extent.height = height;
+		renderPassBeginInfo.renderArea.extent.width = xessInputResolution.x;
+		renderPassBeginInfo.renderArea.extent.height = xessInputResolution.y;
 		renderPassBeginInfo.clearValueCount = 2;
 		renderPassBeginInfo.pClearValues = clearValues;
-		renderPassBeginInfo.framebuffer = frameBuffers[imageIndex];
+		renderPassBeginInfo.framebuffer = offscreenFrameBuffers.render.frameBuffer;
 		VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffers[currentBuffer], &cmdBufInfo));
 
 		// Start the first sub pass specified in our default render pass setup by the base class
@@ -963,15 +1501,15 @@ public:
 		vkCmdBeginRenderPass(commandBuffers[currentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 		// Update dynamic viewport state
 		VkViewport viewport{};
-		viewport.height = (float)height;
-		viewport.width = (float)width;
+		viewport.height = (float)xessInputResolution.y;
+		viewport.width = (float)xessInputResolution.x;
 		viewport.minDepth = (float)0.0f;
 		viewport.maxDepth = (float)1.0f;
 		vkCmdSetViewport(commandBuffers[currentBuffer], 0, 1, &viewport);
 		// Update dynamic scissor state
 		VkRect2D scissor{};
-		scissor.extent.width = width;
-		scissor.extent.height = height;
+		scissor.extent.width = xessInputResolution.x;
+		scissor.extent.height = xessInputResolution.y;
 		scissor.offset.x = 0;
 		scissor.offset.y = 0;
 		vkCmdSetScissor(commandBuffers[currentBuffer], 0, 1, &scissor);
@@ -983,11 +1521,133 @@ public:
 		// Bind triangle vertex buffer (contains position and colors)
 		VkDeviceSize offsets[1]{ 0 };
 		vkCmdBindVertexBuffers(commandBuffers[currentBuffer], 0, 1, &vertices.buffer, offsets);
-		// Bind triangle index buffer
-		vkCmdBindIndexBuffer(commandBuffers[currentBuffer], indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-		// Draw indexed triangle
-		vkCmdDrawIndexed(commandBuffers[currentBuffer], indices.count, 1, 0, 0, 1);
+		// Draw triangle
+		vkCmdDraw(commandBuffers[currentBuffer], vertices.count, 1, 0, 0);
 		vkCmdEndRenderPass(commandBuffers[currentBuffer]);
+
+
+		// Velocity pass
+		// Update dynamic viewport state
+		viewport.height = (float)velocityHeight;
+		viewport.width = (float)velocityWidth;
+		viewport.minDepth = (float)0.0f;
+		viewport.maxDepth = (float)1.0f;
+		vkCmdSetViewport(commandBuffers[currentBuffer], 0, 1, &viewport);
+		// Update dynamic scissor state
+		scissor.extent.width = velocityWidth;
+		scissor.extent.height = velocityHeight;
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+		vkCmdSetScissor(commandBuffers[currentBuffer], 0, 1, &scissor);
+
+		renderPassBeginInfo.renderPass = offscreenFrameBuffers.velocity.renderPass;
+		renderPassBeginInfo.framebuffer = offscreenFrameBuffers.velocity.frameBuffer;
+		renderPassBeginInfo.renderArea.offset.x = 0;
+		renderPassBeginInfo.renderArea.offset.y = 0;
+		renderPassBeginInfo.renderArea.extent.width = velocityWidth;
+		renderPassBeginInfo.renderArea.extent.height = velocityHeight;
+		renderPassBeginInfo.clearValueCount = 1;
+		vkCmdBeginRenderPass(commandBuffers[currentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		// Bind the rendering pipeline
+		// The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states specified at pipeline creation time
+		vkCmdBindPipeline(commandBuffers[currentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, velocityPipeline);
+
+		// Draw triangle
+		vkCmdDraw(commandBuffers[currentBuffer], vertices.count, 1, 0, 0);
+		vkCmdEndRenderPass(commandBuffers[currentBuffer]);
+
+		{
+			VkImageMemoryBarrier imageMemoryBarrier{};
+			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			imageMemoryBarrier.image = xessOutput.image;
+			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+			vkCmdPipelineBarrier(commandBuffers[currentBuffer], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+		}
+
+		// Run XeSS
+		{
+			xess_vk_execute_params_t exec_params{};
+			exec_params.inputWidth = xessInputResolution.x;
+			exec_params.inputHeight = xessInputResolution.y;
+			exec_params.jitterOffsetX = jitter[0];
+			exec_params.jitterOffsetY = -jitter[1];
+			exec_params.exposureScale = 1.0f;
+
+			exec_params.colorTexture = { offscreenFrameBuffers.render.color.view, offscreenFrameBuffers.render.color.image, { VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}, offscreenFrameBuffers.render.color.format, xessInputResolution.x, xessInputResolution.y };
+			exec_params.velocityTexture = { offscreenFrameBuffers.velocity.velocity.view, offscreenFrameBuffers.velocity.velocity.image, { VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}, offscreenFrameBuffers.velocity.velocity.format, width, height };
+			exec_params.outputTexture = { xessOutput.view, xessOutput.image, { VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}, xessOutput.format, width, height };
+#if defined(USE_LOWRES_MV)
+			exec_params.depthTexture = { offscreenFrameBuffers.render.depth.view, offscreenFrameBuffers.render.depth.image, { VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 1u, 0u, 1u}, offscreenFrameBuffers.render.depth.format, xessInputResolution.x, xessInputResolution.y };
+#else
+			exec_params.depthTexture.image = nullptr;
+			exec_params.depthTexture.imageView = nullptr;
+#endif
+			exec_params.exposureScaleTexture.image = nullptr;
+			exec_params.exposureScaleTexture.imageView = nullptr;
+			auto status = xessVKExecute(xessContext, commandBuffers[currentBuffer], &exec_params);
+			if (status != XESS_RESULT_SUCCESS)
+			{
+				throw std::runtime_error("Unable to run XeSS");
+			}
+		}
+
+		{
+			VkImageMemoryBarrier imageMemoryBarrier{};
+			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			imageMemoryBarrier.image = xessOutput.image;
+			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+			vkCmdPipelineBarrier(commandBuffers[currentBuffer], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+		}
+
+		// Final pass
+		// Update dynamic viewport state
+		viewport.height = (float)height;
+		viewport.width = (float)width;
+		viewport.minDepth = (float)0.0f;
+		viewport.maxDepth = (float)1.0f;
+		vkCmdSetViewport(commandBuffers[currentBuffer], 0, 1, &viewport);
+		// Update dynamic scissor state
+		scissor.extent.width = width;
+		scissor.extent.height = height;
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+		vkCmdSetScissor(commandBuffers[currentBuffer], 0, 1, &scissor);
+		renderPassBeginInfo.renderPass = renderPass;
+		renderPassBeginInfo.framebuffer = frameBuffers[imageIndex];
+		renderPassBeginInfo.renderArea.offset.x = 0;
+		renderPassBeginInfo.renderArea.offset.y = 0;
+		renderPassBeginInfo.renderArea.extent.width = width;
+		renderPassBeginInfo.renderArea.extent.height = height;
+		renderPassBeginInfo.clearValueCount = 1;
+		vkCmdBeginRenderPass(commandBuffers[currentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		// Bind the rendering pipeline
+		// The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states specified at pipeline creation time
+		if (outputIndex == OutputIndex::kVelocity)
+		{
+			vkCmdBindPipeline(commandBuffers[currentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, fsqVelocityPipeline);
+		}
+		else
+		{
+			vkCmdBindPipeline(commandBuffers[currentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, fsqPipeline);
+		}
+
+		vkCmdBindDescriptorSets(commandBuffers[currentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, fsqPipelineLayout, 0, 1, &fsqDescriptorSet, 0, nullptr);
+
+		// Draw triangle
+		vkCmdDraw(commandBuffers[currentBuffer], 3, 1, 0, 0);
+		vkCmdEndRenderPass(commandBuffers[currentBuffer]);
+
+
 		// Ending the render pass will add an implicit barrier transitioning the frame buffer color attachment to
 		// VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for presenting it to the windowing system
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffers[currentBuffer]));
@@ -997,21 +1657,23 @@ public:
 		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
 		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		// The submit info structure specifies a command buffer queue submission batch
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.pWaitDstStageMask = &waitStageMask;               // Pointer to the list of pipeline stages that the semaphore waits will occur at
-		submitInfo.waitSemaphoreCount = 1;                           // One wait semaphore
-		submitInfo.signalSemaphoreCount = 1;                         // One signal semaphore
-		submitInfo.pCommandBuffers = &commandBuffers[currentBuffer]; // Command buffers(s) to execute in this batch (submission)
-		submitInfo.commandBufferCount = 1;                           // One command buffer
+		VkSubmitInfo submitInfo_{};
+		submitInfo_.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo_.pWaitDstStageMask = &waitStageMask;               // Pointer to the list of pipeline stages that the semaphore waits will occur at
+		submitInfo_.waitSemaphoreCount = 1;                           // One wait semaphore
+		submitInfo_.signalSemaphoreCount = 1;                         // One signal semaphore
+		submitInfo_.pCommandBuffers = &commandBuffers[currentBuffer]; // Command buffers(s) to execute in this batch (submission)
+		submitInfo_.commandBufferCount = 1;                           // One command buffer
 
 		// Semaphore to wait upon before the submitted command buffer starts executing
-		submitInfo.pWaitSemaphores = &presentCompleteSemaphores[currentFrame]; 
+		submitInfo_.pWaitSemaphores = &presentCompleteSemaphores[currentPresentSemaphore];
 		// Semaphore to be signaled when command buffers have completed
-		submitInfo.pSignalSemaphores = &renderCompleteSemaphores[currentFrame];
+		submitInfo_.pSignalSemaphores = &renderCompleteSemaphores[currentPresentSemaphore];
 
 		// Submit to the graphics queue passing a wait fence
-		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, waitFences[currentFrame]));
+		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo_, waitFences[currentFrame]));
+
+		currentBuffer = (currentBuffer + 1) % MAX_CONCURRENT_FRAMES;
 
 		// Present the current frame buffer to the swap chain
 		// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
@@ -1020,7 +1682,7 @@ public:
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = &renderCompleteSemaphores[currentFrame];
+		presentInfo.pWaitSemaphores = &renderCompleteSemaphores[currentPresentSemaphore];
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &swapChain.swapChain;
 		presentInfo.pImageIndices = &imageIndex;
@@ -1032,7 +1694,8 @@ public:
 		else if (result != VK_SUCCESS) {
 			throw "Could not present the image to the swap chain!";
 		}
-
+		currentFrame = (currentFrame + 1) % MAX_CONCURRENT_FRAMES;
+		currentPresentSemaphore = (currentPresentSemaphore + 1) % presentCompleteSemaphores.size();
 	}
 };
 
@@ -1050,31 +1713,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	return (DefWindowProc(hWnd, uMsg, wParam, lParam));
 }
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 {
-	for (size_t i = 0; i < __argc; i++) { VulkanExample::args.push_back(__argv[i]); };
-	vulkanExample = new VulkanExample();
-	vulkanExample->initVulkan();
-	vulkanExample->setupWindow(hInstance, WndProc);
-	vulkanExample->prepare();
-	vulkanExample->renderLoop();
-	delete(vulkanExample);
-	return 0;
+	if (!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32))
+	{
+		MessageBoxA(NULL, "SetDefaultDllDirectories failed", "Error", MB_OK | MB_TOPMOST | MB_ICONERROR);
+		return 1;
+	}
+	try
+	{
+		for (size_t i = 0; i < __argc; i++)
+		{
+			VulkanExample::args.push_back(__argv[i]);
+		};
+		vulkanExample = new VulkanExample();
+		vulkanExample->initVulkan();
+		vulkanExample->setupWindow(hInstance, WndProc);
+		vulkanExample->prepare();
+		vulkanExample->renderLoop();
+		delete(vulkanExample);
+		return 0;
+	}
+	catch (const std::exception& err)
+	{
+		MessageBoxA(NULL, (std::string("XeSS-SR sample error: ") + err.what()).c_str(), "Error", MB_OK | MB_TOPMOST | MB_ICONERROR);
+		return -1;
+	}
 }
 
-#elif defined(__ANDROID__)
-// Android entry point
-VulkanExample *vulkanExample;
-void android_main(android_app* state)
-{
-	vulkanExample = new VulkanExample();
-	state->userData = vulkanExample;
-	state->onAppCmd = VulkanExample::handleAppCommand;
-	state->onInputEvent = VulkanExample::handleAppInput;
-	androidApp = state;
-	vulkanExample->renderLoop();
-	delete(vulkanExample);
-}
 #elif defined(_DIRECT2DISPLAY)
 
 // Linux entry point with direct to display wsi
@@ -1145,31 +1811,21 @@ static void handleEvent()
 #endif
 int main(const int argc, const char *argv[])
 {
-	for (size_t i = 0; i < argc; i++) { VulkanExample::args.push_back(argv[i]); };
-	vulkanExample = new VulkanExample();
-	vulkanExample->initVulkan();
-	vulkanExample->setupWindow();
-	vulkanExample->prepare();
-	vulkanExample->renderLoop();
-	delete(vulkanExample);
-	return 0;
-}
-#elif (defined(VK_USE_PLATFORM_MACOS_MVK) && defined(VK_EXAMPLE_XCODE_GENERATED))
-VulkanExample *vulkanExample;
-int main(const int argc, const char *argv[])
-{
-	@autoreleasepool
+	try
 	{
 		for (size_t i = 0; i < argc; i++) { VulkanExample::args.push_back(argv[i]); };
 		vulkanExample = new VulkanExample();
 		vulkanExample->initVulkan();
-		vulkanExample->setupWindow(nullptr);
+		vulkanExample->setupWindow();
 		vulkanExample->prepare();
 		vulkanExample->renderLoop();
 		delete(vulkanExample);
 	}
+	catch(const std::runtime_error &err)
+	{
+		std::cerr<<err.what()<<std::endl;
+		return 1;
+	}
 	return 0;
 }
-#elif defined(VK_USE_PLATFORM_SCREEN_QNX)
-VULKAN_EXAMPLE_MAIN()
 #endif

@@ -7,11 +7,12 @@
 
 #version 450
 
-layout (location = 0) in vec4 inColor;
-
+layout (location = 0) in vec2 texCoord;
 layout (location = 0) out vec4 outFragColor;
 
-void main() 
+layout (set = 0, binding = 0) uniform sampler2D t;
+
+void main()
 {
-  outFragColor = inColor;
+  outFragColor = texture(t, texCoord);
 }

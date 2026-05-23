@@ -2,6 +2,7 @@
 * Vulkan texture loader
 *
 * Copyright(C) by Sascha Willems - www.saschawillems.de
+* Copyright (C) 2024 Intel Corporation
 *
 * This code is licensed under the MIT license(MIT) (http://opensource.org/licenses/MIT)
 */
@@ -27,7 +28,7 @@ namespace vks
 		}
 		vkFreeMemory(device->logicalDevice, deviceMemory, nullptr);
 	}
-
+#ifndef XESS
 	ktxResult Texture::loadKTXFile(std::string filename, ktxTexture **target)
 	{
 		ktxResult result = KTX_SUCCESS;
@@ -51,7 +52,9 @@ namespace vks
 #endif		
 		return result;
 	}
+#endif
 
+#ifndef XESS
 	/**
 	* Load a 2D texture including all mip levels
 	*
@@ -329,6 +332,7 @@ namespace vks
 		// Update descriptor image info member that can be used for setting up descriptor sets
 		updateDescriptor();
 	}
+#endif
 
 	/**
 	* Creates a 2D texture from a buffer
@@ -344,11 +348,11 @@ namespace vks
 	* @param (Optional) imageUsageFlags Usage flags for the texture's image (defaults to VK_IMAGE_USAGE_SAMPLED_BIT)
 	* @param (Optional) imageLayout Usage layout for the texture (defaults VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	*/
-	void Texture2D::fromBuffer(void* buffer, VkDeviceSize bufferSize, VkFormat format, uint32_t texWidth, uint32_t texHeight, vks::VulkanDevice *device, VkQueue copyQueue, VkFilter filter, VkImageUsageFlags imageUsageFlags, VkImageLayout imageLayout)
+	void Texture2D::fromBuffer(void* buffer, VkDeviceSize bufferSize, VkFormat format, uint32_t texWidth, uint32_t texHeight, vks::VulkanDevice *device_, VkQueue copyQueue, VkFilter filter, VkImageUsageFlags imageUsageFlags, VkImageLayout imageLayout_)
 	{
 		assert(buffer);
 
-		this->device = device;
+		this->device = device_;
 		width = texWidth;
 		height = texHeight;
 		mipLevels = 1;
@@ -450,7 +454,7 @@ namespace vks
 		);
 
 		// Change texture image layout to shader read after all mip levels have been copied
-		this->imageLayout = imageLayout;
+		this->imageLayout = imageLayout_;
 		vks::tools::setImageLayout(
 			copyCmd,
 			image,
@@ -495,6 +499,7 @@ namespace vks
 		updateDescriptor();
 	}
 
+#ifndef XESS
 	/**
 	* Load a 2D texture array including all mip levels
 	*
@@ -865,5 +870,6 @@ namespace vks
 		// Update descriptor image info member that can be used for setting up descriptor sets
 		updateDescriptor();
 	}
+#endif
 
 }

@@ -2,6 +2,7 @@
 * Vulkan Example base class
 *
 * Copyright (C) 2016-2023 by Sascha Willems - www.saschawillems.de
+* Copyright (C) 2024 Intel Corporation
 *
 * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
 */
@@ -14,6 +15,8 @@
 #include <CoreVideo/CVDisplayLink.h>
 #endif
 
+#include <xess/xess_vk.h>
+
 std::vector<const char*> VulkanExampleBase::args;
 
 VkResult VulkanExampleBase::createInstance(bool enableValidation)
@@ -25,13 +28,38 @@ VkResult VulkanExampleBase::createInstance(bool enableValidation)
 	this->settings.validation = true;
 #endif
 
+	std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
+
+	{
+		// Get extensions and api version required by XeSS
+
+		uint32_t extensionCount;
+		const char* const* extensions;
+		uint32_t minVKApiVersion;
+		auto status = xessVKGetRequiredInstanceExtensions(&extensionCount, &extensions, &minVKApiVersion);
+		if (status != XESS_RESULT_SUCCESS)
+		{
+			throw std::runtime_error("Unable to get required XeSS instance extensions");
+		}
+
+		for (size_t extensionIdx = 0; extensionIdx < extensionCount; ++extensionIdx)
+		{
+			if (std::find(instanceExtensions.begin(), instanceExtensions.end(), extensions[extensionIdx]) == instanceExtensions.end())
+			{
+				instanceExtensions.push_back(extensions[extensionIdx]);
+			}
+		}
+
+		apiVersion = std::max(apiVersion, minVKApiVersion);
+	}
+
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pApplicationName = name.c_str();
 	appInfo.pEngineName = name.c_str();
 	appInfo.apiVersion = apiVersion;
 
-	std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
+
 
 	// Enable surface extensions depending on os
 #if defined(_WIN32)
@@ -55,7 +83,7 @@ VkResult VulkanExampleBase::createInstance(bool enableValidation)
 #elif defined(VK_USE_PLATFORM_SCREEN_QNX)
 	instanceExtensions.push_back(VK_QNX_SCREEN_SURFACE_EXTENSION_NAME);
 #endif
-	
+
 	// Get extensions supported by the instance and store for later use
 	uint32_t extCount = 0;
 	vkEnumerateInstanceExtensionProperties(nullptr, &extCount, nullptr);
@@ -80,9 +108,9 @@ VkResult VulkanExampleBase::createInstance(bool enableValidation)
 #endif
 
 	// Enabled requested instance extensions
-	if (enabledInstanceExtensions.size() > 0) 
+	if (enabledInstanceExtensions.size() > 0)
 	{
-		for (const char * enabledExtension : enabledInstanceExtensions) 
+		for (const char * enabledExtension : enabledInstanceExtensions)
 		{
 			// Output message if requested extension is not available
 			if (std::find(supportedInstanceExtensions.begin(), supportedInstanceExtensions.end(), enabledExtension) == supportedInstanceExtensions.end())
@@ -163,9 +191,9 @@ void VulkanExampleBase::renderFrame()
 
 std::string VulkanExampleBase::getWindowTitle()
 {
-	std::string device(deviceProperties.deviceName);
+	std::string device_(deviceProperties.deviceName);
 	std::string windowTitle;
-	windowTitle = title + " - " + device;
+	windowTitle = title + " - " + device_;
 	if (!settings.overlay) {
 		windowTitle += " - " + std::to_string(frameCounter) + " fps";
 	}
@@ -214,6 +242,7 @@ void VulkanExampleBase::prepare()
 	setupRenderPass();
 	createPipelineCache();
 	setupFrameBuffer();
+#ifndef XESS
 	settings.overlay = settings.overlay && (!benchmark.active);
 	if (settings.overlay) {
 		UIOverlay.device = vulkanDevice;
@@ -225,6 +254,7 @@ void VulkanExampleBase::prepare()
 		UIOverlay.prepareResources();
 		UIOverlay.preparePipeline(pipelineCache, renderPass, swapChain.colorFormat, depthFormat);
 	}
+#endif
 }
 
 VkPipelineShaderStageCreateInfo VulkanExampleBase::loadShader(std::string fileName, VkShaderStageFlagBits stage)
@@ -283,14 +313,14 @@ void VulkanExampleBase::nextFrame()
 #if defined(_WIN32)
 		if (!settings.overlay)	{
 			std::string windowTitle = getWindowTitle();
-			SetWindowText(window, windowTitle.c_str());
+			SetWindowTextA(window, windowTitle.c_str());
 		}
 #endif
 		frameCounter = 0;
 		lastTimestamp = tEnd;
 	}
 	tPrevEnd = tEnd;
-	
+
 	// TODO: Cap UI overlay update rates
 	updateOverlay();
 }
@@ -685,6 +715,7 @@ void VulkanExampleBase::renderLoop()
 
 void VulkanExampleBase::updateOverlay()
 {
+#ifndef XESS
 	if (!settings.overlay)
 		return;
 
@@ -732,10 +763,12 @@ void VulkanExampleBase::updateOverlay()
 		mouseButtons.left = false;
 	}
 #endif
+#endif
 }
 
-void VulkanExampleBase::drawUI(const VkCommandBuffer commandBuffer)
+void VulkanExampleBase::drawUI(const VkCommandBuffer /*commandBuffer*/)
 {
+#ifndef XESS
 	if (settings.overlay && UIOverlay.visible) {
 		const VkViewport viewport = vks::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
 		const VkRect2D scissor = vks::initializers::rect2D(width, height, 0, 0);
@@ -744,6 +777,7 @@ void VulkanExampleBase::drawUI(const VkCommandBuffer commandBuffer)
 
 		UIOverlay.draw(commandBuffer);
 	}
+#endif
 }
 
 void VulkanExampleBase::prepareFrame()
@@ -788,7 +822,7 @@ VulkanExampleBase::VulkanExampleBase(bool enableValidation)
 	{
 #if defined(_WIN32)
 		std::string msg = "Could not locate asset path in \"" + getAssetPath() + "\" !";
-		MessageBox(NULL, msg.c_str(), "Fatal error", MB_OK | MB_ICONERROR);
+		MessageBoxA(NULL, msg.c_str(), "Fatal error", MB_OK | MB_ICONERROR);
 #else
 		std::cerr << "Error: Could not find asset path in " << getAssetPath() << "\n";
 #endif
@@ -797,7 +831,7 @@ VulkanExampleBase::VulkanExampleBase(bool enableValidation)
 #endif
 
 	settings.validation = enableValidation;
-	
+
 	// Command line arguments
 	commandLineParser.add("help", { "--help" }, 0, "Show help");
 	commandLineParser.add("validation", { "-v", "--validation" }, 0, "Enable validation layers");
@@ -806,7 +840,7 @@ VulkanExampleBase::VulkanExampleBase(bool enableValidation)
 	commandLineParser.add("width", { "-w", "--width" }, 1, "Set window width");
 	commandLineParser.add("height", { "-h", "--height" }, 1, "Set window height");
 	commandLineParser.add("shaders", { "-s", "--shaders" }, 1, "Select shader type to use (glsl or hlsl)");
-	commandLineParser.add("gpuselection", { "-g", "--gpu" }, 1, "Select GPU to run on");
+	commandLineParser.add("gpuselection", { "-gpu_id", "--gpu_id" }, 1, "Select GPU to run on");
 	commandLineParser.add("gpulist", { "-gl", "--listgpus" }, 0, "Display a list of available Vulkan devices");
 	commandLineParser.add("benchmark", { "-b", "--benchmark" }, 0, "Run example in benchmark mode");
 	commandLineParser.add("benchmarkwarmup", { "-bw", "--benchwarmup" }, 1, "Set warmup time for benchmark mode in seconds");
@@ -860,7 +894,7 @@ VulkanExampleBase::VulkanExampleBase(bool enableValidation)
 	}
 	if (commandLineParser.isSet("benchmarkresultfile")) {
 		benchmark.filename = commandLineParser.getValueAsString("benchmarkresultfile", benchmark.filename);
-	}	
+	}
 	if (commandLineParser.isSet("benchmarkresultframes")) {
 		benchmark.outputFrameTimes = true;
 	}
@@ -925,10 +959,11 @@ VulkanExampleBase::~VulkanExampleBase()
 	for (auto& fence : waitFences) {
 		vkDestroyFence(device, fence, nullptr);
 	}
-
+#ifndef XESS
 	if (settings.overlay) {
 		UIOverlay.freeResources();
 	}
+#endif
 
 	delete vulkanDevice;
 
@@ -1034,11 +1069,11 @@ bool VulkanExampleBase::initVulkan()
 	if (commandLineParser.isSet("gpulist")) {
 		std::cout << "Available Vulkan devices" << "\n";
 		for (uint32_t i = 0; i < gpuCount; i++) {
-			VkPhysicalDeviceProperties deviceProperties;
-			vkGetPhysicalDeviceProperties(physicalDevices[i], &deviceProperties);
-			std::cout << "Device [" << i << "] : " << deviceProperties.deviceName << std::endl;
-			std::cout << " Type: " << vks::tools::physicalDeviceTypeString(deviceProperties.deviceType) << "\n";
-			std::cout << " API: " << (deviceProperties.apiVersion >> 22) << "." << ((deviceProperties.apiVersion >> 12) & 0x3ff) << "." << (deviceProperties.apiVersion & 0xfff) << "\n";
+			VkPhysicalDeviceProperties deviceProperties_;
+			vkGetPhysicalDeviceProperties(physicalDevices[i], &deviceProperties_);
+			std::cout << "Device [" << i << "] : " << deviceProperties_.deviceName << std::endl;
+			std::cout << " Type: " << vks::tools::physicalDeviceTypeString(deviceProperties_.deviceType) << "\n";
+			std::cout << " API: " << (deviceProperties_.apiVersion >> 22) << "." << ((deviceProperties_.apiVersion >> 12) & 0x3ff) << "." << (deviceProperties_.apiVersion & 0xfff) << "\n";
 		}
 	}
 #endif
@@ -1051,6 +1086,7 @@ bool VulkanExampleBase::initVulkan()
 	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
 
 	// Derived examples can override this to set actual features (based on above readings) to enable for logical device creation
+	enabledFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	getEnabledFeatures();
 
 	// Vulkan device creation
@@ -1107,7 +1143,7 @@ bool VulkanExampleBase::initVulkan()
 
 #if defined(_WIN32)
 // Win32 : Sets up a console window and redirects standard output to it
-void VulkanExampleBase::setupConsole(std::string title)
+void VulkanExampleBase::setupConsole(std::string title_)
 {
 	AllocConsole();
 	AttachConsole(GetCurrentProcessId());
@@ -1121,14 +1157,14 @@ void VulkanExampleBase::setupConsole(std::string title)
 	GetConsoleMode(consoleHandle, &dwMode);
 	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	SetConsoleMode(consoleHandle, dwMode);
-	SetConsoleTitle(TEXT(title.c_str()));
+	SetConsoleTitleA(title_.c_str());
 }
 
 void VulkanExampleBase::setupDPIAwareness()
 {
 	typedef HRESULT *(__stdcall *SetProcessDpiAwarenessFunc)(PROCESS_DPI_AWARENESS);
 
-	HMODULE shCore = LoadLibraryA("Shcore.dll");
+	HMODULE shCore = LoadLibraryExA("Shcore.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (shCore)
 	{
 		SetProcessDpiAwarenessFunc setProcessDpiAwareness =
@@ -1159,7 +1195,8 @@ HWND VulkanExampleBase::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
 	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wndClass.lpszMenuName = NULL;
-	wndClass.lpszClassName = name.c_str();
+	std::wstring wname(name.begin(), name.end());
+	wndClass.lpszClassName = wname.c_str();
 	wndClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
 
 	if (!RegisterClassEx(&wndClass))
@@ -1185,7 +1222,7 @@ HWND VulkanExampleBase::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
 			dmScreenSettings.dmFields     = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
 			if (ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
 			{
-				if (MessageBox(NULL, "Fullscreen Mode not supported!\n Switch to window mode?", "Error", MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
+				if (MessageBoxA(NULL, "Fullscreen Mode not supported!\n Switch to window mode?", "Error", MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
 				{
 					settings.fullscreen = false;
 				}
@@ -1223,7 +1260,7 @@ HWND VulkanExampleBase::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
 	AdjustWindowRectEx(&windowRect, dwStyle, FALSE, dwExStyle);
 
 	std::string windowTitle = getWindowTitle();
-	window = CreateWindowEx(0,
+	window = CreateWindowExA(0,
 		name.c_str(),
 		windowTitle.c_str(),
 		dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
@@ -1277,8 +1314,10 @@ void VulkanExampleBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 			paused = !paused;
 			break;
 		case KEY_F1:
+#ifndef XESS
 			UIOverlay.visible = !UIOverlay.visible;
 			UIOverlay.updated = true;
+#endif
 			break;
 		case KEY_ESCAPE:
 			PostQuitMessage(0);
@@ -1325,6 +1364,7 @@ void VulkanExampleBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 				break;
 			}
 		}
+		keyReleased(static_cast<uint32_t>(wParam));
 		break;
 	case WM_LBUTTONDOWN:
 		mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
@@ -1603,7 +1643,7 @@ dispatch_group_t concurrentGroup;
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
 	[NSApp activateIgnoringOtherApps:YES];		// SRS - Make sure app window launches in front of Xcode window
-	
+
 	concurrentGroup = dispatch_group_create();
 	dispatch_queue_t concurrentQueue = dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0);
 	dispatch_group_async(concurrentGroup, concurrentQueue, ^{
@@ -1612,7 +1652,7 @@ dispatch_group_t concurrentGroup;
 			vulkanExample->displayLinkOutputCb();
 		}
 	});
-	
+
 	// SRS - When benchmarking, set up termination notification on main thread when concurrent queue completes
 	if (vulkanExample->benchmark.active) {
 		dispatch_queue_t notifyQueue = dispatch_get_main_queue();
@@ -2971,7 +3011,9 @@ void VulkanExampleBase::viewChanged() {}
 
 void VulkanExampleBase::keyPressed(uint32_t) {}
 
-void VulkanExampleBase::mouseMoved(double x, double y, bool & handled) {}
+void VulkanExampleBase::keyReleased(uint32_t) {}
+
+void VulkanExampleBase::mouseMoved(double , double , bool & ) {}
 
 void VulkanExampleBase::buildCommandBuffers() {}
 
@@ -3164,10 +3206,12 @@ void VulkanExampleBase::windowResize()
 	}
 	setupFrameBuffer();
 
-	if ((width > 0.0f) && (height > 0.0f)) {
+	if ((width > 0) && (height > 0)) {
+#ifndef XESS
 		if (settings.overlay) {
 			UIOverlay.resize(width, height);
 		}
+#endif
 	}
 
 	// Command buffers need to be recreated as they may store
@@ -3175,7 +3219,7 @@ void VulkanExampleBase::windowResize()
 	destroyCommandBuffers();
 	createCommandBuffers();
 	buildCommandBuffers();
-	
+
 	// SRS - Recreate fences in case number of swapchain images has changed on resize
 	for (auto& fence : waitFences) {
 		vkDestroyFence(device, fence, nullptr);
@@ -3184,7 +3228,7 @@ void VulkanExampleBase::windowResize()
 
 	vkDeviceWaitIdle(device);
 
-	if ((width > 0.0f) && (height > 0.0f)) {
+	if ((width > 0) && (height > 0)) {
 		camera.updateAspectRatio((float)width / (float)height);
 	}
 
@@ -3201,11 +3245,12 @@ void VulkanExampleBase::handleMouseMove(int32_t x, int32_t y)
 	int32_t dy = (int32_t)mousePos.y - y;
 
 	bool handled = false;
-
+#ifndef XESS
 	if (settings.overlay) {
 		ImGuiIO& io = ImGui::GetIO();
 		handled = io.WantCaptureMouse && UIOverlay.visible;
 	}
+#endif
 	mouseMoved((float)x, (float)y, handled);
 
 	if (handled) {
@@ -3214,15 +3259,15 @@ void VulkanExampleBase::handleMouseMove(int32_t x, int32_t y)
 	}
 
 	if (mouseButtons.left) {
-		camera.rotate(glm::vec3(dy * camera.rotationSpeed, -dx * camera.rotationSpeed, 0.0f));
+		camera.rotate(glm::vec3((float)dy * camera.rotationSpeed, (float)-dx * camera.rotationSpeed, 0.0f));
 		viewUpdated = true;
 	}
 	if (mouseButtons.right) {
-		camera.translate(glm::vec3(-0.0f, 0.0f, dy * .005f));
+		camera.translate(glm::vec3(-0.0f, 0.0f, (float)dy * .005f));
 		viewUpdated = true;
 	}
 	if (mouseButtons.middle) {
-		camera.translate(glm::vec3(-dx * 0.005f, -dy * 0.005f, 0.0f));
+		camera.translate(glm::vec3((float)-dx * 0.005f, (float)-dy * 0.005f, 0.0f));
 		viewUpdated = true;
 	}
 	mousePos = glm::vec2((float)x, (float)y);
@@ -3256,8 +3301,10 @@ void VulkanExampleBase::setupSwapChain()
 	swapChain.create(&width, &height, settings.vsync, settings.fullscreen);
 }
 
+#ifndef XESS
 void VulkanExampleBase::OnUpdateUIOverlay(vks::UIOverlay *overlay) {}
+#endif
 
 #if defined(_WIN32)
-void VulkanExampleBase::OnHandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {};
+void VulkanExampleBase::OnHandleMessage(HWND , UINT , WPARAM , LPARAM ) {};
 #endif

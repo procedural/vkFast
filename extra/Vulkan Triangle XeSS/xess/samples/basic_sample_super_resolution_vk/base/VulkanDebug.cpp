@@ -19,10 +19,11 @@ namespace vks
 
 		VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessengerCallback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-			VkDebugUtilsMessageTypeFlagsEXT messageType,
+			VkDebugUtilsMessageTypeFlagsEXT,
 			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 			void* pUserData)
 		{
+			(void)pUserData;
 			// Select prefix depending on flags passed to the callback
 			std::string prefix;
 
@@ -91,6 +92,7 @@ namespace vks
 			debugUtilsMessengerCI.pfnUserCallback = debugUtilsMessengerCallback;
 			VkResult result = vkCreateDebugUtilsMessengerEXT(instance, &debugUtilsMessengerCI, nullptr, &debugUtilsMessenger);
 			assert(result == VK_SUCCESS);
+			(void)result;
 		}
 
 		void freeDebugCallback(VkInstance instance)

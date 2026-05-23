@@ -2,12 +2,49 @@
  * Assorted commonly used Vulkan helper functions
  *
  * Copyright (C) 2016-2023 by Sascha Willems - www.saschawillems.de
+ * Copyright (C) 2024 Intel Corporation
  *
  * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
  */
 
 #include "VulkanTools.h"
 
+#if XESS
+
+inline void GetAssetsPath(_Out_writes_(pathSize) WCHAR* path, UINT pathSize)
+{
+	if (path == nullptr)
+	{
+		throw std::exception();
+	}
+
+	DWORD size = GetModuleFileName(nullptr, path, pathSize);
+	if (size == 0 || size == pathSize)
+	{
+		// Method failed or path was truncated.
+		throw std::exception();
+	}
+
+	WCHAR* lastSlash = wcsrchr(path, L'\\');
+	if (lastSlash)
+	{
+		*(lastSlash + 1) = L'\0';
+	}
+}
+
+const std::string getAssetPath()
+{
+	WCHAR assetsPath[512];
+	GetAssetsPath(assetsPath, _countof(assetsPath));
+	CHAR ret[512];
+	::WideCharToMultiByte(CP_UTF8, 0, assetsPath, _countof(assetsPath), ret, _countof(ret), nullptr, nullptr);
+	return &ret[0];
+}
+const std::string getShaderBasePath()
+{
+	return "basic_sample_shaders/";
+}
+#else
 #if !(defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
 // iOS & macOS: VulkanExampleBase::getAssetPath() implemented externally to allow access to Objective-C components
 const std::string getAssetPath()
@@ -34,6 +71,7 @@ const std::string getShaderBasePath()
 	return "./../shaders/";
 #endif
 }
+#endif
 #endif
 
 namespace vks
@@ -344,7 +382,7 @@ namespace vks
 		{
 #if defined(_WIN32)
 			if (!errorModeSilent) {
-				MessageBox(NULL, message.c_str(), NULL, MB_OK | MB_ICONERROR);
+				MessageBoxA(NULL, message.c_str(), NULL, MB_OK | MB_ICONERROR);
 			}
 #elif defined(__ANDROID__)
             LOGE("Fatal error: %s", message.c_str());

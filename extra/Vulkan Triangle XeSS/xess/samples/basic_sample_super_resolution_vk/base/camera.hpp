@@ -8,6 +8,7 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#pragma warning(disable : 4201)
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -87,11 +88,11 @@ public:
 		return zfar;
 	}
 
-	void setPerspective(float fov, float aspect, float znear, float zfar)
+	void setPerspective(float fov_, float aspect, float znear_, float zfar_)
 	{
-		this->fov = fov;
-		this->znear = znear;
-		this->zfar = zfar;
+		this->fov = fov_;
+		this->znear = znear_;
+		this->zfar = zfar_;
 		matrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
 		if (flipY) {
 			matrices.perspective[1][1] *= -1.0f;
@@ -106,44 +107,44 @@ public:
 		}
 	}
 
-	void setPosition(glm::vec3 position)
+	void setPosition(glm::vec3 position_)
 	{
-		this->position = position;
+		this->position = position_;
 		updateViewMatrix();
 	}
 
-	void setRotation(glm::vec3 rotation)
+	void setRotation(glm::vec3 rotation_)
 	{
-		this->rotation = rotation;
+		this->rotation = rotation_;
 		updateViewMatrix();
 	}
 
-	void rotate(glm::vec3 delta)
+	void rotate(glm::vec3 delta_)
 	{
-		this->rotation += delta;
+		this->rotation += delta_;
 		updateViewMatrix();
 	}
 
-	void setTranslation(glm::vec3 translation)
+	void setTranslation(glm::vec3 translation_)
 	{
-		this->position = translation;
+		this->position = translation_;
 		updateViewMatrix();
 	};
 
-	void translate(glm::vec3 delta)
+	void translate(glm::vec3 delta_)
 	{
-		this->position += delta;
+		this->position += delta_;
 		updateViewMatrix();
 	}
 
-	void setRotationSpeed(float rotationSpeed)
+	void setRotationSpeed(float rotationSpeed_)
 	{
-		this->rotationSpeed = rotationSpeed;
+		this->rotationSpeed = rotationSpeed_;
 	}
 
-	void setMovementSpeed(float movementSpeed)
+	void setMovementSpeed(float movementSpeed_)
 	{
-		this->movementSpeed = movementSpeed;
+		this->movementSpeed = movementSpeed_;
 	}
 
 	void update(float deltaTime)

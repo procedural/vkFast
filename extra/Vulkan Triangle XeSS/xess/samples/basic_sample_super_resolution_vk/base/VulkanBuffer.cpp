@@ -20,9 +20,9 @@ namespace vks
 	* 
 	* @return VkResult of the buffer mapping call
 	*/
-	VkResult Buffer::map(VkDeviceSize size, VkDeviceSize offset)
+	VkResult Buffer::map(VkDeviceSize size_, VkDeviceSize offset)
 	{
-		return vkMapMemory(device, memory, offset, size, 0, &mapped);
+		return vkMapMemory(device, memory, offset, size_, 0, &mapped);
 	}
 
 	/**
@@ -58,11 +58,11 @@ namespace vks
 	* @param offset (Optional) Byte offset from beginning
 	*
 	*/
-	void Buffer::setupDescriptor(VkDeviceSize size, VkDeviceSize offset)
+	void Buffer::setupDescriptor(VkDeviceSize size_, VkDeviceSize offset)
 	{
 		descriptor.offset = offset;
 		descriptor.buffer = buffer;
-		descriptor.range = size;
+		descriptor.range = size_;
 	}
 
 	/**
@@ -72,10 +72,10 @@ namespace vks
 	* @param size Size of the data to copy in machine units
 	*
 	*/
-	void Buffer::copyTo(void* data, VkDeviceSize size)
+	void Buffer::copyTo(void* data, VkDeviceSize size_)
 	{
 		assert(mapped);
-		memcpy(mapped, data, size);
+		memcpy(mapped, data, size_);
 	}
 
 	/** 
@@ -88,13 +88,13 @@ namespace vks
 	*
 	* @return VkResult of the flush call
 	*/
-	VkResult Buffer::flush(VkDeviceSize size, VkDeviceSize offset)
+	VkResult Buffer::flush(VkDeviceSize size_, VkDeviceSize offset)
 	{
 		VkMappedMemoryRange mappedRange = {};
 		mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 		mappedRange.memory = memory;
 		mappedRange.offset = offset;
-		mappedRange.size = size;
+		mappedRange.size = size_;
 		return vkFlushMappedMemoryRanges(device, 1, &mappedRange);
 	}
 
@@ -108,13 +108,13 @@ namespace vks
 	*
 	* @return VkResult of the invalidate call
 	*/
-	VkResult Buffer::invalidate(VkDeviceSize size, VkDeviceSize offset)
+	VkResult Buffer::invalidate(VkDeviceSize size_, VkDeviceSize offset)
 	{
 		VkMappedMemoryRange mappedRange = {};
 		mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 		mappedRange.memory = memory;
 		mappedRange.offset = offset;
-		mappedRange.size = size;
+		mappedRange.size = size_;
 		return vkInvalidateMappedMemoryRanges(device, 1, &mappedRange);
 	}
 

@@ -49,6 +49,7 @@
 	}																									\
 }
 #else
+#pragma warning(disable:4456)
 #define VK_CHECK_RESULT(f)																				\
 {																										\
 	VkResult res = (f);																					\

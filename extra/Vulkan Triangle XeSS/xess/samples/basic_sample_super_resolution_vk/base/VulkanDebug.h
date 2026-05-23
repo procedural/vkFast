@@ -28,6 +28,7 @@
 #endif
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#pragma warning(disable : 4201)
 #include <glm/glm.hpp>
 
 namespace vks

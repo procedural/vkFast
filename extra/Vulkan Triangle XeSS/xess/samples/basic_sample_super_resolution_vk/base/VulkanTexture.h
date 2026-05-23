@@ -2,6 +2,7 @@
 * Vulkan texture loader
 *
 * Copyright(C) by Sascha Willems - www.saschawillems.de
+* Copyright (C) 2024 Intel Corporation
 *
 * This code is licensed under the MIT license(MIT) (http://opensource.org/licenses/MIT)
 */
@@ -15,8 +16,8 @@
 
 #include "vulkan/vulkan.h"
 
-#include <ktx.h>
-#include <ktxvulkan.h>
+//#include <ktx.h>
+//#include <ktxvulkan.h>
 
 #include "VulkanBuffer.h"
 #include "VulkanDevice.h"
@@ -44,7 +45,7 @@ class Texture
 
 	void      updateDescriptor();
 	void      destroy();
-	ktxResult loadKTXFile(std::string filename, ktxTexture **target);
+	//ktxResult loadKTXFile(std::string filename, ktxTexture **target);
 };
 
 class Texture2D : public Texture

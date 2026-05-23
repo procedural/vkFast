@@ -32,14 +32,15 @@ namespace vks
 		double runtime = 0.0;
 		uint32_t frameCount = 0;
 
-		void run(std::function<void()> renderFunc, VkPhysicalDeviceProperties deviceProps) {
+		void run(std::function<void()> renderFunc, const VkPhysicalDeviceProperties& deviceProps_) {
 			active = true;
-			this->deviceProps = deviceProps;
+			this->deviceProps = deviceProps_;
 #if defined(_WIN32)
 			AttachConsole(ATTACH_PARENT_PROCESS);
 			freopen_s(&stream, "CONOUT$", "w+", stdout);
 			freopen_s(&stream, "CONOUT$", "w+", stderr);
 #endif
+			std::ios_base::fmtflags cOutSavedFlags(std::cout.flags());
 			std::cout << std::fixed << std::setprecision(3);
 
 			// Warm up phase to get more stable frame rates
@@ -62,7 +63,7 @@ namespace vks
 					runtime += tDiff;
 					frameTimes.push_back(tDiff);
 					frameCount++;
-					if (outputFrames != -1 && outputFrames == frameCount) break;
+					if (outputFrames != -1 && outputFrames == (int)frameCount) break;
 				};
 				std::cout << "Benchmark finished" << "\n";
 				std::cout << "device : " << deviceProps.deviceName << " (driver version: " << deviceProps.driverVersion << ")" << "\n";
@@ -70,6 +71,7 @@ namespace vks
 				std::cout << "frames : " << frameCount << "\n";
 				std::cout << "fps    : " << frameCount / (runtime / 1000.0) << "\n";
 			}
+			std::cout.flags(cOutSavedFlags);
 		}
 
 		void saveResults() {
