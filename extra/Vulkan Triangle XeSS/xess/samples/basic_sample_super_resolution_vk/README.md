@@ -86,7 +86,7 @@ Note that some examples require specific device features, and if you are on a mu
 
 ## Shaders
 
-Vulkan consumes shaders in an intermediate representation called SPIR-V. This makes it possible to use different shader languages by compiling them to that bytecode format. The primary shader language used here is [GLSL](data/shaders/glsl) but most samples also come with [HLSL](data/shaders/hlsl) shader sources.
+Vulkan consumes shaders in an intermediate representation called SPIR-V. This makes it possible to use different shader languages by compiling them to that bytecode format. The primary shader language used here is [GLSL](shaders/glsl) but most samples also come with [HLSL](shaders/hlsl) shader sources.
 
 ## A note on synchronization
 
@@ -349,6 +349,10 @@ Callable shaders can be dynamically invoked from within other ray tracing shader
 
 Uses an intersection shader for procedural geometry. Instead of using actual geometry, this sample on passes bounding boxes and object definitions. An intersection shader is then used to trace against the procedural objects.
 
+#### [Ray traced glTF](examples/raytracinggltf/)
+
+Renders a textured glTF model using ray traycing instead of rasterization. Makes use of frame accumulation for transparency and anti aliasing.
+
 #### [Ray query](examples/rayquery)
 
 Ray queries add acceleration structure intersection functionality to non ray tracing shader stages. This allows for combining ray tracing with rasterization. This example makes uses ray queries to add ray casted shadows to a rasterized sample in the fragment shader.
@@ -429,7 +433,7 @@ An updated version using ```VK_EXT_debug_utils``` along with an in-depth tutoria
 
 Shows how to render a scene using a negative viewport height, making the Vulkan render setup more similar to other APIs like OpenGL. Also has several options for changing relevant pipeline state, and displaying meshes with OpenGL or Vulkan style coordinates. Details can be found in [this tutorial](https://www.saschawillems.de/tutorials/vulkan/flipping-viewport).
 
-#### [Variable rate shading (VK_NV_shading_rate_image)](examples/variablerateshading/)
+#### [Variable rate shading (VK_KHR_fragment_shading_rate)](examples/variablerateshading/)
 
 Uses a special image that contains variable shading rates to vary the number of fragment shader invocations across the framebuffer. This makes it possible to lower fragment shader invocations for less important/less noisy parts of the framebuffer.
 
