@@ -24,6 +24,10 @@
 
 #define REII_INTERNAL_MAX_SAMPLERS_COUNT 4000
 
+typedef struct ReiiVec4 {
+  float x, y, z, w;
+} ReiiVec4;
+
 static RedCullMode ReiiCullModeToRed(ReiiCullMode x) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
