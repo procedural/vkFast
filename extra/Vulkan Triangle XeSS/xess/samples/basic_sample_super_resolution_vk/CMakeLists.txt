@@ -12,9 +12,11 @@
 # License.
 ###############################################################################
 
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.20)
 
 project(BasicSampleVK)
+
+find_package(Vulkan REQUIRED)
 
 set(VULKAN_SAMPLE_SOURCES
 	base/camera.hpp
@@ -71,30 +73,30 @@ endif()
 target_link_libraries(BasicSampleVK PRIVATE glm::glm)
 
 # Compile shaders
-find_package(Vulkan COMPONENTS glslc)
-function(target_compile_shaders target)
-	cmake_parse_arguments(PARSE_ARGV 1 arg "" "DEST_DIR;SRC_DIR" "SOURCES")
-
-	foreach(source ${arg_SOURCES})
-		set(COMPILED_SHADERS ${COMPILED_SHADERS} ${CMAKE_CURRENT_BINARY_DIR}/${source}.spv)
-		set(SOURCE_SHADERS ${SOURCE_SHADERS} ${CMAKE_CURRENT_SOURCE_DIR}/${arg_SRC_DIR}/${source})
-		add_custom_command(
-			OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${source}.spv
-			DEPENDS ${arg_SRC_DIR}/${source}
-			DEPFILE ${CMAKE_CURRENT_BINARY_DIR}/${source}.d
-			COMMAND
-				${Vulkan_GLSLC_EXECUTABLE}
-				--target-env=vulkan
-				-mfmt=bin
-				-MD -MF ${CMAKE_CURRENT_BINARY_DIR}/${source}.d
-				-o ${CMAKE_CURRENT_BINARY_DIR}/${source}.spv
-				${CMAKE_CURRENT_SOURCE_DIR}/${arg_SRC_DIR}/${source}
-			COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/${source}.spv ${arg_DEST_DIR}/${source}.spv
-		)
-	endforeach()
-	add_custom_target(${target}Shaders DEPENDS ${COMPILED_SHADERS} SOURCES ${SOURCE_SHADERS})
-	add_dependencies(${target} ${target}Shaders)
-endfunction()
+#find_package(Vulkan COMPONENTS glslc)
+#function(target_compile_shaders target)
+#	cmake_parse_arguments(PARSE_ARGV 1 arg "" "DEST_DIR;SRC_DIR" "SOURCES")
+#
+#	foreach(source ${arg_SOURCES})
+#		set(COMPILED_SHADERS ${COMPILED_SHADERS} ${CMAKE_CURRENT_BINARY_DIR}/${source}.spv)
+#		set(SOURCE_SHADERS ${SOURCE_SHADERS} ${CMAKE_CURRENT_SOURCE_DIR}/${arg_SRC_DIR}/${source})
+#		add_custom_command(
+#			OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${source}.spv
+#			DEPENDS ${arg_SRC_DIR}/${source}
+#			DEPFILE ${CMAKE_CURRENT_BINARY_DIR}/${source}.d
+#			COMMAND
+#				${Vulkan_GLSLC_EXECUTABLE}
+#				--target-env=vulkan
+#				-mfmt=bin
+#				-MD -MF ${CMAKE_CURRENT_BINARY_DIR}/${source}.d
+#				-o ${CMAKE_CURRENT_BINARY_DIR}/${source}.spv
+#				${CMAKE_CURRENT_SOURCE_DIR}/${arg_SRC_DIR}/${source}
+#			COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/${source}.spv ${arg_DEST_DIR}/${source}.spv
+#		)
+#	endforeach()
+#	add_custom_target(${target}Shaders DEPENDS ${COMPILED_SHADERS} SOURCES ${SOURCE_SHADERS})
+#	add_dependencies(${target} ${target}Shaders)
+#endfunction()
 
 
 if (MSVC AND (NOT (${CMAKE_GENERATOR} STREQUAL "Ninja")))
@@ -103,14 +105,14 @@ else ()
 	set(DESTDIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 endif()
 
-target_compile_shaders(BasicSampleVK SRC_DIR . DEST_DIR ${DESTDIR} SOURCES
-	basic_sample_shaders/glsl/triangle/triangle.vert
-	basic_sample_shaders/glsl/triangle/triangle.frag
-	basic_sample_shaders/glsl/triangle/velocity.vert
-	basic_sample_shaders/glsl/triangle/velocity.frag
-	basic_sample_shaders/glsl/triangle/quad.vert
-	basic_sample_shaders/glsl/triangle/quad.frag
-	basic_sample_shaders/glsl/triangle/quad-velocity.frag)
+#target_compile_shaders(BasicSampleVK SRC_DIR . DEST_DIR ${DESTDIR} SOURCES
+#	basic_sample_shaders/glsl/triangle/triangle.vert
+#	basic_sample_shaders/glsl/triangle/triangle.frag
+#	basic_sample_shaders/glsl/triangle/velocity.vert
+#	basic_sample_shaders/glsl/triangle/velocity.frag
+#	basic_sample_shaders/glsl/triangle/quad.vert
+#	basic_sample_shaders/glsl/triangle/quad.frag
+#	basic_sample_shaders/glsl/triangle/quad-velocity.frag)
 
 if (NOT XESS_BUILD_INTERNAL_SAMPLE)
     set(SRC_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../bin/")
