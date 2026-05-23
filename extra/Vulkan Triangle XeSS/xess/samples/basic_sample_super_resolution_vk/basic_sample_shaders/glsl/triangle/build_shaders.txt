@@ -1,0 +1,8 @@
+C:\VulkanSDK\1.4.341.1\Bin\glslc.exe --target-env=vulkan -mfmt=bin -MD -MF quad.frag.d -o quad.frag.spv quad.frag
+C:\VulkanSDK\1.4.341.1\Bin\glslc.exe --target-env=vulkan -mfmt=bin -MD -MF quad.vert.d -o quad.vert.spv quad.vert
+C:\VulkanSDK\1.4.341.1\Bin\glslc.exe --target-env=vulkan -mfmt=bin -MD -MF quad-velocity.frag.d -o quad-velocity.frag.spv quad-velocity.frag
+C:\VulkanSDK\1.4.341.1\Bin\glslc.exe --target-env=vulkan -mfmt=bin -MD -MF triangle.frag.d -o triangle.frag.spv triangle.frag
+C:\VulkanSDK\1.4.341.1\Bin\glslc.exe --target-env=vulkan -mfmt=bin -MD -MF triangle.vert.d -o triangle.vert.spv triangle.vert
+C:\VulkanSDK\1.4.341.1\Bin\glslc.exe --target-env=vulkan -mfmt=bin -MD -MF velocity.frag.d -o velocity.frag.spv velocity.frag
+C:\VulkanSDK\1.4.341.1\Bin\glslc.exe --target-env=vulkan -mfmt=bin -MD -MF velocity.vert.d -o velocity.vert.spv velocity.vert
+pause
