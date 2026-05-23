@@ -1,3 +1,4 @@
+:: Copy compiled .spv files to basic_sample_super_resolution_vk/build/basic_sample_shaders/glsl/triangle/ folder.
 C:\VulkanSDK\1.4.341.1\Bin\glslc.exe --target-env=vulkan -mfmt=bin -MD -MF quad.frag.d -o quad.frag.spv quad.frag
 C:\VulkanSDK\1.4.341.1\Bin\glslc.exe --target-env=vulkan -mfmt=bin -MD -MF quad.vert.d -o quad.vert.spv quad.vert
 C:\VulkanSDK\1.4.341.1\Bin\glslc.exe --target-env=vulkan -mfmt=bin -MD -MF quad-velocity.frag.d -o quad-velocity.frag.spv quad-velocity.frag
