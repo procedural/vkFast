@@ -203,6 +203,7 @@ public:
 	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
 	{
 		title = "XeSS-SR VK basic sample";
+		settings.vsync = true;
 		// To keep things simple, we don't use the UI overlay from the framework
 		settings.overlay = false;
 		// Setup a default look-at camera
