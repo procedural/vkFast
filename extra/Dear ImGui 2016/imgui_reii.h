@@ -511,8 +511,8 @@ static inline void imguiNewFrame() {
   int displayH = 0;
   glfwGetWindowSize(globalImguiState->window, &w, &h);
   glfwGetFramebufferSize(globalImguiState->window, &displayW, &displayH);
-  io->displaySize = (ImVec2){(float)w, (float)h};
-  io->displayFramebufferScale = (ImVec2){w > 0 ? ((float)displayW / w) : 0, h > 0 ? ((float)displayH / h) : 0};
+  io->displaySize = REDGPU_32_STRUCT(ImVec2, (float)w, (float)h);
+  io->displayFramebufferScale = REDGPU_32_STRUCT(ImVec2, w > 0 ? ((float)displayW / w) : 0, h > 0 ? ((float)displayH / h) : 0);
 
   double currentTime = glfwGetTime();
   io->deltaTime = globalImguiState->time > 0.0 ? (float)(currentTime - globalImguiState->time) : (float)(1.0f / 60.0f);
@@ -522,9 +522,9 @@ static inline void imguiNewFrame() {
     double mouse_x = 0;
     double mouse_y = 0;
     glfwGetCursorPos(globalImguiState->window, &mouse_x, &mouse_y);
-    io->mousePosition = (ImVec2){(float)mouse_x, (float)mouse_y};
+    io->mousePosition = REDGPU_32_STRUCT(ImVec2, (float)mouse_x, (float)mouse_y);
   } else {
-    io->mousePosition = (ImVec2){-1.f, -1.f};
+    io->mousePosition = REDGPU_32_STRUCT(ImVec2, -1.f, -1.f);
   }
 
   for (int i = 0; i < 3; i += 1) {
@@ -643,47 +643,47 @@ void imguiSetProcessInputsState(ReiiBool32 enable) {
 static inline void imguiEasyTheming(ImVec3 colorText, ImVec3 colorHead, ImVec3 colorArea, ImVec3 colorBody, ImVec3 colorPops) {
   ImguiStyle * style = (ImguiStyle *)igGetStyle();
 
-  style->colors[IMGUI_COLOR_TEXT]                       = (ImVec4){colorText.x, colorText.y, colorText.z, 1.00f};
-  style->colors[IMGUI_COLOR_TEXT_DISABLED]              = (ImVec4){colorText.x, colorText.y, colorText.z, 0.58f};
-  style->colors[IMGUI_COLOR_WINDOW_BACKGROUND]          = (ImVec4){colorBody.x, colorBody.y, colorBody.z, 1.00f};
-  style->colors[IMGUI_COLOR_CHILD_WINDOW_BACKGROUND]    = (ImVec4){colorArea.x, colorArea.y, colorArea.z, 0.58f};
-  style->colors[IMGUI_COLOR_BORDER]                     = (ImVec4){colorBody.x, colorBody.y, colorBody.z, 0.00f};
-  style->colors[IMGUI_COLOR_BORDER_SHADOW]              = (ImVec4){colorBody.x, colorBody.y, colorBody.z, 0.00f};
-  style->colors[IMGUI_COLOR_FRAME_BACKGROUND]           = (ImVec4){colorArea.x, colorArea.y, colorArea.z, 1.00f};
-  style->colors[IMGUI_COLOR_FRAME_BACKGROUND_HOVERED]   = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.78f};
-  style->colors[IMGUI_COLOR_FRAME_BACKGROUND_ACTIVE]    = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 1.00f};
-  style->colors[IMGUI_COLOR_TITLE_BACKGROUND]           = (ImVec4){colorArea.x, colorArea.y, colorArea.z, 1.00f};
-  style->colors[IMGUI_COLOR_TITLE_BACKGROUND_COLLAPSED] = (ImVec4){colorArea.x, colorArea.y, colorArea.z, 0.75f};
-  style->colors[IMGUI_COLOR_TITLE_BACKGROUND_ACTIVE]    = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 1.00f};
-  style->colors[IMGUI_COLOR_MENU_BAR_BACKGROUND]        = (ImVec4){colorArea.x, colorArea.y, colorArea.z, 1.00f};
-  style->colors[IMGUI_COLOR_SCROLLBAR_BACKGROUND]       = (ImVec4){colorArea.x, colorArea.y, colorArea.z, 1.00f};
-  style->colors[IMGUI_COLOR_SCROLLBAR_GRAB]             = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.50f};
-  style->colors[IMGUI_COLOR_SCROLLBAR_GRAB_HOVERED]     = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.78f};
-  style->colors[IMGUI_COLOR_SCROLLBAR_GRAB_ACTIVE]      = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 1.00f};
-  style->colors[IMGUI_COLOR_COMBO_BACKGROUND]           = (ImVec4){colorArea.x, colorArea.y, colorArea.z, 1.00f};
-  style->colors[IMGUI_COLOR_CHECK_MARK]                 = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.80f};
-  style->colors[IMGUI_COLOR_SLIDER_GRAB]                = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.50f};
-  style->colors[IMGUI_COLOR_SLIDER_GRAB_ACTIVE]         = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 1.00f};
-  style->colors[IMGUI_COLOR_BUTTON]                     = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.50f};
-  style->colors[IMGUI_COLOR_BUTTON_HOVERED]             = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.86f};
-  style->colors[IMGUI_COLOR_BUTTON_ACTIVE]              = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 1.00f};
-  style->colors[IMGUI_COLOR_HEADER]                     = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.76f};
-  style->colors[IMGUI_COLOR_HEADER_HOVERED]             = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.86f};
-  style->colors[IMGUI_COLOR_HEADER_ACTIVE]              = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 1.00f};
-  style->colors[IMGUI_COLOR_COLUMN]                     = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.32f};
-  style->colors[IMGUI_COLOR_COLUMN_HOVERED]             = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.78f};
-  style->colors[IMGUI_COLOR_COLUMN_ACTIVE]              = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 1.00f};
-  style->colors[IMGUI_COLOR_RESIZE_GRIP]                = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.15f};
-  style->colors[IMGUI_COLOR_RESIZE_GRIP_HOVERED]        = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.78f};
-  style->colors[IMGUI_COLOR_RESIZE_GRIP_ACTIVE]         = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 1.00f};
-  style->colors[IMGUI_COLOR_CLOSE_BUTTON]               = (ImVec4){colorText.x, colorText.y, colorText.z, 0.16f};
-  style->colors[IMGUI_COLOR_CLOSE_BUTTON_HOVERED]       = (ImVec4){colorText.x, colorText.y, colorText.z, 0.39f};
-  style->colors[IMGUI_COLOR_CLOSE_BUTTON_ACTIVE]        = (ImVec4){colorText.x, colorText.y, colorText.z, 1.00f};
-  style->colors[IMGUI_COLOR_PLOT_LINES]                 = (ImVec4){colorText.x, colorText.y, colorText.z, 0.63f};
-  style->colors[IMGUI_COLOR_PLOT_LINES_HOVERED]         = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 1.00f};
-  style->colors[IMGUI_COLOR_PLOT_HISTOGRAM]             = (ImVec4){colorText.x, colorText.y, colorText.z, 0.63f};
-  style->colors[IMGUI_COLOR_PLOT_HISTOGRAM_HOVERED]     = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 1.00f};
-  style->colors[IMGUI_COLOR_TEXT_SELECTED_BACKGROUND]   = (ImVec4){colorHead.x, colorHead.y, colorHead.z, 0.43f};
-  style->colors[IMGUI_COLOR_POPUP_BACKGROUND]           = (ImVec4){colorPops.x, colorPops.y, colorPops.z, 0.92f};
-  style->colors[IMGUI_COLOR_MODAL_WINDOW_DARKENING]     = (ImVec4){colorArea.x, colorArea.y, colorArea.z, 0.73f};
+  style->colors[IMGUI_COLOR_TEXT]                       = REDGPU_32_STRUCT(ImVec4, colorText.x, colorText.y, colorText.z, 1.00f);
+  style->colors[IMGUI_COLOR_TEXT_DISABLED]              = REDGPU_32_STRUCT(ImVec4, colorText.x, colorText.y, colorText.z, 0.58f);
+  style->colors[IMGUI_COLOR_WINDOW_BACKGROUND]          = REDGPU_32_STRUCT(ImVec4, colorBody.x, colorBody.y, colorBody.z, 1.00f);
+  style->colors[IMGUI_COLOR_CHILD_WINDOW_BACKGROUND]    = REDGPU_32_STRUCT(ImVec4, colorArea.x, colorArea.y, colorArea.z, 0.58f);
+  style->colors[IMGUI_COLOR_BORDER]                     = REDGPU_32_STRUCT(ImVec4, colorBody.x, colorBody.y, colorBody.z, 0.00f);
+  style->colors[IMGUI_COLOR_BORDER_SHADOW]              = REDGPU_32_STRUCT(ImVec4, colorBody.x, colorBody.y, colorBody.z, 0.00f);
+  style->colors[IMGUI_COLOR_FRAME_BACKGROUND]           = REDGPU_32_STRUCT(ImVec4, colorArea.x, colorArea.y, colorArea.z, 1.00f);
+  style->colors[IMGUI_COLOR_FRAME_BACKGROUND_HOVERED]   = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.78f);
+  style->colors[IMGUI_COLOR_FRAME_BACKGROUND_ACTIVE]    = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 1.00f);
+  style->colors[IMGUI_COLOR_TITLE_BACKGROUND]           = REDGPU_32_STRUCT(ImVec4, colorArea.x, colorArea.y, colorArea.z, 1.00f);
+  style->colors[IMGUI_COLOR_TITLE_BACKGROUND_COLLAPSED] = REDGPU_32_STRUCT(ImVec4, colorArea.x, colorArea.y, colorArea.z, 0.75f);
+  style->colors[IMGUI_COLOR_TITLE_BACKGROUND_ACTIVE]    = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 1.00f);
+  style->colors[IMGUI_COLOR_MENU_BAR_BACKGROUND]        = REDGPU_32_STRUCT(ImVec4, colorArea.x, colorArea.y, colorArea.z, 1.00f);
+  style->colors[IMGUI_COLOR_SCROLLBAR_BACKGROUND]       = REDGPU_32_STRUCT(ImVec4, colorArea.x, colorArea.y, colorArea.z, 1.00f);
+  style->colors[IMGUI_COLOR_SCROLLBAR_GRAB]             = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.50f);
+  style->colors[IMGUI_COLOR_SCROLLBAR_GRAB_HOVERED]     = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.78f);
+  style->colors[IMGUI_COLOR_SCROLLBAR_GRAB_ACTIVE]      = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 1.00f);
+  style->colors[IMGUI_COLOR_COMBO_BACKGROUND]           = REDGPU_32_STRUCT(ImVec4, colorArea.x, colorArea.y, colorArea.z, 1.00f);
+  style->colors[IMGUI_COLOR_CHECK_MARK]                 = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.80f);
+  style->colors[IMGUI_COLOR_SLIDER_GRAB]                = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.50f);
+  style->colors[IMGUI_COLOR_SLIDER_GRAB_ACTIVE]         = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 1.00f);
+  style->colors[IMGUI_COLOR_BUTTON]                     = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.50f);
+  style->colors[IMGUI_COLOR_BUTTON_HOVERED]             = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.86f);
+  style->colors[IMGUI_COLOR_BUTTON_ACTIVE]              = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 1.00f);
+  style->colors[IMGUI_COLOR_HEADER]                     = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.76f);
+  style->colors[IMGUI_COLOR_HEADER_HOVERED]             = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.86f);
+  style->colors[IMGUI_COLOR_HEADER_ACTIVE]              = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 1.00f);
+  style->colors[IMGUI_COLOR_COLUMN]                     = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.32f);
+  style->colors[IMGUI_COLOR_COLUMN_HOVERED]             = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.78f);
+  style->colors[IMGUI_COLOR_COLUMN_ACTIVE]              = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 1.00f);
+  style->colors[IMGUI_COLOR_RESIZE_GRIP]                = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.15f);
+  style->colors[IMGUI_COLOR_RESIZE_GRIP_HOVERED]        = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.78f);
+  style->colors[IMGUI_COLOR_RESIZE_GRIP_ACTIVE]         = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 1.00f);
+  style->colors[IMGUI_COLOR_CLOSE_BUTTON]               = REDGPU_32_STRUCT(ImVec4, colorText.x, colorText.y, colorText.z, 0.16f);
+  style->colors[IMGUI_COLOR_CLOSE_BUTTON_HOVERED]       = REDGPU_32_STRUCT(ImVec4, colorText.x, colorText.y, colorText.z, 0.39f);
+  style->colors[IMGUI_COLOR_CLOSE_BUTTON_ACTIVE]        = REDGPU_32_STRUCT(ImVec4, colorText.x, colorText.y, colorText.z, 1.00f);
+  style->colors[IMGUI_COLOR_PLOT_LINES]                 = REDGPU_32_STRUCT(ImVec4, colorText.x, colorText.y, colorText.z, 0.63f);
+  style->colors[IMGUI_COLOR_PLOT_LINES_HOVERED]         = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 1.00f);
+  style->colors[IMGUI_COLOR_PLOT_HISTOGRAM]             = REDGPU_32_STRUCT(ImVec4, colorText.x, colorText.y, colorText.z, 0.63f);
+  style->colors[IMGUI_COLOR_PLOT_HISTOGRAM_HOVERED]     = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 1.00f);
+  style->colors[IMGUI_COLOR_TEXT_SELECTED_BACKGROUND]   = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.43f);
+  style->colors[IMGUI_COLOR_POPUP_BACKGROUND]           = REDGPU_32_STRUCT(ImVec4, colorPops.x, colorPops.y, colorPops.z, 0.92f);
+  style->colors[IMGUI_COLOR_MODAL_WINDOW_DARKENING]     = REDGPU_32_STRUCT(ImVec4, colorArea.x, colorArea.y, colorArea.z, 0.73f);
 }

@@ -592,13 +592,13 @@ int main() {
       }
       igCheckbox("Clear all inserted frames on insert index wrap", (bool *)&milliseconds_clearOnWrap);
       igText("Next frame insert index: %d", milliseconds_arrayIndex);
-      if (igButton("Clear all inserted frames", (ImVec2){0, 0})) {
+      if (igButton("Clear all inserted frames", REDGPU_32_STRUCT(ImVec2, 0, 0))) {
         milliseconds_maxTime = 0;
         for (int i = 0; i < MILLISECONDS_ARRAY_MAX_CAPTURE_FRAMES_COUNT; i += 1) {
           milliseconds[i] = 0;
         }
       }
-      style->colors[ImGuiCol_PlotHistogramHovered] = (ImVec4){1.f, 0.f, 0.f, 1.f};
+      style->colors[ImGuiCol_PlotHistogramHovered] = REDGPU_32_STRUCT(ImVec4, 1.f, 0.f, 0.f, 1.f);
       ImVec2 graph_size = {0, 80};
       igPlotHistogram("Frame times", milliseconds, MILLISECONDS_ARRAY_MAX_CAPTURE_FRAMES_COUNT, 0, NULL, 0, milliseconds_maxTime, graph_size, 4);
 
