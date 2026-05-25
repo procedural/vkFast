@@ -293,7 +293,7 @@ int main() {
 
   float fontPixelSize = 22;
   size_t fontDataBytesCount = gFontDroidSansMonoFontGetBytesCount();
-  char * fontData = malloc(fontDataBytesCount);
+  char * fontData = (char *)malloc(fontDataBytesCount);
   REDGPU_2_EXPECTFL(fontData != NULL);
   memcpy(fontData, gFontDroidSansMonoFont, fontDataBytesCount);
   struct ImFont * imfont = ImFontAtlas_AddFontFromMemoryTTF(io->fonts, fontData, fontDataBytesCount, fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
@@ -383,7 +383,7 @@ int main() {
         ImFontAtlas_Clear(io->fonts);
         imguiInvalidateFontTexture();
         ImFontAtlas_AddFontDefault(io->fonts, NULL);
-        fontData = malloc(fontDataBytesCount);
+        fontData = (char *)malloc(fontDataBytesCount);
         REDGPU_2_EXPECTFL(fontData != NULL);
         memcpy(fontData, gFontDroidSansMonoFont, fontDataBytesCount);
         imfont = ImFontAtlas_AddFontFromMemoryTTF(io->fonts, fontData, fontDataBytesCount, fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
