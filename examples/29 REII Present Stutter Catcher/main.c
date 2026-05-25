@@ -712,6 +712,8 @@ int main() {
         YieldProcessor();
       }
       fps_limiter_lasttime += 1.0f / fps_limiter_target_fps;
+    } else {
+      fps_limiter_lasttime = glfwGetTime();
     }
 
     LARGE_INTEGER t_end = {0};
