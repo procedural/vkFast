@@ -346,7 +346,10 @@ int main() {
   int   camera_animation_is_enabled = 1;
   int   milliseconds_clearOnWrap = 1;
 
+  // NOTE(Constantine):
   // https://github.com/glfw/glfw/issues/1308
+  // You also may be interested in the power-efficient C++ version of this FPS limiter:
+  // https://github.com/procedural/vkFast/commit/3dc58b8de91d64122859675c03e507ec1653e3f9
   int    fps_limiter_enabled    = 0;
   double fps_limiter_lasttime   = glfwGetTime();
   float  fps_limiter_target_fps = 60;
