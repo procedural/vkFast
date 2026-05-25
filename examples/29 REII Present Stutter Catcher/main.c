@@ -603,7 +603,9 @@ int main() {
       igPlotHistogram("Frame times", milliseconds, MILLISECONDS_ARRAY_MAX_CAPTURE_FRAMES_COUNT, 0, NULL, 0, milliseconds_maxTime, graph_size, 4);
 
       igCheckbox("Enable FPS limiter", (bool *)&fps_limiter_enabled);
-      igDragFloat("FPS limiter target FPS", &fps_limiter_target_fps, 1, 0, INT_MAX, 0, 1);
+      if (igDragFloat("FPS limiter target FPS", &fps_limiter_target_fps, 1, 0, INT_MAX, 0, 1)) {
+        if (fps_limiter_target_fps < 15) { fps_limiter_target_fps = 15; }
+      }
       igText("To disable VSync, press Z key.");
       igText("To enable  VSync, press X key.");
     }
