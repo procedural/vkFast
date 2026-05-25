@@ -14,34 +14,8 @@ exit
 // NOTE(Constantine): Dear ImGui 2016 needs GLFW.
 #include "../../extra/Dear ImGui 2016/imgui_reii.h"
 
-extern "C" size_t        gFontDroidSansMonoFontGetBytesCount();
-extern "C" unsigned char gFontDroidSansMonoFont[];
-
-#include <thread>
-#include <chrono>
-void limitFPS(double targetFPS, std::chrono::steady_clock::time_point frameStartTime) {
-  // 1. Convert target FPS into a precise chrono duration
-  double targetDurationSecs = 1.0 / targetFPS;
-  auto targetDuration = std::chrono::duration<double>(targetDurationSecs);
-
-  // 2. Establish our precise target time point
-  // We mix GLFW time with the stable steady_clock for scheduling
-  auto targetEndPoint = frameStartTime + std::chrono::duration_cast<std::chrono::steady_clock::duration>(targetDuration);
-
-  // 3. Coarse Sleep Phase (Heavy Power Saving)
-  // Sleep until 2 milliseconds before our actual deadline
-  using namespace std::literals::chrono_literals;
-  auto coarseWaitLimit = targetEndPoint - 2ms;
-  if (std::chrono::steady_clock::now() < coarseWaitLimit) {
-    std::this_thread::sleep_until(coarseWaitLimit);
-  }
-
-  // 4. Fine-Grained Yield Phase (Eco-Friendly Waiting)
-  // Instead of a tight CPU-melting loop, we yield control to other OS threads
-  while (std::chrono::steady_clock::now() < targetEndPoint) {
-    std::this_thread::yield();
-  }
-}
+extern size_t        gFontDroidSansMonoFontGetBytesCount();
+extern unsigned char gFontDroidSansMonoFont[];
 
 int main() {
 #ifdef __MINGW32__
@@ -373,14 +347,12 @@ int main() {
   int   milliseconds_clearOnWrap = 1;
 
   // https://github.com/glfw/glfw/issues/1308
-  int   fps_limiter_enabled    = 0;
-  float fps_limiter_target_fps = 60;
-  std::chrono::steady_clock::time_point fps_limiter_frame_start_time = std::chrono::steady_clock::now();
+  int    fps_limiter_enabled    = 0;
+  double fps_limiter_lasttime   = glfwGetTime();
+  float  fps_limiter_target_fps = 60;
 
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
-
-    fps_limiter_frame_start_time = std::chrono::steady_clock::now();
 
     int os_window_w = 0;
     int os_window_h = 0;
@@ -738,7 +710,12 @@ int main() {
     frame += 1;
 
     if (fps_limiter_enabled == 1) {
-      limitFPS(fps_limiter_target_fps, fps_limiter_frame_start_time);
+      while (glfwGetTime() < fps_limiter_lasttime + 1.0f / fps_limiter_target_fps) {
+        YieldProcessor();
+      }
+      fps_limiter_lasttime += 1.0f / fps_limiter_target_fps;
+    } else {
+      fps_limiter_lasttime = glfwGetTime();
     }
 
     LARGE_INTEGER t_end = {0};
