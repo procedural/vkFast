@@ -391,6 +391,18 @@ int main() {
     imguiSetProcessInputsState(!camera_is_enabled);
     imguiNewFrame();
 
+    int doPresentRebuild = 0;
+    if (glfwGetKey(window, GLFW_KEY_1)) {
+      const char * window_title = "[vkFast] REII Present Stutter Catcher (VSync Off)";
+      doPresentRebuild = vfWindowFullscreen(ctx, window_handle, window_title, window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_OFF, FF, LL);
+      glfwSetWindowTitle(window, window_title);
+    }
+    if (glfwGetKey(window, GLFW_KEY_2)) {
+      const char * window_title = "[vkFast] REII Present Stutter Catcher (VSync On)";
+      doPresentRebuild = vfWindowFullscreen(ctx, window_handle, window_title, window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
+      glfwSetWindowTitle(window, window_title);
+    }
+
     {
       vfWindowGetSize(ctx, &window_w, &window_h);
 
