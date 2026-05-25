@@ -283,12 +283,12 @@ int main() {
     QueryPerformanceCounter(&t_start);
 
     int doPresentRebuild = 0;
-    if (glfwGetKey(window, GLFW_KEY_1)) {
+    if (glfwGetKey(window, GLFW_KEY_Z)) {
       const char * window_title = "[vkFast] REII Instancing (VSync Off)";
       doPresentRebuild = vfWindowFullscreen(ctx, window_handle, window_title, window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_OFF, FF, LL);
       glfwSetWindowTitle(window, window_title);
     }
-    if (glfwGetKey(window, GLFW_KEY_2)) {
+    if (glfwGetKey(window, GLFW_KEY_X)) {
       const char * window_title = "[vkFast] REII Instancing (VSync On)";
       doPresentRebuild = vfWindowFullscreen(ctx, window_handle, window_title, window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
       glfwSetWindowTitle(window, window_title);

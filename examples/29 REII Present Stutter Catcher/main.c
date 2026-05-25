@@ -346,6 +346,11 @@ int main() {
   int   camera_animation_is_enabled = 1;
   int   milliseconds_clearOnWrap = 1;
 
+  // https://github.com/glfw/glfw/issues/1308
+  int    fps_limiter_enabled    = 0;
+  double fps_limiter_lasttime   = glfwGetTime();
+  float  fps_limiter_target_fps = 60;
+
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
 
@@ -392,12 +397,12 @@ int main() {
     imguiNewFrame();
 
     int doPresentRebuild = 0;
-    if (glfwGetKey(window, GLFW_KEY_1)) {
+    if (glfwGetKey(window, GLFW_KEY_Z)) {
       const char * window_title = "[vkFast] REII Present Stutter Catcher (VSync Off)";
       doPresentRebuild = vfWindowFullscreen(ctx, window_handle, window_title, window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_OFF, FF, LL);
       glfwSetWindowTitle(window, window_title);
     }
-    if (glfwGetKey(window, GLFW_KEY_2)) {
+    if (glfwGetKey(window, GLFW_KEY_X)) {
       const char * window_title = "[vkFast] REII Present Stutter Catcher (VSync On)";
       doPresentRebuild = vfWindowFullscreen(ctx, window_handle, window_title, window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
       glfwSetWindowTitle(window, window_title);
@@ -596,6 +601,11 @@ int main() {
       style->colors[ImGuiCol_PlotHistogramHovered] = (ImVec4){1.f, 0.f, 0.f, 1.f};
       ImVec2 graph_size = {0, 80};
       igPlotHistogram("Frame times", milliseconds, MILLISECONDS_ARRAY_MAX_CAPTURE_FRAMES_COUNT, 0, NULL, 0, milliseconds_maxTime, graph_size, 4);
+
+      igCheckbox("Enable FPS limiter", (bool *)&fps_limiter_enabled);
+      igDragFloat("FPS limiter target FPS", &fps_limiter_target_fps, 1, 0, INT_MAX, 0, 1);
+      igText("To disable VSync, press Z key.");
+      igText("To enable  VSync, press X key.");
     }
 
     static bool showTestWindow = 1;
@@ -696,6 +706,13 @@ int main() {
     mouse_right_mouse_button_state_prev = mouse_right_mouse_button_state;
 
     frame += 1;
+
+    if (fps_limiter_enabled == 1) {
+      while (glfwGetTime() < fps_limiter_lasttime + 1.0f / fps_limiter_target_fps) {
+        YieldProcessor();
+      }
+      fps_limiter_lasttime += 1.0f / fps_limiter_target_fps;
+    }
 
     LARGE_INTEGER t_end = {0};
     QueryPerformanceCounter(&t_end);
