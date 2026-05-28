@@ -22,7 +22,7 @@ static int redRteEnumeratePhysicalDevicesReturning1(void * instance, unsigned * 
 
 static void * redRteGetInstanceProcAddrSpecialCasedForRedRteEnumeratePhysicalDevicesReturning0(void * instance, const char * name) {
   std::string procName = name;
-  if      (procName == "vkEnumeratePhysicalDevices")              { return redRteEnumeratePhysicalDevicesReturning0; }
+  if      (procName == "vkEnumeratePhysicalDevices")              { return (void *)redRteEnumeratePhysicalDevicesReturning0; }
   else if (procName == "vkGetPhysicalDeviceMemoryProperties2KHR") { return (void *)vkGetInstanceProcAddr((VkInstance)instance, "vkGetPhysicalDeviceMemoryProperties2"); }
   else if (procName == "vkGetPhysicalDeviceFeatures2KHR")         { return (void *)vkGetInstanceProcAddr((VkInstance)instance, "vkGetPhysicalDeviceFeatures2"); }
   else if (procName == "vkGetPhysicalDeviceProperties2KHR")       { return (void *)vkGetInstanceProcAddr((VkInstance)instance, "vkGetPhysicalDeviceProperties2"); }
@@ -33,7 +33,7 @@ static void * redRteGetInstanceProcAddrSpecialCasedForRedRteEnumeratePhysicalDev
 
 static void * redRteGetInstanceProcAddrSpecialCasedForRedRteEnumeratePhysicalDevicesReturning1(void * instance, const char * name) {
   std::string procName = name;
-  if      (procName == "vkEnumeratePhysicalDevices")              { return redRteEnumeratePhysicalDevicesReturning1; }
+  if      (procName == "vkEnumeratePhysicalDevices")              { return (void *)redRteEnumeratePhysicalDevicesReturning1; }
   else if (procName == "vkGetPhysicalDeviceMemoryProperties2KHR") { return (void *)vkGetInstanceProcAddr((VkInstance)instance, "vkGetPhysicalDeviceMemoryProperties2"); }
   else if (procName == "vkGetPhysicalDeviceFeatures2KHR")         { return (void *)vkGetInstanceProcAddr((VkInstance)instance, "vkGetPhysicalDeviceFeatures2"); }
   else if (procName == "vkGetPhysicalDeviceProperties2KHR")       { return (void *)vkGetInstanceProcAddr((VkInstance)instance, "vkGetPhysicalDeviceProperties2"); }
@@ -133,7 +133,7 @@ void redRteCreateContext(RedTypeProcedureMalloc mallocFn, RedTypeProcedureFree f
   RedContextOptionalSettingsContextFromVkGetInstanceProcAddr settingsContextFromVkGetInstanceProcAddr = {};
   settingsContextFromVkGetInstanceProcAddr.settings            = RED_CONTEXT_OPTIONAL_SETTINGS_CONTEXT_FROM_VK_GET_INSTANCE_PROC_ADDR;
   settingsContextFromVkGetInstanceProcAddr.next                = &settings0;
-  settingsContextFromVkGetInstanceProcAddr.getInstanceProcAddr = success == true ? redRteGetInstanceProcAddrSpecialCasedForRedRteEnumeratePhysicalDevicesReturning1 : redRteGetInstanceProcAddrSpecialCasedForRedRteEnumeratePhysicalDevicesReturning0;
+  settingsContextFromVkGetInstanceProcAddr.getInstanceProcAddr = success == true ? (void *)redRteGetInstanceProcAddrSpecialCasedForRedRteEnumeratePhysicalDevicesReturning1 : (void *)redRteGetInstanceProcAddrSpecialCasedForRedRteEnumeratePhysicalDevicesReturning0;
   RedContextOptionalSettingsContextFromVk settingsContextFromVk = {};
   settingsContextFromVk.settings             = RED_CONTEXT_OPTIONAL_SETTINGS_CONTEXT_FROM_VK;
   settingsContextFromVk.next                 = &settingsContextFromVkGetInstanceProcAddr;

@@ -4,3 +4,5 @@ x64/*
 redgpu_rte.dll
 glfw3.dll
 out.hdr
+redgpu.o
+a.exe

@@ -6,6 +6,7 @@
 //
 // glslangValidator.exe --target-env vulkan1.2 -o vk_mini_path_tracer/vk_mini_path_tracer/shaders/raytrace.comp.glsl.spv vk_mini_path_tracer/vk_mini_path_tracer/shaders/raytrace.comp.glsl
 // cl /EHsc /std:c++20 redgpu_rte_vk_mini_path_tracer.cpp /IC:/VulkanSDK/1.3.231.1/Include /I../redgpu_rte/nvpro_core /I../redgpu_rte/nvpro_core/nvp /I../redgpu_rte/nvpro_core/third_party/tinygltf /I../redgpu_rte/nvpro_core/third_party/imgui /I../redgpu_rte/nvpro_core/third_party/vma/include
+// clang -c C:/RedGpuSDK/redgpu.c && clang++ -std=c++20 redgpu_rte_vk_mini_path_tracer.cpp redgpu.o -IC:/VulkanSDK/1.4.341.1/Include -I../redgpu_rte/nvpro_core -I../redgpu_rte/nvpro_core/nvp -I../redgpu_rte/nvpro_core/third_party/tinygltf -I../redgpu_rte/nvpro_core/third_party/imgui -I../redgpu_rte/nvpro_core/third_party/vma/include ../redgpu_rte/redgpu_rte.dll C:/Windows/System32/vulkan-1.dll
 //
 #pragma comment(lib, "User32.lib")
 #pragma comment(lib, "Gdi32.lib")
