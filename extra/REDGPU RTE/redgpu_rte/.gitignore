@@ -2,3 +2,4 @@ build/*
 .vs/*
 x64/*
 *.vcxproj.user
+redgpu_rte.dll

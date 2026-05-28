@@ -173,8 +173,8 @@ struct WindowsPathMonitor : PathKey
   bool getEventsAsync()
   {
     m_eventsRequested = true;
-    BOOL result = ReadDirectoryChangesExW(m_dirHandle, m_eventBuffer.data(), (DWORD)m_eventBuffer.size(), TRUE, m_winEventFilter,
-                                          NULL, &m_overlapped, NULL, ReadDirectoryNotifyExtendedInformation);
+    BOOL result = ReadDirectoryChangesW(m_dirHandle, m_eventBuffer.data(), (DWORD)m_eventBuffer.size(), TRUE, m_winEventFilter,
+                                          NULL, &m_overlapped, NULL);
     if(result == FALSE)
       logLastWindowError(std::string("FileSystemMonitor: Error in ReadDirectoryChangesW for path ") + path);
     return result == TRUE;

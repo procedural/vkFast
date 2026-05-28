@@ -42,7 +42,10 @@
 // with up-to-date drivers
 //
 extern "C" {
-_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+#ifdef _MSC_VER
+_declspec(dllexport)
+#endif
+DWORD NvOptimusEnablement = 0x00000001;
 }
 
 // from https://docs.microsoft.com/en-us/windows/desktop/gdi/capturing-an-image

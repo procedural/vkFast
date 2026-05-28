@@ -1,13 +1,23 @@
 // NOTE(Constantine):
 //
 // Include the following compile flags:
+// -shared
+// -o redgpu_rte.dll
+// -fPIC
 // -std=c++20
-// -IC:/VulkanSDK/1.3.231.1/Include
+// -I.
+// -IC:/VulkanSDK/1.4.341.1/Include
 // -Invpro_core
 // -Invpro_core/nvp
 // -Invpro_core/third_party/tinygltf
 // -Invpro_core/third_party/imgui
 // -Invpro_core/third_party/vma/include
+// framework/glfw3.dll
+// C:/Windows/System32/vulkan-1.dll
+// -lgdi32
+// -lcomdlg32
+// -Wl,--image-base
+// -Wl,0x10000000
 //
 // In nvpro_core/nvh/misc.hpp
 // replace:
@@ -125,4 +135,7 @@
 #include "nvpro_core/imgui/backends/imgui_vk_extra.cpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "nvpro_core/third_party/stb/stb_image.h"
+#ifdef __MINGW64__
+#include "nvpro_core/third_party/vma/include/vk_mem_alloc.cpp"
+#endif
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE; // NOTE(Constantine): https://www.reddit.com/r/vulkan/comments/j9e6of/comment/g8km4fr/
