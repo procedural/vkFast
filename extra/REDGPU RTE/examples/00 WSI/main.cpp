@@ -123,7 +123,7 @@ int main() {
     &asFeatures,
     &rayQueryFeatures,
   };
-  RedRteQueueBitflags secondQueueFamilyFlags       = RED_RTE_QUEUE_BITFLAG_CAN_DRAW | RED_RTE_QUEUE_BITFLAG_CAN_COMPUTE | RED_RTE_QUEUE_BITFLAG_CAN_COPY;
+  RedRteQueueBitflags secondQueueFamilyFlags       = RED_RTE_QUEUE_BITFLAG_CAN_COMPUTE;
   unsigned            secondQueueFamilyQueuesCount = 1;
   float               secondQueueFamilyPriority    = 1.0f;
   RedRteCreateContextParameters rteInfo = {};
@@ -158,7 +158,7 @@ int main() {
   int64_t rtestatus = redRteCreateContext(malloc, free, 0, 0, 0, RED_SDK_VERSION_1_0_135, redgpuExtensionsCount, redgpuExtensions, 0, 0, 0, 0, 0, &context, &redstatuses, __FILE__, __LINE__, 0, &rteInfo);
   
   RedRteQueue secondQueue = {};
-  rtestatus = redRteCreateQueue(rteInfo.rteContext, 0, RED_RTE_QUEUE_BITFLAG_CAN_DRAW | RED_RTE_QUEUE_BITFLAG_CAN_COMPUTE | RED_RTE_QUEUE_BITFLAG_CAN_COPY, 1.0f, &secondQueue, &redstatuses, __FILE__, __LINE__, 0, 0);
+  rtestatus = redRteCreateQueue(rteInfo.rteContext, 0, RED_RTE_QUEUE_BITFLAG_CAN_COMPUTE, 1.0f, &secondQueue, &redstatuses, __FILE__, __LINE__, 0, 0);
 
   assert(asFeatures.accelerationStructure == 1);
   assert(rayQueryFeatures.rayQuery == 1);
