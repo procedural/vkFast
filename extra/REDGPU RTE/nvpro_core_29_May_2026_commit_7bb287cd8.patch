@@ -1,0 +1,156 @@
+diff --git a/imgui/backends/imgui_vk_extra.cpp b/imgui/backends/imgui_vk_extra.cpp
+index 17c8033..b24a153 100644
+--- a/imgui/backends/imgui_vk_extra.cpp
++++ b/imgui/backends/imgui_vk_extra.cpp
+@@ -23,10 +23,10 @@
+ 
+ static ImGui_ImplVulkan_InitInfo g_VulkanInitInfo = {};
+ 
+-static void check_vk_result(VkResult err)
+-{
+-  assert(err == VK_SUCCESS);
+-}
++//static void check_vk_result(VkResult err)
++//{
++//  assert(err == VK_SUCCESS);
++//}
+ 
+ void ImGui::InitVK(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue queue, uint32_t queueFamilyIndex, VkRenderPass pass, int subPassIndex)
+ {
+diff --git a/nvh/misc.hpp b/nvh/misc.hpp
+index b524bd9..1684e1a 100644
+--- a/nvh/misc.hpp
++++ b/nvh/misc.hpp
+@@ -56,7 +56,7 @@ inline std::string stringFormat(const char* msg, ...)
+   for(int i = 0; i < 2; ++i)
+   {
+     va_start(list, msg);
+-    size_t charsNeeded = static_cast<size_t>(vsnprintf(str.data(), str.size(), msg, list));  // charsNeeded doesn't count \0
++    size_t charsNeeded = static_cast<size_t>(vsnprintf((char *)str.data(), str.size(), msg, list));  // charsNeeded doesn't count \0
+     va_end(list);
+ 
+     if(charsNeeded < str.size())
+diff --git a/nvh/parametertools.cpp b/nvh/parametertools.cpp
+index 58bf942..593254c 100644
+--- a/nvh/parametertools.cpp
++++ b/nvh/parametertools.cpp
+@@ -209,17 +209,17 @@ uint32_t ParameterList::setHelp(uint32_t parameterIndex, const char* helptext)
+   return parameterIndex;
+ }
+ 
+-static bool endsWith(std::string const& s, std::string const& end)
+-{
+-  if(s.length() >= end.length())
+-  {
+-    return (0 == s.compare(s.length() - end.length(), end.length(), end));
+-  }
+-  else
+-  {
+-    return false;
+-  }
+-}
++//static bool endsWith(std::string const& s, std::string const& end)
++//{
++//  if(s.length() >= end.length())
++//  {
++//    return (0 == s.compare(s.length() - end.length(), end.length(), end));
++//  }
++//  else
++//  {
++//    return false;
++//  }
++//}
+ 
+ bool ParameterList::applyParameters(uint32_t     argc,
+                                     const char** argv,
+diff --git a/nvvk/context_vk.hpp b/nvvk/context_vk.hpp
+index cdb9b2e..f2a20cb 100644
+--- a/nvvk/context_vk.hpp
++++ b/nvvk/context_vk.hpp
+@@ -458,7 +458,7 @@ public:
+   void setDebugSeverityFilterMask(int32_t severity) { m_dbgSeverity = severity; }
+ 
+ 
+-private:
++//private:
+   struct QueueScore
+   {
+     uint32_t score       = 0;  // the lower the score, the more 'specialized' it is
+diff --git a/nvvkhl/appbase_vkpp.cpp b/nvvkhl/appbase_vkpp.cpp
+index edf8f61..ea5fb70 100644
+--- a/nvvkhl/appbase_vkpp.cpp
++++ b/nvvkhl/appbase_vkpp.cpp
+@@ -31,7 +31,7 @@ void nvvkhl::AppBase::onResize(int, int) {}
+ void nvvkhl::AppBase::setup(const vk::Instance& instance, const vk::Device& device, const vk::PhysicalDevice& physicalDevice, uint32_t graphicsQueueIndex)
+ {
+   // Initialize function pointers
+-  vk::DynamicLoader         dl;
++  vk::detail::DynamicLoader         dl;
+   PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
+       dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+   VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
+diff --git a/nvvkhl/application.cpp b/nvvkhl/application.cpp
+index 967f4b2..6dd5185 100644
+--- a/nvvkhl/application.cpp
++++ b/nvvkhl/application.cpp
+@@ -174,12 +174,12 @@ void nvvkhl::Application::init(ApplicationCreateInfo& info)
+   vk_setup.instanceExtensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+ 
+   // Vulkan context creation
+-  m_context = std::make_shared<nvvk::Context>();
++  m_context = new nvvk::Context();
+   for(auto& dbg_msg : info.ignoreDbgMessages)
+   {
+     m_context->ignoreDebugMessage(dbg_msg);  // Turn-off messages
+   }
+-  m_context->init(vk_setup);
++  if (false) { m_context->init(vk_setup); } else { unsigned gpuIndex = 0; try { gpuIndex = (unsigned)std::stoi(info.name); } catch (...) {} if (m_context->initInstance(vk_setup) == true) { std::vector<uint32_t> compatibleDevices = m_context->getCompatibleDevices(vk_setup); if (gpuIndex >= compatibleDevices.size()) { gpuIndex = 0; } if (compatibleDevices.size() > 0) { m_context->initDevice(compatibleDevices[gpuIndex], vk_setup); } } }
+ 
+ 
+   createDescriptorPool();
+@@ -297,7 +297,7 @@ void nvvkhl::Application::shutdown()
+   vkDestroyCommandPool(m_context->m_device, m_cmdPool, m_allocator);
+   vkDestroyDescriptorPool(m_context->m_device, m_descriptorPool, m_allocator);
+ 
+-  m_context->deinit();
++  //m_context->deinit();
+ 
+   // Glfw cleanup
+   glfwDestroyWindow(m_windowHandle);
+diff --git a/nvvkhl/application.hpp b/nvvkhl/application.hpp
+index 274681a..60b789b 100644
+--- a/nvvkhl/application.hpp
++++ b/nvvkhl/application.hpp
+@@ -111,7 +111,7 @@ public:
+   void            submitAndWaitTempCmdBuffer(VkCommandBuffer cmd);
+ 
+   // Getters
+-  inline std::shared_ptr<nvvk::Context> getContext() { return m_context; }  // Return the Vulkan context
++  inline nvvk::Context *   getContext() { return m_context; }  // Return the Vulkan context
+   inline VkCommandPool     getCommandPool() { return m_cmdPool; }  // Return command pool to create command buffers
+   inline GLFWwindow*       getWindowHandle() { return m_windowHandle; }  // Return the handle of the Window
+   inline const VkExtent2D& getViewportSize() { return m_viewportSize; }  // Return the size of the rendering viewport
+@@ -125,7 +125,7 @@ public:
+ 
+   void onFileDrop(const char* filename);
+ 
+-private:
++//private:
+   void init(ApplicationCreateInfo& info);
+   void shutdown();
+   void frameRender();
+@@ -135,7 +135,7 @@ private:
+   void setPresentMode(VkPhysicalDevice physicalDevice, ImGui_ImplVulkanH_Window* wd);
+   void createDescriptorPool();
+ 
+-  std::shared_ptr<nvvk::Context>            m_context;
++  nvvk::Context *                           m_context;
+   std::vector<std::shared_ptr<IAppElement>> m_elements;
+ 
+   bool        m_running{false};           // Is currently running
+diff --git a/third_party/tinygltf b/third_party/tinygltf
+--- a/third_party/tinygltf
++++ b/third_party/tinygltf
+@@ -1 +1 @@
+-Subproject commit 16c2d3a8bf53649cac6514bc0fdab72d7d956fc8
++Subproject commit 16c2d3a8bf53649cac6514bc0fdab72d7d956fc8-dirty

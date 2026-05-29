@@ -1,0 +1,5 @@
+*.spv
+main.obj
+main.exe
+redgpu_rte.dll
+log_nvprosample.txt

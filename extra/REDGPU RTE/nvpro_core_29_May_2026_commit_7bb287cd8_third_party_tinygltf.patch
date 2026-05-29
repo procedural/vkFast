@@ -1,0 +1,75 @@
+diff --git a/json.hpp b/json.hpp
+index 87475ab..8ef5b2c 100644
+--- a/json.hpp
++++ b/json.hpp
+@@ -8075,7 +8075,7 @@ scan_number_done:
+             {
+                 // escape control characters
+                 std::array<char, 9> cs{{}};
+-                (std::snprintf)(cs.data(), cs.size(), "<U+%.4X>", static_cast<unsigned char>(c)); // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
++                (snprintf)(cs.data(), cs.size(), "<U+%.4X>", static_cast<unsigned char>(c)); // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+                 result += cs.data();
+             }
+             else
+@@ -8706,7 +8706,7 @@ class binary_reader
+             default: // anything else not supported (yet)
+             {
+                 std::array<char, 3> cr{{}};
+-                (std::snprintf)(cr.data(), cr.size(), "%.2hhX", static_cast<unsigned char>(element_type)); // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
++                (snprintf)(cr.data(), cr.size(), "%.2hhX", static_cast<unsigned char>(element_type)); // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+                 return sax->parse_error(element_type_parse_position, std::string(cr.data()), parse_error::create(114, element_type_parse_position, "Unsupported BSON record type 0x" + std::string(cr.data()), BasicJsonType()));
+             }
+         }
+@@ -10850,7 +10850,7 @@ class binary_reader
+     std::string get_token_string() const
+     {
+         std::array<char, 3> cr{{}};
+-        (std::snprintf)(cr.data(), cr.size(), "%.2hhX", static_cast<unsigned char>(current)); // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
++        (snprintf)(cr.data(), cr.size(), "%.2hhX", static_cast<unsigned char>(current)); // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+         return std::string{cr.data()};
+     }
+ 
+@@ -16879,14 +16879,14 @@ class serializer
+                                 if (codepoint <= 0xFFFF)
+                                 {
+                                     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+-                                    (std::snprintf)(string_buffer.data() + bytes, 7, "\\u%04x",
++                                    (snprintf)(string_buffer.data() + bytes, 7, "\\u%04x",
+                                                     static_cast<std::uint16_t>(codepoint));
+                                     bytes += 6;
+                                 }
+                                 else
+                                 {
+                                     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+-                                    (std::snprintf)(string_buffer.data() + bytes, 13, "\\u%04x\\u%04x",
++                                    (snprintf)(string_buffer.data() + bytes, 13, "\\u%04x\\u%04x",
+                                                     static_cast<std::uint16_t>(0xD7C0u + (codepoint >> 10u)),
+                                                     static_cast<std::uint16_t>(0xDC00u + (codepoint & 0x3FFu)));
+                                     bytes += 12;
+@@ -16925,7 +16925,7 @@ class serializer
+                         {
+                             std::string sn(9, '\0');
+                             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+-                            (std::snprintf)(&sn[0], sn.size(), "%.2X", byte);
++                            (snprintf)(&sn[0], sn.size(), "%.2X", byte);
+                             JSON_THROW(type_error::create(316, "invalid UTF-8 byte at index " + std::to_string(i) + ": 0x" + sn, BasicJsonType()));
+                         }
+ 
+@@ -17020,7 +17020,7 @@ class serializer
+                 {
+                     std::string sn(9, '\0');
+                     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+-                    (std::snprintf)(&sn[0], sn.size(), "%.2X", static_cast<std::uint8_t>(s.back()));
++                    (snprintf)(&sn[0], sn.size(), "%.2X", static_cast<std::uint8_t>(s.back()));
+                     JSON_THROW(type_error::create(316, "incomplete UTF-8 string; last byte: 0x" + sn, BasicJsonType()));
+                 }
+ 
+@@ -17225,7 +17225,7 @@ class serializer
+ 
+         // the actual conversion
+         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+-        std::ptrdiff_t len = (std::snprintf)(number_buffer.data(), number_buffer.size(), "%.*g", d, x);
++        std::ptrdiff_t len = (snprintf)(number_buffer.data(), number_buffer.size(), "%.*g", d, x);
+ 
+         // negative value indicates an error
+         JSON_ASSERT(len > 0);
