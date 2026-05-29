@@ -8,10 +8,19 @@
 // git submodule update --init --depth 1 --progress
 // cd ..
 //
+// (Release build):
+//
 // cd build/
 // cl /c /O2 /DNDEBUG /I../nvpro_core/third_party/glfw/include /I../nvpro_core/third_party/glfw/src /I../nvpro_core/third_party/glfw/build/src /Dglfw_EXPORTS /D_WINDLL /D_GLFW_BUILD_DLL /D_GLFW_WIN32 /DWIN32 /D_WINDOWS /DUNICODE /D_UNICODE /D_CRT_SECURE_NO_WARNINGS /D_UNICODE /DUNICODE ../redgpu_rte_glfw3.c
 // cl /c C:/RedGpuSDK/redgpu.c
 // cl /LD /O2 /DNDEBUG /EHsc /std:c++20 ../redgpu_rte.cpp redgpu.obj redgpu_rte_glfw3.obj /IC:/VulkanSDK/1.4.341.1/Include /I../nvpro_core /I../nvpro_core/nvp /I../nvpro_core/third_party/tinygltf /I../nvpro_core/third_party/vma/include /I../nvpro_core/third_party/glfw/include /I../nvpro_core/third_party/imgui
+//
+// (Debug build):
+//
+// cd build/
+// cl /c /MDd /Od /Zi /D_DEBUG /I../nvpro_core/third_party/glfw/include /I../nvpro_core/third_party/glfw/src /I../nvpro_core/third_party/glfw/build/src /Dglfw_EXPORTS /D_WINDLL /D_GLFW_BUILD_DLL /D_GLFW_WIN32 /DWIN32 /D_WINDOWS /DUNICODE /D_UNICODE /D_CRT_SECURE_NO_WARNINGS /D_UNICODE /DUNICODE ../redgpu_rte_glfw3.c
+// cl /c /MDd /Od /Zi /D_DEBUG C:/RedGpuSDK/redgpu.c
+// cl /LD /MDd /Od /Zi /D_DEBUG /EHsc /std:c++20 ../redgpu_rte.cpp redgpu.obj redgpu_rte_glfw3.obj /IC:/VulkanSDK/1.4.341.1/Include /I../nvpro_core /I../nvpro_core/nvp /I../nvpro_core/third_party/tinygltf /I../nvpro_core/third_party/vma/include /I../nvpro_core/third_party/glfw/include /I../nvpro_core/third_party/imgui
 //
 // In nvpro_core/nvvk/context_vk.hpp
 // comment the line:
