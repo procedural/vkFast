@@ -5,3 +5,5 @@ log_nvprosample.txt
 redgpu_rte.dll
 redgpu_rte.pdb
 CornellBox-Original-Merged.obj
+*.spv
+out.hdr

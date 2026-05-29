@@ -6,6 +6,8 @@
 // glslangValidator.exe --target-env vulkan1.2 raytrace.comp.glsl -o raytrace.comp.glsl.spv
 // cl /EHsc /std:c++20 main.cpp /link ../../build/redgpu_rte.lib ../Common/glfw-3.4.bin.WIN64/lib-vc2019/glfw3_mt.lib user32.lib gdi32.lib shell32.lib
 
+#pragma comment(lib, "opengl32")
+
 #include "../../redgpu_rte.h"
 #include "C:/RedGpuSDK/redgpu_wsi.h"
 
@@ -18,6 +20,11 @@
 #include "../Common/stb_image_write.h"
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "../Common/tiny_obj_loader.h"
+
+extern "C" void glClear(unsigned mask);
+extern "C" void glRasterPos2f(float x, float y);
+extern "C" void glPixelZoom(float x, float y);
+extern "C" void glDrawPixels(int width, int height, unsigned GL_RGBA_0x1908, unsigned GL_UNSIGNED_BYTE_0x1401, void * pixels);
 
 static const uint64_t g_render_width     = 800;
 static const uint64_t g_render_height    = 600;
@@ -73,9 +80,13 @@ void CallsEndSubmitWaitAndDestroy(RedContext context, RedCalls calls, RedHandleG
 
 int main() {
   glfwInit();
-  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
   GLFWwindow * window = glfwCreateWindow(g_render_width, g_render_height, "REDGPU RTE", NULL, NULL);
+  glfwMakeContextCurrent(window);
 
   struct PhysicalDeviceAccelerationStructureFeatures {
     unsigned  setTo1000150013;
@@ -96,10 +107,6 @@ int main() {
   struct PhysicalDeviceAccelerationStructureFeatures asFeatures       = {1000150013};
   struct PhysicalDeviceRayQueryFeatures              rayQueryFeatures = {1000348013};
 
-  const unsigned redgpuExtensionsCount = 1;
-  const unsigned redgpuExtensions[redgpuExtensionsCount] = {
-    RED_SDK_EXTENSION_WSI_WIN32,
-  };
   const unsigned nvvkInstanceExtensionsCount = 3;
   const char * nvvkInstanceExtensions[nvvkInstanceExtensionsCount] = {
     "VK_KHR_surface",
@@ -140,13 +147,13 @@ int main() {
   rteInfo.vkDeviceExtensionsOutVkFeaturesStruct = nvvkDeviceExtensionsVkFeaturesStructs;
   rteInfo.vkDeviceExtensionsVersion             = 0;
   rteInfo.disableRobustBufferAccess             = 1;
-  rteInfo.verboseCompatibleDevices              = 1;
-  rteInfo.verboseUsed                           = 1;
-  rteInfo.verboseAvailable                      = 1;
-  rteInfo.enableAftermath                       = 1;
+  rteInfo.verboseCompatibleDevices              = 0; // 1
+  rteInfo.verboseUsed                           = 0; // 1
+  rteInfo.verboseAvailable                      = 0; // 1
+  rteInfo.enableAftermath                       = 0; // 1
   rteInfo.ignoreDebugMessagesCount              = 0;
   rteInfo.ignoreDebugMessages                   = 0;
-  rteInfo.debugSeverityFilterMask               = 0x00000100 | 0x00001000; // VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT
+  rteInfo.debugSeverityFilterMask               = 0; // 0x00000100 | 0x00001000 // VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT
   rteInfo.requestQueueFamilysCount              = 1;
   rteInfo.requestQueueFamilysFlags              = &secondQueueFamilyFlags;
   rteInfo.requestQueueFamilysQueuesCount        = &secondQueueFamilyQueuesCount;
@@ -155,7 +162,7 @@ int main() {
   rteInfo.getInstanceProcAddr                   = 0;
   RedStatuses redstatuses = {};
   RedContext context = 0;
-  int64_t rtestatus = redRteCreateContext(malloc, free, 0, 0, 0, RED_SDK_VERSION_1_0_135, redgpuExtensionsCount, redgpuExtensions, 0, 0, 0, 0, 0, &context, &redstatuses, __FILE__, __LINE__, 0, &rteInfo);
+  int64_t rtestatus = redRteCreateContext(malloc, free, 0, 0, 0, RED_SDK_VERSION_1_0_135, 0, 0, 0, 0, 0, 0, 0, &context, &redstatuses, __FILE__, __LINE__, 0, &rteInfo);
   
   RedRteQueue secondQueue = {};
   rtestatus = redRteCreateQueue(rteInfo.rteContext, 0, RED_RTE_QUEUE_BITFLAG_CAN_COMPUTE, 1.0f, &secondQueue, &redstatuses, __FILE__, __LINE__, 0, 0);
@@ -165,6 +172,25 @@ int main() {
 
   RedRteHandleHelperAllocatorVma allocator = 0;
   rtestatus = redRteCreateHelperAllocatorVma(rteInfo.rteContext, &allocator, &redstatuses, __FILE__, __LINE__, 0, 0);
+
+  uint64_t arrayOutImageBytesCount = g_render_width * g_render_height * 3 * sizeof(float);
+  RedRteHelperCreateArrayInfo arrayOutImageInfo = {};
+  arrayOutImageInfo.setTo12     = 12;
+  arrayOutImageInfo.setTo0      = 0;
+  arrayOutImageInfo.createFlags = 0;
+  arrayOutImageInfo.bytesCount  = arrayOutImageBytesCount;
+  arrayOutImageInfo.usageFlags  = 0x00000020 | 0x00000002; // VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT
+  arrayOutImageInfo.setTo00     = 0;
+  arrayOutImageInfo.setTo000    = 0;
+  arrayOutImageInfo.setTo0000   = 0;
+  RedRteHelperArray arrayOutImage = {};
+  rtestatus = redRteHelperAllocatorVmaCreateArray(
+    allocator,
+    &arrayOutImageInfo,
+    0x00000002 | 0x00000004 | 0x00000008, // VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT
+    &arrayOutImage,
+    &redstatuses, __FILE__, __LINE__, 0, 0
+  );
 
   tinyobj::ObjReader objReader = tinyobj::ObjReader();
   objReader.ParseFromFile("CornellBox-Original-Merged.obj");
@@ -269,31 +295,13 @@ int main() {
   instance.accelerationStructureReference         = redRteRayTracingBuilderGetBlasGpuAddress(rteBuilder, 0, __FILE__, __LINE__, 0, 0);
   rtestatus = redRteRayTracingBuilderBuildTlas(rteBuilder, 1, &instance, 0x00000004 /*VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR*/, false, &redstatuses, __FILE__, __LINE__, 0, 0);
 
-  RedHandleSurface surface = 0;
-  redCreateSurfaceWin32(context, context->gpus[0].gpu, 0, GetModuleHandle(0), glfwGetWin32Window(window), &surface, &redstatuses, __FILE__, __LINE__, 0);
-  
-  RedHandlePresent  present             = 0;
-  RedAccessBitflags presentImagesAccess = RED_ACCESS_BITFLAG_STRUCT_RESOURCE_W | RED_ACCESS_BITFLAG_OUTPUT_COLOR_W;
-  RedHandleImage    presentImages[2]    = {};
-  RedHandleTexture  presentTextures[2]  = {};
-  RedQueueFamilyIndexGetSupportsPresentOnSurface queueFamilyIndexSupportsPresentOnSurface = {};
-  queueFamilyIndexSupportsPresentOnSurface.surface                                     = surface;
-  queueFamilyIndexSupportsPresentOnSurface.outQueueFamilyIndexSupportsPresentOnSurface = 0;
-  redQueueFamilyIndexGetSupportsPresent(context, context->gpus[0].gpu, 0, 0, 0, 0, &queueFamilyIndexSupportsPresentOnSurface, &redstatuses, __FILE__, __LINE__, 0);
-  RedSurfaceCurrentPropertiesAndPresentLimits surfaceCurrentPropertiesAndPresentLimits = {};
-  redSurfaceGetCurrentPropertiesAndPresentLimits(context, context->gpus[0].gpu, surface, &surfaceCurrentPropertiesAndPresentLimits, &redstatuses, __FILE__, __LINE__, 0);
-  redCreatePresent(context, context->gpus[0].gpu, context->gpus[0].queues[0], 0, surface, 2, g_render_width, g_render_height, 1, presentImagesAccess, RED_SURFACE_TRANSFORM_BITFLAG_IDENTITY, RED_SURFACE_COMPOSITE_ALPHA_BITFLAG_OPAQUE, RED_PRESENT_VSYNC_MODE_ON, 0, 0, 0, &present, presentImages, presentTextures, &redstatuses, __FILE__, __LINE__, 0);
-
-  RedHandleGpuSignal gpuSignalPresent = 0;
-  redCreateGpuSignal(context, context->gpus[0].gpu, 0, &gpuSignalPresent, &redstatuses, __FILE__, __LINE__, 0);
-
   RedRteHandleHelperStructs structs = 0;
   rtestatus = redRteCreateHelperStructs(rteInfo.rteContext, &structs, &redstatuses, __FILE__, __LINE__, 0, 0);
 
   RedStructDeclarationMember structMembers[4] = {};
 
   structMembers[0].slot            = 0;
-  structMembers[0].type            = RED_STRUCT_MEMBER_TYPE_TEXTURE_RW;
+  structMembers[0].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
   structMembers[0].count           = 1;
   structMembers[0].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE;
   structMembers[0].inlineSampler   = 0;
@@ -340,7 +348,7 @@ int main() {
     structMemberArrayIndices.arrayRangeBytesFirst = 0;
     structMemberArrayIndices.arrayRangeBytesCount = -1;
 
-    RedStructMember writeDescriptorSets[3] = {};
+    RedStructMember writeDescriptorSets[4] = {};
 
     writeDescriptorSets[0].setTo35   = 35;
     writeDescriptorSets[0].setTo0    = (uint64_t)(void *)&structMemberAccelerationStructure;
@@ -375,6 +383,22 @@ int main() {
     writeDescriptorSets[2].arrays    = &structMemberArrayIndices;
     writeDescriptorSets[2].setTo00   = 0;
 
+    RedStructMemberArray structMemberArrayOutImage = {};
+    structMemberArrayOutImage.array                = arrayOutImage.handle;
+    structMemberArrayOutImage.arrayRangeBytesFirst = 0;
+    structMemberArrayOutImage.arrayRangeBytesCount = arrayOutImageBytesCount;
+
+    writeDescriptorSets[3].setTo35   = 35;
+    writeDescriptorSets[3].setTo0    = 0;
+    writeDescriptorSets[3].structure = redRteHelperStructsGetStruct(structs, 0, __FILE__, __LINE__, 0, 0);
+    writeDescriptorSets[3].slot      = 0;
+    writeDescriptorSets[3].first     = 0;
+    writeDescriptorSets[3].count     = 1;
+    writeDescriptorSets[3].type      = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
+    writeDescriptorSets[3].textures  = 0;
+    writeDescriptorSets[3].arrays    = &structMemberArrayOutImage;
+    writeDescriptorSets[3].setTo00   = 0;
+
     redStructsSet(context, context->gpus[0].gpu, sizeof(writeDescriptorSets) / sizeof(writeDescriptorSets[0]), writeDescriptorSets, __FILE__, __LINE__, 0);
   }
 
@@ -403,61 +427,13 @@ int main() {
   RedHandleProcedure computeProcedure = 0;
   redCreateProcedureCompute(context, context->gpus[0].gpu, 0, 0, procedureParameters, "main", rayTraceGpuCode, &computeProcedure, &redstatuses, __FILE__, __LINE__, 0);
 
-  unsigned F = 0;
-  unsigned f = 0;
-
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
-
-    F = f;
-    redPresentGetImageIndex(context, context->gpus[0].gpu, present, 0, gpuSignalPresent, &f, 0, __FILE__, __LINE__, 0);
-
-    {
-      RedStructMember writeDescriptorSets[1] = {};
-
-      RedStructMemberTexture structMemberOutImage = {};
-      structMemberOutImage.sampler = 0;
-      structMemberOutImage.texture = presentTextures[f];
-      structMemberOutImage.setTo1  = 1;
-
-      writeDescriptorSets[0].setTo35   = 35;
-      writeDescriptorSets[0].setTo0    = 0;
-      writeDescriptorSets[0].structure = redRteHelperStructsGetStruct(structs, 0, __FILE__, __LINE__, 0, 0);
-      writeDescriptorSets[0].slot      = 0;
-      writeDescriptorSets[0].first     = 0;
-      writeDescriptorSets[0].count     = 1;
-      writeDescriptorSets[0].type      = RED_STRUCT_MEMBER_TYPE_TEXTURE_RW;
-      writeDescriptorSets[0].textures  = &structMemberOutImage;
-      writeDescriptorSets[0].arrays    = 0;
-      writeDescriptorSets[0].setTo00   = 0;
-
-      redStructsSet(context, context->gpus[0].gpu, sizeof(writeDescriptorSets) / sizeof(writeDescriptorSets[0]), writeDescriptorSets, __FILE__, __LINE__, 0);
-    }
 
     RedCalls cmdBuffer = CallsCreateAndSet(context, &redstatuses);
 
     RedCallProceduresAndAddresses callPAs = {};
     redGetCallProceduresAndAddresses(context, context->gpus[0].gpu, &callPAs, &redstatuses, __FILE__, __LINE__, 0);
-
-    {
-      RedUsageImage usageOutImage = {};
-      usageOutImage.barrierSplit           = RED_BARRIER_SPLIT_NONE;
-      usageOutImage.oldAccessStages        = 0;
-      usageOutImage.newAccessStages        = RED_ACCESS_STAGE_BITFLAG_COMPUTE;
-      usageOutImage.oldAccess              = 0;
-      usageOutImage.newAccess              = RED_ACCESS_BITFLAG_STRUCT_RESOURCE_W;
-      usageOutImage.oldState               = RED_STATE_UNUSABLE;
-      usageOutImage.newState               = RED_STATE_USABLE;
-      usageOutImage.queueFamilyIndexSource = -1;
-      usageOutImage.queueFamilyIndexTarget = -1;
-      usageOutImage.image                  = presentImages[f];
-      usageOutImage.imageAllParts          = RED_IMAGE_PART_BITFLAG_COLOR;
-      usageOutImage.imageLevelsFirst       = 0;
-      usageOutImage.imageLevelsCount       = -1;
-      usageOutImage.imageLayersFirst       = 0;
-      usageOutImage.imageLayersCount       = -1;
-      redCallUsageAliasOrderBarrier(callPAs.redCallUsageAliasOrderBarrier, cmdBuffer.handle, context, 0, 0, 1, &usageOutImage, 0, 0, 0, 0, 0);
-    }
 
     redCallSetProcedureParameters(callPAs.redCallSetProcedureParameters, cmdBuffer.handle, RED_PROCEDURE_TYPE_COMPUTE, procedureParameters);
     redCallSetStructsMemory(callPAs.redCallSetStructsMemory, cmdBuffer.handle, structsMemory, 0);
@@ -493,41 +469,49 @@ int main() {
       1
     );
 
-    {
-      RedUsageImage usageOutImage = {};
-      usageOutImage.barrierSplit           = RED_BARRIER_SPLIT_NONE;
-      usageOutImage.oldAccessStages        = RED_ACCESS_STAGE_BITFLAG_COMPUTE;
-      usageOutImage.newAccessStages        = 0;
-      usageOutImage.oldAccess              = RED_ACCESS_BITFLAG_STRUCT_RESOURCE_W;
-      usageOutImage.newAccess              = 0;
-      usageOutImage.oldState               = RED_STATE_USABLE;
-      usageOutImage.newState               = RED_STATE_PRESENT;
-      usageOutImage.queueFamilyIndexSource = -1;
-      usageOutImage.queueFamilyIndexTarget = -1;
-      usageOutImage.image                  = presentImages[f];
-      usageOutImage.imageAllParts          = RED_IMAGE_PART_BITFLAG_COLOR;
-      usageOutImage.imageLevelsFirst       = 0;
-      usageOutImage.imageLevelsCount       = -1;
-      usageOutImage.imageLayersFirst       = 0;
-      usageOutImage.imageLayersCount       = -1;
-      redCallUsageAliasOrderBarrier(callPAs.redCallUsageAliasOrderBarrier, cmdBuffer.handle, context, 0, 0, 1, &usageOutImage, 0, 0, 0, 0, 0);
-    }
+    RedUsageArray usageArrayOutImage = {};
+    usageArrayOutImage.barrierSplit           = RED_BARRIER_SPLIT_NONE;
+    usageArrayOutImage.oldAccessStages        = RED_ACCESS_STAGE_BITFLAG_COMPUTE;
+    usageArrayOutImage.newAccessStages        = RED_ACCESS_STAGE_BITFLAG_CPU;
+    usageArrayOutImage.oldAccess              = RED_ACCESS_BITFLAG_STRUCT_RESOURCE_W;
+    usageArrayOutImage.newAccess              = RED_ACCESS_BITFLAG_CPU_RW;
+    usageArrayOutImage.queueFamilyIndexSource = -1;
+    usageArrayOutImage.queueFamilyIndexTarget = -1;
+    usageArrayOutImage.array                  = arrayOutImage.handle;
+    usageArrayOutImage.arrayBytesFirst        = 0;
+    usageArrayOutImage.arrayBytesCount        = -1;
+    redCallUsageAliasOrderBarrier(callPAs.redCallUsageAliasOrderBarrier, cmdBuffer.handle, context, 1, &usageArrayOutImage, 0, 0, 0, 0, 0, 0, 0);
 
     // End and submit the command buffer, then wait for it to finish
-    CallsEndSubmitWaitAndDestroy(context, cmdBuffer, gpuSignalPresent, &redstatuses);
+    CallsEndSubmitWaitAndDestroy(context, cmdBuffer, 0, &redstatuses);
 
-    redQueuePresent(context, context->gpus[0].gpu, context->gpus[0].queues[0], 1, &gpuSignalPresent, 1, &present, &f, 0, &redstatuses, __FILE__, __LINE__, 0);
+    // Get the image data back from the GPU
+    void * data = 0;
+    rtestatus = redRteHelperAllocatorVmaMapArray(
+      allocator,
+      arrayOutImage.handle,
+      arrayOutImage.rteHelperAllocatorResourceMemory,
+      &data,
+      &redstatuses, __FILE__, __LINE__, 0, 0
+    );
 
-    f += 1;
-    f %= 2;
+    //stbi_write_hdr("out.hdr", g_render_width, g_render_height, 3, (const float *)data);
+    glClear(0x00004000 /*GL_COLOR_BUFFER_BIT*/);
+    glRasterPos2f(-1.0f, 1.0f);
+    glPixelZoom(1.0f, -1.0f);
+    glDrawPixels(g_render_width, g_render_height, 0x1907 /*GL_RGB*/, 0x1406 /*GL_FLOAT*/, data);
+
+    rtestatus = redRteHelperAllocatorVmaUnmapArray(
+      allocator,
+      arrayOutImage.handle,
+      arrayOutImage.rteHelperAllocatorResourceMemory,
+      &redstatuses, __FILE__, __LINE__, 0, 0
+    );
+
+    glfwSwapBuffers(window);
   }
 
   redQueuePresent(context, context->gpus[0].gpu, context->gpus[0].queues[0], 0, 0, 0, 0, 0, 0, &redstatuses, __FILE__, __LINE__, 0);
-  redDestroyGpuSignal(context, context->gpus[0].gpu, gpuSignalPresent, __FILE__, __LINE__, 0);
-  redDestroyPresent(context, context->gpus[0].gpu, present, __FILE__, __LINE__, 0);
-  redDestroyTexture(context, context->gpus[0].gpu, presentTextures[0], __FILE__, __LINE__, 0);
-  redDestroyTexture(context, context->gpus[0].gpu, presentTextures[1], __FILE__, __LINE__, 0);
-  redDestroySurface(context, context->gpus[0].gpu, surface, __FILE__, __LINE__, 0);
   redDestroyProcedure(context, context->gpus[0].gpu, computeProcedure, __FILE__, __LINE__, 0);
   redDestroyGpuCode(context, context->gpus[0].gpu, rayTraceGpuCode, __FILE__, __LINE__, 0);
   redDestroyProcedureParameters(context, context->gpus[0].gpu, procedureParameters, __FILE__, __LINE__, 0);
@@ -535,6 +519,7 @@ int main() {
   rtestatus = redRteDestroyRayTracingBuilder(rteBuilder, __FILE__, __LINE__, 0, 0);
   rtestatus = redRteHelperAllocatorVmaDestroyArray(allocator, arrayVertices.handle, arrayVertices.rteHelperAllocatorResourceMemory, &redstatuses, __FILE__, __LINE__, 0, 0);
   rtestatus = redRteHelperAllocatorVmaDestroyArray(allocator, arrayIndices.handle, arrayIndices.rteHelperAllocatorResourceMemory, &redstatuses, __FILE__, __LINE__, 0, 0);
+  rtestatus = redRteHelperAllocatorVmaDestroyArray(allocator, arrayOutImage.handle, arrayOutImage.rteHelperAllocatorResourceMemory, &redstatuses, __FILE__, __LINE__, 0, 0);
   rtestatus = redRteDestroyHelperAllocatorVma(allocator, __FILE__, __LINE__, 0, 0);
   RedRteDestroyContextParameters rteDestroyContextInfo = {};
   rteDestroyContextInfo.reservedStructId = 0;

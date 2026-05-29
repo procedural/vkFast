@@ -13,7 +13,10 @@ layout(push_constant, scalar) uniform PushConstants
 
 // The scalar layout qualifier here means to align types according to the alignment
 // of their scalar components, instead of e.g. padding them to std140 rules.
-layout(binding = 0, set = 0, rgba8) uniform image2D outImage;
+layout(binding = 0, set = 0) buffer storageBuffer
+{
+  float imageData[];
+};
 layout(binding = 1, set = 0) uniform accelerationStructureEXT tlas;
 layout(binding = 2, set = 0, scalar) buffer Vertices
 {
@@ -222,9 +225,12 @@ void main()
     }
   }
 
-  // Get the index of this invocation in the buffer:
-  // uint linearIndex       = resolution.x * pixel.y + pixel.x;
-  // imageData[linearIndex] = summedPixelColor / float(NUM_SAMPLES);  // Take the average
+  vec3 pixelColor = summedPixelColor / float(NUM_SAMPLES); // Take the average
 
-  imageStore(outImage, ivec2(pixel.x, pixel.y), vec4(summedPixelColor / float(NUM_SAMPLES), 1.0));
+  // Get the index of this invocation in the buffer:
+  uint linearIndex = resolution.x * pixel.y + pixel.x;
+  // Write the color to the buffer.
+  imageData[3 * linearIndex + 0] = pixelColor.r;
+  imageData[3 * linearIndex + 1] = pixelColor.g;
+  imageData[3 * linearIndex + 2] = pixelColor.b;
 }

@@ -4,3 +4,4 @@ main.exe
 redgpu_rte.dll
 redgpu_rte.pdb
 log_nvprosample.txt
+out.hdr
