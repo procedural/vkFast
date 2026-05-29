@@ -1,0 +1,10 @@
+a.out
+build
+CMakeLists.txt.user
+*.sdf
+*.sln
+*.suo
+x64
+.vs/*
+Debug/*
+vs2012.vcxproj.user
