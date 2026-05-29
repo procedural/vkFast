@@ -162,14 +162,14 @@ static nvvk::ContextCreateInfo redRteGetContextCreateInfoFromCreateContextParame
   nvvkContextCreateInfo.enableAftermath           = rteParameters->enableAftermath           == 1 ? true : false;
   nvvkContextCreateInfo.apiMajor                  = rteParameters->vkVersionMajor;
   nvvkContextCreateInfo.apiMinor                  = rteParameters->vkVersionMinor;
-  nvvkContextCreateInfo.defaultQueueGCT           = 0x00000001 | 0x00000002 | 0x00000004; // VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT
+  nvvkContextCreateInfo.defaultQueueGCT           = 0x00000001/*VK_QUEUE_GRAPHICS_BIT*/;
   nvvkContextCreateInfo.defaultQueueT             = 0;
   nvvkContextCreateInfo.defaultQueueC             = 0;
   nvvkContextCreateInfo.defaultPriorityGCT        = 1.0f;
   nvvkContextCreateInfo.defaultPriorityT          = 1.0f;
   nvvkContextCreateInfo.defaultPriorityC          = 1.0f;
   nvvkContextCreateInfo.requestedQueues           = {};
-  nvvkContextCreateInfo.requestedQueues.push_back({0x00000001 | 0x00000002 | 0x00000004, 1, 1.0f});
+  nvvkContextCreateInfo.requestedQueues.push_back({0x00000001/*VK_QUEUE_GRAPHICS_BIT*/, 1, 1.0f});
   for (uint64_t i = 0; i < rteParameters->vkInstanceExtensionsCount; i += 1) {
     nvvkContextCreateInfo.addInstanceExtension(rteParameters->vkInstanceExtensions[i]);
   }
