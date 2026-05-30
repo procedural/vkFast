@@ -771,6 +771,7 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
   vkfast->presentPixelsCpuUpload_memory_and_array = REDGPU_32_STRUCT(Red2Array, 0);
   vkfast->presentPixelsCpuUpload_void_ptr_original = NULL;
   vkfast->presentVsyncMode = RED_PRESENT_VSYNC_MODE_ON;
+  vkfast->presentImagesCount = 3;
 
   return (gpu_handle_context_t)(void *)vkfast;
 }
@@ -1144,10 +1145,12 @@ GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, cons
   out4ints[3] = monitorInfo.rcMonitor.bottom;
 }
 
-static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyncMode presentVsyncMode, const char * optionalFile, int optionalLine) {
+static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyncMode presentVsyncMode, int presentImagesCount, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECT(presentImagesCount == 2 || presentImagesCount == 3);
 
   RedHandlePresent present = NULL;
   RedHandleImage presentImages[3] = {0};
@@ -1310,7 +1313,7 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyn
     "queue", vkfast->gpuInfo->queues[vkfast->presentQueueIndex],
     "handleName", "vkFast_vfInternalRebuildPresent_present",
     "surface", vkfast->surface,
-    "imagesCount", 3,
+    "imagesCount", presentImagesCount,
     "imagesWidth", vkfast->screenWidth,
     "imagesHeight", vkfast->screenHeight,
     "imagesLayersCount", 1,
@@ -1380,12 +1383,13 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyn
   vkfast->presentGpuSignalSubmit;
   vkfast->presentCopyCalls;
   vkfast->presentVsyncMode;
+  vkfast->presentImagesCount;
 
   int isRebuilded = 1;
   return isRebuilded;
 }
 
-GPU_API_PRE int GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, unsigned draw_queue_index, RedPresentVsyncMode present_vsync_mode, const char * optionalFile, int optionalLine) {
+GPU_API_PRE int GPU_API_POST vfWindowFullscreenEx(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, unsigned draw_queue_index, RedPresentVsyncMode present_vsync_mode, int present_images_count, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   
   RedHandleGpu gpu = vkfast->gpu;
@@ -1403,8 +1407,13 @@ GPU_API_PRE int GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, vo
   vkfast->screenHeight = screen_height;
   vkfast->presentQueueIndex = draw_queue_index;
   vkfast->presentVsyncMode = present_vsync_mode;
+  vkfast->presentImagesCount = present_images_count;
 
-  return vfInternalRebuildPresent(context, present_vsync_mode, optionalFile, optionalLine);
+  return vfInternalRebuildPresent(context, present_vsync_mode, present_images_count, optionalFile, optionalLine);
+}
+
+GPU_API_PRE int GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, unsigned draw_queue_index, RedPresentVsyncMode present_vsync_mode, const char * optionalFile, int optionalLine) {
+  return vfWindowFullscreenEx(context, optional_external_window_handle, window_title, screen_width, screen_height, draw_queue_index, present_vsync_mode, 3, optionalFile, optionalLine);
 }
 
 GPU_API_PRE int GPU_API_POST vfWindowLoop(gpu_handle_context_t context) {
@@ -2471,7 +2480,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
   REDGPU_2_EXPECTWG(presentGetImageIndexStatuses.status == RED_STATUS_SUCCESS || presentGetImageIndexStatuses.status == RED_STATUS_PRESENT_IS_SUBOPTIMAL);
   REDGPU_2_EXPECTWG(presentGetImageIndexStatuses.statusError == RED_STATUS_SUCCESS || presentGetImageIndexStatuses.statusError == RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE);
   if (presentGetImageIndexStatuses.status == RED_STATUS_PRESENT_IS_SUBOPTIMAL || presentGetImageIndexStatuses.statusError == RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE) {
-    int isRebuilded = vfInternalRebuildPresent(context, vkfast->presentVsyncMode, optionalFile, optionalLine);
+    int isRebuilded = vfInternalRebuildPresent(context, vkfast->presentVsyncMode, vkfast->presentImagesCount, optionalFile, optionalLine);
     return isRebuilded;
   }
 
@@ -2868,7 +2877,7 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
   REDGPU_2_EXPECTWG(queuePresentStatuses.status == RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(queuePresentStatuses.statusError == RED_STATUS_SUCCESS || queuePresentStatuses.statusError == RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE);
   if (queuePresentStatus == RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE || queuePresentStatuses.statusError == RED_STATUS_ERROR_PRESENT_IS_OUT_OF_DATE) {
-    int isRebuilded = vfInternalRebuildPresent(context, vkfast->presentVsyncMode, optionalFile, optionalLine);
+    int isRebuilded = vfInternalRebuildPresent(context, vkfast->presentVsyncMode, vkfast->presentImagesCount, optionalFile, optionalLine);
     return isRebuilded;
   }
 

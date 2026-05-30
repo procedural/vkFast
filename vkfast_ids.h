@@ -68,6 +68,7 @@ typedef struct vf_handle_context_t {
   void *             presentPixelsCpuUpload_void_ptr_original;
 
   RedPresentVsyncMode presentVsyncMode;
+  int                 presentImagesCount;
 } vf_handle_context_t;
 
 typedef struct vf_handle_storage_t {
