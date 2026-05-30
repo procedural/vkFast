@@ -1,0 +1,12 @@
+diff --git a/nvvk/memallocator_vma_vk.inl b/nvvk/memallocator_vma_vk.inl
+index f6436d0..16f66e8 100644
+--- a/nvvk/memallocator_vma_vk.inl
++++ b/nvvk/memallocator_vma_vk.inl
+@@ -161,6 +161,7 @@ inline void VMAMemoryAllocator::freeMemory(MemHandle memHandle)
+ 
+   auto vmaHandle = castVMAMemoryHandle(memHandle);
+   vmaFreeMemory(m_vma, vmaHandle->getAllocation());
++  delete vmaHandle;
+ }
+ 
+ inline MemAllocator::MemInfo VMAMemoryAllocator::getMemoryInfo(MemHandle memHandle) const

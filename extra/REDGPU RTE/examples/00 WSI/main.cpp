@@ -79,6 +79,10 @@ void CallsEndSubmitWaitAndDestroy(RedContext context, RedCalls calls, RedHandleG
 }
 
 int main() {
+#if defined(_MSC_VER) && defined(_DEBUG)
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
