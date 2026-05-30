@@ -1,4 +1,5 @@
 dxc/*
 x64/*
+*.o
 a.exe
 glfw3.dll

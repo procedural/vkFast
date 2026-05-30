@@ -1,3 +1,7 @@
+#if 0
+clang -c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c && clang++ -O2 -march=native main.cpp -Wl,--stack,64000000 *.o ../Common/glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3.a -lgdi32
+exit
+#endif
 // cd vs2019 && cl /EHsc ../main.cpp ../../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c /arch:AVX2 /openmp /link /stack:64000000
 
 #include "../../vkfast.h"
@@ -22,8 +26,8 @@ static bool IntersectBoxByBboxIndex(bvhvec4 pos, bvhvec4 invDir, float * bvh, ui
   bvhvec4 t0 = (bbox_min - pos) * invDir;
   bvhvec4 t1 = (bbox_max - pos) * invDir;
 
-  float tmin = max(max(min(t0.x, t1.x), min(t0.y, t1.y)), min(t0.z,t1.z));
-  float tmax = min(min(max(t0.x, t1.x), max(t0.y, t1.y)), max(t0.z,t1.z));
+  float tmin = fmax(fmax(fmin(t0.x, t1.x), fmin(t0.y, t1.y)), fmin(t0.z,t1.z));
+  float tmax = fmin(fmin(fmax(t0.x, t1.x), fmax(t0.y, t1.y)), fmax(t0.z,t1.z));
   return tmax >= tmin && tmin < t;
 }
 
