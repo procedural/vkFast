@@ -40,6 +40,12 @@ void buildCommandBuffer()
       ctx = vfContextInitEx2(1, 0, &optional_parameters, &ex2_parameters, __FILE__, __LINE__);
     }
 
+    const unsigned array65536[2] = {65536, 65536};
+    static gpu_thread_t gpu_thread = NULL;
+    if (once) {
+      vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
+    }
+
     static gpu_storage_t storage_gpu_only     = {0};
     static gpu_storage_t storage_cpu_upload   = {0};
     static gpu_storage_t storage_cpu_readback = {0};
@@ -82,8 +88,8 @@ void buildCommandBuffer()
     static RedStructDeclarationMember slots[3] = {0};
     static ReiiMeshState mesh_state = {0};
     if (once) {
-      #include "mesh.vs.h"
-      #include "mesh.fs.h"
+      #include "C:/Users/Constantine/Desktop/vkfast/examples/21 REII Instancing/mesh.vs.h"
+      #include "C:/Users/Constantine/Desktop/vkfast/examples/21 REII Instancing/mesh.fs.h"
       gpu_program_info_t vp = {0};
       vp.program_binary_bytes_count = sizeof(g_main_vs);
       vp.program_binary             = g_main_vs;
@@ -173,7 +179,7 @@ void buildCommandBuffer()
       reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputdstex, RED_MULTISAMPLE_COUNT_BITFLAG_4);
       reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0);
       reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 1);
-      reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0, REII_TEXTURE_TEXEL_FORMAT_DS, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_DS, REII_TEXTURE_TEXEL_TYPE_FLOAT, 4, NULL);
+      reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0, REII_TEXTURE_TEXEL_FORMAT_DS, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_DS, REII_TEXTURE_TEXEL_TYPE_FLOAT, 4, NULL, 1, &gpu_thread, array65536);
     }
 
     static ReiiHandleTextureMemory outputMSTexMemory = {0};
@@ -185,14 +191,14 @@ void buildCommandBuffer()
       reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputmstex, RED_MULTISAMPLE_COUNT_BITFLAG_4);
       reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0);
       reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
-      reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL);
+      reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
     }
 
     static ReiiHandleUnorderedArray hmesh = {0};
     static ReiiHandleUnorderedArray * mesh = &hmesh;
     if (once) {
       float mesh_vertices[] = {
-        #include "3d_mesh_vertices_suzanne_head.h"
+        #include "C:/Users/Constantine/Desktop/vkfast/extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
       };
       mesh->position = mesh_vertex_array;
       reiiCreateUnorderedArray(ctx, mesh);
@@ -200,7 +206,7 @@ void buildCommandBuffer()
       for (int i = 0, mesh_vertices_count = countof(mesh_vertices) / 3; i < mesh_vertices_count; i += 1) {
         reiiUnorderedArrayPosition(ctx, mesh, mesh_vertices[i * 3 + 0], mesh_vertices[i * 3 + 1], mesh_vertices[i * 3 + 2], 1);
       }
-      reiiUnorderedArrayEnd(ctx, mesh);
+      reiiUnorderedArrayEnd(ctx, mesh, 1, &gpu_thread, array65536);
     }
 
     const int instanceCountX = 25;
@@ -221,7 +227,7 @@ void buildCommandBuffer()
           }
         }
       }
-      reiiUnorderedArrayEnd(ctx, instanceColors);
+      reiiUnorderedArrayEnd(ctx, instanceColors, 1, &gpu_thread, array65536);
     }
 
     static ReiiHandleUnorderedArray hinstancePositions = {0};
@@ -237,7 +243,7 @@ void buildCommandBuffer()
           }
         }
       }
-      reiiUnorderedArrayEnd(ctx, instancePositions);
+      reiiUnorderedArrayEnd(ctx, instancePositions, 1, &gpu_thread, array65536);
     }
 
     static ReiiHandleCommandList hlist = {0};
@@ -328,7 +334,7 @@ void buildCommandBuffer()
       vfBatchEnd(ctx, batch, FF, LL);
 
       RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
-      uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, FF, LL);
+      uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, 1, &gpu_thread, array65536, FF, LL);
       vfAsyncWaitToFinish(ctx, wait, FF, LL);
     }
 

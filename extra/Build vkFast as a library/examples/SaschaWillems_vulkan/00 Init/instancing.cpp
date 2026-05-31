@@ -1,3 +1,7 @@
+#include "C:/Users/Constantine/Desktop/vkfast/vkfast.h"
+#include "C:/Users/Constantine/Desktop/vkfast/vkfast_ex.h"
+#pragma comment(lib, "C:/Users/Constantine/Desktop/vkfast/extra/Build vkFast as a library/vkFast.lib")
+
 void buildCommandBuffer()
 {
   VkCommandBuffer vkcmdBuffer = drawCmdBuffers[currentBuffer];
@@ -15,6 +19,9 @@ void buildCommandBuffer()
     #define LL __LINE__
 
     static gpu_handle_context_t ctx = NULL;
+
+    const unsigned array65536[2] = {65536, 65536};
+    static gpu_thread_t gpu_thread = NULL;
 
     static int once = 1;
     if (once == 1) {
@@ -36,6 +43,8 @@ void buildCommandBuffer()
       ex2_parameters.exposeOnlyOneQueue        = 1;
 
       ctx = vfContextInitEx2(1, 0, &optional_parameters, &ex2_parameters, FF, LL);
+
+      vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
     }
 
     gpu_batch_info_t bindings_info = {0};
@@ -98,7 +107,7 @@ void buildCommandBuffer()
       imgbarrier.pNext = 0;
       imgbarrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
       imgbarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
-      imgbarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      imgbarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
       imgbarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
       imgbarrier.srcQueueFamilyIndex = -1;
       imgbarrier.dstQueueFamilyIndex = -1;
@@ -114,7 +123,7 @@ void buildCommandBuffer()
     vfBatchEnd(ctx, batches[vkcmdBuffer], FF, LL);
 
     RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batches[vkcmdBuffer], FF, LL);
-    uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, FF, LL);
+    uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, 1, &gpu_thread, array65536, FF, LL);
     vfAsyncWaitToFinish(ctx, wait, FF, LL);
   }
 }
