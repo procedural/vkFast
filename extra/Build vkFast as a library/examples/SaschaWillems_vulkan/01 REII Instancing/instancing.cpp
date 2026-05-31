@@ -286,6 +286,7 @@ void buildCommandBuffer()
       renderPassBeginInfo.framebuffer = frameBuffers[currentImageIndex];
       vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
       vkCmdEndRenderPass(cmdBuffer);
+      vfBatchBarrierMemory(ctx, batch, FF, LL);
 
       if (1) {
         // NOTE(Constantine)(08 May 2026): Stutter test.
@@ -334,7 +335,8 @@ void buildCommandBuffer()
       vfBatchEnd(ctx, batch, FF, LL);
 
       RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
-      uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, 1, &gpu_thread, array65536, FF, LL);
+      gpu_thread_t gpu_threads[2] = {gpu_thread, (gpu_thread_t)presentCompleteSemaphores[currentBuffer]};
+      uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, 2, gpu_threads, array65536, FF, LL);
       vfAsyncWaitToFinish(ctx, wait, FF, LL);
     }
 
