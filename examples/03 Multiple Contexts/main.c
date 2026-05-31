@@ -8,6 +8,10 @@ exit
 #include "../Common/vkfast_examples_common.h"
 
 int main() {
+#if defined(_MSC_VER) && defined(_DEBUG)
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
   gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
 
   // Donate raw context from ctx to ctx2.

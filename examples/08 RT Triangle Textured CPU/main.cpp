@@ -91,6 +91,10 @@ int main() {
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 #endif
 
+#if defined(_MSC_VER) && defined(_DEBUG)
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
   #define window_w 1920
   #define window_h 1080
 

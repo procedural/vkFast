@@ -14,6 +14,10 @@ int main() {
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 #endif
 
+#if defined(_MSC_VER) && defined(_DEBUG)
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -212,5 +216,5 @@ int main() {
   };
   vfIdDestroy(countof(ids), ids, FF, LL);
   vfContextDeinit(ctx, FF, LL);
-  vfExit(0);
+  glfwTerminate();
 }
