@@ -1,9 +1,18 @@
 #pragma once
 
-#include "C:/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
-#include "C:/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
-#include "C:/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
-#include "C:/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
+#if defined(_WIN32)
+  #include "C:/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
+  #include "C:/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
+  #include "C:/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
+  #include "C:/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
+#elif defined(__linux__)
+  #include "/home/linuxbrew/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
+  #include "/home/linuxbrew/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
+  #include "/home/linuxbrew/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
+  #include "/home/linuxbrew/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
+#else
+  #error Unsupported OS for now
+#endif
 
 #ifdef __cplusplus
 extern "C" {

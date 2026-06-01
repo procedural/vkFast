@@ -5,8 +5,10 @@
 #include <time.h>   // For time
 #include <stdlib.h> // For rand
 
-#include <shellscalingapi.h>   // For SetProcessDpiAwareness
-#pragma comment(lib, "shcore") // For SetProcessDpiAwareness
+#if defined(_WIN32)
+  #include <shellscalingapi.h>   // For SetProcessDpiAwareness
+  #pragma comment(lib, "shcore") // For SetProcessDpiAwareness
+#endif
 
 #define countof(x) (sizeof(x) / sizeof((x)[0]))
 
@@ -14,8 +16,8 @@
 #define LL __LINE__
 
 #if defined(_MSC_VER) && defined(_DEBUG)
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
+  #define _CRTDBG_MAP_ALLOC
+  #include <crtdbg.h>
 #endif
 
 typedef struct ReiiRgba8 {

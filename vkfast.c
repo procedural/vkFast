@@ -9,22 +9,44 @@
 #include "vkfast_ids.h"
 
 #ifndef __cplusplus
-#define REDGPU_DISABLE_NAMED_PARAMETERS
+  #define REDGPU_DISABLE_NAMED_PARAMETERS
 #endif
-#include "C:/RedGpuSDK/misc/np/np.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
-#include "C:/RedGpuSDK/redgpu_context_from_vk.h"
+#if defined(_WIN32)
+  #include "C:/RedGpuSDK/misc/np/np.h"
+  #include "C:/RedGpuSDK/misc/np/np_redgpu.h"
+  #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
+  #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+  #include "C:/RedGpuSDK/redgpu_context_from_vk.h"
+#elif defined(__linux__) && !defined(__ANDROID__)
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_2.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+  #include "/home/linuxbrew/RedGpuSDK/redgpu_context_from_vk.h"
+#else
+  #error Unsupported OS for now
+#endif
 
 #ifdef _WIN32
 #include <Windows.h>
 #endif
+#if defined(__linux__) && !defined(__ANDROID__)
+#include <X11/Xlib.h> // For X11 Display, Window
+#endif
+#include <string.h> // For strcmp
 
 static void vfInternalPrint(const char * string) {
   red32OutputDebugString(string);
   red32ConsolePrint(string);
 }
+
+#if defined(__linux__) && !defined(__ANDROID__)
+#define MB_OK 0
+
+static void MessageBoxA(void * hwnd, const char * text, const char * caption, unsigned type) {
+  #warning TODO(Constantine): implement this function on Linux.
+}
+#endif
 
 void red2Crash(const char * error, const char * functionName, RedHandleGpu optionalGpuHandle, const char * optionalFile, int optionalLine) {
   struct StringArray {
@@ -140,9 +162,16 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
 
       optionalSettings = &createContextPerformance;
     }
-    #ifdef _WIN32
+    #if defined(_WIN32)
     unsigned extensions[] = {
       RED_SDK_EXTENSION_WSI_WIN32,
+      #ifdef VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
+      RED_SDK_EXTENSION_RAY_TRACING,
+      #endif
+    };
+    #elif defined(__linux__) && !defined(__ANDROID__)
+    unsigned extensions[] = {
+      RED_SDK_EXTENSION_WSI_XLIB,
       #ifdef VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
       RED_SDK_EXTENSION_RAY_TRACING,
       #endif
@@ -342,7 +371,11 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
         unsigned      memoryHeapsCount = 0;
         RedMemoryHeap memoryHeaps[32]  = {0};
 
-        memoryTypesCount = 5;
+        // TODO(Constantine)(1 Jun 2026):
+        // Set memoryTypesCount to 0 everywhere and leave only memory heap size checks for specific gpuDeviceId GPUs.
+        // Rather, implement generic memory type picking, like what I used to have in REDGPU SDK.
+
+        memoryTypesCount = 7;
         memoryHeapsCount = 2;
 
         memoryTypes[0].memoryHeapIndex = 0;
@@ -361,19 +394,31 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
         memoryTypes[2].isGpuVram       = 0;
         memoryTypes[2].isCpuMappable   = 1;
         memoryTypes[2].isCpuCoherent   = 1;
-        memoryTypes[2].isCpuCached     = 0;
+        memoryTypes[2].isCpuCached     = 1;
 
-        memoryTypes[3].memoryHeapIndex = 1;
-        memoryTypes[3].isGpuVram       = 0;
+        memoryTypes[3].memoryHeapIndex = 0;
+        memoryTypes[3].isGpuVram       = 1;
         memoryTypes[3].isCpuMappable   = 1;
         memoryTypes[3].isCpuCoherent   = 1;
-        memoryTypes[3].isCpuCached     = 1;
+        memoryTypes[3].isCpuCached     = 0;
 
         memoryTypes[4].memoryHeapIndex = 0;
         memoryTypes[4].isGpuVram       = 1;
-        memoryTypes[4].isCpuMappable   = 1;
-        memoryTypes[4].isCpuCoherent   = 1;
+        memoryTypes[4].isCpuMappable   = 0;
+        memoryTypes[4].isCpuCoherent   = 0;
         memoryTypes[4].isCpuCached     = 0;
+
+        memoryTypes[5].memoryHeapIndex = 1;
+        memoryTypes[5].isGpuVram       = 0;
+        memoryTypes[5].isCpuMappable   = 1;
+        memoryTypes[5].isCpuCoherent   = 1;
+        memoryTypes[5].isCpuCached     = 1;
+
+        memoryTypes[6].memoryHeapIndex = 0;
+        memoryTypes[6].isGpuVram       = 1;
+        memoryTypes[6].isCpuMappable   = 1;
+        memoryTypes[6].isCpuCoherent   = 1;
+        memoryTypes[6].isCpuCached     = 0;
 
         memoryHeaps[0].memoryBytesCount = 12000000000;
         memoryHeaps[0].isGpuVram        = 1;
@@ -391,9 +436,9 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
           "optionalLine", optionalLine
         );
 
-        specificMemoryTypesGpuVram     = 0;
+        specificMemoryTypesGpuVram     = 1; // TODO(Constantine): WHY WOULD THIS BE THE CORRECT PICKED MEMORY TYPE FOR VRAM BUFFERS, TO ALLOCATE THEM CORRECTLY ON B580 AND LINUX???
         specificMemoryTypesCpuUpload   = 2;
-        specificMemoryTypesCpuReadback = 3; // NOTE(Constantine): The cpu cached one.
+        specificMemoryTypesCpuReadback = 2; // NOTE(Constantine): The cpu cached one.
 
       } else /*Intel UHD Graphics 730*/ {
         unsigned      memoryTypesCount = 0;
@@ -1129,6 +1174,7 @@ GPU_API_PRE void GPU_API_POST vfContextResetAndInvalidateAllStorages(gpu_handle_
   vkfast->memoryCpuReadback_memory_suballocations_offset = 0;
 }
 
+#if defined(_WIN32)
 GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, const char * optionalFile, int optionalLine) {
   // https://learn.microsoft.com/ru-ru/windows/win32/api/winuser/nf-winuser-monitorfrompoint
   POINT point = {0};
@@ -1144,6 +1190,17 @@ GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, cons
   out4ints[2] = monitorInfo.rcMonitor.right;
   out4ints[3] = monitorInfo.rcMonitor.bottom;
 }
+#endif
+
+#if defined(__linux__) && !defined(__ANDROID__)
+GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, const char * optionalFile, int optionalLine) {
+  #warning TODO(Constantine): implement this function on Linux.
+  out4ints[0] = 0;
+  out4ints[1] = 0;
+  out4ints[2] = 1920; // TODO(Constantine): Unhardcode.
+  out4ints[3] = 1080; // TODO(Constantine): Unhardcode.
+}
+#endif
 
 static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyncMode presentVsyncMode, int presentImagesCount, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
@@ -1241,6 +1298,31 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyn
       "optionalLine", optionalLine,
       "optionalUserData", NULL
     );
+    #endif
+    #if defined(__linux__) && !defined(__ANDROID__)
+    {
+      // NOTE(Constantine): this struct's layout is defined in redgpu_32.c file of REDGPU 2 SDK.
+      struct X11WindowData {
+        Display * display;
+        Window    window;
+      };
+      struct X11WindowData * h = vkfast->windowHandle;
+
+      np(redCreateSurfaceXlibOrXcb,
+        "context", vkfast->context,
+        "gpu", vkfast->gpu,
+        "handleName", "vkFast_vfInternalRebuildPresent_surface_xlib",
+        "xlibDisplay", h->display,
+        "xlibWindow", h->window,
+        "xcbConnection", NULL,
+        "xcbWindow", 0,
+        "outSurface", &vkfast->surface,
+        "outStatuses", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+    }
     #endif
     REDGPU_2_EXPECTWG(vkfast->surface != NULL);
   }
@@ -1420,11 +1502,20 @@ GPU_API_PRE int GPU_API_POST vfWindowLoop(gpu_handle_context_t context) {
   return red32WindowLoop();
 }
 
+#if defined (_WIN32)
 GPU_API_PRE int GPU_API_POST vfWindowIsMinimized(gpu_handle_context_t context) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
   return (int)IsIconic((HWND)vkfast->windowHandle);
 }
+#endif
+
+#if defined(__linux__) && !defined(__ANDROID__)
+GPU_API_PRE int GPU_API_POST vfWindowIsMinimized(gpu_handle_context_t context) {
+  #warning TODO(Constantine): implement this function on Linux.
+  return 0;
+}
+#endif
 
 GPU_API_PRE void GPU_API_POST vfWindowGetSize(gpu_handle_context_t context, int * out_window_width, int * out_window_height) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
@@ -1493,7 +1584,7 @@ GPU_API_PRE void GPU_API_POST vfStorageCreate(gpu_handle_context_t context, cons
       REDGPU_2_EXPECTWG(vkfast->memoryCpuReadback_memory_suballocations_offset <= vkfast->memoryCpuReadback_memory_and_array.array.memoryBytesCount);
 
     } else {
-#ifdef __MINGW32__
+#if defined(__linux__) || defined(__MINGW32__)
       REDGPU_2_EXPECT(!"[vkFast Internal] Unreachable enum value.");
 #else
       REDGPU_2_EXPECT(!"[vkFast Internal][" __FUNCTION__ "] Unreachable enum value.");
