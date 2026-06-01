@@ -43,8 +43,112 @@ static void vfInternalPrint(const char * string) {
 #if defined(__linux__) && !defined(__ANDROID__)
 #define MB_OK 0
 
-static void MessageBoxA(void * hwnd, const char * text, const char * caption, unsigned type) {
-  #warning TODO(Constantine): implement this function on Linux.
+// Helper function for MessageBoxA to draw multiline text and calculate dimensions
+// If draw_text is 0, it only calculates the required height and width
+static void MessageBoxA_ProcessText(Display * display, Window win, GC gc, const char * text, int draw_text, int * out_width, int * out_height) {
+  const char * start = text;
+  const char * end;
+  int line_num = 0;
+  int max_width = 250;
+
+  int start_y = 35; // Margins from top margin
+  int line_spacing = 18; // Vertical distance between text lines
+
+  while ((end = strchr(start, '\n')) != NULL) {
+    int len = end - start;
+    int width = len * 7 + 40; // Approximate width mapping
+    if (width > max_width) max_width = width;
+
+    if (draw_text) {
+      XDrawString(display, win, gc, 20, start_y + (line_num * line_spacing), start, len);
+    }
+    line_num++;
+    start = end + 1;
+  }
+
+  // Process trailing line (or the only line if no newlines exist)
+  int len = strlen(start);
+  int width = len * 7 + 40;
+  if (width > max_width) max_width = width;
+
+  if (draw_text) {
+    XDrawString(display, win, gc, 20, start_y + (line_num * line_spacing), start, len);
+  }
+  line_num++;
+
+  *out_width = max_width;
+  *out_height = start_y + (line_num * line_spacing) + 70; // Text block height + space for button
+}
+
+static void MessageBoxA(void * hWnd, const char * lpText, const char * lpCaption, unsigned int uType) {
+  Display * display = XOpenDisplay(NULL);
+  REDGPU_2_EXPECTFL(display != NULL);
+
+  int screen = DefaultScreen(display);
+  Window root = RootWindow(display, screen);
+
+  // 1. Pre-calculate dynamic layout dimensions based on text contents
+  int win_width = 0;
+  int win_height = 0;
+  MessageBoxA_ProcessText(display, root, NULL, lpText, 0, &win_width, &win_height);
+
+  unsigned long white = WhitePixel(display, screen);
+  unsigned long black = BlackPixel(display, screen);
+
+  // 2. Main Dialog Canvas Setup
+  Window win = XCreateSimpleWindow(display, root, 100, 100, win_width, win_height, 1, black, white);
+  XStoreName(display, win, lpCaption);
+
+  Atom wm_delete = XInternAtom(display, "WM_DELETE_WINDOW", False);
+  XSetWMProtocols(display, win, &wm_delete, 1);
+
+  // 3. OK Action Button Layout positioning
+  int btn_w = 60, btn_h = 25;
+  int btn_x = (win_width - btn_w) / 2;
+  int btn_y = win_height - 45; // Fixed padding from window base
+  Window btn = XCreateSimpleWindow(display, win, btn_x, btn_y, btn_w, btn_h, 1, black, white);
+
+  XSelectInput(display, win, ExposureMask | KeyPressMask);
+  XSelectInput(display, btn, ExposureMask | ButtonPressMask);
+
+  XMapWindow(display, win);
+  XMapWindow(display, btn);
+
+  GC gc = XCreateGC(display, win, 0, NULL);
+  XSetForeground(display, gc, black);
+  XSetBackground(display, gc, white);
+
+  // 4. Modal Event Loop Interface
+  XEvent event;
+  int loop = 1;
+
+  while (loop) {
+    XNextEvent(display, &event);
+
+    if (event.type == Expose) {
+      // Re-render UI segments on damage exposure signals
+      if (event.xexpose.window == win) {
+        int dummy_w, dummy_h;
+        MessageBoxA_ProcessText(display, win, gc, lpText, 1, &dummy_w, &dummy_h);
+      } else if (event.xexpose.window == btn) {
+        XDrawString(display, btn, gc, 22, 17, "OK", 2);
+      }
+    }
+    else if (event.type == ButtonPress) {
+      if (event.xbutton.window == btn) {
+        loop = 0;
+      }
+    }
+    else if (event.type == ClientMessage) {
+      if ((Atom)event.xclient.data.l == wm_delete) {
+        loop = 0;
+      }
+    }
+  }
+
+  XFreeGC(display, gc);
+  XDestroyWindow(display, win);
+  XCloseDisplay(display);
 }
 #endif
 
@@ -1521,8 +1625,7 @@ GPU_API_PRE int GPU_API_POST vfWindowIsMinimized(gpu_handle_context_t context) {
 
 #if defined(__linux__) && !defined(__ANDROID__)
 GPU_API_PRE int GPU_API_POST vfWindowIsMinimized(gpu_handle_context_t context) {
-  #warning TODO(Constantine): implement this function on Linux.
-  return 0;
+  return 0; // NOTE(Constantine): There's no simple X11 code to check for this, so just assume the window is always visible.
 }
 #endif
 
