@@ -166,7 +166,7 @@ static gpu_extra_cpu_gpu_array OffsetAllocateCpuGpuArrayWithTale64BytesAlign(uin
 #endif
 
 #ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3 // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
-  #ifdef _WIN32
+  #if defined(_WIN32)
     #define GLFW_INCLUDE_NONE
     #define GLFW_EXPOSE_NATIVE_WIN32
     #include "glfw-3.4.bin.WIN64/include/GLFW/glfw3.h" 
@@ -177,6 +177,12 @@ static gpu_extra_cpu_gpu_array OffsetAllocateCpuGpuArrayWithTale64BytesAlign(uin
     #pragma comment(lib, "User32.lib")
     #pragma comment(lib, "Shell32.lib")
     #pragma comment(lib, "Gdi32.lib")
+  #elif defined(__linux__) && !defined(__ANDROID__)
+    // brew install glfw
+    #define GLFW_INCLUDE_NONE
+    #define GLFW_EXPOSE_NATIVE_X11
+    #include "/var/home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/include/GLFW/glfw3.h"
+    #include "/var/home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/include/GLFW/glfw3native.h"
   #else
     #error
   #endif
