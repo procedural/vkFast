@@ -1194,11 +1194,18 @@ GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, cons
 
 #if defined(__linux__) && !defined(__ANDROID__)
 GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, const char * optionalFile, int optionalLine) {
-  #warning TODO(Constantine): implement this function on Linux.
+  Display * display = XOpenDisplay(NULL);
+  REDGPU_2_EXPECT(display != NULL);
+
+  int screen = DefaultScreen(display);
+
   out4ints[0] = 0;
   out4ints[1] = 0;
-  out4ints[2] = 1920; // TODO(Constantine): Unhardcode.
-  out4ints[3] = 1080; // TODO(Constantine): Unhardcode.
+  out4ints[2] = (int)DisplayWidth(display, screen);
+  out4ints[3] = (int)DisplayHeight(display, screen);
+
+  XCloseDisplay(display);
+  display = NULL;
 }
 #endif
 
@@ -1305,6 +1312,7 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyn
       struct X11WindowData {
         Display * display;
         Window    window;
+        Atom      wmDeleteMessage;
       };
       struct X11WindowData * h = vkfast->windowHandle;
 
@@ -1499,7 +1507,8 @@ GPU_API_PRE int GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, vo
 }
 
 GPU_API_PRE int GPU_API_POST vfWindowLoop(gpu_handle_context_t context) {
-  return red32WindowLoop();
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  return red32WindowLoop(vkfast->windowHandle);
 }
 
 #if defined (_WIN32)
