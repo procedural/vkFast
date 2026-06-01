@@ -41,6 +41,9 @@ static void vfInternalPrint(const char * string) {
 }
 
 #if defined(__linux__) && !defined(__ANDROID__)
+#include <stdio.h>  // For printf
+#include <stdlib.h> // For exit
+
 #define MB_OK 0
 
 // Helper function for MessageBoxA to draw multiline text and calculate dimensions
@@ -82,7 +85,10 @@ static void MessageBoxA_ProcessText(Display * display, Window win, GC gc, const 
 
 static void MessageBoxA(void * hWnd, const char * lpText, const char * lpCaption, unsigned int uType) {
   Display * display = XOpenDisplay(NULL);
-  REDGPU_2_EXPECTFL(display != NULL);
+  if (display == NULL) {
+    printf("MessageBoxA error: XOpenDisplay(NULL) returned NULL.\n");
+    exit(1);
+  }
 
   int screen = DefaultScreen(display);
   Window root = RootWindow(display, screen);
