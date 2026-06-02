@@ -28,7 +28,7 @@ int main() {
   GLFWwindow * window = glfwCreateWindow(700, 700, "[vkFast] GLFW Test", NULL, NULL);
 #if defined(_WIN32)
   void * window_handle = (void *)glfwGetWin32Window(window);
-#else
+#elif defined(__linux__) && !defined(__ANDROID__)
   // NOTE(Constantine): this struct's layout is defined in redgpu_32.c file of REDGPU 2 SDK.
   struct X11WindowData {
     Display * display;

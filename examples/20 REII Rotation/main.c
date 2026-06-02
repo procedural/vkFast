@@ -30,7 +30,23 @@ int main() {
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   GLFWwindow * window = glfwCreateWindow(window_w, window_h, "[vkFast] REII Rotation", 0, 0);
+#if defined(_WIN32)
   void * window_handle = (void *)glfwGetWin32Window(window);
+#elif defined(__linux__) && !defined(__ANDROID__)
+  // NOTE(Constantine): this struct's layout is defined in redgpu_32.c file of REDGPU 2 SDK.
+  struct X11WindowData {
+    Display * display;
+    Window    window;
+    Atom      wmDeleteMessage;
+  };
+  struct X11WindowData windowData = {0};
+  windowData.display = glfwGetX11Display();
+  windowData.window = glfwGetX11Window(window);
+  windowData.wmDeleteMessage = 0;
+  REDGPU_2_EXPECTFL(windowData.display != NULL || !"On Wayland, you need to run the app like this: XDG_SESSION_TYPE=x11 ./a.out");
+  REDGPU_2_EXPECTFL(windowData.window  != 0    || !"On Wayland, you need to run the app like this: XDG_SESSION_TYPE=x11 ./a.out");
+  void * window_handle = &windowData;
+#endif
 
   gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
   memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = (1024/*mb*/ * 1024 * 1024) - 64; // NOTE(Constantine)(Mar 20, 2026): '- 64' added for Intel iGPUs which can allocate not 1073741824, but 1073741820 max, lol.

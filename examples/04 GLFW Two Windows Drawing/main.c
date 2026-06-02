@@ -24,8 +24,31 @@ int main() {
   glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
   GLFWwindow * window1 = glfwCreateWindow(700, 700, "[vkFast] GLFW Two Windows Drawing: Window One", NULL, NULL);
   GLFWwindow * window2 = glfwCreateWindow(500, 500, "[vkFast] GLFW Two Windows Drawing: Window Two", NULL, NULL);
+#if defined(_WIN32)
   void * window1_handle = (void *)glfwGetWin32Window(window1);
   void * window2_handle = (void *)glfwGetWin32Window(window2);
+#elif defined(__linux__) && !defined(__ANDROID__)
+  // NOTE(Constantine): this struct's layout is defined in redgpu_32.c file of REDGPU 2 SDK.
+  struct X11WindowData {
+    Display * display;
+    Window    window;
+    Atom      wmDeleteMessage;
+  };
+  struct X11WindowData window1Data = {0};
+  struct X11WindowData window2Data = {0};
+  window1Data.display = glfwGetX11Display();
+  window2Data.display = glfwGetX11Display();
+  window1Data.window = glfwGetX11Window(window1);
+  window2Data.window = glfwGetX11Window(window2);
+  window1Data.wmDeleteMessage = 0;
+  window2Data.wmDeleteMessage = 0;
+  REDGPU_2_EXPECTFL(window1Data.display != NULL || !"On Wayland, you need to run the app like this: XDG_SESSION_TYPE=x11 ./a.out");
+  REDGPU_2_EXPECTFL(window1Data.window  != 0    || !"On Wayland, you need to run the app like this: XDG_SESSION_TYPE=x11 ./a.out");
+  REDGPU_2_EXPECTFL(window2Data.display != NULL || !"On Wayland, you need to run the app like this: XDG_SESSION_TYPE=x11 ./a.out");
+  REDGPU_2_EXPECTFL(window2Data.window  != 0    || !"On Wayland, you need to run the app like this: XDG_SESSION_TYPE=x11 ./a.out");
+  void * window1_handle = &window1Data;
+  void * window2_handle = &window2Data;
+#endif
 
   gpu_handle_context_t ctx1 = vfContextInit(1, NULL, FF, LL);
   
