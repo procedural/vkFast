@@ -2,3 +2,4 @@ dxc/*
 x64/*
 a.exe
 a.out
+build-*
