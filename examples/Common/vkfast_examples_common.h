@@ -181,8 +181,8 @@ static gpu_extra_cpu_gpu_array OffsetAllocateCpuGpuArrayWithTale64BytesAlign(uin
     // brew install glfw
     #define GLFW_INCLUDE_NONE
     #define GLFW_EXPOSE_NATIVE_X11
-    #include "/var/home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/include/GLFW/glfw3.h"
-    #include "/var/home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/include/GLFW/glfw3native.h"
+    #include "/home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/include/GLFW/glfw3.h"
+    #include "/home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/include/GLFW/glfw3native.h"
   #else
     #error
   #endif
