@@ -62,9 +62,9 @@ vec3 colorTriangle(vec3 start, vec3 dir) {
 }
 
 int main() {
-#ifdef __MINGW32__
+#if defined(__MINGW32__)
   SetProcessDPIAware();
-#else
+#elif defined(_WIN32)
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 #endif
 

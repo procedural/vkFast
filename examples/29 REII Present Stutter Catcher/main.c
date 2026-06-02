@@ -18,9 +18,9 @@ extern size_t        gFontDroidSansMonoFontGetBytesCount();
 extern unsigned char gFontDroidSansMonoFont[];
 
 int main() {
-#ifdef __MINGW32__
+#if defined(__MINGW32__)
   SetProcessDPIAware();
-#else
+#elif defined(_WIN32)
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 #endif
 

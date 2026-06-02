@@ -53,9 +53,9 @@ extern uint64_t countof_blender_camera_xform_rotation_quaternion;
 extern uint64_t countof_blender_camera_xform_translation;
 
 int main() {
-#ifdef __MINGW32__
+#if defined(__MINGW32__)
   SetProcessDPIAware();
-#else
+#elif defined(_WIN32)
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 #endif
 

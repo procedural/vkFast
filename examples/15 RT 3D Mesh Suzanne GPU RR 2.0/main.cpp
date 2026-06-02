@@ -17,9 +17,9 @@ exit
 using namespace tinybvh;
 
 int main() {
-#ifdef __MINGW32__
+#if defined(__MINGW32__)
   SetProcessDPIAware();
-#else
+#elif defined(_WIN32)
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 #endif
 

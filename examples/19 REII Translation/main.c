@@ -11,9 +11,9 @@ exit
 #include "../Common/vkfast_examples_common.h"
 
 int main() {
-#ifdef __MINGW32__
+#if defined(__MINGW32__)
   SetProcessDPIAware();
-#else
+#elif defined(_WIN32)
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 #endif
 

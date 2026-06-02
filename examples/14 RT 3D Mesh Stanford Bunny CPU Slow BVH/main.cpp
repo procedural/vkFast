@@ -413,9 +413,9 @@ static void BVH_IntersectTriangles_MollerTrumboreTest(Ray & ray, const bvhvec4 *
 }
 
 int main() {
-#ifdef __MINGW32__
+#if defined(__MINGW32__)
   SetProcessDPIAware();
-#else
+#elif defined(_WIN32)
   SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 #endif
 
