@@ -13,10 +13,19 @@
 #ifndef __cplusplus
 #define REDGPU_DISABLE_NAMED_PARAMETERS
 #endif
-#include "C:/RedGpuSDK/misc/np/np.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+#if defined(_WIN32)
+  #include "C:/RedGpuSDK/misc/np/np.h"
+  #include "C:/RedGpuSDK/misc/np/np_redgpu.h"
+  #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
+  #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+#elif defined(__linux__) && !defined(__ANDROID__)
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_2.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+#else
+  #error Unsupported OS for now
+#endif
 
 GPU_API_PRE gpu_handle_context_t GPU_API_POST vfeBanzaiAllocateExtraMemory(gpu_handle_context_t derive_from_context, gpu_internal_memory_allocation_sizes_t * memory_allocation_sizes, const char * optionalFile, int optionalLine) {
   REDGPU_2_EXPECT(derive_from_context != NULL);
