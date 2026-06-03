@@ -1,4 +1,8 @@
 #if 0
+gcc main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
+exit
+#endif
+#if 0
 clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c
 exit
 #endif
@@ -254,6 +258,14 @@ vec3 colorTriangle(vec3 start, vec3 dir) {
   return makev3(r / 255.f, g / 255.f, b / 255.f);
 }
 
+#if defined(_WIN32)
+  #define FileMap(X_utf16, X_utf8, Y, Z, W) red32FileMap((const short unsigned int *)(X_utf16), Y, Z, W)
+#elif defined(__linux__) && !defined(__ANDROID__)
+  #define FileMap(X_utf16, X_utf8, Y, Z, W) red32FileMap((const short unsigned int *)(X_utf8), Y, Z, W)
+#else
+  #error Unsupported OS for now
+#endif
+
 int main() {
 #if defined(__MINGW32__)
   SetProcessDPIAware();
@@ -265,8 +277,10 @@ int main() {
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
+#if defined(_WIN32)
   LARGE_INTEGER frequency = {0};
   REDGPU_2_EXPECTFL(QueryPerformanceFrequency(&frequency) == TRUE); // Query the frequency (ticks per second)
+#endif
 
   #define window_w 1920
   #define window_h 1080
@@ -295,7 +309,7 @@ int main() {
   void * texture_mh = NULL;
   void * texture_data = NULL;
   // To close
-  red32FileMap((const short unsigned int *)L"texture.ppm", &texture_fd, &texture_mh, &texture_data);
+  FileMap(L"texture.ppm", "texture.ppm", &texture_fd, &texture_mh, &texture_data);
   REDGPU_2_EXPECTFL(texture_fd != NULL || !"'texture.ppm' not found. Have you copied it from the previous example? Also, if you're running the example from Visual Studio, copy the 'texture.ppm' texture to this example's vs2019/ folder.");
   REDGPU_2_EXPECTFL(texture_mh != NULL);
   REDGPU_2_EXPECTFL(texture_data != NULL);
@@ -318,8 +332,10 @@ int main() {
 
     static float time = 0.f;
 
+    #if defined(_WIN32)
     LARGE_INTEGER t_start = {0};
     QueryPerformanceCounter(&t_start);
+    #endif
 
     // Draw pixels:
     vec3 eyePosition = makev3(3.f * sin(time), 0.f, 3.f * cos(time));
@@ -348,15 +364,19 @@ int main() {
       }
     }
 
+    #if defined(_WIN32)
     LARGE_INTEGER t_end = {0};
     QueryPerformanceCounter(&t_end);
+    #endif
 
+    #if defined(_WIN32)
     {
       LONGLONG elapsedTicks = t_end.QuadPart - t_start.QuadPart;
       LONGLONG nanoseconds = (elapsedTicks * 1000000000LL) / frequency.QuadPart;
       double milliseconds_fp = (double)(nanoseconds) / 1000000.0;
       printf("Elapsed milliseconds: %f\n", milliseconds_fp);
     }
+    #endif
 
     time += 0.2f; // NOTE(Constantine): Speeded up.
 

@@ -1,4 +1,9 @@
 #if 0
+gcc -O0 -g -c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/
+g++ -O0 -g main.cpp *.o -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
+exit
+#endif
+#if 0
 clang -c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c && clang++ main.cpp *.o
 exit
 #endif
@@ -84,6 +89,14 @@ vec3 colorTriangle(vec3 start, vec3 dir) {
   return vec3(r / 255.f, g / 255.f, b / 255.f);
 }
 
+#if defined(_WIN32)
+  #define FileMap(X_utf16, X_utf8, Y, Z, W) red32FileMap((const short unsigned int *)(X_utf16), Y, Z, W)
+#elif defined(__linux__) && !defined(__ANDROID__)
+  #define FileMap(X_utf16, X_utf8, Y, Z, W) red32FileMap((const short unsigned int *)(X_utf8), Y, Z, W)
+#else
+  #error Unsupported OS for now
+#endif
+
 int main() {
 #if defined(__MINGW32__)
   SetProcessDPIAware();
@@ -122,7 +135,7 @@ int main() {
   void * texture_mh = NULL;
   void * texture_data = NULL;
   // To close
-  red32FileMap((const short unsigned int *)L"texture.ppm", &texture_fd, &texture_mh, &texture_data);
+  FileMap(L"texture.ppm", "texture.ppm", &texture_fd, &texture_mh, &texture_data);
   REDGPU_2_EXPECTFL(texture_fd != NULL || !"If you're running the example from Visual Studio, copy the 'texture.ppm' texture to this example's vs2019/ folder.");
   REDGPU_2_EXPECTFL(texture_mh != NULL);
   REDGPU_2_EXPECTFL(texture_data != NULL);
