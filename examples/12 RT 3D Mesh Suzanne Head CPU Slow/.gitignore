@@ -2,4 +2,5 @@ dxc/*
 x64/*
 *.o
 a.exe
+a.out
 glfw3.dll
