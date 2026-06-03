@@ -14,10 +14,19 @@
 #ifndef __cplusplus
 #define REDGPU_DISABLE_NAMED_PARAMETERS
 #endif
-#include "C:/RedGpuSDK/misc/np/np.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+#if defined(_WIN32)
+  #include "C:/RedGpuSDK/misc/np/np.h"
+  #include "C:/RedGpuSDK/misc/np/np_redgpu.h"
+  #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
+  #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+#elif defined(__linux__) && !defined(__ANDROID__)
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_2.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+#else
+  #error Unsupported OS for now
+#endif
 
 #include <stdio.h>   // For _popen, _pclose
 #include <Windows.h> // GetFileSizeEx
