@@ -1,3 +1,8 @@
+#if 0
+gcc -c /home/linuxbrew/RedGpuSDK/redgpu.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/
+g++ -std=c++20 redgpu_rte_vk_mini_path_tracer.cpp redgpu.o -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ -I../redgpu_rte/nvpro_core -I../redgpu_rte/nvpro_core/nvp -I../redgpu_rte/nvpro_core/third_party/tinygltf -I../redgpu_rte/nvpro_core/third_party/imgui -I../redgpu_rte/nvpro_core/third_party/vma/include ../redgpu_rte/build/libredgpu_rte.so /home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/lib/libglfw3.a /home/linuxbrew/.linuxbrew/Cellar/libxext/1.3.7/lib/libXext.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
+exit
+#endif
 // NOTE(Constantine):
 // https://nvpro-samples.github.io/vk_mini_path_tracer/index.html#hello,vulkan!/settingupyourdevelopmentenvironment
 // git clone --recursive --shallow-submodules https://github.com/nvpro-samples/nvpro_core.git
@@ -8,12 +13,14 @@
 // cl /EHsc /std:c++20 redgpu_rte_vk_mini_path_tracer.cpp /IC:/VulkanSDK/1.3.231.1/Include /I../redgpu_rte/nvpro_core /I../redgpu_rte/nvpro_core/nvp /I../redgpu_rte/nvpro_core/third_party/tinygltf /I../redgpu_rte/nvpro_core/third_party/imgui /I../redgpu_rte/nvpro_core/third_party/vma/include
 // clang -c C:/RedGpuSDK/redgpu.c && clang++ -std=c++20 redgpu_rte_vk_mini_path_tracer.cpp redgpu.o -IC:/VulkanSDK/1.4.341.1/Include -I../redgpu_rte/nvpro_core -I../redgpu_rte/nvpro_core/nvp -I../redgpu_rte/nvpro_core/third_party/tinygltf -I../redgpu_rte/nvpro_core/third_party/imgui -I../redgpu_rte/nvpro_core/third_party/vma/include ../redgpu_rte/redgpu_rte.dll C:/Windows/System32/vulkan-1.dll
 //
-#pragma comment(lib, "User32.lib")
-#pragma comment(lib, "Gdi32.lib")
-#pragma comment(lib, "Comdlg32.lib")
-//#pragma comment(lib, "C:/VulkanSDK/1.4.341.1/Lib/vulkan-1.lib")
-#pragma comment(lib, "../redgpu_rte/build/Debug/redgpu_rte.lib")
-#pragma comment(lib, "../redgpu_rte/framework/glfw3dll.lib")
+  #if defined(_WIN32)
+  #pragma comment(lib, "User32.lib")
+  #pragma comment(lib, "Gdi32.lib")
+  #pragma comment(lib, "Comdlg32.lib")
+  //#pragma comment(lib, "C:/VulkanSDK/1.4.341.1/Lib/vulkan-1.lib")
+  #pragma comment(lib, "../redgpu_rte/build/Debug/redgpu_rte.lib")
+  #pragma comment(lib, "../redgpu_rte/framework/glfw3dll.lib")
+#endif
 
 // Copyright 2020-2021 NVIDIA Corporation
 // SPDX-License-Identifier: Apache-2.0

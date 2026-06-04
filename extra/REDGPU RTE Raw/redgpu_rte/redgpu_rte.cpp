@@ -135,7 +135,7 @@
 #include "nvpro_core/imgui/backends/imgui_vk_extra.cpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "nvpro_core/third_party/stb/stb_image.h"
-#ifdef __MINGW64__
+#if defined(__MINGW64__) || defined(__linux__)
 #include "nvpro_core/third_party/vma/include/vk_mem_alloc.cpp"
 #endif
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE; // NOTE(Constantine): https://www.reddit.com/r/vulkan/comments/j9e6of/comment/g8km4fr/

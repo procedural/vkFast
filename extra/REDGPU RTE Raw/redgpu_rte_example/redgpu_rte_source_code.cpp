@@ -1,5 +1,13 @@
-#include "C:/RedGpuSDK/redgpu.h"
-#include "C:/RedGpuSDK/redgpu_context_from_vk.h"
+#if defined(_WIN32)
+  #include "C:/RedGpuSDK/redgpu.h"
+  #include "C:/RedGpuSDK/redgpu_context_from_vk.h"
+#elif defined(__linux__) && !defined(__ANDROID__)
+  #include "/home/linuxbrew/RedGpuSDK/redgpu.h"
+  #include "/home/linuxbrew/RedGpuSDK/redgpu_context_from_vk.h"
+#else
+  #error Unsupported OS for now
+#endif
+
 #include <string>
 
 #if 0
