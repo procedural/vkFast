@@ -1,0 +1,3 @@
+glslangValidator -Ishaders -I../redgpu_rte/nvpro_core -g -D_glsl --target-env vulkan1.3 --vn raytrace_rchit_glsl -o _autogen/raytrace.rchit.h shaders/raytrace.rchit.glsl
+glslangValidator -Ishaders -I../redgpu_rte/nvpro_core -g -D_glsl --target-env vulkan1.3 --vn raytrace_rgen_glsl -o _autogen/raytrace.rgen.h shaders/raytrace.rgen.glsl
+glslangValidator -Ishaders -I../redgpu_rte/nvpro_core -g -D_glsl --target-env vulkan1.3 --vn raytrace_rmiss_glsl -o _autogen/raytrace.rmiss.h shaders/raytrace.rmiss.glsl
