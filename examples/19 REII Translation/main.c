@@ -1,4 +1,8 @@
 #if 0
+gcc main.c ../../vkfast.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
+exit
+#endif
+#if 0
 clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c ../Common/glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3.a -lgdi32
 exit
 #endif
@@ -21,8 +25,10 @@ int main() {
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
+#if defined(_WIN32)
   LARGE_INTEGER frequency = {0};
   REDGPU_2_EXPECTFL(QueryPerformanceFrequency(&frequency) == TRUE); // Query the frequency (ticks per second)
+#endif
 
   int window_w = 700;
   int window_h = 700;
@@ -229,8 +235,10 @@ int main() {
       continue;
     }
 
+    #if defined(_WIN32)
     LARGE_INTEGER t_start = {0};
     QueryPerformanceCounter(&t_start);
+    #endif
 
     {
       vfWindowGetSize(ctx, &window_w, &window_h);
@@ -325,15 +333,19 @@ int main() {
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
     vfAsyncDrawImageRaw(ctx, outputtex->image.handle, NULL, 2, gpu_threads, array65536, FF, LL);
 
+    #if defined(_WIN32)
     LARGE_INTEGER t_end = {0};
     QueryPerformanceCounter(&t_end);
+    #endif
 
+    #if defined(_WIN32)
     {
       LONGLONG elapsedTicks = t_end.QuadPart - t_start.QuadPart;
       LONGLONG nanoseconds = (elapsedTicks * 1000000000LL) / frequency.QuadPart;
       double milliseconds_fp = (double)(nanoseconds) / 1000000.0;
       //printf("Elapsed milliseconds: %f\n", milliseconds_fp);
     }
+    #endif
   }
 
   vfAllQueuesWaitIdle(ctx, FF, LL);
