@@ -5,6 +5,7 @@
 #include <time.h>   // For time
 #include <stdlib.h> // For rand
 #include <string.h> // For memcpy
+#include <limits.h> // For INT_MAX
 
 #if defined(_WIN32)
   #include <shellscalingapi.h>   // For SetProcessDpiAwareness
