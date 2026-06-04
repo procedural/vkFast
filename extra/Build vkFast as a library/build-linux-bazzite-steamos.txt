@@ -1,0 +1,2 @@
+gcc -c ../../vkfast.c ../REII/vkfast_extra_reii.c "../CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../Banzai/vkfast_extra_banzai.c ../Banzai/vkfast_extra_banzai_pointer.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/
+ar rcs libvkfast.a *.o

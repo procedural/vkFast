@@ -1,3 +1,20 @@
+#if defined(_WIN32)
+  #include "C:/Users/Constantine/Desktop/vkfast/vkfast_ex.h"
+  #include "C:/Users/Constantine/Desktop/vkfast/extra/Banzai/vkfast_extra_banzai_pointer.h"
+  #include "C:/Users/Constantine/Desktop/vkfast/extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.h"
+  #include "C:/Users/Constantine/Desktop/vkfast/extra/REII/vkfast_extra_reii.h"
+  #define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
+  #include "C:/Users/Constantine/Desktop/vkfast/examples/Common/vkfast_examples_common.h"
+  #pragma comment(lib, "C:/Users/Constantine/Desktop/vkfast/extra/Build vkFast as a library/vkFast.lib")
+#elif defined(__linux__) && !defined(__ANDROID__)
+  #include "/home/constantine/Desktop/vkfast/vkfast_ex.h"
+  #include "/home/constantine/Desktop/vkfast/extra/Banzai/vkfast_extra_banzai_pointer.h"
+  #include "/home/constantine/Desktop/vkfast/extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.h"
+  #include "/home/constantine/Desktop/vkfast/extra/REII/vkfast_extra_reii.h"
+  #define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
+  #include "/home/constantine/Desktop/vkfast/examples/Common/vkfast_examples_common.h"
+#endif
+
 void buildCommandBuffer()
 {
   VkCommandBuffer vkcmdBuffer = drawCmdBuffers[currentBuffer];
@@ -88,8 +105,13 @@ void buildCommandBuffer()
     static RedStructDeclarationMember slots[3] = {0};
     static ReiiMeshState mesh_state = {0};
     if (once) {
+      #if defined(_WIN32)
       #include "C:/Users/Constantine/Desktop/vkfast/examples/21 REII Instancing/mesh.vs.h"
       #include "C:/Users/Constantine/Desktop/vkfast/examples/21 REII Instancing/mesh.fs.h"
+      #elif defined(__linux__) && !defined(__ANDROID__)
+      #include "/home/constantine/Desktop/vkfast/examples/21 REII Instancing/mesh.vs.h"
+      #include "/home/constantine/Desktop/vkfast/examples/21 REII Instancing/mesh.fs.h"
+      #endif
       gpu_program_info_t vp = {0};
       vp.program_binary_bytes_count = sizeof(g_main_vs);
       vp.program_binary             = g_main_vs;
@@ -111,7 +133,7 @@ void buildCommandBuffer()
       slots[2].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
       slots[2].count           = 1;
       slots[2].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
-      gpu_extra_reii_mesh_state_compile_info_t mesh_state_compile_info = {0};
+      gpu_extra_reii_mesh_state_compile_info_t mesh_state_compile_info = {};
       mesh_state_compile_info.state_multisample_count     = RED_MULTISAMPLE_COUNT_BITFLAG_4;
       mesh_state_compile_info.output_depth_stencil_enable = 1;
       mesh_state_compile_info.output_depth_stencil_format = RED_FORMAT_DEPTH_32_FLOAT;
@@ -198,7 +220,11 @@ void buildCommandBuffer()
     static ReiiHandleUnorderedArray * mesh = &hmesh;
     if (once) {
       float mesh_vertices[] = {
+        #if defined(_WIN32)
         #include "C:/Users/Constantine/Desktop/vkfast/extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
+        #elif defined(__linux__) && !defined(__ANDROID__)
+        #include "/home/constantine/Desktop/vkfast/extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
+        #endif
       };
       mesh->position = mesh_vertex_array;
       reiiCreateUnorderedArray(ctx, mesh);
