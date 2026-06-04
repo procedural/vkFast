@@ -6,3 +6,4 @@ glfw3.dll
 out.hdr
 redgpu.o
 a.exe
+log_nvprosample.txt
