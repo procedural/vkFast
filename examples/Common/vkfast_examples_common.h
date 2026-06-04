@@ -4,6 +4,7 @@
 #include <math.h>   // For sin, cos
 #include <time.h>   // For time
 #include <stdlib.h> // For rand
+#include <string.h> // For memcpy
 
 #if defined(_WIN32)
   #include <shellscalingapi.h>   // For SetProcessDpiAwareness
