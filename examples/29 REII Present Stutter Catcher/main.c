@@ -392,6 +392,10 @@ int main() {
     LARGE_INTEGER t_start = {0};
     QueryPerformanceCounter(&t_start);
     #endif
+    #if defined(__linux__) && !defined(__ANDROID__)
+    struct timespec t_start;
+    clock_gettime(CLOCK_REALTIME, &t_start);
+    #endif
 
     {
       // Font resizing with Left Ctrl + '-' and Left Ctrl + '+' logic.
@@ -756,11 +760,41 @@ int main() {
     LARGE_INTEGER t_end = {0};
     QueryPerformanceCounter(&t_end);
     #endif
+    #if defined(__linux__) && !defined(__ANDROID__)
+    struct timespec t_end;
+    clock_gettime(CLOCK_REALTIME, &t_end);
+    #endif
 
-    #if defined(_WIN32)
     if (milliseconds_isCapturing == 1) {
+      #if defined(_WIN32)
       LONGLONG elapsedTicks = t_end.QuadPart - t_start.QuadPart;
       LONGLONG nanoseconds = (elapsedTicks * 1000000000LL) / frequency.QuadPart;
+      #endif
+      #if defined(__linux__) && !defined(__ANDROID__)
+      long seconds = 0;
+
+      long t_start_ns = 0;
+      seconds = t_start.tv_sec;
+      {
+        long seconds_as_milliseconds = seconds                 * 1000;
+        long seconds_as_microseconds = seconds_as_milliseconds * 1000;
+        long seconds_as_nanoseconds  = seconds_as_microseconds * 1000;
+        t_start_ns = seconds_as_nanoseconds;
+      }
+      t_start_ns += t_start.tv_nsec;
+
+      long t_end_ns = 0;
+      seconds = t_end.tv_sec;
+      {
+        long seconds_as_milliseconds = seconds                 * 1000;
+        long seconds_as_microseconds = seconds_as_milliseconds * 1000;
+        long seconds_as_nanoseconds  = seconds_as_microseconds * 1000;
+        t_end_ns = seconds_as_nanoseconds;
+      }
+      t_end_ns += t_end.tv_nsec;
+
+      long nanoseconds = t_end_ns - t_start_ns;
+      #endif
       double milliseconds_fp = (double)(nanoseconds) / 1000000.0;
       //printf("Elapsed milliseconds: %f\n", milliseconds_fp);
 
@@ -780,7 +814,6 @@ int main() {
         }
       }
     }
-    #endif
   }
 
   vfAllQueuesWaitIdle(ctx, FF, LL);
