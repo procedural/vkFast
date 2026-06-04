@@ -13,10 +13,19 @@
 #ifndef __cplusplus
 #define REDGPU_DISABLE_NAMED_PARAMETERS
 #endif
-#include "C:/RedGpuSDK/misc/np/np.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+#if defined(_WIN32)
+  #include "C:/RedGpuSDK/misc/np/np.h"
+  #include "C:/RedGpuSDK/misc/np/np_redgpu.h"
+  #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
+  #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+#elif defined(__linux__) && !defined(__ANDROID__)
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_2.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+#else
+  #error Unsupported OS for now
+#endif
 
 GPU_API_PRE void GPU_API_POST vfeCpuGpuArrayBatchCopyFromCpuToGpu(gpu_handle_context_t context, uint64_t batch_id, gpu_extra_cpu_gpu_array * cpu_gpu_array, uint64_t bytes_first, uint64_t bytes_count, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;

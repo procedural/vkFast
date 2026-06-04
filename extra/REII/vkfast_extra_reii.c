@@ -29,7 +29,9 @@
 #endif
 
 #include <stdio.h>   // For _popen, _pclose
+#if defined(_WIN32)
 #include <Windows.h> // GetFileSizeEx
+#endif
 
 #define REII_INTERNAL_MAX_SAMPLERS_COUNT 4000
 
@@ -487,6 +489,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   state->procedure           = procedure;
 }
 
+#if defined(_WIN32)
 GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx(gpu_handle_context_t context, ReiiMeshState * state, const char * compileCommandVS, const char * compileCommandFS, const wchar_t * compiledSpvFilepathVS, const wchar_t * compiledSpvFilepathFS) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
@@ -547,6 +550,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx(gpu_handle_context_t cont
   REDGPU_2_EXPECTWG(0 == red32FileUnmap(vs_fh, vs_fmap, vs_spv));
   REDGPU_2_EXPECTWG(0 == red32FileUnmap(fs_fh, fs_fmap, fs_spv));
 }
+#endif
 
 GPU_API_PRE RedHandleSampler GPU_API_POST reiiCreateSampler(gpu_handle_context_t context, const char * optionalDebugName, ReiiSamplerFiltering magFiltering, ReiiSamplerFiltering minFiltering, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateU, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateV, int maxAnisotropy) {
   const char * optionalFile = NULL;
