@@ -296,7 +296,7 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
         slots[2].type            = RED_STRUCT_MEMBER_TYPE_TEXTURE_RO;
         slots[2].count           = 1;
         slots[2].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT;
-        reiiCommandBindNewBindingsSet(globalImguiState->gpuContext, list, _countof(slots), slots);
+        reiiCommandBindNewBindingsSet(globalImguiState->gpuContext, list, countof(slots), slots);
         gpu_extra_cpu_gpu_array dynamicMeshPositionOffsetted = list->dynamic_mesh_position;
         gpu_extra_cpu_gpu_array dynamicMeshColorOffsetted    = list->dynamic_mesh_color;
         vfeCpuGpuArrayOffset(&dynamicMeshPositionOffsetted, list->dynamicMeshPositionVec4Offset * sizeof(ReiiVec4));
@@ -446,7 +446,7 @@ static inline void imguiCreateDeviceObjects() {
   mesh_state_compile_info.output_color_format         = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
   mesh_state_compile_info.variables_slot              = 3;
   mesh_state_compile_info.variables_bytes_count       = 0;
-  mesh_state_compile_info.struct_members_count        = _countof(slots);
+  mesh_state_compile_info.struct_members_count        = countof(slots);
   mesh_state_compile_info.struct_members              = slots;
   mesh_state_compile_info.samplers_count              = 1;
   globalImguiState->gpuMeshState.compileInfo                                    = mesh_state_compile_info;
@@ -558,7 +558,7 @@ static inline void imguiInvalidateDeviceObjects() {
   uint64_t ids[] = {
     globalImguiState->gpuBatch,
   };
-  vfIdDestroy(_countof(ids), ids, __FILE__, __LINE__);
+  vfIdDestroy(countof(ids), ids, __FILE__, __LINE__);
 }
 
 static inline void imguiDeinit() {

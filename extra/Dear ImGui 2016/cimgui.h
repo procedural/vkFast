@@ -1,11 +1,11 @@
 #pragma once
 
-#if defined __MINGW32__
-#define API __attribute__ ((visibility ("default")))
-#elif defined _WIN32 || defined __CYGWIN__
-#define API __declspec(dllexport)
+#if defined(__MINGW32__) || (defined(__linux__) && !defined(__ANDROID__))
+  #define API __attribute__ ((visibility ("default")))
+#elif defined(_WIN32) || defined(__CYGWIN__)
+  #define API __declspec(dllexport)
 #else
-#define API
+  #error Unsupported OS for now
 #endif
 
 #if defined __cplusplus
