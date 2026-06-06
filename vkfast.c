@@ -910,6 +910,7 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
   vkfast->memoryCpuReadback_mapped_void_ptr_offset = memoryCpuReadback_mapped_void_ptr;
   vkfast->memoryCpuReadback_memory_suballocations_offset = 0;
   vkfast->windowHandle = NULL;
+  vkfast->windowHandleDoDestroy = 0;
   vkfast->screenWidth = 0;
   vkfast->screenHeight = 0;
   vkfast->presentQueueIndex;
@@ -1261,6 +1262,10 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
     );
   }
 
+  if (vkfast->windowHandle != NULL && vkfast->windowHandleDoDestroy == 1) {
+    red32WindowDestroy(vkfast->windowHandle);
+  }
+
   if (vkfast->doNotFreeHandle == 0) {
     red32MemoryFree(vkfast);
   }
@@ -1597,12 +1602,15 @@ GPU_API_PRE int GPU_API_POST vfWindowFullscreenEx(gpu_handle_context_t context, 
   REDGPU_2_EXPECTWG(draw_queue_index < vkfast->gpuInfo->queuesCount);
 
   void * window_handle = optional_external_window_handle;
+  int window_handle_do_destroy = 0;
   if (window_handle == NULL) {
     window_handle = red32WindowCreate(window_title);
+    window_handle_do_destroy = 1;
   }
   REDGPU_2_EXPECTWG(window_handle != NULL);
 
   vkfast->windowHandle = window_handle;
+  vkfast->windowHandleDoDestroy = window_handle_do_destroy;
   vkfast->screenWidth = screen_width;
   vkfast->screenHeight = screen_height;
   vkfast->presentQueueIndex = draw_queue_index;

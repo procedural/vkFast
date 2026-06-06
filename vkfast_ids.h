@@ -61,6 +61,7 @@ typedef struct vf_handle_context_t {
   // WSI
 
   void *             windowHandle;
+  int                windowHandleDoDestroy;
   int                screenWidth;
   int                screenHeight;
 
