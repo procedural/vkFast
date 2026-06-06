@@ -17,4 +17,8 @@ target_link_libraries(${PROJECT_NAME}
   /home/linuxbrew/.linuxbrew/lib/libX11.so
   /home/linuxbrew/.linuxbrew/lib/libvulkan.so
   -lm
+  #-lasan # sudo dnf install libasan && LD_PRELOAD=/usr/lib64/libasan.so.8 ./00_Hello_Compute
+)
+target_compile_options(${PROJECT_NAME} PRIVATE
+  -O0 -g #-fsanitize=address
 )
