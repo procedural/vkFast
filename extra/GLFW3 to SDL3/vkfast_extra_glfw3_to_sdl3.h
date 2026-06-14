@@ -143,9 +143,17 @@ static inline void glfwGetWindowSize(GLFWwindow * window, int * width, int * hei
 static inline void glfwGetCursorPos(GLFWwindow * window, double * xpos, double * ypos) {
   float x = 0;
   float y = 0;
-  SDL_MouseButtonFlags buttons = SDL_GetMouseState(&x, &y);
-  xpos[0] = (double)x;
-  ypos[0] = (double)y;
+  SDL_MouseButtonFlags buttons = SDL_GetGlobalMouseState(&x, &y);
+
+  int window_x = 0;
+  int window_y = 0;
+  SDL_GetWindowPosition(window->sdlWindow, &window_x, &window_y);
+
+  float local_x = x - window_x;
+  float local_y = y - window_y;
+
+  xpos[0] = (double)local_x;
+  ypos[0] = (double)local_y;
 }
 
 static inline const char * glfwGetClipboardString(GLFWwindow * window) {
