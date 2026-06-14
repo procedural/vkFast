@@ -246,8 +246,7 @@ int main() {
   vfIdDestroy(countof(ids), ids, FF, LL);
   vfContextDeinit(ctx, FF, LL);
   #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
-  glfwTerminate(window);
-  #else
-  glfwTerminate();
+  glfwTerminateWindow(window);
   #endif
+  glfwTerminate();
 }

@@ -76,12 +76,16 @@ static inline GLFWwindow * glfwCreateWindow(int width, int height, const char * 
   return h;
 }
 
-static inline void glfwTerminate(GLFWwindow * window) {
+static inline void glfwTerminateWindow(GLFWwindow * window) {
   if (window != NULL) {
     SDL_DestroyWindow(window->sdlWindow);
     red32MemoryFree(window);
     window = NULL;
   }
+}
+
+static inline void glfwTerminate() {
+  // Nothing.
 }
 
 static inline Display * glfwGetX11Display(GLFWwindow * window) {
