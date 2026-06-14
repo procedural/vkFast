@@ -1,7 +1,7 @@
 #if 0
 gcc main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
 exit
-#endif
+#endif // /home/linuxbrew/.linuxbrew/lib/libSDL3.so
 #if 0
 clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c ../Common/glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3.a -lgdi32
 exit
@@ -11,6 +11,7 @@ exit
 #include "../../vkfast_ids.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #include "../Common/vkfast_examples_common.h"
+//#include "../../extra/GLFW3 to SDL3/vkfast_extra_glfw3_to_sdl3.h"
 
 int main() {
 #if defined(__MINGW32__)
@@ -40,8 +41,13 @@ int main() {
   };
   struct X11WindowData window1Data = {0};
   struct X11WindowData window2Data = {0};
+  #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+  window1Data.display = glfwGetX11Display(window1);
+  window2Data.display = glfwGetX11Display(window2);
+  #else
   window1Data.display = glfwGetX11Display();
   window2Data.display = glfwGetX11Display();
+  #endif
   window1Data.window = glfwGetX11Window(window1);
   window2Data.window = glfwGetX11Window(window2);
   window1Data.wmDeleteMessage = 0;
@@ -83,7 +89,12 @@ int main() {
   vfWindowFullscreen(ctx2, window2_handle, "[vkFast] GLFW Two Windows Drawing: Window Two", 500, 500, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
 
   while (glfwWindowShouldClose(window1) == 0 && glfwWindowShouldClose(window2) == 0) {
+    #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+    GLFWwindow * glfwwindows[2] = {window1, window2};
+    glfwPollEvents(2, glfwwindows);
+    #else
     glfwPollEvents();
+    #endif
 
     GLFWwindow * windows[2] = {window1, window2};
     gpu_handle_context_t ctxs[2] = {ctx1, ctx2};
@@ -164,6 +175,11 @@ int main() {
 
   vfContextDeinit(ctx2, FF, LL);
   vfContextDeinit(ctx1, FF, LL);
+
+  #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+  glfwTerminateWindow(window1);
+  glfwTerminateWindow(window2);
+  #endif
 
   glfwTerminate();
 }

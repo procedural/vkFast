@@ -120,7 +120,7 @@ int main() {
 
   while (glfwWindowShouldClose(window) == 0) {
     #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
-    glfwPollEvents(window);
+    glfwPollEvents(1, &window);
     #else
     glfwPollEvents();
     #endif

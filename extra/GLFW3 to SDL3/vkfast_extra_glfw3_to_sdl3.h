@@ -24,6 +24,7 @@ int VKFAST_EXTRA_GLOBAL_GLFW3_TO_SDL3_hint_GLFW_RESIZABLE = 0;
 
 typedef struct GLFWwindow {
   SDL_Window * sdlWindow;
+  SDL_WindowID sdlWindowId;
   int          windowShouldClose;
 } GLFWwindow;
 
@@ -61,6 +62,9 @@ static inline GLFWwindow * glfwCreateWindow(int width, int height, const char * 
   SDL_Window * sdlWindow = SDL_CreateWindow(title, width, height, window_flags);
   REDGPU_2_EXPECTFL(sdlWindow != NULL);
 
+  SDL_WindowID sdlWindowId = SDL_GetWindowID(sdlWindow);
+  REDGPU_2_EXPECTFL(sdlWindowId != 0);
+
   const char * driver_name = SDL_GetCurrentVideoDriver();
   REDGPU_2_EXPECTFL(SDL_strcmp(driver_name, "x11") == 0 || !"The video driver is not X11. On Wayland, you need to run the app like this: SDL_VIDEO_DRIVER=x11 ./a.out");
 
@@ -71,6 +75,7 @@ static inline GLFWwindow * glfwCreateWindow(int width, int height, const char * 
   // Filling
   GLFWwindow;
   h->sdlWindow = sdlWindow;
+  h->sdlWindowId = sdlWindowId;
   h->windowShouldClose = 0;
 
   return h;
@@ -104,11 +109,28 @@ static inline int glfwWindowShouldClose(GLFWwindow * window) {
   return window->windowShouldClose;
 }
 
-static inline void glfwPollEvents(GLFWwindow * window) {
+static inline void glfwPollEvents(int windows_count, GLFWwindow ** windows) {
   SDL_Event event = {0};
   while (SDL_PollEvent(&event)) {
-    if (event.type == SDL_EVENT_QUIT) {
-      window->windowShouldClose = 1;
+    SDL_WindowID eventSdlWindowId = event.window.windowID;
+
+    GLFWwindow * window = NULL;
+    for (int i = 0; i < windows_count; i += 1) {
+      if (windows[i]->sdlWindowId == eventSdlWindowId) {
+        window = windows[i];
+        break;
+      }
+    }
+
+    if (event.type == SDL_EVENT_QUIT || event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
+      if (window == NULL) {
+        for (int i = 0; i < windows_count; i += 1) {
+          windows[i]->windowShouldClose = 1;
+        }
+      } else {
+        window->windowShouldClose = 1;
+      }
+      continue;
     }
   }
 }
