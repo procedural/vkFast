@@ -1,7 +1,7 @@
 #if 0
 gcc main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
 exit
-#endif
+#endif // /home/linuxbrew/.linuxbrew/lib/libSDL3.so
 #if 0
 clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c ../Common/glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3.a -lgdi32
 exit
@@ -10,6 +10,7 @@ exit
 #include "../../vkfast.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #include "../Common/vkfast_examples_common.h"
+//#include "../../extra/GLFW3 to SDL3/vkfast_extra_glfw3_to_sdl3.h"
 
 int main() {
 #if defined(__MINGW32__)
@@ -36,7 +37,11 @@ int main() {
     Atom      wmDeleteMessage;
   };
   struct X11WindowData windowData = {0};
+  #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+  windowData.display = glfwGetX11Display(window);
+  #else
   windowData.display = glfwGetX11Display();
+  #endif
   windowData.window = glfwGetX11Window(window);
   windowData.wmDeleteMessage = 0;
   REDGPU_2_EXPECTFL(windowData.display != NULL || !"On Wayland, you need to run the app like this: XDG_SESSION_TYPE=x11 ./a.out");
@@ -114,7 +119,11 @@ int main() {
   uint64_t batch = 0;
 
   while (glfwWindowShouldClose(window) == 0) {
+    #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+    glfwPollEvents(window);
+    #else
     glfwPollEvents();
+    #endif
 
     int os_window_w = 0;
     int os_window_h = 0;
@@ -236,5 +245,9 @@ int main() {
   };
   vfIdDestroy(countof(ids), ids, FF, LL);
   vfContextDeinit(ctx, FF, LL);
+  #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+  glfwTerminate(window);
+  #else
   glfwTerminate();
+  #endif
 }
