@@ -18,7 +18,7 @@
 
 // Globals start
 
-int VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3_GLOBAL_hint_GLFW_RESIZABLE = 0;
+int VKFAST_EXTRA_GLOBAL_GLFW3_TO_SDL3_hint_GLFW_RESIZABLE = 0;
 
 // Globals end
 
@@ -43,11 +43,11 @@ static inline void glfwWindowHint(int hint, int value) {
     return;
   }
   if (hint == GLFW_RESIZABLE && value == GLFW_FALSE) {
-    VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3_GLOBAL_hint_GLFW_RESIZABLE = 0;
+    VKFAST_EXTRA_GLOBAL_GLFW3_TO_SDL3_hint_GLFW_RESIZABLE = 0;
     return;
   }
   if (hint == GLFW_RESIZABLE && value == GLFW_TRUE) {
-    VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3_GLOBAL_hint_GLFW_RESIZABLE = 1;
+    VKFAST_EXTRA_GLOBAL_GLFW3_TO_SDL3_hint_GLFW_RESIZABLE = 1;
     return;
   }
   REDGPU_2_EXPECTFL(!"TODO(Constantine)");
@@ -55,7 +55,7 @@ static inline void glfwWindowHint(int hint, int value) {
 
 static inline GLFWwindow * glfwCreateWindow(int width, int height, const char * title, GLFWmonitor * monitor, GLFWwindow * share) {
   SDL_WindowFlags window_flags = 0;
-  if (VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3_GLOBAL_hint_GLFW_RESIZABLE == 1) {
+  if (VKFAST_EXTRA_GLOBAL_GLFW3_TO_SDL3_hint_GLFW_RESIZABLE == 1) {
     window_flags |= SDL_WINDOW_RESIZABLE;
   }
   SDL_Window * sdlWindow = SDL_CreateWindow(title, width, height, window_flags);
