@@ -1,6 +1,9 @@
 #pragma once
 
 #include "cimgui.h"
+#ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+#include "../GLFW3 to SDL3/vkfast_extra_glfw3_to_sdl3.h"
+#endif
 
 typedef enum ImguiKey {
   IMGUI_KEY_TAB,
@@ -514,8 +517,14 @@ static inline void imguiNewFrame() {
   io->displaySize = REDGPU_32_STRUCT(ImVec2, (float)w, (float)h);
   io->displayFramebufferScale = REDGPU_32_STRUCT(ImVec2, w > 0 ? ((float)displayW / w) : 0, h > 0 ? ((float)displayH / h) : 0);
 
+  #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+  double frequency = (double)SDL_GetPerformanceFrequency(); // https://github.com/ocornut/imgui/blob/master/backends/imgui_impl_sdl3.cpp
+  double currentTime = (double)SDL_GetPerformanceCounter();
+  #else
+  double frequency = 1.0;
   double currentTime = glfwGetTime();
-  io->deltaTime = globalImguiState->time > 0.0 ? (float)(currentTime - globalImguiState->time) : (float)(1.0f / 60.0f);
+  #endif
+  io->deltaTime = globalImguiState->time > 0.0 ? (float)((currentTime - globalImguiState->time) / frequency) : (float)(1.0f / 60.0f);
   globalImguiState->time = currentTime;
 
   if (globalImguiState->processInputs == 1 && glfwGetWindowAttrib(globalImguiState->window, GLFW_FOCUSED)) {

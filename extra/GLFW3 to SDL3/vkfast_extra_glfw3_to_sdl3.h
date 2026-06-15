@@ -4,7 +4,9 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_clipboard.h>
 
+#ifndef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
 #define VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+#endif
 
 #define GLFW_CLIENT_API 0x00022001
 #define GLFW_NO_API 0
@@ -15,6 +17,61 @@
 
 #define GLFW_FALSE 0
 #define GLFW_TRUE 1
+
+#define GLFW_KEY_LEFT_SHIFT 340
+#define GLFW_KEY_LEFT_CONTROL 341
+#define GLFW_KEY_LEFT_ALT 342
+#define GLFW_KEY_LEFT_SUPER 343
+#define GLFW_KEY_RIGHT_SHIFT 344
+#define GLFW_KEY_RIGHT_CONTROL 345
+#define GLFW_KEY_RIGHT_ALT 346
+#define GLFW_KEY_RIGHT_SUPER 347
+
+#define GLFW_MOUSE_BUTTON_1 0
+#define GLFW_MOUSE_BUTTON_2 1
+#define GLFW_MOUSE_BUTTON_3 2
+#define GLFW_MOUSE_BUTTON_4 3
+#define GLFW_MOUSE_BUTTON_5 4
+#define GLFW_MOUSE_BUTTON_6 5
+#define GLFW_MOUSE_BUTTON_7 6
+#define GLFW_MOUSE_BUTTON_8 7
+#define GLFW_MOUSE_BUTTON_LAST GLFW_MOUSE_BUTTON_8
+#define GLFW_MOUSE_BUTTON_LEFT GLFW_MOUSE_BUTTON_1
+#define GLFW_MOUSE_BUTTON_RIGHT GLFW_MOUSE_BUTTON_2
+#define GLFW_MOUSE_BUTTON_MIDDLE GLFW_MOUSE_BUTTON_3
+
+#define GLFW_KEY_TAB 258
+#define GLFW_KEY_LEFT 263
+#define GLFW_KEY_RIGHT 262
+#define GLFW_KEY_UP 265
+#define GLFW_KEY_DOWN 264
+#define GLFW_KEY_PAGE_UP 266
+#define GLFW_KEY_PAGE_DOWN 267
+#define GLFW_KEY_HOME 268
+#define GLFW_KEY_END 269
+#define GLFW_KEY_DELETE 261
+#define GLFW_KEY_BACKSPACE 259
+#define GLFW_KEY_ENTER 257
+#define GLFW_KEY_ESCAPE 256
+#define GLFW_KEY_A 65
+#define GLFW_KEY_C 67
+#define GLFW_KEY_D 68
+#define GLFW_KEY_E 69
+#define GLFW_KEY_Q 81
+#define GLFW_KEY_S 83
+#define GLFW_KEY_V 86
+#define GLFW_KEY_W 87
+#define GLFW_KEY_X 88
+#define GLFW_KEY_Y 89
+#define GLFW_KEY_Z 90
+#define GLFW_KEY_MINUS 45 /* - */
+#define GLFW_KEY_EQUAL 61 /* = */
+
+#define GLFW_FOCUSED 0x00020001
+
+#define GLFW_CURSOR 0x00033001
+#define GLFW_CURSOR_NORMAL 0x00034001
+#define GLFW_CURSOR_DISABLED 0x00034003
 
 // Globals start
 
@@ -140,6 +197,11 @@ static inline void glfwGetWindowSize(GLFWwindow * window, int * width, int * hei
   REDGPU_2_EXPECTFL(success == true);
 }
 
+static inline void glfwGetFramebufferSize(GLFWwindow * window, int * width, int * height) {
+  bool success = SDL_GetWindowSize(window->sdlWindow, width, height);
+  REDGPU_2_EXPECTFL(success == true);
+}
+
 static inline void glfwGetCursorPos(GLFWwindow * window, double * xpos, double * ypos) {
   float x = 0;
   float y = 0;
@@ -165,17 +227,66 @@ static inline void glfwSetClipboardString(GLFWwindow * window, const char * stri
 }
 
 static inline void glfwSetMouseButtonCallback(GLFWwindow * window, void * TODO_callback) {
-  REDGPU_2_EXPECTFL(!"TODO(Constantine)");
+  return; // TODO(Constantine)
 }
 
 static inline void glfwSetScrollCallback(GLFWwindow * window, void * TODO_callback) {
-  REDGPU_2_EXPECTFL(!"TODO(Constantine)");
+  return; // TODO(Constantine)
 }
 
 static inline void glfwSetKeyCallback(GLFWwindow * window, void * TODO_callback) {
-  REDGPU_2_EXPECTFL(!"TODO(Constantine)");
+  return; // TODO(Constantine)
 }
 
 static inline void glfwSetCharCallback(GLFWwindow * window, void * TODO_callback) {
+  return; // TODO(Constantine)
+}
+
+static inline int glfwGetWindowAttrib(GLFWwindow * window, int attrib) {
+  SDL_WindowFlags flags = SDL_GetWindowFlags(window->sdlWindow);
+
+  if (attrib == GLFW_FOCUSED) {
+    return (flags & SDL_WINDOW_INPUT_FOCUS) != 0 ? 1 : 0;
+  }
+
+  REDGPU_2_EXPECTFL(!"TODO(Constantine)");
+  return 0;
+}
+
+static inline int glfwGetMouseButton(GLFWwindow * window, int button) {
+  REDGPU_2_EXPECTFL(
+    button == GLFW_MOUSE_BUTTON_LEFT   ||
+    button == GLFW_MOUSE_BUTTON_RIGHT  ||
+    button == GLFW_MOUSE_BUTTON_MIDDLE ||
+    !"TODO(Constantine)"
+  );
+
+  float x = 0;
+  float y = 0;
+  SDL_MouseButtonFlags buttons = SDL_GetMouseState(&x, &y);
+
+  if (button == GLFW_MOUSE_BUTTON_LEFT) {
+    return (buttons & SDL_BUTTON_MASK(SDL_BUTTON_LEFT)) != 0 ? 1 : 0;
+  }
+  if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+    return (buttons & SDL_BUTTON_MASK(SDL_BUTTON_RIGHT)) != 0 ? 1 : 0;
+  }
+  if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+    return (buttons & SDL_BUTTON_MASK(SDL_BUTTON_MIDDLE)) != 0 ? 1 : 0;
+  }
+
+  REDGPU_2_EXPECTFL(!"TODO(Constantine)");
+  return 0;
+}
+
+static inline void glfwSetInputMode(GLFWwindow * window, int mode, int value) {
+  REDGPU_2_EXPECTFL(!"TODO(Constantine)");
+}
+
+static inline int glfwGetKey(GLFWwindow * window, int key) {
+  return 0; // TODO(Constantine)
+}
+
+static inline void glfwSetWindowTitle(GLFWwindow * window, const char * title) {
   REDGPU_2_EXPECTFL(!"TODO(Constantine)");
 }

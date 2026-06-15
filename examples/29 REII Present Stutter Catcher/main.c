@@ -2,7 +2,7 @@
 g++ -shared -fPIC -fvisibility=hidden "../../extra/Dear ImGui 2016/imgui_megafile.cpp" -o libimgui.so
 gcc main.c ../Common/font_droid_sans_mono.c ../../vkfast.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so libimgui.so -lm
 exit
-#endif
+#endif // /home/linuxbrew/.linuxbrew/lib/libSDL3.so
 #if 0
 clang++ -shared -fvisibility=hidden "../../extra/Dear ImGui 2016/imgui_megafile.cpp" -o libimgui.so
 clang main.c ../Common/font_droid_sans_mono.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c libimgui.so ../Common/glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3.a -lgdi32
@@ -16,6 +16,7 @@ exit
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
 #include "../Common/vkfast_examples_common.h"
+//#include "../../extra/GLFW3 to SDL3/vkfast_extra_glfw3_to_sdl3.h"
 // NOTE(Constantine): Dear ImGui 2016 needs GLFW.
 #include "../../extra/Dear ImGui 2016/imgui_reii.h"
 
@@ -54,7 +55,11 @@ int main() {
     Atom      wmDeleteMessage;
   };
   struct X11WindowData windowData = {0};
+  #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+  windowData.display = glfwGetX11Display(window);
+  #else
   windowData.display = glfwGetX11Display();
+  #endif
   windowData.window = glfwGetX11Window(window);
   windowData.wmDeleteMessage = 0;
   REDGPU_2_EXPECTFL(windowData.display != NULL || !"On Wayland, you need to run the app like this: XDG_SESSION_TYPE=x11 ./a.out");
@@ -348,7 +353,11 @@ int main() {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   }
 
+  #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+  glfwPollEvents(1, &window);
+  #else
   glfwPollEvents();
+  #endif
   double mouse_x = 0;
   double mouse_y = 0;
   glfwGetCursorPos(window, &mouse_x, &mouse_y);
@@ -369,6 +378,7 @@ int main() {
   int   camera_animation_is_enabled = 1;
   int   milliseconds_clearOnWrap = 1;
 
+  #if !defined(VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3)
   // NOTE(Constantine):
   // https://github.com/glfw/glfw/issues/1308
   // You also may be interested in the power-efficient C++ version of this FPS limiter:
@@ -376,9 +386,14 @@ int main() {
   int    fps_limiter_enabled    = 0;
   double fps_limiter_lasttime   = glfwGetTime();
   float  fps_limiter_target_fps = 60;
+  #endif
 
   while (glfwWindowShouldClose(window) == 0) {
+    #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+    glfwPollEvents(1, &window);
+    #else
     glfwPollEvents();
+    #endif
 
     int os_window_w = 0;
     int os_window_h = 0;
@@ -634,10 +649,12 @@ int main() {
       ImVec2 graph_size = {0, 80};
       igPlotHistogram("Frame times", milliseconds, MILLISECONDS_ARRAY_MAX_CAPTURE_FRAMES_COUNT, 0, NULL, 0, milliseconds_maxTime, graph_size, 4);
 
+      #if !defined(VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3)
       igCheckbox("Enable FPS limiter", (bool *)&fps_limiter_enabled);
       if (igDragFloat("FPS limiter target FPS", &fps_limiter_target_fps, 1, 0, INT_MAX, 0, 1)) {
         if (fps_limiter_target_fps < 15) { fps_limiter_target_fps = 15; }
       }
+      #endif
       igText("To disable VSync, press Z key.");
       igText("To enable  VSync, press X key.");
     }
@@ -741,6 +758,7 @@ int main() {
 
     frame += 1;
 
+    #if !defined(VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3)
     if (fps_limiter_enabled == 1) {
       while (glfwGetTime() < fps_limiter_lasttime + 1.0f / fps_limiter_target_fps) {
         #if defined(_WIN32)
@@ -755,6 +773,7 @@ int main() {
     } else {
       fps_limiter_lasttime = glfwGetTime();
     }
+    #endif
 
     #if defined(_WIN32)
     LARGE_INTEGER t_end = {0};
@@ -841,5 +860,8 @@ int main() {
   };
   vfIdDestroy(countof(ids), ids, FF, LL);
   vfContextDeinit(ctx, FF, LL);
+  #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
+  glfwTerminateWindow(window);
+  #endif
   glfwTerminate();
 }
