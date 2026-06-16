@@ -2201,6 +2201,10 @@ GPU_API_PRE void GPU_API_POST vfBatchBindStorageRaw(gpu_handle_context_t context
 
   REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was vfBatchBindNewBindingsSet() ever called previously?");
 
+  for (int i = 0; i < storage_raw_count; i += 1) {
+    REDGPU_2_EXPECTWG(storage_raw[i].arrayRangeBytesCount <= vkfast->gpuInfo->maxArrayRORWStructMemberRangeBytesCount);
+  }
+
   RedStructMember member = {0};
   member.setTo35   = 35;
   member.setTo0    = 0;

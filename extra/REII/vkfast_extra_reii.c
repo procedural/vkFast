@@ -1679,6 +1679,10 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw(gpu_handle_context_t con
 
   REDGPU_2_EXPECTWG(batch->batch.currentStruct.handle != NULL || !"Was reiiCommandBindNewBindingsSet() ever called previously?");
 
+  for (int i = 0; i < storageRawCount; i += 1) {
+    REDGPU_2_EXPECTWG(storageRaw[i].arrayRangeBytesCount <= vkfast->gpuInfo->maxArrayRORWStructMemberRangeBytesCount);
+  }
+
   RedStructMember member = {0};
   member.setTo35   = 35;
   member.setTo0    = 0;
