@@ -624,7 +624,7 @@ GPU_API_PRE void GPU_API_POST reiiCreateTextureMemory(gpu_handle_context_t conte
       "gpu", vkfast->gpu,
       "handleName", optional_debug_name,
       "bytesCount", bytesCount,
-      "memoryTypeIndex", vkfast->specificMemoryTypesGpuVram,
+      "memoryTypeIndex", vkfast->specificMemoryTypesGpuVram, // NOTE(Constantine): Assumed that image memory type index is the same as array memory type index
       "dedicateToArray", NULL,
       "dedicateToImage", NULL,
       "memoryBitflags", 0,
@@ -881,7 +881,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
       memoryTypeIsSupported[2]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0100)) == 0 ? 0 : 1;
       memoryTypeIsSupported[1]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0010)) == 0 ? 0 : 1;
       memoryTypeIsSupported[0]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0001)) == 0 ? 0 : 1;
-      REDGPU_2_EXPECTWG(memoryTypeIsSupported[vkfast->specificMemoryTypesGpuVram] == 1);
+      REDGPU_2_EXPECTWG(memoryTypeIsSupported[vkfast->specificMemoryTypesGpuVram] == 1 || !"NOTE(Constantine): Assumed that image memory type index is the same as array memory type index");
 
       REDGPU_2_EXPECTWG((bindingTexture->textureMemory->bytesOffset + image.memoryBytesCount) <= bindingTexture->textureMemory->bytesCount);
 
