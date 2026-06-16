@@ -234,7 +234,21 @@ static unsigned vfPickSpecificMemoryTypeGpuVram(const RedGpuInfo * gpuInfo, cons
 
   for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
     const RedMemoryType * type = &gpuInfo->memoryTypes[i];
-    if (type->isGpuVram == 1 && arrayMemoryTypeIsSupported[i] == 1 &&
+    if (arrayMemoryTypeIsSupported[i] == 1 &&
+        type->isGpuVram     == 1 &&
+        type->isCpuMappable == 0 &&
+        type->isCpuCoherent == 0 &&
+        type->isCpuCached   == 0 &&
+        gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == 1 &&
+        gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
+    {
+      return i;
+    }
+  }
+  for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
+    const RedMemoryType * type = &gpuInfo->memoryTypes[i];
+    if (arrayMemoryTypeIsSupported[i] == 1 &&
+        type->isGpuVram == 1 &&
         gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == 1 &&
         gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
     {
@@ -254,9 +268,10 @@ static unsigned vfPickSpecificMemoryTypeCpuUpload(const RedGpuInfo * gpuInfo, co
   for (int isGpuVram = 0; isGpuVram < 2; isGpuVram += 1) { // NOTE(Constantine): First, we look for non-VRAM heaps, then can fall back to VRAM heaps.
     for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
       const RedMemoryType * type = &gpuInfo->memoryTypes[i];
-      if (type->isCpuMappable == 1 &&
+      if (arrayMemoryTypeIsSupported[i] == 1 &&
+          type->isCpuMappable == 1 &&
           type->isCpuCoherent == 1 &&
-          type->isCpuCached   == 0 && arrayMemoryTypeIsSupported[i] == 1 &&
+          type->isCpuCached   == 0 &&
           gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == isGpuVram &&
           gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
       {
@@ -265,8 +280,9 @@ static unsigned vfPickSpecificMemoryTypeCpuUpload(const RedGpuInfo * gpuInfo, co
     }
     for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
       const RedMemoryType * type = &gpuInfo->memoryTypes[i];
-      if (type->isCpuMappable == 1 &&
-          type->isCpuCoherent == 1 && arrayMemoryTypeIsSupported[i] == 1 &&
+      if (arrayMemoryTypeIsSupported[i] == 1 &&
+          type->isCpuMappable == 1 &&
+          type->isCpuCoherent == 1 &&
           gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == isGpuVram &&
           gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
       {
@@ -287,9 +303,10 @@ static unsigned vfPickSpecificMemoryTypeCpuReadback(const RedGpuInfo * gpuInfo, 
   for (int isGpuVram = 0; isGpuVram < 2; isGpuVram += 1) { // NOTE(Constantine): First, we look for non-VRAM heaps, then can fall back to VRAM heaps.
     for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
       const RedMemoryType * type = &gpuInfo->memoryTypes[i];
-      if (type->isCpuMappable == 1 &&
+      if (arrayMemoryTypeIsSupported[i] == 1 &&
+          type->isCpuMappable == 1 &&
           type->isCpuCoherent == 1 &&
-          type->isCpuCached   == 1 && arrayMemoryTypeIsSupported[i] == 1 &&
+          type->isCpuCached   == 1 &&
           gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == isGpuVram &&
           gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
       {
@@ -298,8 +315,9 @@ static unsigned vfPickSpecificMemoryTypeCpuReadback(const RedGpuInfo * gpuInfo, 
     }
     for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
       const RedMemoryType * type = &gpuInfo->memoryTypes[i];
-      if (type->isCpuMappable == 1 &&
-          type->isCpuCoherent == 1 && arrayMemoryTypeIsSupported[i] == 1 &&
+      if (arrayMemoryTypeIsSupported[i] == 1 &&
+          type->isCpuMappable == 1 &&
+          type->isCpuCoherent == 1 &&
           gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == isGpuVram &&
           gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
       {
