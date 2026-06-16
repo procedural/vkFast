@@ -1,4 +1,4 @@
-//#define VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
+﻿//#define VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
 
 #ifdef _WIN32
 #define GPU_API_PRE __declspec(dllexport)
@@ -191,6 +191,126 @@ void red2Crash(const char * error, const char * functionName, RedHandleGpu optio
   red32Exit(1);
 }
 
+static void vfFillMemoryTypeIsSupportedArray(unsigned resourceMemoryTypesSupported, unsigned char * outMemoryTypeIsSupportedArrayOf32) {
+  outMemoryTypeIsSupportedArrayOf32[0]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0001)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[1]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0010)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[2]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0100)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[3]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,1000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[4]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0001,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[5]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0010,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[6]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0100,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[7]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,1000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[8]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0001,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[9]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0010,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[10] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0100,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[11] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,1000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[12] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0001,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[13] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0010,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[14] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0100,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[15] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,1000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[16] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0001,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[17] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0010,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[18] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0100,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[19] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,1000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[20] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0001,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[21] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0010,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[22] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0100,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[23] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,1000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[24] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0001,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[25] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0010,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[26] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0100,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[27] = (resourceMemoryTypesSupported & REDGPU_B32(0000,1000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[28] = (resourceMemoryTypesSupported & REDGPU_B32(0001,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[29] = (resourceMemoryTypesSupported & REDGPU_B32(0010,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[30] = (resourceMemoryTypesSupported & REDGPU_B32(0100,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[31] = (resourceMemoryTypesSupported & REDGPU_B32(1000,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+}
+
+static unsigned vfPickSpecificMemoryTypesGpuVram(const RedGpuInfo * gpuInfo, const RedArray * array) {
+  unsigned memoryTypesSupported = array->memoryTypesSupported;
+
+  unsigned char arrayMemoryTypeIsSupported[32] = {0};
+  vfFillMemoryTypeIsSupportedArray(memoryTypesSupported, arrayMemoryTypeIsSupported);
+
+  for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
+    const RedMemoryType * type = &gpuInfo->memoryTypes[i];
+    if (type->isGpuVram == 1 && arrayMemoryTypeIsSupported[i] == 1 &&
+        gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == 1 &&
+        gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
+    {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+static unsigned vfPickSpecificMemoryTypesCpuUpload(const RedGpuInfo * gpuInfo, const RedArray * array) {
+  unsigned memoryTypesSupported = array->memoryTypesSupported;
+
+  unsigned char arrayMemoryTypeIsSupported[32] = {0};
+  vfFillMemoryTypeIsSupportedArray(memoryTypesSupported, arrayMemoryTypeIsSupported);
+
+  for (int isGpuVram = 0; isGpuVram < 2; isGpuVram += 1) { // NOTE(Constantine): First, we look for non-VRAM heaps, then can fall back to VRAM heaps.
+    for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
+      const RedMemoryType * type = &gpuInfo->memoryTypes[i];
+      if (type->isCpuMappable == 1 &&
+          type->isCpuCoherent == 1 &&
+          type->isCpuCached   == 0 && arrayMemoryTypeIsSupported[i] == 1 &&
+          gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == isGpuVram &&
+          gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
+      {
+        return i;
+      }
+    }
+    for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
+      const RedMemoryType * type = &gpuInfo->memoryTypes[i];
+      if (type->isCpuMappable == 1 &&
+          type->isCpuCoherent == 1 && arrayMemoryTypeIsSupported[i] == 1 &&
+          gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == isGpuVram &&
+          gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
+      {
+        return i;
+      }
+    }
+  }
+
+  return -1;
+}
+
+static unsigned vfPickSpecificMemoryTypesCpuReadback(const RedGpuInfo * gpuInfo, const RedArray * array) {
+  unsigned memoryTypesSupported = array->memoryTypesSupported;
+
+  unsigned char arrayMemoryTypeIsSupported[32] = {0};
+  vfFillMemoryTypeIsSupportedArray(memoryTypesSupported, arrayMemoryTypeIsSupported);
+
+  for (int isGpuVram = 0; isGpuVram < 2; isGpuVram += 1) { // NOTE(Constantine): First, we look for non-VRAM heaps, then can fall back to VRAM heaps.
+    for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
+      const RedMemoryType * type = &gpuInfo->memoryTypes[i];
+      if (type->isCpuMappable == 1 &&
+          type->isCpuCoherent == 1 &&
+          type->isCpuCached   == 1 && arrayMemoryTypeIsSupported[i] == 1 &&
+          gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == isGpuVram &&
+          gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
+      {
+        return i;
+      }
+    }
+    for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
+      const RedMemoryType * type = &gpuInfo->memoryTypes[i];
+      if (type->isCpuMappable == 1 &&
+          type->isCpuCoherent == 1 && arrayMemoryTypeIsSupported[i] == 1 &&
+          gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == isGpuVram &&
+          gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
+      {
+        return i;
+      }
+    }
+  }
+
+  return -1;
+}
+
 static RedBool32 vfRedGpuDebugCallback(RedDebugCallbackSeverity severity, RedDebugCallbackTypeBitflags types, const RedDebugCallbackData * data, RedContext context) {
   if (0 == strcmp(data->messageIdName, "VUID-VkDebugUtilsMessengerCallbackDataEXT-flags-zerobitmask")) {
     return 0;
@@ -214,7 +334,7 @@ static RedBool32 vfRedGpuDebugCallback(RedDebugCallbackSeverity severity, RedDeb
   return 0;
 }
 
-static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const gpu_context_ex2_parameters_t * optional_ex2_parameters, const char * optionalFile, int optionalLine) {
+static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const gpu_context_ex2_parameters_t * optional_ex2_parameters, const gpu_context_ex3_parameters_t * optional_ex3_parameters, const char * optionalFile, int optionalLine) {
   if (enable_debug_mode) {
     vfInternalPrint("[vkFast][Debug] In case of an error, email me (Constantine) at: iamvfx@gmail.com" "\n");
   }
@@ -402,465 +522,280 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
   RedHandleGpu   gpu       = gpuInfo->gpu;
   RedHandleQueue mainQueue = gpuInfo->queues[vkfast->mainQueueIndex];
 
+  RedArray memoryGpuVramForArrays_array   = {0};
+  RedArray memoryCpuUpload_array          = {0};
+  RedArray memoryCpuReadback_array        = {0};
   unsigned specificMemoryTypesGpuVram     = -1;
   unsigned specificMemoryTypesCpuUpload   = -1;
   unsigned specificMemoryTypesCpuReadback = -1;
+  RedHandleMemory memoryGpuVramForArrays_memory = NULL;
+  RedHandleMemory memoryCpuUpload_memory        = NULL;
+  RedHandleMemory memoryCpuReadback_memory      = NULL;
+  void * memoryCpuUpload_mapped_void_ptr        = NULL;
+  void * memoryCpuReadback_mapped_void_ptr      = NULL;
   {
-    if (gpuInfo->gpuVendorId == 4318/*NVIDIA*/) { // NOTE(Constantine): Tested on RTX 2060 and Windows 10.
-      unsigned      memoryTypesCount = 0;
-      RedMemoryType memoryTypes[32]  = {0};
-      unsigned      memoryHeapsCount = 0;
-      RedMemoryHeap memoryHeaps[32]  = {0};
+    if (internalMemoryAllocationSizeGpuVramArrays > 0) {
+      uint64_t bytesCount = internalMemoryAllocationSizeGpuVramArrays;
+      const char * handleName = "vkFast_vfInternalContextInit_memoryGpuVramForArrays_array";
+      uint64_t maxAllowedOverallocationBytesCount = 0;
+      RedArray array = {0};
 
-      memoryTypesCount = 6;
-      memoryHeapsCount = 3;
-
-      memoryTypes[0].memoryHeapIndex = 1;
-      memoryTypes[0].isGpuVram       = 0;
-      memoryTypes[0].isCpuMappable   = 0;
-      memoryTypes[0].isCpuCoherent   = 0;
-      memoryTypes[0].isCpuCached     = 0;
-
-      memoryTypes[1].memoryHeapIndex = 0;
-      memoryTypes[1].isGpuVram       = 1;
-      memoryTypes[1].isCpuMappable   = 0;
-      memoryTypes[1].isCpuCoherent   = 0;
-      memoryTypes[1].isCpuCached     = 0;
-
-      memoryTypes[2].memoryHeapIndex = 0;
-      memoryTypes[2].isGpuVram       = 1;
-      memoryTypes[2].isCpuMappable   = 0;
-      memoryTypes[2].isCpuCoherent   = 0;
-      memoryTypes[2].isCpuCached     = 0;
-
-      memoryTypes[3].memoryHeapIndex = 1;
-      memoryTypes[3].isGpuVram       = 0;
-      memoryTypes[3].isCpuMappable   = 1;
-      memoryTypes[3].isCpuCoherent   = 1;
-      memoryTypes[3].isCpuCached     = 0;
-
-      memoryTypes[4].memoryHeapIndex = 1;
-      memoryTypes[4].isGpuVram       = 0;
-      memoryTypes[4].isCpuMappable   = 1;
-      memoryTypes[4].isCpuCoherent   = 1;
-      memoryTypes[4].isCpuCached     = 1;
-
-      memoryTypes[5].memoryHeapIndex = 2;
-      memoryTypes[5].isGpuVram       = 1;
-      memoryTypes[5].isCpuMappable   = 1;
-      memoryTypes[5].isCpuCoherent   = 1;
-      memoryTypes[5].isCpuCached     = 0;
-
-      memoryHeaps[0].memoryBytesCount = 6000000000;
-      memoryHeaps[0].isGpuVram        = 1;
-
-      memoryHeaps[1].memoryBytesCount = 2000000000;
-      memoryHeaps[1].isGpuVram        = 0;
-
-      memoryHeaps[2].memoryBytesCount = 200000000;
-      memoryHeaps[2].isGpuVram        = 1;
-
-      np(red2ExpectMemoryTypes,
-        "gpuInfo", gpuInfo,
-        "expectedMemoryHeapsCount", memoryHeapsCount,
-        "expectedMemoryHeaps", memoryHeaps,
-        "expectedMemoryTypesCount", memoryTypesCount,
-        "expectedMemoryTypes", memoryTypes,
+      np(redCreateArray,
+        "context", context,
+        "gpu", gpu,
+        "handleName", handleName,
+        "type", RED_ARRAY_TYPE_ARRAY_RW,
+        "bytesCount", bytesCount,
+        "structuredBufferElementBytesCount", 0,
+        "restrictToAccess", RED_ARRAY_TYPE_ARRAY_RW,
+        "initialQueueFamilyIndex", gpuInfo->queuesCount > 1 ? -1 : (unsigned)gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
+        "dedicate", 0,
+        "outArray", &array,
+        "outStatuses", NULL,
         "optionalFile", optionalFile,
-        "optionalLine", optionalLine
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
       );
+      REDGPU_2_EXPECTWG(array.handle != NULL);
+      size_t bytesToNextAlignmentBoundary = REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(array.memoryBytesCount, array.memoryBytesAlignment);
+      REDGPU_2_EXPECTWG(bytesToNextAlignmentBoundary == 0);
+      REDGPU_2_EXPECTWG((array.memoryBytesCount - bytesCount) <= maxAllowedOverallocationBytesCount);
 
-      specificMemoryTypesGpuVram     = 1;
-      specificMemoryTypesCpuUpload   = 3;
-      specificMemoryTypesCpuReadback = 4; // NOTE(Constantine): The cpu cached one.
-
-    } else if (gpuInfo->gpuVendorId == 32902/*Intel*/) { // NOTE(Constantine): Tested on Intel Arc B580, Intel UHD Graphics 730 and Windows 10.
-      if (gpuInfo->gpuDeviceId == 0xE20B/*Intel Arc B580*/) {
-        unsigned      memoryTypesCount = 0;
-        RedMemoryType memoryTypes[32]  = {0};
-        unsigned      memoryHeapsCount = 0;
-        RedMemoryHeap memoryHeaps[32]  = {0};
-
-        // TODO(Constantine)(1 Jun 2026):
-        // Set memoryTypesCount to 0 everywhere and leave only memory heap size checks for specific gpuDeviceId GPUs.
-        // Rather, implement generic memory type picking, like what I used to have in REDGPU SDK.
-
-        memoryTypesCount = 7;
-        memoryHeapsCount = 2;
-
-        memoryTypes[0].memoryHeapIndex = 0;
-        memoryTypes[0].isGpuVram       = 1;
-        memoryTypes[0].isCpuMappable   = 0;
-        memoryTypes[0].isCpuCoherent   = 0;
-        memoryTypes[0].isCpuCached     = 0;
-
-        memoryTypes[1].memoryHeapIndex = 0;
-        memoryTypes[1].isGpuVram       = 1;
-        memoryTypes[1].isCpuMappable   = 0;
-        memoryTypes[1].isCpuCoherent   = 0;
-        memoryTypes[1].isCpuCached     = 0;
-
-        memoryTypes[2].memoryHeapIndex = 1;
-        memoryTypes[2].isGpuVram       = 0;
-        memoryTypes[2].isCpuMappable   = 1;
-        memoryTypes[2].isCpuCoherent   = 1;
-        memoryTypes[2].isCpuCached     = 1;
-
-        memoryTypes[3].memoryHeapIndex = 0;
-        memoryTypes[3].isGpuVram       = 1;
-        memoryTypes[3].isCpuMappable   = 1;
-        memoryTypes[3].isCpuCoherent   = 1;
-        memoryTypes[3].isCpuCached     = 0;
-
-        memoryTypes[4].memoryHeapIndex = 0;
-        memoryTypes[4].isGpuVram       = 1;
-        memoryTypes[4].isCpuMappable   = 0;
-        memoryTypes[4].isCpuCoherent   = 0;
-        memoryTypes[4].isCpuCached     = 0;
-
-        memoryTypes[5].memoryHeapIndex = 1;
-        memoryTypes[5].isGpuVram       = 0;
-        memoryTypes[5].isCpuMappable   = 1;
-        memoryTypes[5].isCpuCoherent   = 1;
-        memoryTypes[5].isCpuCached     = 1;
-
-        memoryTypes[6].memoryHeapIndex = 0;
-        memoryTypes[6].isGpuVram       = 1;
-        memoryTypes[6].isCpuMappable   = 1;
-        memoryTypes[6].isCpuCoherent   = 1;
-        memoryTypes[6].isCpuCached     = 0;
-
-        memoryHeaps[0].memoryBytesCount = 12000000000;
-        memoryHeaps[0].isGpuVram        = 1;
-
-        memoryHeaps[1].memoryBytesCount = 2000000000;
-        memoryHeaps[1].isGpuVram        = 0;
-
-        np(red2ExpectMemoryTypes,
-          "gpuInfo", gpuInfo,
-          "expectedMemoryHeapsCount", memoryHeapsCount,
-          "expectedMemoryHeaps", memoryHeaps,
-          "expectedMemoryTypesCount", memoryTypesCount,
-          "expectedMemoryTypes", memoryTypes,
-          "optionalFile", optionalFile,
-          "optionalLine", optionalLine
-        );
-
-        specificMemoryTypesGpuVram     = 1; // TODO(Constantine): WHY WOULD THIS BE THE CORRECT PICKED MEMORY TYPE FOR VRAM BUFFERS, TO ALLOCATE THEM CORRECTLY ON B580 AND LINUX???
-        specificMemoryTypesCpuUpload   = 2;
-        specificMemoryTypesCpuReadback = 2; // NOTE(Constantine): The cpu cached one.
-
-      } else /*Intel UHD Graphics 730*/ {
-        unsigned      memoryTypesCount = 0;
-        RedMemoryType memoryTypes[32]  = {0};
-        unsigned      memoryHeapsCount = 0;
-        RedMemoryHeap memoryHeaps[32]  = {0};
-
-        memoryTypesCount = 3;
-        memoryHeapsCount = 1;
-
-        memoryTypes[0].memoryHeapIndex = 0;
-        memoryTypes[0].isGpuVram       = 1;
-        memoryTypes[0].isCpuMappable   = 0;
-        memoryTypes[0].isCpuCoherent   = 0;
-        memoryTypes[0].isCpuCached     = 0;
-
-        memoryTypes[1].memoryHeapIndex = 0;
-        memoryTypes[1].isGpuVram       = 1;
-        memoryTypes[1].isCpuMappable   = 1;
-        memoryTypes[1].isCpuCoherent   = 1;
-        memoryTypes[1].isCpuCached     = 0;
-
-        memoryTypes[2].memoryHeapIndex = 0;
-        memoryTypes[2].isGpuVram       = 1;
-        memoryTypes[2].isCpuMappable   = 1;
-        memoryTypes[2].isCpuCoherent   = 1;
-        memoryTypes[2].isCpuCached     = 1;
-
-        memoryHeaps[0].memoryBytesCount = 2000000000;
-        memoryHeaps[0].isGpuVram        = 1;
-
-        np(red2ExpectMemoryTypes,
-          "gpuInfo", gpuInfo,
-          "expectedMemoryHeapsCount", memoryHeapsCount,
-          "expectedMemoryHeaps", memoryHeaps,
-          "expectedMemoryTypesCount", memoryTypesCount,
-          "expectedMemoryTypes", memoryTypes,
-          "optionalFile", optionalFile,
-          "optionalLine", optionalLine
-        );
-
-        specificMemoryTypesGpuVram     = 0;
-        specificMemoryTypesCpuUpload   = 1;
-        specificMemoryTypesCpuReadback = 2; // NOTE(Constantine): The cpu cached one.
-      }
-    } else if (gpuInfo->gpuVendorId == 4098/*AMD Radeon*/) { // NOTE(Constantine): Tested on AMD RX 550 and Windows 10.
-
-      // /* Navi12 */
-      // https://github.com/torvalds/linux/blob/d0c3bcd5b8976159d835a897254048e078f447e6/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c#L2128-L2129
-      if (
-        gpuInfo->gpuDeviceId == 0x7360 ||
-        gpuInfo->gpuDeviceId == 0x7362
-      )
-      {
-        unsigned      memoryTypesCount = 0;
-        RedMemoryType memoryTypes[32]  = {0};
-        unsigned      memoryHeapsCount = 0;
-        RedMemoryHeap memoryHeaps[32]  = {0};
-
-        memoryTypesCount = 8;
-        memoryHeapsCount = 2;
-
-        memoryTypes[0].memoryHeapIndex = 1;
-        memoryTypes[0].isGpuVram       = 1;
-        memoryTypes[0].isCpuMappable   = 0;
-        memoryTypes[0].isCpuCoherent   = 0;
-        memoryTypes[0].isCpuCached     = 0;
-
-        memoryTypes[1].memoryHeapIndex = 0;
-        memoryTypes[1].isGpuVram       = 0;
-        memoryTypes[1].isCpuMappable   = 1;
-        memoryTypes[1].isCpuCoherent   = 1;
-        memoryTypes[1].isCpuCached     = 0;
-
-        memoryTypes[2].memoryHeapIndex = 1;
-        memoryTypes[2].isGpuVram       = 1;
-        memoryTypes[2].isCpuMappable   = 1;
-        memoryTypes[2].isCpuCoherent   = 1;
-        memoryTypes[2].isCpuCached     = 0;
-
-        memoryTypes[3].memoryHeapIndex = 0;
-        memoryTypes[3].isGpuVram       = 0;
-        memoryTypes[3].isCpuMappable   = 1;
-        memoryTypes[3].isCpuCoherent   = 1;
-        memoryTypes[3].isCpuCached     = 1;
-
-        memoryTypes[4].memoryHeapIndex = 1;
-        memoryTypes[4].isGpuVram       = 1;
-        memoryTypes[4].isCpuMappable   = 0;
-        memoryTypes[4].isCpuCoherent   = 0;
-        memoryTypes[4].isCpuCached     = 0;
-
-        memoryTypes[5].memoryHeapIndex = 0;
-        memoryTypes[5].isGpuVram       = 0;
-        memoryTypes[5].isCpuMappable   = 1;
-        memoryTypes[5].isCpuCoherent   = 1;
-        memoryTypes[5].isCpuCached     = 0;
-
-        memoryTypes[6].memoryHeapIndex = 1;
-        memoryTypes[6].isGpuVram       = 1;
-        memoryTypes[6].isCpuMappable   = 1;
-        memoryTypes[6].isCpuCoherent   = 1;
-        memoryTypes[6].isCpuCached     = 0;
-
-        memoryTypes[7].memoryHeapIndex = 0;
-        memoryTypes[7].isGpuVram       = 0;
-        memoryTypes[7].isCpuMappable   = 1;
-        memoryTypes[7].isCpuCoherent   = 1;
-        memoryTypes[7].isCpuCached     = 1;
-
-        memoryHeaps[0].memoryBytesCount = 2000000000;
-        memoryHeaps[0].isGpuVram        = 0;
-
-        memoryHeaps[1].memoryBytesCount = 8000000000;
-        memoryHeaps[1].isGpuVram        = 1;
-
-        np(red2ExpectMemoryTypes,
-          "gpuInfo", gpuInfo,
-          "expectedMemoryHeapsCount", memoryHeapsCount,
-          "expectedMemoryHeaps", memoryHeaps,
-          "expectedMemoryTypesCount", memoryTypesCount,
-          "expectedMemoryTypes", memoryTypes,
-          "optionalFile", optionalFile,
-          "optionalLine", optionalLine
-        );
-
-        specificMemoryTypesGpuVram     = 0;
-        specificMemoryTypesCpuUpload   = 1;
-        specificMemoryTypesCpuReadback = 3; // NOTE(Constantine): The cpu cached one.
-
-      } else {
-
-        unsigned      memoryTypesCount = 0;
-        RedMemoryType memoryTypes[32]  = {0};
-        unsigned      memoryHeapsCount = 0;
-        RedMemoryHeap memoryHeaps[32]  = {0};
-
-        memoryTypesCount = 4;
-        memoryHeapsCount = 3;
-
-        memoryTypes[0].memoryHeapIndex = 0;
-        memoryTypes[0].isGpuVram       = 1;
-        memoryTypes[0].isCpuMappable   = 0;
-        memoryTypes[0].isCpuCoherent   = 0;
-        memoryTypes[0].isCpuCached     = 0;
-
-        memoryTypes[1].memoryHeapIndex = 1;
-        memoryTypes[1].isGpuVram       = 0;
-        memoryTypes[1].isCpuMappable   = 1;
-        memoryTypes[1].isCpuCoherent   = 1;
-        memoryTypes[1].isCpuCached     = 0;
-
-        memoryTypes[2].memoryHeapIndex = 2;
-        memoryTypes[2].isGpuVram       = 1;
-        memoryTypes[2].isCpuMappable   = 1;
-        memoryTypes[2].isCpuCoherent   = 1;
-        memoryTypes[2].isCpuCached     = 0;
-
-        memoryTypes[3].memoryHeapIndex = 1;
-        memoryTypes[3].isGpuVram       = 0;
-        memoryTypes[3].isCpuMappable   = 1;
-        memoryTypes[3].isCpuCoherent   = 1;
-        memoryTypes[3].isCpuCached     = 1;
-
-        memoryHeaps[0].memoryBytesCount = 1800000000;
-        memoryHeaps[0].isGpuVram        = 1;
-
-        memoryHeaps[1].memoryBytesCount = 2000000000;
-        memoryHeaps[1].isGpuVram        = 0;
-
-        memoryHeaps[2].memoryBytesCount = 200000000;
-        memoryHeaps[2].isGpuVram        = 1;
-
-        np(red2ExpectMemoryTypes,
-          "gpuInfo", gpuInfo,
-          "expectedMemoryHeapsCount", memoryHeapsCount,
-          "expectedMemoryHeaps", memoryHeaps,
-          "expectedMemoryTypesCount", memoryTypesCount,
-          "expectedMemoryTypes", memoryTypes,
-          "optionalFile", optionalFile,
-          "optionalLine", optionalLine
-        );
-
-        specificMemoryTypesGpuVram     = 0;
-        specificMemoryTypesCpuUpload   = 1;
-        specificMemoryTypesCpuReadback = 3; // NOTE(Constantine): The cpu cached one.
-      }
-
-    } else {
-      REDGPU_2_EXPECTWG(!"Unsupported by vkFast GPU, recompile your program with vfContextInit()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
+      memoryGpuVramForArrays_array = array;
     }
-  }
+    if (internalMemoryAllocationSizeCpuVisible > 0) {
+      uint64_t bytesCount = internalMemoryAllocationSizeCpuVisible;
+      const char * handleName = "vkFast_vfInternalContextInit_memoryCpuUpload_array";
+      uint64_t maxAllowedOverallocationBytesCount = 0;
+      RedArray array = {0};
 
-  Red2Memory memoryGpuVramForArrays_memory      = {0};
-  Red2Array  memoryGpuVramForArrays_array       = {0};
-  Red2Array  memoryCpuUpload_memory_and_array   = {0};
-  void *     memoryCpuUpload_mapped_void_ptr    = NULL;
-  Red2Array  memoryCpuReadback_memory_and_array = {0};
-  void *     memoryCpuReadback_mapped_void_ptr  = NULL;
-  if (internalMemoryAllocationSizeGpuVramArrays > 0) {
-    np(red2MemoryAllocate,
-      "context", context,
-      "gpu", gpu,
-      "handleName", "vkFast_vfInternalContextInit_memoryGpuVramForArrays_memory",
-      "bytesCount", internalMemoryAllocationSizeGpuVramArrays,
-      "memoryTypeIndex", specificMemoryTypesGpuVram,
-      "memoryBitflags", 0,
-      "outMemory", &memoryGpuVramForArrays_memory,
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-    Red2Memory * memorys[1] = {&memoryGpuVramForArrays_memory};
-    np(red2CreateArray,
-      "context", context,
-      "gpu", gpu,
-      "handleName", "vkFast_vfInternalContextInit_memoryGpuVramForArrays_array",
-      "type", RED_ARRAY_TYPE_ARRAY_RW,
-      "bytesCount", internalMemoryAllocationSizeGpuVramArrays,
-      "structuredBufferElementBytesCount", 0,
-      "restrictToAccess", 0,
-      "initialQueueFamilyIndex", gpuInfo->queuesCount > 1 ? -1 : (unsigned)gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
-      "maxAllowedOverallocationBytesCount", 0,
-      "dedicate", 0,
-      "mappable", 0,
-      "dedicateOrMappableMemoryTypeIndex", 0,
-      "dedicateOrMappableMemoryBitflags", 0,
-      "suballocateFromMemoryOnFirstMatchPointersCount", 1,
-      "suballocateFromMemoryOnFirstMatchPointers", memorys,
-      "outArray", &memoryGpuVramForArrays_array,
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-  }
-  if (internalMemoryAllocationSizeCpuVisible > 0) {
-    np(red2CreateArray,
-      "context", context,
-      "gpu", gpu,
-      "handleName", "vkFast_vfInternalContextInit_memoryCpuUpload_memory_and_array",
-      "type", RED_ARRAY_TYPE_ARRAY_RO,
-      "bytesCount", internalMemoryAllocationSizeCpuVisible,
-      "structuredBufferElementBytesCount", 0,
-      "restrictToAccess", RED_ACCESS_BITFLAG_COPY_R,
-      "initialQueueFamilyIndex", gpuInfo->queuesCount > 1 ? -1 : (unsigned)gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
-      "maxAllowedOverallocationBytesCount", 0, // NOTE(Constantine): Intel UHD Graphics 730 on Windows 10 aligns CPU visible allocations to 64 bytes.
-      "dedicate", 0,
-      "mappable", 1,
-      "dedicateOrMappableMemoryTypeIndex", specificMemoryTypesCpuUpload,
-      "dedicateOrMappableMemoryBitflags", 0,
-      "suballocateFromMemoryOnFirstMatchPointersCount", 0,
-      "suballocateFromMemoryOnFirstMatchPointers", NULL,
-      "outArray", &memoryCpuUpload_memory_and_array,
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-    np(redMemoryMap,
-      "context", context,
-      "gpu", gpu,
-      "mappableMemory", memoryCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory,
-      "mappableMemoryBytesFirst", 0,
-      "mappableMemoryBytesCount", memoryCpuUpload_memory_and_array.array.memoryBytesCount,
-      "outVolatilePointer", &memoryCpuUpload_mapped_void_ptr,
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-    REDGPU_2_EXPECTWG(memoryCpuUpload_mapped_void_ptr != NULL);
-    REDGPU_2_EXPECTWG(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)memoryCpuUpload_mapped_void_ptr, gpuInfo->minMemoryAllocateBytesAlignment)); // NOTE(Constantine): Start address is guaranteed to be aligned.
-  }
-  if (internalMemoryAllocationSizeCpuReadback > 0) {
-    np(red2CreateArray,
-      "context", context,
-      "gpu", gpu,
-      "handleName", "vkFast_vfInternalContextInit_memoryCpuReadback_memory_and_array",
-      "type", RED_ARRAY_TYPE_ARRAY_RW,
-      "bytesCount", internalMemoryAllocationSizeCpuReadback,
-      "structuredBufferElementBytesCount", 0,
-      "restrictToAccess", RED_ACCESS_BITFLAG_CPU_RW,
-      "initialQueueFamilyIndex", gpuInfo->queuesCount > 1 ? -1 : (unsigned)gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
-      "maxAllowedOverallocationBytesCount", 0, // NOTE(Constantine): Intel UHD Graphics 730 on Windows 10 aligns CPU visible allocations to 64 bytes.
-      "dedicate", 0,
-      "mappable", 1,
-      "dedicateOrMappableMemoryTypeIndex", specificMemoryTypesCpuReadback,
-      "dedicateOrMappableMemoryBitflags", 0,
-      "suballocateFromMemoryOnFirstMatchPointersCount", 0,
-      "suballocateFromMemoryOnFirstMatchPointers", NULL,
-      "outArray", &memoryCpuReadback_memory_and_array,
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-    np(redMemoryMap,
-      "context", context,
-      "gpu", gpu,
-      "mappableMemory", memoryCpuReadback_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory,
-      "mappableMemoryBytesFirst", 0,
-      "mappableMemoryBytesCount", memoryCpuReadback_memory_and_array.array.memoryBytesCount,
-      "outVolatilePointer", &memoryCpuReadback_mapped_void_ptr,
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
-    );
-    REDGPU_2_EXPECTWG(memoryCpuReadback_mapped_void_ptr != NULL);
-    REDGPU_2_EXPECTWG(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)memoryCpuReadback_mapped_void_ptr, gpuInfo->minMemoryAllocateBytesAlignment)); // NOTE(Constantine): Start address is guaranteed to be aligned.
+      np(redCreateArray,
+        "context", context,
+        "gpu", gpu,
+        "handleName", handleName,
+        "type", RED_ARRAY_TYPE_ARRAY_RO,
+        "bytesCount", bytesCount,
+        "structuredBufferElementBytesCount", 0,
+        "restrictToAccess", RED_ACCESS_BITFLAG_COPY_R,
+        "initialQueueFamilyIndex", gpuInfo->queuesCount > 1 ? -1 : (unsigned)gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
+        "dedicate", 0,
+        "outArray", &array,
+        "outStatuses", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      REDGPU_2_EXPECTWG(array.handle != NULL);
+      size_t bytesToNextAlignmentBoundary = REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(array.memoryBytesCount, array.memoryBytesAlignment);
+      REDGPU_2_EXPECTWG(bytesToNextAlignmentBoundary == 0);
+      REDGPU_2_EXPECTWG((array.memoryBytesCount - bytesCount) <= maxAllowedOverallocationBytesCount);
+
+      memoryCpuUpload_array = array;
+    }
+    if (internalMemoryAllocationSizeCpuReadback > 0) {
+      uint64_t bytesCount = internalMemoryAllocationSizeCpuReadback;
+      const char * handleName = "vkFast_vfInternalContextInit_memoryCpuReadback_array";
+      uint64_t maxAllowedOverallocationBytesCount = 0;
+      RedArray array = {0};
+
+      np(redCreateArray,
+        "context", context,
+        "gpu", gpu,
+        "handleName", handleName,
+        "type", RED_ARRAY_TYPE_ARRAY_RW,
+        "bytesCount", bytesCount,
+        "structuredBufferElementBytesCount", 0,
+        "restrictToAccess", RED_ACCESS_BITFLAG_COPY_W,
+        "initialQueueFamilyIndex", gpuInfo->queuesCount > 1 ? -1 : (unsigned)gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
+        "dedicate", 0,
+        "outArray", &array,
+        "outStatuses", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      REDGPU_2_EXPECTWG(array.handle != NULL);
+      size_t bytesToNextAlignmentBoundary = REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(array.memoryBytesCount, array.memoryBytesAlignment);
+      REDGPU_2_EXPECTWG(bytesToNextAlignmentBoundary == 0);
+      REDGPU_2_EXPECTWG((array.memoryBytesCount - bytesCount) <= maxAllowedOverallocationBytesCount);
+
+      memoryCpuReadback_array = array;
+    }
+
+    int userSpecificMemoryTypesGpuVram     = 0;
+    int userSpecificMemoryTypesCpuUpload   = 0;
+    int userSpecificMemoryTypesCpuReadback = 0;
+    if (optional_ex3_parameters != NULL) {
+      if (optional_ex3_parameters->optionalSpecificMemoryTypesGpuVram     != NULL) { userSpecificMemoryTypesGpuVram     = 1; }
+      if (optional_ex3_parameters->optionalSpecificMemoryTypesCpuUpload   != NULL) { userSpecificMemoryTypesCpuUpload   = 1; }
+      if (optional_ex3_parameters->optionalSpecificMemoryTypesCpuReadback != NULL) { userSpecificMemoryTypesCpuReadback = 1; }
+    }
+    if (userSpecificMemoryTypesGpuVram == 1) {
+      specificMemoryTypesGpuVram = optional_ex3_parameters->optionalSpecificMemoryTypesGpuVram[0];
+    } else {
+      specificMemoryTypesGpuVram = vfPickSpecificMemoryTypesGpuVram(gpuInfo, &memoryGpuVramForArrays_array);
+    }
+    if (userSpecificMemoryTypesCpuUpload == 1) {
+      specificMemoryTypesCpuUpload = optional_ex3_parameters->optionalSpecificMemoryTypesCpuUpload[0];
+    } else {
+      specificMemoryTypesCpuUpload = vfPickSpecificMemoryTypesCpuUpload(gpuInfo, &memoryCpuUpload_array);
+    }
+    if (userSpecificMemoryTypesCpuReadback == 1) {
+      specificMemoryTypesCpuReadback = optional_ex3_parameters->optionalSpecificMemoryTypesCpuReadback[0];
+    } else {
+      specificMemoryTypesCpuReadback = vfPickSpecificMemoryTypesCpuReadback(gpuInfo, &memoryCpuReadback_array);
+    }
+    if (internalMemoryAllocationSizeGpuVramArrays > 0) { REDGPU_2_EXPECTWG(specificMemoryTypesGpuVram     != -1); }
+    if (internalMemoryAllocationSizeCpuVisible    > 0) { REDGPU_2_EXPECTWG(specificMemoryTypesCpuUpload   != -1); }
+    if (internalMemoryAllocationSizeCpuReadback   > 0) { REDGPU_2_EXPECTWG(specificMemoryTypesCpuReadback != -1); }
+
+    if (internalMemoryAllocationSizeGpuVramArrays > 0) {
+      np(redMemoryAllocate,
+        "context", context,
+        "gpu", gpu,
+        "handleName", "vkFast_vfInternalContextInit_memoryGpuVramForArrays_memory",
+        "bytesCount", internalMemoryAllocationSizeGpuVramArrays,
+        "memoryTypeIndex", specificMemoryTypesGpuVram,
+        "dedicateToArray", NULL,
+        "dedicateToImage", NULL,
+        "memoryBitflags", 0,
+        "outMemory", &memoryGpuVramForArrays_memory,
+        "outStatuses", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      REDGPU_2_EXPECTWG(memoryGpuVramForArrays_memory != NULL);
+
+      RedMemoryArray memoryArray = {0};
+      memoryArray.setTo1000157000  = 1000157000;
+      memoryArray.setTo0           = 0;
+      memoryArray.array            = memoryGpuVramForArrays_array.handle;
+      memoryArray.memory           = memoryGpuVramForArrays_memory;
+      memoryArray.memoryBytesFirst = 0;
+      RedStatuses opstatuses = {0};
+      np(redMemorySet,
+        "context", context,
+        "gpu", gpu,
+        "memoryArraysCount", 1,
+        "memoryArrays", &memoryArray,
+        "memoryImagesCount", 0,
+        "memoryImages", NULL,
+        "outStatuses", &opstatuses,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      REDGPU_2_EXPECTWG(opstatuses.statusError == RED_STATUS_SUCCESS);
+    }
+    if (internalMemoryAllocationSizeCpuVisible > 0) {
+      np(redMemoryAllocate,
+        "context", context,
+        "gpu", gpu,
+        "handleName", "vkFast_vfInternalContextInit_memoryCpuUpload_memory",
+        "bytesCount", internalMemoryAllocationSizeCpuVisible,
+        "memoryTypeIndex", specificMemoryTypesCpuUpload,
+        "dedicateToArray", NULL,
+        "dedicateToImage", NULL,
+        "memoryBitflags", 0,
+        "outMemory", &memoryCpuUpload_memory,
+        "outStatuses", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      REDGPU_2_EXPECTWG(memoryCpuUpload_memory != NULL);
+
+      RedMemoryArray memoryArray = {0};
+      memoryArray.setTo1000157000  = 1000157000;
+      memoryArray.setTo0           = 0;
+      memoryArray.array            = memoryCpuUpload_array.handle;
+      memoryArray.memory           = memoryCpuUpload_memory;
+      memoryArray.memoryBytesFirst = 0;
+      RedStatuses opstatuses = {0};
+      np(redMemorySet,
+        "context", context,
+        "gpu", gpu,
+        "memoryArraysCount", 1,
+        "memoryArrays", &memoryArray,
+        "memoryImagesCount", 0,
+        "memoryImages", NULL,
+        "outStatuses", &opstatuses,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      REDGPU_2_EXPECTWG(opstatuses.statusError == RED_STATUS_SUCCESS);
+
+      np(redMemoryMap,
+        "context", context,
+        "gpu", gpu,
+        "mappableMemory", memoryCpuUpload_memory,
+        "mappableMemoryBytesFirst", 0,
+        "mappableMemoryBytesCount", memoryCpuUpload_array.memoryBytesCount,
+        "outVolatilePointer", &memoryCpuUpload_mapped_void_ptr,
+        "outStatuses", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      REDGPU_2_EXPECTWG(memoryCpuUpload_mapped_void_ptr != NULL);
+      REDGPU_2_EXPECTWG(!"Start address is not aligned" || (0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)memoryCpuUpload_mapped_void_ptr, gpuInfo->minMemoryAllocateBytesAlignment)));
+    }
+    if (internalMemoryAllocationSizeCpuReadback > 0) {
+      np(redMemoryAllocate,
+        "context", context,
+        "gpu", gpu,
+        "handleName", "vkFast_vfInternalContextInit_memoryCpuReadback_memory",
+        "bytesCount", internalMemoryAllocationSizeCpuReadback,
+        "memoryTypeIndex", specificMemoryTypesCpuReadback,
+        "dedicateToArray", NULL,
+        "dedicateToImage", NULL,
+        "memoryBitflags", 0,
+        "outMemory", &memoryCpuReadback_memory,
+        "outStatuses", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      REDGPU_2_EXPECTWG(memoryCpuReadback_memory != NULL);
+
+      RedMemoryArray memoryArray = {0};
+      memoryArray.setTo1000157000  = 1000157000;
+      memoryArray.setTo0           = 0;
+      memoryArray.array            = memoryCpuReadback_array.handle;
+      memoryArray.memory           = memoryCpuReadback_memory;
+      memoryArray.memoryBytesFirst = 0;
+      RedStatuses opstatuses = {0};
+      np(redMemorySet,
+        "context", context,
+        "gpu", gpu,
+        "memoryArraysCount", 1,
+        "memoryArrays", &memoryArray,
+        "memoryImagesCount", 0,
+        "memoryImages", NULL,
+        "outStatuses", &opstatuses,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      REDGPU_2_EXPECTWG(opstatuses.statusError == RED_STATUS_SUCCESS);
+
+      np(redMemoryMap,
+        "context", context,
+        "gpu", gpu,
+        "mappableMemory", memoryCpuReadback_memory,
+        "mappableMemoryBytesFirst", 0,
+        "mappableMemoryBytesCount", memoryCpuReadback_array.memoryBytesCount,
+        "outVolatilePointer", &memoryCpuReadback_mapped_void_ptr,
+        "outStatuses", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      REDGPU_2_EXPECTWG(memoryCpuReadback_mapped_void_ptr != NULL);
+      REDGPU_2_EXPECTWG(!"Start address is not aligned" || (0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)memoryCpuReadback_mapped_void_ptr, gpuInfo->minMemoryAllocateBytesAlignment)));
+    }
   }
 
   RedCalls presentCopyCalls = {0};
@@ -898,14 +833,16 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
   vkfast->memoryAllocationSizeCpuUpload = internalMemoryAllocationSizeCpuVisible;
   vkfast->memoryAllocationSizeCpuReadback = internalMemoryAllocationSizeCpuReadback;
   vkfast->memoryAllocationSizeCpuUploadPresentPixels = internalMemoryAllocationSizeCpuVisiblePresentPixels;
-  vkfast->memoryGpuVramForArrays_memory = memoryGpuVramForArrays_memory;
   vkfast->memoryGpuVramForArrays_array = memoryGpuVramForArrays_array;
+  vkfast->memoryGpuVramForArrays_memory = memoryGpuVramForArrays_memory;
   vkfast->memoryGpuVramForArrays_memory_suballocations_offset = 0;
-  vkfast->memoryCpuUpload_memory_and_array = memoryCpuUpload_memory_and_array;
+  vkfast->memoryCpuUpload_array = memoryCpuUpload_array;
+  vkfast->memoryCpuUpload_memory = memoryCpuUpload_memory;
   vkfast->memoryCpuUpload_mapped_void_ptr_original = memoryCpuUpload_mapped_void_ptr;
   vkfast->memoryCpuUpload_mapped_void_ptr_offset = memoryCpuUpload_mapped_void_ptr;
   vkfast->memoryCpuUpload_memory_suballocations_offset = 0;
-  vkfast->memoryCpuReadback_memory_and_array = memoryCpuReadback_memory_and_array;
+  vkfast->memoryCpuReadback_array = memoryCpuReadback_array;
+  vkfast->memoryCpuReadback_memory = memoryCpuReadback_memory;
   vkfast->memoryCpuReadback_mapped_void_ptr_original = memoryCpuReadback_mapped_void_ptr;
   vkfast->memoryCpuReadback_mapped_void_ptr_offset = memoryCpuReadback_mapped_void_ptr;
   vkfast->memoryCpuReadback_memory_suballocations_offset = 0;
@@ -933,15 +870,19 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
 }
 
 GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_context_optional_parameters_t * optional_parameters, const char * optionalFile, int optionalLine) {
-  return vfInternalContextInit(enable_debug_mode, 0, optional_parameters, NULL, optionalFile, optionalLine);
+  return vfInternalContextInit(enable_debug_mode, 0, optional_parameters, NULL, NULL, optionalFile, optionalLine);
 }
 
 GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInitEx(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const char * optionalFile, int optionalLine) {
-  return vfInternalContextInit(enable_debug_mode, gpu_index, optional_parameters, NULL, optionalFile, optionalLine);
+  return vfInternalContextInit(enable_debug_mode, gpu_index, optional_parameters, NULL, NULL, optionalFile, optionalLine);
 }
 
 GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInitEx2(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const gpu_context_ex2_parameters_t * optional_ex2_parameters, const char * optionalFile, int optionalLine) {
-  return vfInternalContextInit(enable_debug_mode, 0, optional_parameters, optional_ex2_parameters, optionalFile, optionalLine);
+  return vfInternalContextInit(enable_debug_mode, 0, optional_parameters, optional_ex2_parameters, NULL, optionalFile, optionalLine);
+}
+
+GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInitEx3(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const gpu_context_ex2_parameters_t * optional_ex2_parameters, const gpu_context_ex3_parameters_t * optional_ex3_parameters, const char * optionalFile, int optionalLine) {
+  return vfInternalContextInit(enable_debug_mode, 0, optional_parameters, optional_ex2_parameters, optional_ex3_parameters, optionalFile, optionalLine);
 }
 
 GPU_API_PRE void GPU_API_POST vfIdDestroy(uint64_t ids_count, const uint64_t * ids, const char * optionalFile, int optionalLine) {
@@ -1174,7 +1115,7 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
     "context", vkfast->context,
     "gpu", vkfast->gpu,
     "handleType", RED_HANDLE_TYPE_ARRAY,
-    "handle", vkfast->memoryGpuVramForArrays_array.array.handle,
+    "handle", vkfast->memoryGpuVramForArrays_array.handle,
     "optionalHandle2", NULL,
     "optionalFile", optionalFile,
     "optionalLine", optionalLine,
@@ -1184,18 +1125,18 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
     "context", vkfast->context,
     "gpu", vkfast->gpu,
     "handleType", RED_HANDLE_TYPE_MEMORY,
-    "handle", vkfast->memoryGpuVramForArrays_memory.handle,
+    "handle", vkfast->memoryGpuVramForArrays_memory,
     "optionalHandle2", NULL,
     "optionalFile", optionalFile,
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
 
-  if (vkfast->memoryCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory != NULL) {
+  if (vkfast->memoryCpuUpload_memory != NULL) {
     np(redMemoryUnmap,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
-      "mappableMemory", vkfast->memoryCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory,
+      "mappableMemory", vkfast->memoryCpuUpload_memory,
       "optionalFile", optionalFile,
       "optionalLine", optionalLine,
       "optionalUserData", NULL
@@ -1205,7 +1146,7 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
     "context", vkfast->context,
     "gpu", vkfast->gpu,
     "handleType", RED_HANDLE_TYPE_ARRAY,
-    "handle", vkfast->memoryCpuUpload_memory_and_array.array.handle,
+    "handle", vkfast->memoryCpuUpload_array.handle,
     "optionalHandle2", NULL,
     "optionalFile", optionalFile,
     "optionalLine", optionalLine,
@@ -1215,18 +1156,18 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
     "context", vkfast->context,
     "gpu", vkfast->gpu,
     "handleType", RED_HANDLE_TYPE_MEMORY,
-    "handle", vkfast->memoryCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory,
+    "handle", vkfast->memoryCpuUpload_memory,
     "optionalHandle2", NULL,
     "optionalFile", optionalFile,
     "optionalLine", optionalLine,
     "optionalUserData", NULL
   );
 
-  if (vkfast->memoryCpuReadback_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory != NULL) {
+  if (vkfast->memoryCpuReadback_memory != NULL) {
     np(redMemoryUnmap,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
-      "mappableMemory", vkfast->memoryCpuReadback_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory,
+      "mappableMemory", vkfast->memoryCpuReadback_memory,
       "optionalFile", optionalFile,
       "optionalLine", optionalLine,
       "optionalUserData", NULL
@@ -1236,7 +1177,7 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
     "context", vkfast->context,
     "gpu", vkfast->gpu,
     "handleType", RED_HANDLE_TYPE_ARRAY,
-    "handle", vkfast->memoryCpuReadback_memory_and_array.array.handle,
+    "handle", vkfast->memoryCpuReadback_array.handle,
     "optionalHandle2", NULL,
     "optionalFile", optionalFile,
     "optionalLine", optionalLine,
@@ -1246,7 +1187,7 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
     "context", vkfast->context,
     "gpu", vkfast->gpu,
     "handleType", RED_HANDLE_TYPE_MEMORY,
-    "handle", vkfast->memoryCpuReadback_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory,
+    "handle", vkfast->memoryCpuReadback_memory,
     "optionalHandle2", NULL,
     "optionalFile", optionalFile,
     "optionalLine", optionalLine,
@@ -1674,12 +1615,12 @@ GPU_API_PRE void GPU_API_POST vfStorageCreate(gpu_handle_context_t context, cons
       // NOTE(Constantine): Aligns start address.
       vkfast->memoryGpuVramForArrays_memory_suballocations_offset += REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(vkfast->memoryGpuVramForArrays_memory_suballocations_offset, alignment);
 
-      arrayRangeInfo.array                = vkfast->memoryGpuVramForArrays_array.array.handle;
+      arrayRangeInfo.array                = vkfast->memoryGpuVramForArrays_array.handle;
       arrayRangeInfo.arrayRangeBytesFirst = vkfast->memoryGpuVramForArrays_memory_suballocations_offset;
       arrayRangeInfo.arrayRangeBytesCount = storage_info->bytes_count + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_info->bytes_count, alignment);
       vkfast->memoryGpuVramForArrays_memory_suballocations_offset += arrayRangeInfo.arrayRangeBytesCount;
 
-      REDGPU_2_EXPECTWG(vkfast->memoryGpuVramForArrays_memory_suballocations_offset <= vkfast->memoryGpuVramForArrays_array.array.memoryBytesCount);
+      REDGPU_2_EXPECTWG(vkfast->memoryGpuVramForArrays_memory_suballocations_offset <= vkfast->memoryGpuVramForArrays_array.memoryBytesCount);
 
     } else if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_UPLOAD) {
     
@@ -1688,12 +1629,12 @@ GPU_API_PRE void GPU_API_POST vfStorageCreate(gpu_handle_context_t context, cons
       // NOTE(Constantine): Aligns start address.
       vkfast->memoryCpuUpload_memory_suballocations_offset += REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(vkfast->memoryCpuUpload_memory_suballocations_offset, alignment);
 
-      arrayRangeInfo.array                = vkfast->memoryCpuUpload_memory_and_array.array.handle;
+      arrayRangeInfo.array                = vkfast->memoryCpuUpload_array.handle;
       arrayRangeInfo.arrayRangeBytesFirst = vkfast->memoryCpuUpload_memory_suballocations_offset;
       arrayRangeInfo.arrayRangeBytesCount = storage_info->bytes_count + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_info->bytes_count, alignment);
       vkfast->memoryCpuUpload_memory_suballocations_offset += arrayRangeInfo.arrayRangeBytesCount;
 
-      REDGPU_2_EXPECTWG(vkfast->memoryCpuUpload_memory_suballocations_offset <= vkfast->memoryCpuUpload_memory_and_array.array.memoryBytesCount);
+      REDGPU_2_EXPECTWG(vkfast->memoryCpuUpload_memory_suballocations_offset <= vkfast->memoryCpuUpload_array.memoryBytesCount);
 
     } else if (storage_info->storage_type == GPU_STORAGE_TYPE_CPU_READBACK) {
     
@@ -1702,12 +1643,12 @@ GPU_API_PRE void GPU_API_POST vfStorageCreate(gpu_handle_context_t context, cons
       // NOTE(Constantine): Aligns start address.
       vkfast->memoryCpuReadback_memory_suballocations_offset += REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(vkfast->memoryCpuReadback_memory_suballocations_offset, alignment);
 
-      arrayRangeInfo.array                = vkfast->memoryCpuReadback_memory_and_array.array.handle;
+      arrayRangeInfo.array                = vkfast->memoryCpuReadback_array.handle;
       arrayRangeInfo.arrayRangeBytesFirst = vkfast->memoryCpuReadback_memory_suballocations_offset;
       arrayRangeInfo.arrayRangeBytesCount = storage_info->bytes_count + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_info->bytes_count, alignment);
       vkfast->memoryCpuReadback_memory_suballocations_offset += arrayRangeInfo.arrayRangeBytesCount;
 
-      REDGPU_2_EXPECTWG(vkfast->memoryCpuReadback_memory_suballocations_offset <= vkfast->memoryCpuReadback_memory_and_array.array.memoryBytesCount);
+      REDGPU_2_EXPECTWG(vkfast->memoryCpuReadback_memory_suballocations_offset <= vkfast->memoryCpuReadback_array.memoryBytesCount);
 
     } else {
 #if defined(__linux__) || defined(__MINGW32__)

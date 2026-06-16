@@ -44,16 +44,18 @@ typedef struct vf_handle_context_t {
 
   // Memory
 
-  Red2Memory         memoryGpuVramForArrays_memory;
-  Red2Array          memoryGpuVramForArrays_array;
+  RedArray           memoryGpuVramForArrays_array;
+  RedHandleMemory    memoryGpuVramForArrays_memory;
   uint64_t           memoryGpuVramForArrays_memory_suballocations_offset;
 
-  Red2Array          memoryCpuUpload_memory_and_array;
+  RedArray           memoryCpuUpload_array;
+  RedHandleMemory    memoryCpuUpload_memory;
   void *             memoryCpuUpload_mapped_void_ptr_original;
   void *             memoryCpuUpload_mapped_void_ptr_offset;
   uint64_t           memoryCpuUpload_memory_suballocations_offset;
 
-  Red2Array          memoryCpuReadback_memory_and_array;
+  RedArray           memoryCpuReadback_array;
+  RedHandleMemory    memoryCpuReadback_memory;
   void *             memoryCpuReadback_mapped_void_ptr_original;
   void *             memoryCpuReadback_mapped_void_ptr_offset;
   uint64_t           memoryCpuReadback_memory_suballocations_offset;
