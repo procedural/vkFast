@@ -15,9 +15,9 @@ typedef struct gpu_context_ex2_parameters_t {
 } gpu_context_ex2_parameters_t;
 
 typedef struct gpu_context_ex3_parameters_t {
-  unsigned * optionalSpecificMemoryTypesGpuVram;
-  unsigned * optionalSpecificMemoryTypesCpuUpload;
-  unsigned * optionalSpecificMemoryTypesCpuReadback;
+  unsigned * optionalSpecificMemoryTypeGpuVram;
+  unsigned * optionalSpecificMemoryTypeCpuUpload;
+  unsigned * optionalSpecificMemoryTypeCpuReadback;
 } gpu_context_ex3_parameters_t;
 
 GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInitEx2(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const gpu_context_ex2_parameters_t * optional_ex2_parameters, const char * optional_file, int optional_line);

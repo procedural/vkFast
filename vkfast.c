@@ -226,7 +226,7 @@ static void vfFillMemoryTypeIsSupportedArray(unsigned resourceMemoryTypesSupport
   outMemoryTypeIsSupportedArrayOf32[31] = (resourceMemoryTypesSupported & REDGPU_B32(1000,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
 }
 
-static unsigned vfPickSpecificMemoryTypesGpuVram(const RedGpuInfo * gpuInfo, const RedArray * array) {
+static unsigned vfPickSpecificMemoryTypeGpuVram(const RedGpuInfo * gpuInfo, const RedArray * array) {
   unsigned memoryTypesSupported = array->memoryTypesSupported;
 
   unsigned char arrayMemoryTypeIsSupported[32] = {0};
@@ -245,7 +245,7 @@ static unsigned vfPickSpecificMemoryTypesGpuVram(const RedGpuInfo * gpuInfo, con
   return -1;
 }
 
-static unsigned vfPickSpecificMemoryTypesCpuUpload(const RedGpuInfo * gpuInfo, const RedArray * array) {
+static unsigned vfPickSpecificMemoryTypeCpuUpload(const RedGpuInfo * gpuInfo, const RedArray * array) {
   unsigned memoryTypesSupported = array->memoryTypesSupported;
 
   unsigned char arrayMemoryTypeIsSupported[32] = {0};
@@ -278,7 +278,7 @@ static unsigned vfPickSpecificMemoryTypesCpuUpload(const RedGpuInfo * gpuInfo, c
   return -1;
 }
 
-static unsigned vfPickSpecificMemoryTypesCpuReadback(const RedGpuInfo * gpuInfo, const RedArray * array) {
+static unsigned vfPickSpecificMemoryTypeCpuReadback(const RedGpuInfo * gpuInfo, const RedArray * array) {
   unsigned memoryTypesSupported = array->memoryTypesSupported;
 
   unsigned char arrayMemoryTypeIsSupported[32] = {0};
@@ -622,28 +622,28 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
       memoryCpuReadback_array = array;
     }
 
-    int userSpecificMemoryTypesGpuVram     = 0;
-    int userSpecificMemoryTypesCpuUpload   = 0;
-    int userSpecificMemoryTypesCpuReadback = 0;
+    int userSpecificMemoryTypeGpuVram     = 0;
+    int userSpecificMemoryTypeCpuUpload   = 0;
+    int userSpecificMemoryTypeCpuReadback = 0;
     if (optional_ex3_parameters != NULL) {
-      if (optional_ex3_parameters->optionalSpecificMemoryTypesGpuVram     != NULL) { userSpecificMemoryTypesGpuVram     = 1; }
-      if (optional_ex3_parameters->optionalSpecificMemoryTypesCpuUpload   != NULL) { userSpecificMemoryTypesCpuUpload   = 1; }
-      if (optional_ex3_parameters->optionalSpecificMemoryTypesCpuReadback != NULL) { userSpecificMemoryTypesCpuReadback = 1; }
+      if (optional_ex3_parameters->optionalSpecificMemoryTypeGpuVram     != NULL) { userSpecificMemoryTypeGpuVram     = 1; }
+      if (optional_ex3_parameters->optionalSpecificMemoryTypeCpuUpload   != NULL) { userSpecificMemoryTypeCpuUpload   = 1; }
+      if (optional_ex3_parameters->optionalSpecificMemoryTypeCpuReadback != NULL) { userSpecificMemoryTypeCpuReadback = 1; }
     }
-    if (userSpecificMemoryTypesGpuVram == 1) {
-      specificMemoryTypesGpuVram = optional_ex3_parameters->optionalSpecificMemoryTypesGpuVram[0];
+    if (userSpecificMemoryTypeGpuVram == 1) {
+      specificMemoryTypesGpuVram = optional_ex3_parameters->optionalSpecificMemoryTypeGpuVram[0];
     } else {
-      specificMemoryTypesGpuVram = vfPickSpecificMemoryTypesGpuVram(gpuInfo, &memoryGpuVramForArrays_array);
+      specificMemoryTypesGpuVram = vfPickSpecificMemoryTypeGpuVram(gpuInfo, &memoryGpuVramForArrays_array);
     }
-    if (userSpecificMemoryTypesCpuUpload == 1) {
-      specificMemoryTypesCpuUpload = optional_ex3_parameters->optionalSpecificMemoryTypesCpuUpload[0];
+    if (userSpecificMemoryTypeCpuUpload == 1) {
+      specificMemoryTypesCpuUpload = optional_ex3_parameters->optionalSpecificMemoryTypeCpuUpload[0];
     } else {
-      specificMemoryTypesCpuUpload = vfPickSpecificMemoryTypesCpuUpload(gpuInfo, &memoryCpuUpload_array);
+      specificMemoryTypesCpuUpload = vfPickSpecificMemoryTypeCpuUpload(gpuInfo, &memoryCpuUpload_array);
     }
-    if (userSpecificMemoryTypesCpuReadback == 1) {
-      specificMemoryTypesCpuReadback = optional_ex3_parameters->optionalSpecificMemoryTypesCpuReadback[0];
+    if (userSpecificMemoryTypeCpuReadback == 1) {
+      specificMemoryTypesCpuReadback = optional_ex3_parameters->optionalSpecificMemoryTypeCpuReadback[0];
     } else {
-      specificMemoryTypesCpuReadback = vfPickSpecificMemoryTypesCpuReadback(gpuInfo, &memoryCpuReadback_array);
+      specificMemoryTypesCpuReadback = vfPickSpecificMemoryTypeCpuReadback(gpuInfo, &memoryCpuReadback_array);
     }
     if (internalMemoryAllocationSizeGpuVramArrays > 0) { REDGPU_2_EXPECTWG(specificMemoryTypesGpuVram     != -1); }
     if (internalMemoryAllocationSizeCpuVisible    > 0) { REDGPU_2_EXPECTWG(specificMemoryTypesCpuUpload   != -1); }
