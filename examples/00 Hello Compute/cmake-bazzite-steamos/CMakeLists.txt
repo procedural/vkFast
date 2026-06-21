@@ -22,3 +22,16 @@ target_link_libraries(${PROJECT_NAME}
 target_compile_options(${PROJECT_NAME} PRIVATE
   -O0 -g #-fsanitize=address
 )
+
+# NOTE(Constantine):
+#
+# Newer Vulkan SDK setup for REDGPU SDK's redgpu.cpp with '#define REDGPU_COMPILE_SWITCH 3' on Bazzite / SteamOS:
+#
+# $ file /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/etc/vulkan/explicit_layer.d
+# /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/etc/vulkan/explicit_layer.d: cannot open `/home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/etc/vulkan/explicit_layer.d' (No such file or directory)
+# $ file /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/share/vulkan/explicit_layer.d/
+# /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/share/vulkan/explicit_layer.d/: directory
+# $ mkdir -p /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/etc/vulkan/
+# $ ln -s /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/share/vulkan/explicit_layer.d/ /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/etc/vulkan/
+# $ file /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/etc/vulkan/explicit_layer.d/
+# /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/etc/vulkan/explicit_layer.d/: directory
