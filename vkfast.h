@@ -1,10 +1,17 @@
 #pragma once
 
 #if defined(_WIN32)
-  #include "C:/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
-  #include "C:/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
-  #include "C:/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
-  #include "C:/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
+  #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_wsi.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_2.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_32.h"
+  #else
+    #include "C:/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
+    #include "C:/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
+    #include "C:/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
+    #include "C:/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
+  #endif
 #elif defined(__linux__) && !defined(__ANDROID__)
   #include "/home/linuxbrew/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
   #include "/home/linuxbrew/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu

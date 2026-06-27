@@ -12,11 +12,19 @@
   #define REDGPU_DISABLE_NAMED_PARAMETERS
 #endif
 #if defined(_WIN32)
-  #include "C:/RedGpuSDK/misc/np/np.h"
-  #include "C:/RedGpuSDK/misc/np/np_redgpu.h"
-  #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
-  #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
-  #include "C:/RedGpuSDK/redgpu_context_from_vk.h"
+  #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
+    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu_2.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_context_from_vk.h"
+  #else
+    #include "C:/RedGpuSDK/misc/np/np.h"
+    #include "C:/RedGpuSDK/misc/np/np_redgpu.h"
+    #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
+    #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+    #include "C:/RedGpuSDK/redgpu_context_from_vk.h"
+  #endif
 #elif defined(__linux__) && !defined(__ANDROID__)
   #include "/home/linuxbrew/RedGpuSDK/misc/np/np.h"
   #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu.h"
@@ -27,13 +35,33 @@
   #error Unsupported OS for now
 #endif
 
-#ifdef _WIN32
-#include <Windows.h>
+#if defined(VKFAST_DISABLE_WIN32)
+  #include <stdio.h>  // For printf
+  #include <stdlib.h> // For exit
+#else
+  #ifdef _WIN32
+    #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
+      #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_32_termux_windows.h"
+    #else
+      #include <Windows.h>
+    #endif
+  #endif
 #endif
 #if defined(__linux__) && !defined(__ANDROID__)
 #include <X11/Xlib.h> // For X11 Display, Window
 #endif
 #include <string.h> // For strcmp
+
+#if defined(VKFAST_DISABLE_WIN32)
+  REDGPU_32_DECLSPEC void REDGPU_32_API red32OutputDebugString(const char * string) {
+    // NOTE(Constantine): does nothing.
+  }
+
+  REDGPU_32_DECLSPEC void REDGPU_32_API red32ConsolePrint(const char * string) {
+    fprintf(stdout, "%s", string);
+    fflush(stdout);
+  }
+#endif
 
 static void vfInternalPrint(const char * string) {
   red32OutputDebugString(string);
@@ -169,7 +197,6 @@ void red2Crash(const char * error, const char * functionName, RedHandleGpu optio
   // To free
   struct StringArray str = {0};
 
-  // To free
   char optionalLineStr[4096] = {0};
   red32IntToChars(optionalLine, optionalLineStr);
 
@@ -184,11 +211,18 @@ void red2Crash(const char * error, const char * functionName, RedHandleGpu optio
   REDGPU_32_DYNAMIC_ARRAY_STRING_JOIN(str, "\n");
 
   vfInternalPrint(str.items);
+  #if !defined(VKFAST_DISABLE_WIN32)
   MessageBoxA(NULL, str.items, "[vkFast][Crash]", MB_OK);
+  #endif
 
   REDGPU_32_DYNAMIC_ARRAY_FREE(str);
 
+  #if !defined(VKFAST_DISABLE_WIN32)
   red32Exit(1);
+  #else
+  system("pause");
+  exit(1);
+  #endif
 }
 
 static void vfFillMemoryTypeIsSupportedArray(unsigned resourceMemoryTypesSupported, unsigned char * outMemoryTypeIsSupportedArrayOf32) {
@@ -345,9 +379,15 @@ static RedBool32 vfRedGpuDebugCallback(RedDebugCallbackSeverity severity, RedDeb
   }
   vfInternalPrint("[vkFast][Debug callback] ");
   vfInternalPrint(data->message);
+  #if !defined(VKFAST_DISABLE_WIN32)
   #ifndef VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
   MessageBoxA(NULL, data->message, "[vkFast][Debug callback]", MB_OK);
   red32Exit(1);
+  #endif
+  #else
+  vfInternalPrint("\n");
+  system("pause");
+  exit(1);
   #endif
   return 0;
 }
@@ -503,27 +543,11 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
     }
   }
 
-  if (gpuInfo->gpuVendorId == 4318/*NVIDIA*/) {
-    np(red2ExpectMinimumGuarantees,
-      "gpuInfo", gpuInfo,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine
-    );
-  } else if (gpuInfo->gpuVendorId == 32902/*Intel*/) {
-    np(red2ExpectMinimumGuaranteesIntelUHDGraphics730,
-      "gpuInfo", gpuInfo,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine
-    );
-  } else if (gpuInfo->gpuVendorId == 4098/*AMD*/) {
-    np(red2ExpectMinimumGuaranteesIntelUHDGraphics730,
-      "gpuInfo", gpuInfo,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine
-    );
-  } else {
-    REDGPU_2_EXPECT(!"Unsupported by vkFast GPU, recompile your program with vfContextInit()::enable_debug_mode parameter enabled and email me your GPU name please: iamvfx@gmail.com");
-  }
+  np(red2ExpectMinimumGuaranteesIntelUHDGraphics730,
+    "gpuInfo", gpuInfo,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine
+  );
 
   np(red2ExpectAllMemoryToBeCoherent,
     "gpuInfo", gpuInfo,
@@ -1222,7 +1246,9 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
   }
 
   if (vkfast->windowHandle != NULL && vkfast->windowHandleDoDestroy == 1) {
+    #if !defined(VKFAST_DISABLE_WIN32)
     red32WindowDestroy(vkfast->windowHandle);
+    #endif
   }
 
   if (vkfast->doNotFreeHandle == 0) {
@@ -1248,7 +1274,7 @@ GPU_API_PRE void GPU_API_POST vfContextResetAndInvalidateAllStorages(gpu_handle_
   vkfast->memoryCpuReadback_memory_suballocations_offset = 0;
 }
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(VKFAST_DISABLE_WIN32)
 GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, const char * optionalFile, int optionalLine) {
   // https://learn.microsoft.com/ru-ru/windows/win32/api/winuser/nf-winuser-monitorfrompoint
   POINT point = {0};
@@ -1283,6 +1309,7 @@ GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, cons
 }
 #endif
 
+#if !defined(VKFAST_DISABLE_WIN32)
 static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyncMode presentVsyncMode, int presentImagesCount, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
@@ -1366,7 +1393,7 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyn
   }
 
   if (vkfast->surface == NULL) {
-    #ifdef _WIN32
+    #if defined(_WIN32)
     np(redCreateSurfaceWin32,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
@@ -1552,7 +1579,9 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyn
   int isRebuilded = 1;
   return isRebuilded;
 }
+#endif
 
+#if !defined(VKFAST_DISABLE_WIN32)
 GPU_API_PRE int GPU_API_POST vfWindowFullscreenEx(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, unsigned draw_queue_index, RedPresentVsyncMode present_vsync_mode, int present_images_count, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   
@@ -1578,17 +1607,22 @@ GPU_API_PRE int GPU_API_POST vfWindowFullscreenEx(gpu_handle_context_t context, 
 
   return vfInternalRebuildPresent(context, present_vsync_mode, present_images_count, optionalFile, optionalLine);
 }
+#endif
 
+#if !defined(VKFAST_DISABLE_WIN32)
 GPU_API_PRE int GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, unsigned draw_queue_index, RedPresentVsyncMode present_vsync_mode, const char * optionalFile, int optionalLine) {
   return vfWindowFullscreenEx(context, optional_external_window_handle, window_title, screen_width, screen_height, draw_queue_index, present_vsync_mode, 3, optionalFile, optionalLine);
 }
+#endif
 
+#if !defined(VKFAST_DISABLE_WIN32)
 GPU_API_PRE int GPU_API_POST vfWindowLoop(gpu_handle_context_t context) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   return red32WindowLoop(vkfast->windowHandle);
 }
+#endif
 
-#if defined (_WIN32)
+#if defined(_WIN32) && !defined(VKFAST_DISABLE_WIN32)
 GPU_API_PRE int GPU_API_POST vfWindowIsMinimized(gpu_handle_context_t context) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
@@ -1609,9 +1643,11 @@ GPU_API_PRE void GPU_API_POST vfWindowGetSize(gpu_handle_context_t context, int 
   if (out_window_height != NULL) { out_window_height[0] = vkfast->screenHeight; }
 }
 
+#if !defined(VKFAST_DISABLE_WIN32)
 GPU_API_PRE void GPU_API_POST vfExit(int exit_code) {
   red32Exit(exit_code);
 }
+#endif
 
 GPU_API_PRE void GPU_API_POST vfStorageCreate(gpu_handle_context_t context, const gpu_storage_info_t * storage_info, gpu_storage_t * out_storage, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
@@ -2591,6 +2627,7 @@ GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(gpu_handle_context_t context, 
   );
 }
 
+#if !defined(VKFAST_DISABLE_WIN32)
 static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, const void * copy_pixels, int * out_optional_internal_present_image_index, RedBool32 optional_copy_image, RedHandleImage optional_image_to_copy, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
@@ -3064,7 +3101,9 @@ static int vfInternalAsyncDrawPixels(gpu_handle_context_t context, const RedStru
   int isRebuilded = 0;
   return isRebuilded;
 }
+#endif
 
+#if !defined(VKFAST_DISABLE_WIN32)
 GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const void * pixels, int * out_optional_internal_present_image_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
@@ -3078,7 +3117,9 @@ GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const vo
   int isRebuilded = vfInternalAsyncDrawPixels(context, &presentPixels_storage_raw, pixels, out_optional_internal_present_image_index, 0, NULL, gpu_threads_count_plus_one_empty, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   return isRebuilded;
 }
+#endif
 
+#if !defined(VKFAST_DISABLE_WIN32)
 GPU_API_PRE int GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uint64_t pixels_storage_id, int * out_optional_internal_present_image_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   vf_handle_t * storage = (vf_handle_t *)(void *)pixels_storage_id;
   vf_handle_context_t * vkfast = storage->vkfast;
@@ -3087,17 +3128,23 @@ GPU_API_PRE int GPU_API_POST vfAsyncDrawPixels(gpu_handle_context_t context, uin
   int isRebuilded = vfInternalAsyncDrawPixels(context, &storage->storage.arrayRangeInfo, NULL, out_optional_internal_present_image_index, 0, NULL, gpu_threads_count_plus_one_empty, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   return isRebuilded;
 }
+#endif
 
+#if !defined(VKFAST_DISABLE_WIN32)
 GPU_API_PRE int GPU_API_POST vfAsyncDrawPixelsRaw(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, int * out_optional_internal_present_image_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   int isRebuilded = vfInternalAsyncDrawPixels(context, pixels_storage_raw, NULL, out_optional_internal_present_image_index, 0, NULL, gpu_threads_count_plus_one_empty, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   return isRebuilded;
 }
+#endif
 
+#if !defined(VKFAST_DISABLE_WIN32)
 GPU_API_PRE int GPU_API_POST vfAsyncDrawImageRaw(gpu_handle_context_t context, RedHandleImage image_raw, int * out_optional_is_image_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optionalFile, int optionalLine) {
   int isRebuilded = vfInternalAsyncDrawPixels(context, NULL, NULL, out_optional_is_image_copy_finished_cpu_signal_index, 1, image_raw, gpu_threads_count_plus_one_empty, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
   return isRebuilded;
 }
+#endif
 
+#if !defined(VKFAST_DISABLE_WIN32)
 GPU_API_PRE RedHandleCpuSignal GPU_API_POST vfAsyncDrawGetCpuSignal(gpu_handle_context_t context) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
@@ -3105,6 +3152,7 @@ GPU_API_PRE RedHandleCpuSignal GPU_API_POST vfAsyncDrawGetCpuSignal(gpu_handle_c
   // Do not destroy and do not unsignal this CPU signal on the user side.
   return vkfast->presentCpuSignal;
 }
+#endif
 
 GPU_API_PRE void GPU_API_POST vfAllQueuesWaitIdle(gpu_handle_context_t context, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;

@@ -6,6 +6,14 @@ exit
 clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c
 exit
 #endif
+#if 0
+x86_64-w64-mingw32-clang -DVKFAST_INCLUDE_TERMUX_PATHS -DVKFAST_DISABLE_WIN32 -DREDGPU_32_DISABLE_WIN32 -DREDGPU_32_INCLUDE_TERMUX_WINDOWS main.c ../../vkfast.c /data/data/com.termux/files/home/RedGpuSDK/redgpu.c /data/data/com.termux/files/home/RedGpuSDK/redgpu_2.c /data/data/com.termux/files/home/RedGpuSDK/redgpu_32.c
+exit
+#endif
+// NOTE(Constantine):
+// Useful Termux links:
+// https://github.com/brunodev85/winlator
+// https://github.com/The412Banner/AIO-Graphics-Test
 
 #include "../../vkfast.h"
 #include "../Common/vkfast_examples_common.h"
@@ -137,4 +145,8 @@ int main() {
   };
   vfIdDestroy(countof(ids), ids, FF, LL);
   vfContextDeinit(ctx, FF, LL);
+
+  #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
+  system("pause");
+  #endif
 }
