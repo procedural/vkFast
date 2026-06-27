@@ -408,7 +408,7 @@ static void vfInternalExpectMinimumGuaranteesAdreno735(const RedGpuInfo * gpuInf
   REDGPU_2_EXPECTWG(gpuInfo->minArrayROCStructMemberRangeBytesAlignment  <= REDGPU_2_EXPECTED_minArrayROCStructMemberRangeBytesAlignment_256); // minUniformBufferOffsetAlignment; D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT (256)
   REDGPU_2_EXPECTWG(gpuInfo->maxArrayROCStructMemberRangeBytesCount      >= REDGPU_2_EXPECTED_maxArrayROCStructMemberRangeBytesCount_65536); // maxUniformBufferRange; D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT (4096) * 16
   REDGPU_2_EXPECTWG(gpuInfo->minArrayRORWStructMemberRangeBytesAlignment <= REDGPU_2_EXPECTED_minArrayRORWStructMemberRangeBytesAlignment_64); // minStorageBufferOffsetAlignment; Arc A770 and Arc B580 on Windows, Redmi Note 8 on Android 11; Not used: D3D12_RAW_UAV_SRV_BYTE_ALIGNMENT (16)
-  REDGPU_2_EXPECTWG(gpuInfo->maxArrayRORWStructMemberRangeBytesCount     >= 134217728);
+  REDGPU_2_EXPECTWG(gpuInfo->maxArrayRORWStructMemberRangeBytesCount     >= 134217728); // maxStorageBufferRange; Adreno 735 on Android
   REDGPU_2_EXPECTWG(gpuInfo->maxArrayIndexUint32Value                    == 0xFFFFFFFF); // maxDrawIndexedIndexValue
   REDGPU_2_EXPECTWG(gpuInfo->maxImageDimensions1D                        >= REDGPU_2_EXPECTED_maxImageDimensions1D_16384); // maxImageDimension1D; D3D12_REQ_TEXTURE1D_U_DIMENSION (16384)
   REDGPU_2_EXPECTWG(gpuInfo->maxImageDimensions2D                        >= REDGPU_2_EXPECTED_maxImageDimensions2D_16384); // maxImageDimension2D; D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION (16384)
