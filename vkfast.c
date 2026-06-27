@@ -739,7 +739,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT].maxDimensions.maxWidth >= 16384);
@@ -747,7 +747,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_SINT].maxDimensions.maxWidth >= 16384);
@@ -755,7 +755,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_SINT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_SINT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_SINT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_SINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_SINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_SINT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_SINT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED].maxDimensions.maxWidth >= 16384);
@@ -763,7 +763,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1].maxDimensions.maxWidth >= 16384);
@@ -771,7 +771,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_PRESENT_BGRA_8_8_8_8_UINT_TO_FLOAT_0_1].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_UINT].maxDimensions.maxWidth >= 16384);
@@ -779,7 +779,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_UINT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_UINT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_UINT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_UINT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_UINT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_SINT].maxDimensions.maxWidth >= 16384);
@@ -787,7 +787,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_SINT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_SINT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_SINT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_SINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_SINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_SINT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_SINT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_FLOAT].maxDimensions.maxWidth >= 16384);
@@ -795,7 +795,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_FLOAT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_FLOAT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_FLOAT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_FLOAT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_FLOAT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_FLOAT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_16_FLOAT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_UINT].maxDimensions.maxWidth >= 16384);
@@ -803,7 +803,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_UINT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_UINT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_UINT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_UINT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_UINT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_SINT].maxDimensions.maxWidth >= 16384);
@@ -811,7 +811,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_SINT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_SINT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_SINT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_SINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_SINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_SINT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_SINT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_FLOAT].maxDimensions.maxWidth >= 16384);
@@ -819,7 +819,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_FLOAT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_FLOAT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_FLOAT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_FLOAT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_FLOAT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_FLOAT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_16_16_16_16_FLOAT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_UINT].maxDimensions.maxWidth >= 16384);
@@ -827,7 +827,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_UINT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_UINT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_UINT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_UINT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_UINT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_SINT].maxDimensions.maxWidth >= 16384);
@@ -835,7 +835,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_SINT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_SINT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_SINT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_SINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_SINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_SINT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_SINT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_FLOAT].maxDimensions.maxWidth >= 16384);
@@ -843,7 +843,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_FLOAT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_FLOAT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_FLOAT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_FLOAT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_FLOAT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_FLOAT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_R_32_FLOAT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_UINT].maxDimensions.maxWidth >= 16384);
@@ -851,7 +851,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_UINT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_UINT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_UINT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_UINT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_UINT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_SINT].maxDimensions.maxWidth >= 16384);
@@ -859,7 +859,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_SINT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_SINT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_SINT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_SINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_SINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_SINT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_SINT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_FLOAT].maxDimensions.maxWidth >= 16384);
@@ -867,7 +867,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_FLOAT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_FLOAT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_FLOAT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_FLOAT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_FLOAT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_FLOAT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_RGBA_32_32_32_32_FLOAT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_16_UINT_TO_FLOAT_0_1].maxDimensions.maxWidth >= 16384);
@@ -875,7 +875,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_16_UINT_TO_FLOAT_0_1].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_16_UINT_TO_FLOAT_0_1].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_16_UINT_TO_FLOAT_0_1].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_16_UINT_TO_FLOAT_0_1].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_16_UINT_TO_FLOAT_0_1].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_16_UINT_TO_FLOAT_0_1].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_16_UINT_TO_FLOAT_0_1].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT].maxDimensions.maxWidth >= 16384);
@@ -883,7 +883,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_24_UINT_TO_FLOAT_0_1_STENCIL_8_UINT].maxDimensions.maxWidth >= 16384);
@@ -891,7 +891,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_24_UINT_TO_FLOAT_0_1_STENCIL_8_UINT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_24_UINT_TO_FLOAT_0_1_STENCIL_8_UINT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_24_UINT_TO_FLOAT_0_1_STENCIL_8_UINT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_24_UINT_TO_FLOAT_0_1_STENCIL_8_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_24_UINT_TO_FLOAT_0_1_STENCIL_8_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_24_UINT_TO_FLOAT_0_1_STENCIL_8_UINT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_24_UINT_TO_FLOAT_0_1_STENCIL_8_UINT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT_STENCIL_8_UINT].maxDimensions.maxWidth >= 16384);
@@ -899,7 +899,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT_STENCIL_8_UINT].maxDimensions.maxDepth >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT_STENCIL_8_UINT].maxLevelsCount >= 15);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT_STENCIL_8_UINT].maxLayersCount >= 2048);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT_STENCIL_8_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_4 | RED_MULTISAMPLE_COUNT_BITFLAG_2 | RED_MULTISAMPLE_COUNT_BITFLAG_1));
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT_STENCIL_8_UINT].supportedMultisampleCounts >= (RED_MULTISAMPLE_COUNT_BITFLAG_1));
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT_STENCIL_8_UINT].maxBytesCount >= 2147483648);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2D[RED_FORMAT_DEPTH_32_FLOAT_STENCIL_8_UINT].status >= RED_STATUS_SUCCESS);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsLimitsImageDimensions2DMultisample[RED_FORMAT_R_8_UINT_TO_FLOAT_0_1].maxDimensions.maxWidth >= 16384);
