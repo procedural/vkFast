@@ -1,2 +1,2 @@
 https://github.com/redgpu/redgpu/tree/8faea2fa9e59a4783826aab4c563d0210b15db3d
-https://github.com/redgpu/redgpu2/tree/be62fe902823ed00e6dc4d5d257b26755a7c7fda
+https://github.com/redgpu/redgpu2/tree/dfd08e4b29d1ca16befdf4be27ef50a040a22ebe
