@@ -377,6 +377,11 @@ static RedBool32 vfRedGpuDebugCallback(RedDebugCallbackSeverity severity, RedDeb
   {
     return 0;
   }
+  if (0 == strcmp(data->messageIdName, "RED_PROCEDURE_ID_redCreateContext") &&
+      0 == strcmp(data->message,       "RED_STATUS_ERROR_INCOMPATIBLE_DRIVER"))
+  {
+    return 0; // NOTE(Constantine): Android can only set 4 GPU structs max.
+  }
   vfInternalPrint("[vkFast][Debug callback] ");
   vfInternalPrint(data->message);
   #if !defined(VKFAST_DISABLE_WIN32)
