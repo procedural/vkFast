@@ -1864,7 +1864,7 @@ static void vfInternalExpectMinimumImageFormatsLimitsAndFeaturesAdreno735(const 
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsFeatures[RED_FORMAT_RGBA_32_32_32_32_FLOAT].supportsOutputDepthStencil >= 0);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsFeatures[RED_FORMAT_RGBA_32_32_32_32_FLOAT].supportsOutputColor >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsFeatures[RED_FORMAT_RGBA_32_32_32_32_FLOAT].supportsTextureROFilteringLinear >= 1);
-  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsFeatures[RED_FORMAT_RGBA_32_32_32_32_FLOAT].supportsTextureRWAtomics >= 1);
+  REDGPU_2_EXPECTWG(gpuInfo->imageFormatsFeatures[RED_FORMAT_RGBA_32_32_32_32_FLOAT].supportsTextureRWAtomics >= 0); // Not supported on Adreno 735
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsFeatures[RED_FORMAT_RGBA_32_32_32_32_FLOAT].supportsOutputColorBlend >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsFeatures[RED_FORMAT_DEPTH_16_UINT_TO_FLOAT_0_1].supportsCopyR >= 1);
   REDGPU_2_EXPECTWG(gpuInfo->imageFormatsFeatures[RED_FORMAT_DEPTH_16_UINT_TO_FLOAT_0_1].supportsCopyW >= 1);
