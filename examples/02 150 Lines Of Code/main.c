@@ -7,7 +7,7 @@ clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/Red
 exit
 #endif
 #if 0
-x86_64-w64-mingw32-clang -DVKFAST_INCLUDE_TERMUX_PATHS -DVKFAST_DISABLE_WIN32 -DREDGPU_32_DISABLE_WIN32 -DREDGPU_32_INCLUDE_TERMUX_WINDOWS main.c ../../vkfast.c /data/data/com.termux/files/home/RedGpuSDK/redgpu.c /data/data/com.termux/files/home/RedGpuSDK/redgpu_2.c /data/data/com.termux/files/home/RedGpuSDK/redgpu_32.c
+x86_64-w64-mingw32-clang -DVKFAST_INCLUDE_TERMUX_PATHS main.c ../../vkfast.c /data/data/com.termux/files/home/RedGpuSDK/redgpu.c /data/data/com.termux/files/home/RedGpuSDK/redgpu_2.c /data/data/com.termux/files/home/RedGpuSDK/redgpu_32.c
 exit
 #endif
 // NOTE(Constantine):
