@@ -15,10 +15,17 @@
 #define REDGPU_DISABLE_NAMED_PARAMETERS
 #endif
 #if defined(_WIN32)
-  #include "C:/RedGpuSDK/misc/np/np.h"
-  #include "C:/RedGpuSDK/misc/np/np_redgpu.h"
-  #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
-  #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+  #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
+    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu_2.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+  #else
+    #include "C:/RedGpuSDK/misc/np/np.h"
+    #include "C:/RedGpuSDK/misc/np/np_redgpu.h"
+    #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
+    #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+  #endif
 #elif defined(__linux__) && !defined(__ANDROID__)
   #include "/home/linuxbrew/RedGpuSDK/misc/np/np.h"
   #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu.h"
