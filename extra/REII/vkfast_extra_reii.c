@@ -37,7 +37,7 @@
 
 #include <stdio.h>   // For _popen, _pclose
 #if defined(_WIN32)
-#include <Windows.h> // GetFileSizeEx
+#include <windows.h> // GetFileSizeEx
 #endif
 
 #define REII_INTERNAL_MAX_SAMPLERS_COUNT 4000
