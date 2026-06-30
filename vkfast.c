@@ -3211,7 +3211,8 @@ GPU_API_PRE void GPU_API_POST vfStorageCreate(gpu_handle_context_t context, cons
     }
   }
 
-  REDGPU_2_EXPECTWG(arrayRangeInfo.arrayRangeBytesCount <= vkfast->context->gpus[vkfast->gpuIndex].maxArrayRORWStructMemberRangeBytesCount);
+  //NOTE(Constantine)(Jun 30, 2026): The line below was here when the vkFast API couldn't bind limited storage and pointer ranges. Now we can.
+  //REDGPU_2_EXPECTWG(arrayRangeInfo.arrayRangeBytesCount <= vkfast->context->gpus[vkfast->gpuIndex].maxArrayRORWStructMemberRangeBytesCount);
 
   // To free
   vf_handle_t * handle = (vf_handle_t *)red32MemoryCalloc(sizeof(vf_handle_t));
