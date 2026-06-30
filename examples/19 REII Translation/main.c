@@ -224,6 +224,11 @@ int main() {
   int previous_window_w = window_w;
   int previous_window_h = window_h;
 
+  const char * mdqinc_SDL_GameControllerDB_gamecontrollerdb_txt =
+    #include "../Common/mdqinc_SDL_GameControllerDB_gamecontrollerdb_txt.h"
+  ;
+  glfwUpdateGamepadMappings(mdqinc_SDL_GameControllerDB_gamecontrollerdb_txt);
+
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
   
@@ -291,6 +296,20 @@ int main() {
 
       camera_pos.z += glfwGetKey(window, GLFW_KEY_W) * 0.025f;
       camera_pos.z -= glfwGetKey(window, GLFW_KEY_S) * 0.025f;
+    }
+
+    if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1)) {
+      GLFWgamepadstate state;
+      if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state)) {
+        float rawLeftAxisX = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
+        float rawLeftAxisY = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
+        float leftAxisX = (rawLeftAxisX > 0.15 || rawLeftAxisX < -0.15) ? rawLeftAxisX : 0;
+        float leftAxisY = (rawLeftAxisY > 0.15 || rawLeftAxisY < -0.15) ? rawLeftAxisY : 0;
+        leftAxisX *= 0.025f;
+        leftAxisY *= 0.025f;
+        camera_pos.x += leftAxisX;
+        camera_pos.z += leftAxisY * -1.f;
+      }
     }
 
     gpu_batch_info_t bindings_info = {0};
