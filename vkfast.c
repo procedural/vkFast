@@ -3701,8 +3701,37 @@ GPU_API_PRE void GPU_API_POST vfBatchBindStorageRaw(gpu_handle_context_t context
 }
 
 GPU_API_PRE void GPU_API_POST vfBatchBindStorageSingle(gpu_handle_context_t context, uint64_t batch_id, int slot, uint64_t storage_id, const char * optionalFile, int optionalLine) {
+  vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
+  vf_handle_context_t * vkfast = batch->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+  REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
+
   RedStructMemberArray storageRaw = {0};
   vfStorageGetRaw(context, storage_id, &storageRaw, optionalFile, optionalLine);
+  vfBatchBindStorageRaw(context, batch_id, slot, 1, &storageRaw, optionalFile, optionalLine);
+}
+
+GPU_API_PRE void GPU_API_POST vfBatchBindStorageSingleLimited(gpu_handle_context_t context, uint64_t batch_id, int slot, uint64_t storage_id, uint64_t bytes_first, uint64_t bytes_count, const char * optionalFile, int optionalLine) {
+  vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
+  vf_handle_context_t * vkfast = batch->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+  REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
+
+  RedStructMemberArray storageRaw = {0};
+  vfStorageGetRaw(context, storage_id, &storageRaw, optionalFile, optionalLine);
+
+  const uint64_t range_bytes_first = storageRaw.arrayRangeBytesFirst;
+  const uint64_t range_bytes_count = storageRaw.arrayRangeBytesCount;
+
+  REDGPU_2_EXPECTWG(bytes_first < range_bytes_count);
+
+  const uint64_t available_bytes_count = range_bytes_count - bytes_first;
+
+  REDGPU_2_EXPECTWG(bytes_count <= available_bytes_count);
+
+  storageRaw.arrayRangeBytesFirst = range_bytes_first + bytes_first;
+  storageRaw.arrayRangeBytesCount = bytes_count;
+
   vfBatchBindStorageRaw(context, batch_id, slot, 1, &storageRaw, optionalFile, optionalLine);
 }
 

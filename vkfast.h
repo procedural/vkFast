@@ -155,6 +155,7 @@ GPU_API_PRE void GPU_API_POST vfBatchStorageCopyRaw(gpu_handle_context_t context
 GPU_API_PRE void GPU_API_POST vfBatchBindProgramPipelineCompute(gpu_handle_context_t context, uint64_t batch_id, uint64_t program_pipeline_compute_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(gpu_handle_context_t context, uint64_t batch_id, int slots_count, const RedStructDeclarationMember * slots, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchBindStorageSingle(gpu_handle_context_t context, uint64_t batch_id, int slot, uint64_t storage_id, const char * optional_file, int optional_line);
+GPU_API_PRE void GPU_API_POST vfBatchBindStorageSingleLimited(gpu_handle_context_t context, uint64_t batch_id, int slot, uint64_t storage_id, uint64_t bytes_first, uint64_t bytes_count, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchBindStorageRaw(gpu_handle_context_t context, uint64_t batch_id, int slot, int storage_raw_count, const RedStructMemberArray * storage_raw, const char * optional_file, int optional_line); // HLSL: RWByteAddressBuffer
 GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchBindVariablesCopy(gpu_handle_context_t context, uint64_t batch_id, unsigned variables_bytes_offset, unsigned data_bytes_count, const void * data, const char * optional_file, int optional_line);
