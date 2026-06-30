@@ -53,6 +53,24 @@ GPU_API_PRE void GPU_API_POST vfeBanzaiPointerGetRawLimited(const gpu_extra_banz
   out_banzai_pointer_raw[0] = raw;
 }
 
+GPU_API_PRE void GPU_API_POST vfeBanzaiPointerGetRawCapped(const gpu_extra_banzai_pointer_t * banzai_pointer, uint64_t bytes_count_cap, RedStructMemberArray * out_banzai_pointer_raw, const char * optionalFile, int optionalLine) {
+  vf_handle_t * storage = (vf_handle_t *)(void *)banzai_pointer->id;
+  vf_handle_context_t * vkfast = storage->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+  REDGPU_2_EXPECTWG(storage->handle_id == VF_HANDLE_ID_STORAGE);
+
+  const uint64_t available_bytes_count = storage->storage.arrayRangeInfo.arrayRangeBytesCount - banzai_pointer->bytes_first;
+
+  const uint64_t capped_bytes_count = bytes_count_cap <= available_bytes_count ? bytes_count_cap : available_bytes_count;
+
+  // Filling
+  RedStructMemberArray raw = {0};
+  raw.array = storage->storage.arrayRangeInfo.array;
+  raw.arrayRangeBytesFirst = banzai_pointer->bytes_first;
+  raw.arrayRangeBytesCount = capped_bytes_count;
+  out_banzai_pointer_raw[0] = raw;
+}
+
 GPU_API_PRE void GPU_API_POST vfeBanzaiBatchPointerCopyFromCpuToGpu(gpu_handle_context_t context, uint64_t batch_id, const gpu_extra_banzai_pointer_t * from_cpu_pointer, const gpu_extra_banzai_pointer_t * to_gpu_pointer, uint64_t bytes_count, const char * optionalFile, int optionalLine) {
   vfeBanzaiBatchStorageCopyFromCpuToGpu(context, batch_id, from_cpu_pointer->id, to_gpu_pointer->id, from_cpu_pointer->bytes_first, to_gpu_pointer->bytes_first, bytes_count, optionalFile, optionalLine);
 }
