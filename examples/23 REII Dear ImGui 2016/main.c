@@ -8,6 +8,14 @@ clang++ -shared -fvisibility=hidden "../../extra/Dear ImGui 2016/imgui_megafile.
 clang main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c libimgui.so ../Common/glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3.a -lgdi32
 exit
 #endif
+#if 0
+x86_64-w64-mingw32-clang++ -DVKFAST_INCLUDE_TERMUX_PATHS -shared -static-libgcc -static-libstdc++ -fPIC -fvisibility=hidden "../../extra/Dear ImGui 2016/imgui_megafile.cpp" -o imgui.dll
+x86_64-w64-mingw32-clang -DVKFAST_INCLUDE_TERMUX_PATHS main.c ../../vkfast.c /data/data/com.termux/files/home/RedGpuSDK/redgpu.c /data/data/com.termux/files/home/RedGpuSDK/redgpu_2.c /data/data/com.termux/files/home/RedGpuSDK/redgpu_32.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c ../Common/glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3.a -luser32 -lshell32 -lgdi32 imgui.dll
+cp a.exe /storage/emulated/0/Download/
+cp imgui.dll /storage/emulated/0/Download/
+cp ../../extra/Dear\ ImGui\ 2016/NotoSans.ttf /storage/emulated/0/Download/
+exit
+#endif
 
 #include "../../vkfast_ex.h"
 #include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
