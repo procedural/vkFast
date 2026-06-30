@@ -95,7 +95,7 @@ int main() {
     batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
     vfBatchBindProgramPipelineCompute(ctx, batch, pp, FF, LL);
     vfBatchBindNewBindingsSet(ctx, batch, countof(slots), slots, FF, LL);
-    vfBatchBindStorageSingle(ctx, batch, 0, storage_gpu_only.id, FF, LL);
+    vfBatchBindStorageSingleCapped(ctx, batch, 0, storage_gpu_only.id, 0, (128*1024*1024), FF, LL);
     vfBatchBindNewBindingsEnd(ctx, batch, FF, LL);
     struct Variables variables = {0};
     variables.ptr_offset_storage_input_gpu  = (unsigned)(uint64_t)storage_input_gpu.bytes_first;
@@ -142,4 +142,8 @@ int main() {
   };
   vfIdDestroy(countof(ids), ids, FF, LL);
   vfContextDeinit(ctx, FF, LL);
+
+  #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
+  system("pause");
+  #endif
 }
