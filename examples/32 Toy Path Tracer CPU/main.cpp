@@ -288,11 +288,11 @@ float iCapsule(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3 pa, vec3 pb
   vec3 ba = pb - pa;
   vec3 oa = ro - pa;
 
-  float baba = dot(ba,ba);
-  float bard = dot(ba,rd);
-  float baoa = dot(ba,oa);
-  float rdoa = dot(rd,oa);
-  float oaoa = dot(oa,oa);
+  float baba = dot(ba, ba);
+  float bard = dot(ba, rd);
+  float baoa = dot(ba, oa);
+  float rdoa = dot(rd, oa);
+  float oaoa = dot(oa, oa);
 
   float a = baba        - bard * bard;
   float b = baba * rdoa - baoa * bard;
