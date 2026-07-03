@@ -862,7 +862,7 @@ vec3 worldhit(vec3 ro, vec3 rd, vec2 dist, vec3 & normal) {
   d = opU(d, iCylinder   (ro,                  rd, d.xy(), normal, vec3(2.1,.1,-2), vec3(1.9,.5,-1.9), .08 ), 4.);
   d = opU(d, iCylinder   (ro-vec3( 1,.100,-2), rd, d.xy(), normal, vec3(0,0,0), vec3(0,.4,0), .1 ), 5.);
   d = opU(d, iTorus      (ro-vec3( 0,.250, 1), rd, d.xy(), normal, vec2(.2,.05)), 6.);
-  d = opU(d, iCapsule    (ro-vec3( 1,.000,-1), rd, d.xy(), normal, vec3(-.1,.1,-.1), vec3(.2,.4,.2), .1), 7.);
+  d = opU(d, iCapsule    (ro-vec3( 1,.000,-1), rd, d.xy(), normal, vec3(0,0,0), vec3(.2,.4,.2), .1), 7.);
   d = opU(d, iCone       (ro-vec3( 2,.200, 0), rd, d.xy(), normal, vec3(.1,0,0), vec3(-.1,.3,.1), .15, .05), 8.);
   d = opU(d, iRoundedBox (ro-vec3( 0,.250,-2), rd, d.xy(), normal, vec3(.15,.125,.15), .045), 9.);
   d = opU(d, iGoursat    (ro-vec3( 1,.275, 1), rd, d.xy(), normal, .16, .2), 10.);
