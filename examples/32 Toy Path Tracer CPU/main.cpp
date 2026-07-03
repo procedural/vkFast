@@ -1153,6 +1153,8 @@ int main() {
     0,255,0,255,  0,255,0,255,  0,255,0,255,  0,255,0,255,
     0,0,255,255,  0,0,255,255,  0,0,255,255,  0,0,255,255,
   };
+  float pixelsSamples[WINDOW_HEIGHT][WINDOW_WIDTH][4] = {};
+  int sampleCount = 0;
 
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
@@ -1182,12 +1184,24 @@ int main() {
         char b = (char)(color.b * 255.0f);
         char a = (char)(color.a * 255.0f);
 
-        pixels[y][x][0] = r;
-        pixels[y][x][1] = g;
-        pixels[y][x][2] = b;
-        pixels[y][x][3] = a;
+        pixelsSamples[y][x][0] += color.r;
+        pixelsSamples[y][x][1] += color.g;
+        pixelsSamples[y][x][2] += color.b;
+        pixelsSamples[y][x][3] += color.a;
       }
     }
+
+    #pragma omp parallel for
+    for (int y = 0; y < WINDOW_HEIGHT; y += 1) {
+      #pragma omp parallel for
+      for (int x = 0; x < WINDOW_WIDTH; x += 1) {
+        pixels[y][x][0] = (char)((pixelsSamples[y][x][0] / (float)(sampleCount+1)) * 255.0f);
+        pixels[y][x][1] = (char)((pixelsSamples[y][x][1] / (float)(sampleCount+1)) * 255.0f);
+        pixels[y][x][2] = (char)((pixelsSamples[y][x][2] / (float)(sampleCount+1)) * 255.0f);
+        pixels[y][x][3] = (char)((pixelsSamples[y][x][3] / (float)(sampleCount+1)) * 255.0f);
+       }
+    }
+    sampleCount += 1;
 
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
     vfDrawPixels(ctx, pixels, NULL, 2, gpu_threads, array65536, FF, LL);
