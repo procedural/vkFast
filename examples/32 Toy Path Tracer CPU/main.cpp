@@ -1208,9 +1208,10 @@ int main() {
     for (int y = 0; y < WINDOW_HEIGHT; y += 1) {
       #pragma omp parallel for
       for (int x = 0; x < WINDOW_WIDTH; x += 1) {
-        pixels[y][x][0] = (char)((pixelsSamples[y][x][0] / (float)(sampleCount+1)) * 255.0f);
+        // NOTE(Constantine): BGRA
+        pixels[y][x][2] = (char)((pixelsSamples[y][x][0] / (float)(sampleCount+1)) * 255.0f);
         pixels[y][x][1] = (char)((pixelsSamples[y][x][1] / (float)(sampleCount+1)) * 255.0f);
-        pixels[y][x][2] = (char)((pixelsSamples[y][x][2] / (float)(sampleCount+1)) * 255.0f);
+        pixels[y][x][0] = (char)((pixelsSamples[y][x][2] / (float)(sampleCount+1)) * 255.0f);
         pixels[y][x][3] = (char)((pixelsSamples[y][x][3] / (float)(sampleCount+1)) * 255.0f);
        }
     }
