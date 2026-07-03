@@ -677,9 +677,7 @@ float iRoundedBox(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3 size, fl
 
   // faces
   pos -= size;
-  pos.x = max(pos.x, pos.y);
-  pos.y = max(pos.y, pos.z);
-  pos.z = max(pos.z, pos.x);
+  pos = max(pos.xyz(), pos.yzx());
   if (min(min(pos.x, pos.y), pos.z) < 0.0) {
     if (t >= distBound.x && t <= distBound.y) {
       vec3 p = ro + rd * t;
