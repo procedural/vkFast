@@ -1163,6 +1163,19 @@ int main() {
       double mouse_x_position = 0.0;
       double mouse_y_position = 0.0;
       glfwGetCursorPos(window, &mouse_x_position, &mouse_y_position);
+      if (iMouse.x != mouse_x_position || iMouse.y != mouse_y_position) {
+        sampleCount = 0;
+        #pragma omp parallel for
+        for (int y = 0; y < WINDOW_HEIGHT; y += 1) {
+          #pragma omp parallel for
+          for (int x = 0; x < WINDOW_WIDTH; x += 1) {
+            pixelsSamples[y][x][0] = 0;
+            pixelsSamples[y][x][1] = 0;
+            pixelsSamples[y][x][2] = 0;
+            pixelsSamples[y][x][3] = 0;
+          }
+        }
+      }
       iMouse.x = mouse_x_position;
       iMouse.y = mouse_y_position;
     }
