@@ -4,6 +4,9 @@ g++ -O2 -fopenmp main.cpp *.o -I/home/linuxbrew/.linuxbrew/include/ -I/home/linu
 exit
 #endif
 
+// NOTE(Constantine):
+// Based on "Ray Tracing - Primitives" code by Reinder Nijhoff (@reindernijhoff), 2019, MIT License: https://www.shadertoy.com/view/tl23Rm
+
 #define GLM_FORCE_SWIZZLE
 
 #include "../../vkfast.h"
