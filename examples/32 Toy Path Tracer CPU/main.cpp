@@ -1031,10 +1031,10 @@ void mainImage(vec4 & fragColor, vec2 fragCoord) {
 
     float a = 0.5f * (1.0f + cos(iTime * f + p));
 
-    float rad0 = mix(0.1, 0.4, r2);
-    float rad1 = mix(0.2, 0.9, r0);
+    float rad_0 = mix(0.1, 0.4, r2);
+    float rad_1 = mix(0.2, 0.9, r0);
 
-    float radius = 0.5f * mix(rad0, rad1, a);
+    float radius = 0.5f * mix(rad_0, rad_1, a);
 
     vec2 delta = pos - center;
     float distance = length(delta);
