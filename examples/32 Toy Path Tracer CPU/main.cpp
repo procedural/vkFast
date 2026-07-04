@@ -14,8 +14,6 @@ exit
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLM
 #include "../Common/vkfast_examples_common.h"
 
-extern "C" void glDrawPixels(int width, int height, unsigned GL_RGBA_0x1908, unsigned GL_UNSIGNED_BYTE_0x1401, void * pixels);
-
 using namespace glm;
 typedef unsigned uint;
 
