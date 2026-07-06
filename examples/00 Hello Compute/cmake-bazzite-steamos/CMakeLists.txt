@@ -35,3 +35,10 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 # $ ln -s /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/share/vulkan/explicit_layer.d/ /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/etc/vulkan/
 # $ file /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/etc/vulkan/explicit_layer.d/
 # /home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/etc/vulkan/explicit_layer.d/: directory
+#
+# Aside from renaming redgpu.c to redgpu.cpp with '#define REDGPU_COMPILE_SWITCH 3', you can add the following lines to your code to enable Vulkan debugging manually:
+#
+# #include <dlfcn.h>
+#
+# setenv("VK_LAYER_PATH", "/home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/etc/vulkan/explicit_layer.d/", 0);
+# dlopen("/home/linuxbrew/RedGpuSDK/sdk/1.2.135.0/x86_64/lib/libVkLayer_khronos_validation.so", RTLD_LAZY);
