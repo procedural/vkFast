@@ -1,13 +1,16 @@
-#if 0
-rm -f a.out
-cc -std=c99 main.c ../reii/reii.c ../glfw/lib/libglfw.so.3 -lGL -lm
-LD_LIBRARY_PATH=../glfw/lib/ ./a.out
-exit
-#endif
+// NOTE(Constantine):
+// sudo dnf install glibc-devel.i686 libgcc.i686
+// sudo dnf install mesa-libGL-devel.i686 mesa-libGLU-devel.i686 freeglut-devel.i686
+// sudo dnf install glfw.i686 glfw-devel.i686
+// gcc -m32 main.c "../REII Backport/reii.c" -I. -lGL -lGLU -lglut -lm -lglfw
 
 // NOTE(Constantine): Depends on https://github.com/procedural/vkFast/tree/58b5e2679fbb914c348c031b7f6444aed902564a/extra/REII%20Backport
 
 // NOTE(Constantine): Press and hold E key to move the arm.
+
+#if defined(__linux__) && !defined(__ANDROID__)
+#define __ptr32
+#endif
 
 // NOTE(Constantine): Microsoft people are all fired. https://github.com/ocornut/imgui/issues/2043
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
@@ -179,8 +182,22 @@ int skin_COGLViewGetWeights(const char *filename)
   return 0;
 }
 
+#if defined(_WIN32)
 #include <Windows.h>
+#endif
 #include <GL/gl.h>
+
+#if defined(_WIN32)
+  #pragma comment(lib, "glu32.lib")
+  void __stdcall gluPerspective(
+    GLdouble fovy,
+    GLdouble aspect,
+    GLdouble zNear,
+    GLdouble zFar
+  );
+#else
+  #include <GL/glu.h>
+#endif
 
 void MultVectorByMatrix(tMatrix *mat, tVector *v,tVector *result)
 {
@@ -389,14 +406,6 @@ GLvoid COGLViewDrawScene()
   glFinish();
 }
 
-#pragma comment(lib, "glu32.lib")
-void __stdcall gluPerspective(
-  GLdouble fovy, 
-  GLdouble aspect, 
-  GLdouble zNear, 
-  GLdouble zFar
-);
-
 GLvoid COGLViewInitializeGL(GLsizei width, GLsizei height)
 {
 /// Local Variables ///////////////////////////////////////////////////////////
@@ -564,7 +573,7 @@ int main() {
     memcpy(m_DeformedMesh, m_Mesh.desc->frame[m_Mesh.desc->cur_frame]->data,sizeof(tColoredVertex) * m_Mesh.desc->pointCnt);
 
     // GET A DEFAULT WEIGHT SYSTEM
-    skin_COGLViewGetWeights("arm.wgt");
+    skin_COGLViewGetWeights("arm.WGT");
 
     // CREATE THE DISPLAY LIST FOR AN AXIS WITH ARROWS POINTING IN
     // THE POSITIVE DIRECTION Red = X, Green = Y, Blue = Z
