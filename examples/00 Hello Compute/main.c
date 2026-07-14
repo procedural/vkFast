@@ -7,7 +7,7 @@
 //\\rc rawbuild end
 
 //\\rc rawbuild begin clang-windows-64-bit
-//\\rc rawbuild require debug,release
+//\\rc rawbuild require debug,release,release-fast
 //\\rc rawbuild `clang`
 //\\rc rawbuild debug ` -g -O0`
 //\\rc rawbuild release,release-fast ` -O2`
