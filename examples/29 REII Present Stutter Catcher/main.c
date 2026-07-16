@@ -16,8 +16,6 @@
 //\\rc rawbuild ` /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so libimgui.so -lm`
 //\\rc rawbuild end
 
-// /home/linuxbrew/.linuxbrew/lib/libSDL3.so
-
 //\\rc rawbuild begin clang-windows-64-bit
 //\\rc rawbuild require debug,release,release-fast
 //\\rc rawbuild `clang++ -shared -fvisibility=hidden`
