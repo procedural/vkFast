@@ -100,7 +100,7 @@ static void internalProcessWmainArgumentsFatalError(std::wstring error, std::wst
 }
 
 static wchar_t const * internalCompilerCommandGetCompilerLicense() {
-  return g_tbbtros_compilerLicense;
+  return g_arc_compilerLicense;
 }
 
 static void internalCompilerCommandDefineMacro(TbbtrosStage1 & stage1, std::wstring macroName, int macroValue, TbbtrosBool8 isDefinedByCli) {

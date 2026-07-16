@@ -1,6 +1,6 @@
 #pragma once
 
-extern wchar_t const * g_tbbtros_compilerLicense;
+extern wchar_t const * g_arc_compilerLicense;
 
 #if !defined(TBBTROS_STAGE1_INTERNAL_COMPILER_TESTS) && !defined(TBBTROS_STAGE1_INTERNAL_COMPILER_TESTS_IGNORE)
 #error

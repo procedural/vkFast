@@ -1,4 +1,4 @@
-wchar_t const * g_tbbtros_compilerLicense = L""
+wchar_t const * g_arc_compilerLicense = L""
 L"\n"
 L"The source code for \"Arc\" compiler." L"\n"
 L"Copyright(C) 2024-2026 Constantine Tarasenkov (iamvfx@gmail.com). All rights reserved." L"\n"
