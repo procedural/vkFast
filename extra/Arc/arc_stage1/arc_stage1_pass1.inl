@@ -80,13 +80,29 @@ static void arc_s1p1_CompilerCommandIncludeSourceCodeFile(ArcStateStage1 & stage
   stage1.filesOriginalSourceCodeString.push_back(fileSourceCode);
 }
 
+static void arc_s1p1_CompilerCommandIncludeSourceCodeFileOrFolder(ArcStateStage1 & stage1, std::wstring filepath) {
+  std::wstring fileSourceCode = arc_s1p1_FileRead(filepath);
+
+  if (fileSourceCode.size() > 0) {
+    wchar_t lastCharacter = fileSourceCode[fileSourceCode.size() - 1];
+    if (lastCharacter != L'\n') {
+      fileSourceCode += L"\n";
+    }
+  }
+
+  stage1.sourceCodeWithoutCommentsString += fileSourceCode;
+  stage1.filesPath.push_back(filepath);
+  stage1.filesSize.push_back(fileSourceCode.size());
+  stage1.filesOriginalSourceCodeString.push_back(fileSourceCode);
+}
+
 static void arc_s1p1_InfoPrintAdditionalInfo(const char * const functionName, const ArcStateStage1 & stage1, const uint64_t * const optionalCursorPosition = NULL) {
   arc_wprintf_info(L"Compiler arguments:");
   for (uint64_t i = 0, count = stage1.wmainArguments.arguments.size(); i < count; i += 1) {
     arc_wprintf_info(L" %ls", stage1.wmainArguments.arguments[i].c_str());
 
     if (optionalCursorPosition != NULL && stage1.wmainArgumentsParameters.debugPrintSourceCodeUpToAndIncludingCursorPositionIsRequested == 0) {
-      if (i == 0) {
+      if (i == (count - 1)) {
         arc_wprintf_info(L" --debug-print-to-cursor-position %zu", optionalCursorPosition[0]);
       }
     }
