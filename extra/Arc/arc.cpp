@@ -26,6 +26,7 @@ int wmain(int ArgsCount, wchar_t * const * const Args) {
 
   ArcState state = {};
   arcStage1(&state, ArgsCount, Args);
+  arcRawbuild(&state);
   arcStage2(&state);
 
   return 0;
@@ -59,4 +60,5 @@ int main(int ArgsCount, char * const * const Args) {
 #endif
 
 #include "arc_stage1.inl"
+#include "arc_rawbuild.inl"
 #include "arc_stage2.inl"

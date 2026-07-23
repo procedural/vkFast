@@ -3,6 +3,8 @@ typedef struct ArcWmainArguments {
 } ArcWmainArguments;
 
 typedef struct ArcWmainArgumentsParameters {
+  ArcBool8 verboseIsEnabled;
+  ArcBool8 rawbuildIsEnabled;
   ArcBool8 debugPrintSourceCodeUpToAndIncludingCursorPositionIsRequested;
   uint64_t debugPrintSourceCodeUpToAndIncludingCursorPosition;
 } ArcWmainArgumentsParameters;
@@ -29,6 +31,7 @@ typedef struct ArcStateStage1 {
   std::vector<std::wstring>       filesOriginalSourceCodeString;
   ArcWmainArguments               wmainArguments;
   ArcWmainArgumentsParameters     wmainArgumentsParameters;
+
   ArcCompilerCommandDefinedMacros compilerCommandDefinedMacros;
   ArcTokenizer                    tokenizer;
 } ArcStateStage1;

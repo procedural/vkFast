@@ -55,9 +55,11 @@ void arcStage1(ArcState * state, int ArgsCount, wchar_t * const * const Args) {
 
   arc_s1p1_Stage1Pass1SourceCodeReplaceCommentsWithSpaceCharacters(stage1[0]);
   arc_s1p2_Stage1Pass2SourceCodeFillTokenizerStruct(stage1[0]);
-  arc_s1p3_Stage1Pass3ConditionalMacroTokenSyntaxChecks(stage1[0]);
-  arc_s1p4_Stage1Pass4ConditionalMacroTokenFalseCodePathsElimination(stage1[0]);
-  arc_s1p5_Stage1Pass5PrintPragmaMessageAndErrorMacros(stage1[0]);
+  if (stage1->wmainArgumentsParameters.rawbuildIsEnabled == 0) {
+    arc_s1p3_Stage1Pass3ConditionalMacroTokenSyntaxChecks(stage1[0]);
+    arc_s1p4_Stage1Pass4ConditionalMacroTokenFalseCodePathsElimination(stage1[0]);
+    arc_s1p5_Stage1Pass5PrintPragmaMessageAndErrorMacros(stage1[0]);
+  }
 
 #ifdef ARC_INTERNAL_COMPILER_DEBUG
   arc_s1p2_WprintfDebugTokenizer(stage1[0], arc_np_0000_optionalPrintPerLineTokensCount{1});

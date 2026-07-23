@@ -173,12 +173,14 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
     /*[1]*/ L"--license",
     /*[2]*/ L"--debug-print-to-cursor-position",
     /*[3]*/ L"--define",
+    /*[4]*/ L"--verbose",
   };
   int availableParametersArgumentsCount[] = {
     /*[0]*/ 0,
     /*[1]*/ 0,
     /*[2]*/ 1,
     /*[3]*/ 2,
+    /*[4]*/ 0,
   };
 
   for (size_t i = 0, argumentsCount = stage1.wmainArguments.arguments.size(); i < argumentsCount; i += 1) {
@@ -188,6 +190,13 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
       goto help;
     }
     if (i == 0) {
+      continue;
+    }
+    if (argument == L"rawbuild") {
+      if (i != 1) {
+        arc_s1p1_ProcessWmainArgumentsFatalError(L"Fatal command line interface error: parameter \"%ls\" must come first in the command line, before any other command." "\n", L"rawbuild", stage1);
+      }
+      stage1.wmainArgumentsParameters.rawbuildIsEnabled = 1;
       continue;
     }
     if (argument == availableParameters[0]) {
@@ -273,8 +282,33 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
 
       continue;
     }
+    if (argument == availableParameters[4]) {
+      const int             parameterIndex     = 4;
+      const wchar_t * const parameter          = availableParameters[parameterIndex];
+      int                   parameterArgsCount = availableParametersArgumentsCount[parameterIndex];
 
-    arc_s1p1_CompilerCommandIncludeSourceCodeFile(stage1, argument);
+      if (i + parameterArgsCount >= argumentsCount) { arc_s1p1_ProcessWmainArgumentsFatalError(L"Fatal command line interface error: not enough arguments for parameter \"%ls\"." "\n", parameter, stage1); }
+
+      if (stage1.wmainArgumentsParameters.verboseIsEnabled == 1) {
+        continue;
+      }
+
+      stage1.wmainArgumentsParameters.verboseIsEnabled = 1;
+
+      if (stage1.wmainArgumentsParameters.verboseIsEnabled == 1) {
+        arc_wprintf_info(L"[--verbose][arc_stage1_pass1.inl] Verbose is enabled via command line interface." "\n");
+      }
+
+      continue;
+    }
+
+    // NOTE(Constantine)(Jul 23, 2026):
+    // Paths without command line parameters are considered to be files by Arc and files or folders by Arc rawbuild.
+    if (stage1.wmainArgumentsParameters.rawbuildIsEnabled == 1) {
+      arc_s1p1_CompilerCommandIncludeSourceCodeFileOrFolder(stage1, argument);
+    } else {
+      arc_s1p1_CompilerCommandIncludeSourceCodeFile(stage1, argument);
+    }
   }
 }
 

@@ -393,6 +393,33 @@ static void arc_s1p2_CheckCompilerSupportsMacroOtherwiseFatalError(const ArcStat
 }
 
 static void arc_s1p2_TokenizerParseMulticharacterMacro(ArcStateStage1 & stage1, uint64_t & i, uint64_t count) {
+  // NOTE(Constantine)(Jul 23, 2026): Skipping parsing all macros when rawbuild is enabled.
+  if (stage1.wmainArgumentsParameters.rawbuildIsEnabled == 1) {
+    // NOTE(Constantine): Skipping everything else up to and including the new line character, with \ in mind.
+    for (ArcBool8 continueParsingToNextLine = 0; i < count;) {
+      wchar_t character1 = arc_s1p1_PeekCharacter(stage1, i, 0);
+
+      if (character1 == L'\\') {
+        continueParsingToNextLine = 1;
+        i += 1; // Skipping character.
+        continue;
+      }
+      if (character1 == L'\n' && continueParsingToNextLine == 1) {
+        continueParsingToNextLine = 0;
+        i += 1; // Skipping character.
+        continue;
+      }
+      if (character1 == L'\n' && continueParsingToNextLine == 0) {
+        i += 1; // Skipping character.
+        break;
+      }
+
+      i += 1; // Skipping character.
+    }
+
+    return;
+  }
+
   // NOTE(Constantine): Parsing macro start hash character.
   {
     wchar_t character1 = arc_s1p1_PeekCharacter(stage1, i, 0);
@@ -437,10 +464,10 @@ static void arc_s1p2_TokenizerParseMulticharacterMacro(ArcStateStage1 & stage1, 
   {
     // NOTE(Constantine): Skip possible space and new line characters.
     arc_s1p2_TokenizerParseMulticharacterMacroSkipSpaceCharacters(stage1, i, count);
-    
+
     // NOTE(Constantine): Advancing the initial offset after skipping possible space and new line characters above.
     tokenMacroIdentifier.stringOffset = i;
-    
+
     // NOTE(Constantine): Parsing macro identifier.
     arc_s1p2_CompilerCheckCharacterIsIdentifierBeginningOtherwiseFatalError(arc_s1p1_PeekCharacter(stage1, i, 0), __FUNCTION__, stage1, i);
     arc_s1p2_TokenizerParseMulticharacterIdentifier(stage1, i, count, &tokenMacroIdentifier, 0);
