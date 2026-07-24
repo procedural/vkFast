@@ -47,9 +47,7 @@ extern wchar_t const * g_arc_compilerLicense;
 #if ARC_COMPILER_OS == ARC_COMPILER_OS_WINDOWS
 #include <windows.h>  // For SetConsoleOutputCP
 #endif
-#if ARC_COMPILER_OS == ARC_COMPILER_OS_LINUX
 #include <filesystem> // For std::filesystem::path
-#endif
 #include <assert.h>   // For assert
 #include <stdint.h>   // For uint64_t
 #include <stdio.h>    // For wprintf

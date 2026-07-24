@@ -32,12 +32,8 @@ static uint64_t arc_s1p1_HashFNV1a64(uint64_t bytesCount, const char * const byt
 }
 
 static std::wstring arc_s1p1_FileRead(std::wstring filepath) {
-#if ARC_COMPILER_OS == ARC_COMPILER_OS_WINDOWS
-  std::wifstream wif(filepath);
-#else
   std::filesystem::path std_filepath(filepath);
   std::wifstream wif(std_filepath);
-#endif
   wif.imbue(std::locale("en_US.UTF-8"));
   std::wostringstream ss;
   ss << wif.rdbuf();
@@ -46,13 +42,9 @@ static std::wstring arc_s1p1_FileRead(std::wstring filepath) {
 }
 
 static void arc_s1p1_FileWrite(std::wstring filepath, std::wstring writeString) {
-#if ARC_COMPILER_OS == ARC_COMPILER_OS_WINDOWS
-  std::wofstream fs(filepath, std::wofstream::out);
-#else
   std::filesystem::path std_filepath(filepath);
   std::wofstream fs(std_filepath, std::wofstream::out);
   fs.imbue(std::locale("en_US.UTF-8"));
-#endif
   fs << writeString;
   fs.close();
 }
