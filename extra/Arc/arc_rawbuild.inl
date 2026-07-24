@@ -19,5 +19,12 @@ void arcRawbuild(ArcState * state) {
     for (uint64_t i = 0, count = stage1->filesSize.size(); i < count; i += 1) {
       arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] [%d]: %zu" "\n", i, stage1->filesSize[i]);
     }
+    arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] stage1->filesPath is file (0) or folder (1) or other/error/notfound (-1):" "\n");
+    for (uint64_t i = 0, count = stage1->filesPath.size(); i < count; i += 1) {
+      // To free
+      const char * const cpath = arcCommonMallocWcharToChar(stage1->filesPath[i].c_str());
+      arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] [%d]: %d" "\n", i, arcCommonGetSystemPathType(cpath));
+      free((void *)cpath);
+    }
   }
 }
