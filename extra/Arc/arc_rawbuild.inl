@@ -15,15 +15,15 @@ void arcRawbuild(ArcState * state) {
     ArcBool8 pathCanNotBeRead   = 0;
     ArcBool8 folderWasRequested = 0;
     {
-      arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] stage1->filesPath array printing:" "\n");
+      arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] stage1->filesPath (count: %zu) array printing:" "\n", stage1->filesPath.size());
       for (uint64_t i = 0, count = stage1->filesPath.size(); i < count; i += 1) {
         arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] [%d]: \"%ls\"" "\n", i, stage1->filesPath[i].c_str());
       }
-      arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] stage1->filesSize array printing:" "\n");
+      arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] stage1->filesSize (count: %zu) array printing:" "\n", stage1->filesSize.size());
       for (uint64_t i = 0, count = stage1->filesSize.size(); i < count; i += 1) {
         arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] [%d]: %zu" "\n", i, stage1->filesSize[i]);
       }
-      arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] stage1->filesPath is file (0) or folder (1) or other/error/notfound (-1):" "\n");
+      arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] stage1->filesPath (count: %zu) array printing, file (0) or folder (1) or other/error/notfound (-1):" "\n", stage1->filesPath.size());
       for (uint64_t i = 0, count = stage1->filesPath.size(); i < count; i += 1) {
         // To free
         const char * const cpath = arcCommonMallocWcharToChar(stage1->filesPath[i].c_str());
@@ -37,6 +37,10 @@ void arcRawbuild(ArcState * state) {
         if (type == 1) {
           folderWasRequested = 1;
         }
+      }
+      arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] state->rawbuild.lookInFoldersForFileExtensions (count: %zu) array printing:" "\n", state->rawbuild.lookInFoldersForFileExtensions.size());
+      for (uint64_t i = 0, count = state->rawbuild.lookInFoldersForFileExtensions.size(); i < count; i += 1) {
+        arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] [%d]: \"%ls\"" "\n", i, state->rawbuild.lookInFoldersForFileExtensions[i].c_str());
       }
     }
 

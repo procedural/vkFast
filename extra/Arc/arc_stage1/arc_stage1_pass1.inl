@@ -159,7 +159,7 @@ static void arc_s1p1_CompilerCommandDefineMacro(ArcStateStage1 & stage1, std::ws
   stage1.compilerCommandDefinedMacros.macrosIsDefinedByCli.push_back(isDefinedByCli);
 }
 
-static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
+static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild & rawbuild) {
   const wchar_t * const availableParameters[] = {
     /*[0]*/ L"--help",
     /*[1]*/ L"--license",
@@ -167,6 +167,7 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
     /*[3]*/ L"--define",
     /*[4]*/ L"--verbose",
     /*[5]*/ L"rawbuild",
+    /*[6]*/ L"--rawbuild-folder-file-ext",
   };
   int availableParametersArgumentsCount[] = {
     /*[0]*/ 0,
@@ -175,14 +176,16 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
     /*[3]*/ 2,
     /*[4]*/ 0,
     /*[5]*/ 0,
+    /*[6]*/ 1,
   };
   int parametersOrderInHelpPrint[] = {
-    /*[0]*/ 5,
-    /*[1]*/ 0,
-    /*[2]*/ 1,
-    /*[3]*/ 2,
-    /*[4]*/ 3,
-    /*[5]*/ 4,
+    5,
+    0,
+    1,
+    2,
+    3,
+    4,
+    6,
   };
 
   for (size_t i = 0, argumentsCount = stage1.wmainArguments.arguments.size(); i < argumentsCount; i += 1) {
@@ -199,6 +202,19 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
         arc_s1p1_ProcessWmainArgumentsFatalError(L"Fatal command line interface error: parameter \"%ls\" must come first in the command line, before any other command." "\n", L"rawbuild", stage1);
       }
       stage1.wmainArgumentsParameters.rawbuildIsEnabled = 1;
+      continue;
+    }
+    if (argument == availableParameters[6]) {
+      const int             parameterIndex     = 6;
+      const wchar_t * const parameter          = availableParameters[parameterIndex];
+      int                   parameterArgsCount = availableParametersArgumentsCount[parameterIndex];
+
+      if (i + parameterArgsCount >= argumentsCount) { arc_s1p1_ProcessWmainArgumentsFatalError(L"Fatal command line interface error: not enough arguments for parameter \"%ls\"." "\n", parameter, stage1); }
+
+      std::wstring argument0 = std::wstring(arguments[++i]);
+
+      rawbuild.lookInFoldersForFileExtensions.push_back(argument0);
+
       continue;
     }
     if (argument == availableParameters[0]) {
@@ -227,6 +243,11 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
             if (parameterArgumentIndex == 1) { arc_wprintf_cli(L" <macro value 0 for undefined or 1 for defined>"); }
             continue;
           }
+
+          if (i == 6) {
+            if (parameterArgumentIndex == 0) { arc_wprintf_cli(L" <file extension name without a dot>"); }
+            continue;
+          }
         }
         arc_wprintf_cli(L"\n");
       }
@@ -249,7 +270,7 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
 
       if (i + parameterArgsCount >= argumentsCount) { arc_s1p1_ProcessWmainArgumentsFatalError(L"Fatal command line interface error: not enough arguments for parameter \"%ls\"." "\n", parameter, stage1); }
 
-      std::wstring argument0 = std::wstring(arguments[i + 1]);
+      std::wstring argument0 = std::wstring(arguments[++i]);
 
       int position = 0;
       try { position = std::stoi(argument0); } catch(...) { arc_s1p1_ProcessWmainArgumentsFatalError(L"Fatal command line interface error: argument[0] for parameter \"%ls\" is an invalid number." "\n", parameter, stage1); }
@@ -266,8 +287,8 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
 
       if (i + parameterArgsCount >= argumentsCount) { arc_s1p1_ProcessWmainArgumentsFatalError(L"Fatal command line interface error: not enough arguments for parameter \"%ls\"." "\n", parameter, stage1); }
 
-      std::wstring argument0 = std::wstring(arguments[i + 1]);
-      std::wstring argument1 = std::wstring(arguments[i + 2]);
+      std::wstring argument0 = std::wstring(arguments[++i]);
+      std::wstring argument1 = std::wstring(arguments[++i]);
 
       std::wstring macroName  = argument0;
       int          macroValue = 0;

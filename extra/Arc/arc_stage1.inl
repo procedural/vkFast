@@ -28,7 +28,7 @@ void arcStage1(ArcState * state, int ArgsCount, wchar_t * const * const Args) {
   }
 #endif
 
-  arc_s1p1_ProcessWmainArguments(stage1[0]);
+  arc_s1p1_ProcessWmainArguments(stage1[0], state->rawbuild);
 
 #ifdef ARC_INTERNAL_COMPILER_DEBUG
   {
