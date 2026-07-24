@@ -28,6 +28,15 @@ int wmain(int ArgsCount, wchar_t * const * const Args) {
   for (int i = 0; i < ArgsCount; i += 1) {
     state.stage1.wmainArguments.arguments.push_back(std::wstring(Args[i]));
   }
+#ifdef ARC_INTERNAL_COMPILER_TESTS
+  {
+    #if ARC_COMPILER_OS == ARC_COMPILER_OS_LINUX
+    state.stage1.wmainArguments.arguments.push_back(L"/home/constantine/Desktop/main.arc");
+    #else
+    #error
+    #endif
+  }
+#endif
   arcStage1(&state, /*onlyProcessWmainArguments*/1);
   arcRawbuildBeforeStage1(&state);
   arcStage1(&state, /*onlyProcessWmainArguments*/0);

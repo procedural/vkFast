@@ -14,19 +14,11 @@ void arcStage1(ArcState * state, ArcBool8 onlyProcessWmainArguments) {
     arc_s1p1_HashFNV1a64(sizeof("foobar")-1, "foobar") == 0x85944171f73967e8
   );
 
-#ifdef ARC_INTERNAL_COMPILER_TESTS
-  {
-    #if ARC_COMPILER_OS == ARC_COMPILER_OS_LINUX
-    stage1->wmainArguments.arguments.push_back(L"/home/constantine/Desktop/main.arc");
-    #else
-    #error
-    #endif
-  }
-#endif
-
-  arc_s1p1_ProcessWmainArguments(stage1[0], state->rawbuild);
-  if (onlyProcessWmainArguments == 1) {
-    return;
+  if (onlyProcessWmainArguments == 1 || (onlyProcessWmainArguments == 0 && stage1->wmainArgumentsParameters.rawbuildIsEnabled == 1)) {
+    arc_s1p1_ProcessWmainArguments(stage1[0], state->rawbuild);
+    if (onlyProcessWmainArguments == 1) {
+      return;
+    }
   }
 
 #ifdef ARC_INTERNAL_COMPILER_DEBUG

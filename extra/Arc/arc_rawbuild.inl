@@ -6,7 +6,7 @@ void arcRawbuildBeforeStage1(ArcState * state) {
   const ArcBool8 arcVerboseIsEnabled = stage1->wmainArgumentsParameters.verboseIsEnabled; // Needed for arc_wprintf_verbose
 
   if (stage1->wmainArgumentsParameters.rawbuildIsEnabled == 0) {
-    arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] Arc rawbuild is not enabled, skipping arcRawbuild() stage." "\n");
+    arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] Arc rawbuild is not enabled, skipping arcRawbuildBeforeStage1() stage." "\n");
     return;
   }
 
@@ -63,4 +63,12 @@ void arcRawbuildBeforeStage1(ArcState * state) {
 }
 
 void arcRawbuildAfterStage1(ArcState * state) {
+  ArcStateStage1 * const stage1 = &state->stage1;
+
+  const ArcBool8 arcVerboseIsEnabled = stage1->wmainArgumentsParameters.verboseIsEnabled; // Needed for arc_wprintf_verbose
+
+  if (stage1->wmainArgumentsParameters.rawbuildIsEnabled == 0) {
+    arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] Arc rawbuild is not enabled, skipping arcRawbuildAfterStage1() stage." "\n");
+    return;
+  }
 }
