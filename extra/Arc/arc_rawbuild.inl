@@ -1,6 +1,6 @@
 #include "arc.h"
 
-void arcRawbuild(ArcState * state) {
+void arcRawbuildBeforeStage1(ArcState * state) {
   ArcStateStage1 * const stage1 = &state->stage1;
 
   const ArcBool8 arcVerboseIsEnabled = stage1->wmainArgumentsParameters.verboseIsEnabled; // Needed for arc_wprintf_verbose
@@ -60,4 +60,7 @@ void arcRawbuild(ArcState * state) {
       exit(1);
     }
   }
+}
+
+void arcRawbuildAfterStage1(ArcState * state) {
 }

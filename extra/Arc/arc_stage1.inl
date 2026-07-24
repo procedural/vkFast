@@ -6,17 +6,13 @@
 #include "arc_stage1/arc_stage1_pass4.inl" // NOTE(Constantine): Pass 4. Eliminates false code paths of conditional macro tokens.
 #include "arc_stage1/arc_stage1_pass5.inl" // NOTE(Constantine): Pass 5. Prints and removes encountered '#pragma message' and '#error' macro tokens.
 
-void arcStage1(ArcState * state, int ArgsCount, wchar_t * const * const Args) {
+void arcStage1(ArcState * state, ArcBool8 onlyProcessWmainArguments) {
   ArcStateStage1 * const stage1 = &state->stage1;
   
   arc_static_assert(
     "Fatal internal compiler error: invalid expected output from the internal FNV1a64 hash function." &&
     arc_s1p1_HashFNV1a64(sizeof("foobar")-1, "foobar") == 0x85944171f73967e8
   );
-
-  for (int i = 0; i < ArgsCount; i += 1) {
-    stage1->wmainArguments.arguments.push_back(std::wstring(Args[i]));
-  }
 
 #ifdef ARC_INTERNAL_COMPILER_TESTS
   {
@@ -29,6 +25,9 @@ void arcStage1(ArcState * state, int ArgsCount, wchar_t * const * const Args) {
 #endif
 
   arc_s1p1_ProcessWmainArguments(stage1[0], state->rawbuild);
+  if (onlyProcessWmainArguments == 1) {
+    return;
+  }
 
 #ifdef ARC_INTERNAL_COMPILER_DEBUG
   {

@@ -25,8 +25,13 @@ int wmain(int ArgsCount, wchar_t * const * const Args) {
   #endif
 
   ArcState state = {};
-  arcStage1(&state, ArgsCount, Args);
-  arcRawbuild(&state);
+  for (int i = 0; i < ArgsCount; i += 1) {
+    state.stage1.wmainArguments.arguments.push_back(std::wstring(Args[i]));
+  }
+  arcStage1(&state, /*onlyProcessWmainArguments*/1);
+  arcRawbuildBeforeStage1(&state);
+  arcStage1(&state, /*onlyProcessWmainArguments*/0);
+  arcRawbuildAfterStage1(&state);
   arcStage2(&state);
 
   return 0;
