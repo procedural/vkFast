@@ -14,7 +14,7 @@ extern wchar_t const * g_arc_compilerLicense;
 #define ARC_COMPILER_OS_WINDOWS   2
 
 #ifndef ARC_COMPILER_OS
-  #if defined(__linux__) && !defined(__ANDROID__)
+  #if defined(__linux__)
     #define ARC_COMPILER_OS ARC_COMPILER_OS_LINUX
   #endif
   #if defined(_WIN32)
