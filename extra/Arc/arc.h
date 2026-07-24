@@ -76,3 +76,62 @@ typedef struct ArcState {
 void arcStage1(ArcState * state, int ArgsCount, wchar_t * const * const Args);
 void arcRawbuild(ArcState * state);
 void arcStage2(ArcState * state);
+
+// Common
+
+#include <sys/types.h>
+#include <sys/stat.h>
+
+// Handle the naming differences between Windows and Linux/POSIX
+#if defined(_WIN32) || defined(_WIN64)
+  #define ARC_COMMON_STAT_STRUCT struct _stat
+  #define ARC_COMMON_STAT_FUNC _stat
+  // Windows defines S_IFDIR and S_IFREG, but lacks the POSIX macros
+  #ifndef S_ISDIR
+    #define S_ISDIR(mode) (((mode) & _S_IFMT) == _S_IFDIR)
+  #endif
+  #ifndef S_ISREG
+    #define S_ISREG(mode) (((mode) & _S_IFMT) == _S_IFREG)
+  #endif
+#else
+  #include <unistd.h>
+  #define ARC_COMMON_STAT_STRUCT struct stat
+  #define ARC_COMMON_STAT_FUNC stat
+#endif
+
+const char * const arcCommonMallocWcharToChar(const wchar_t * const wstr) {
+  // Determine required buffer size (passing NULL as the destination)
+  size_t size = wcstombs(NULL, wstr, 0);
+  if (size == (size_t)-1) {
+    return NULL;
+  }
+
+  // Allocate memory for the destination char string (+1 for null-terminator)
+  char * str = (char *)calloc(1, size + 1);
+  if (str == NULL) {
+    return NULL;
+  }
+
+  // Perform the conversion
+  wcstombs(str, wstr, size + 1);
+
+  return (const char * const)str;
+}
+
+// Checks the system path type.
+// Returns: 0 if Regular File, 1 if Folder/Directory, -1 if Path Not Found/Error/Other Type
+int arcCommonGetSystemPathType(const char * const path) {
+  ARC_COMMON_STAT_STRUCT info = {0};
+
+  if (ARC_COMMON_STAT_FUNC(path, &info) != 0) {
+    return -1; // Path does not exist or is inaccessible
+  }
+
+  if (S_ISDIR(info.st_mode)) {
+    return 1; // It's a folder/directory
+  } else if (S_ISREG(info.st_mode)) {
+    return 0; // It's a regular file
+  }
+
+  return -1; // Other type (e.g., pipe, socket, device, etc.)
+}
