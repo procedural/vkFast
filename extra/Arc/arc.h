@@ -62,6 +62,7 @@ extern wchar_t const * g_arc_compilerLicense;
 #define arc_wprintf_fatalError wprintf
 #define arc_wprintf_info       wprintf
 #define arc_wprintf_debug      wprintf
+#define arc_wprintf_verbose    if (arcVerboseIsEnabled == 1) wprintf
 
 typedef unsigned char ArcBool8;
 
