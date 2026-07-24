@@ -69,6 +69,7 @@ typedef unsigned char ArcBool8;
 
 typedef struct ArcState {
   ArcStateStage1 stage1;
+  ArcRawbuild    rawbuild;
 } ArcState;
 
 void arcStage1(ArcState * state, int ArgsCount, wchar_t * const * const Args);

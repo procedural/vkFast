@@ -166,6 +166,7 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
     /*[2]*/ L"--debug-print-to-cursor-position",
     /*[3]*/ L"--define",
     /*[4]*/ L"--verbose",
+    /*[5]*/ L"rawbuild",
   };
   int availableParametersArgumentsCount[] = {
     /*[0]*/ 0,
@@ -173,6 +174,15 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
     /*[2]*/ 1,
     /*[3]*/ 2,
     /*[4]*/ 0,
+    /*[5]*/ 0,
+  };
+  int parametersOrderInHelpPrint[] = {
+    /*[0]*/ 5,
+    /*[1]*/ 0,
+    /*[2]*/ 1,
+    /*[3]*/ 2,
+    /*[4]*/ 3,
+    /*[5]*/ 4,
   };
 
   for (size_t i = 0, argumentsCount = stage1.wmainArguments.arguments.size(); i < argumentsCount; i += 1) {
@@ -203,21 +213,20 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
       arc_wprintf_cli(L"\n");
       arc_wprintf_cli(L"Parameters:" L"\n");
       for (int parameterIndex = 0, parametersCount = sizeof(availableParameters) / sizeof(availableParameters[0]); parameterIndex < parametersCount; parameterIndex += 1) {
-        arc_wprintf_cli(L"  %ls", availableParameters[parameterIndex]);
-        for (int parameterArgumentIndex = 0; parameterArgumentIndex < availableParametersArgumentsCount[parameterIndex]; parameterArgumentIndex += 1) {
+        int i = parametersOrderInHelpPrint[parameterIndex];
 
-          if (parameterIndex == 2) {
+        arc_wprintf_cli(L"  %ls", availableParameters[i]);
+        for (int parameterArgumentIndex = 0; parameterArgumentIndex < availableParametersArgumentsCount[i]; parameterArgumentIndex += 1) {
+          if (i == 2) {
             if (parameterArgumentIndex == 0) { arc_wprintf_cli(L" <position value>"); }
             continue;
           }
 
-          if (parameterIndex == 3) {
+          if (i == 3) {
             if (parameterArgumentIndex == 0) { arc_wprintf_cli(L" <macro name>"); }
             if (parameterArgumentIndex == 1) { arc_wprintf_cli(L" <macro value 0 for undefined or 1 for defined>"); }
             continue;
           }
-
-          arc_wprintf_cli(L" <value>");
         }
         arc_wprintf_cli(L"\n");
       }
