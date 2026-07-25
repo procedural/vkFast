@@ -101,7 +101,7 @@ static void arc_s1p5_DebugSaveTokensAsSourceCodeString(const ArcStateStage1 & st
     }
   }
 
-  arc_s1p1_FileWrite(saveToFilepath.v, out);
+  arc_xs_FileWrite(saveToFilepath.v, out);
 }
 
 static void arc_s1p5_Stage1Pass5PrintPragmaMessageAndErrorMacros(ArcStateStage1 & stage1) {

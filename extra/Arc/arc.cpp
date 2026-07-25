@@ -24,7 +24,7 @@ int wmain(int ArgsCount, wchar_t * const * const Args) {
   SetConsoleOutputCP(65001);
   #endif
 
-  arcCrossStageInitialChecks();
+  arc_xs_InitialChecks();
 
   ArcState state = {};
   for (int i = 0; i < ArgsCount; i += 1) {

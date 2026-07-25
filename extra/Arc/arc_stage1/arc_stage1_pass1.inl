@@ -20,63 +20,6 @@ static void arc_s1p1_DebugDataBreakpoint(std::wstring breakpointName) {
 }
 #endif
 
-static std::wstring arc_s1p1_FileRead(std::wstring filepath) {
-  std::filesystem::path std_filepath(filepath);
-  std::wifstream wif(std_filepath);
-  wif.imbue(std::locale("en_US.UTF-8"));
-  std::wostringstream ss;
-  ss << wif.rdbuf();
-  std::wstring s = ss.str();
-  return s;
-}
-
-static void arc_s1p1_FileWrite(std::wstring filepath, std::wstring writeString) {
-  std::filesystem::path std_filepath(filepath);
-  std::wofstream fs(std_filepath, std::wofstream::out);
-  fs.imbue(std::locale("en_US.UTF-8"));
-  fs << writeString;
-  fs.close();
-}
-
-static void arc_s1p1_CompilerCommandIncludeSourceCodeFile(ArcStateStage1 & stage1, std::wstring filepath) {
-  std::wstring fileSourceCode = arc_s1p1_FileRead(filepath);
-
-  if (fileSourceCode.size() > 0) {
-    // Do nothing then.
-  } else {
-    // Skip empty file.
-    return;
-  }
-
-  {
-    wchar_t lastCharacter = fileSourceCode[fileSourceCode.size() - 1];
-    if (lastCharacter != L'\n') {
-      fileSourceCode += L"\n";
-    }
-  }
-
-  stage1.sourceCodeWithoutCommentsString += fileSourceCode;
-  stage1.filesPath.push_back(filepath);
-  stage1.filesSize.push_back(fileSourceCode.size());
-  stage1.filesOriginalSourceCodeString.push_back(fileSourceCode);
-}
-
-static void arc_s1p1_CompilerCommandIncludeSourceCodeFileOrFolder(ArcStateStage1 & stage1, std::wstring filepath) {
-  std::wstring fileSourceCode = arc_s1p1_FileRead(filepath);
-
-  if (fileSourceCode.size() > 0) {
-    wchar_t lastCharacter = fileSourceCode[fileSourceCode.size() - 1];
-    if (lastCharacter != L'\n') {
-      fileSourceCode += L"\n";
-    }
-  }
-
-  stage1.sourceCodeWithoutCommentsString += fileSourceCode;
-  stage1.filesPath.push_back(filepath);
-  stage1.filesSize.push_back(fileSourceCode.size());
-  stage1.filesOriginalSourceCodeString.push_back(fileSourceCode);
-}
-
 static void arc_s1p1_InfoPrintAdditionalInfo(const char * const functionName, const ArcStateStage1 & stage1, const uint64_t * const optionalCursorPosition = NULL) {
   arc_wprintf_info(L"Compiler arguments:");
   for (uint64_t i = 0, count = stage1.wmainArguments.arguments.size(); i < count; i += 1) {
@@ -149,32 +92,32 @@ static void arc_s1p1_CompilerCommandDefineMacro(ArcStateStage1 & stage1, std::ws
 }
 
 static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild & rawbuild) {
+  enum {
+    CLI_PARAM_RAWBUILD = 0,
+    CLI_PARAM_HELP,
+    CLI_PARAM_LICENSE,
+    CLI_PARAM_DEBUG_PRINT_TO_CURSOR_POSITION,
+    CLI_PARAM_DEFINE,
+    CLI_PARAM_VERBOSE,
+    CLI_PARAM_RAWBUILD_FOLDER_FILE_EXT,
+  };
   const wchar_t * const availableParameters[] = {
-    /*[0]*/ L"--help",
-    /*[1]*/ L"--license",
-    /*[2]*/ L"--debug-print-to-cursor-position",
-    /*[3]*/ L"--define",
-    /*[4]*/ L"--verbose",
-    /*[5]*/ L"rawbuild",
-    /*[6]*/ L"--rawbuild-folder-file-ext",
+    [CLI_PARAM_RAWBUILD] = L"rawbuild",
+    [CLI_PARAM_HELP]     = L"--help",
+    [CLI_PARAM_LICENSE]  = L"--license",
+    [CLI_PARAM_DEBUG_PRINT_TO_CURSOR_POSITION] = L"--debug-print-to-cursor-position",
+    [CLI_PARAM_DEFINE]   = L"--define",
+    [CLI_PARAM_VERBOSE]  = L"--verbose",
+    [CLI_PARAM_RAWBUILD_FOLDER_FILE_EXT] = L"--rawbuild-folder-file-ext",
   };
   int availableParametersArgumentsCount[] = {
-    /*[0]*/ 0,
-    /*[1]*/ 0,
-    /*[2]*/ 1,
-    /*[3]*/ 2,
-    /*[4]*/ 0,
-    /*[5]*/ 0,
-    /*[6]*/ 1,
-  };
-  int parametersOrderInHelpPrint[] = {
-    5,
-    0,
-    1,
-    2,
-    3,
-    4,
-    6,
+    [CLI_PARAM_RAWBUILD] = 0,
+    [CLI_PARAM_HELP]     = 0,
+    [CLI_PARAM_LICENSE]  = 0,
+    [CLI_PARAM_DEBUG_PRINT_TO_CURSOR_POSITION] = 1,
+    [CLI_PARAM_DEFINE]   = 2,
+    [CLI_PARAM_VERBOSE]  = 0,
+    [CLI_PARAM_RAWBUILD_FOLDER_FILE_EXT] = 1,
   };
 
   for (size_t i = 0, argumentsCount = stage1.wmainArguments.arguments.size(); i < argumentsCount; i += 1) {
@@ -186,15 +129,15 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild 
     if (i == 0) {
       continue;
     }
-    if (argument == L"rawbuild") {
+    if (argument == availableParameters[CLI_PARAM_RAWBUILD]) {
       if (i != 1) {
         arc_s1p1_ProcessWmainArgumentsFatalError(L"Fatal command line interface error: parameter \"%ls\" must come first in the command line, before any other command." "\n", L"rawbuild", stage1);
       }
       stage1.wmainArgumentsParameters.rawbuildIsEnabled = 1;
       continue;
     }
-    if (argument == availableParameters[6]) {
-      const int             parameterIndex     = 6;
+    if (argument == availableParameters[CLI_PARAM_RAWBUILD_FOLDER_FILE_EXT]) {
+      const int             parameterIndex     = CLI_PARAM_RAWBUILD_FOLDER_FILE_EXT;
       const wchar_t * const parameter          = availableParameters[parameterIndex];
       int                   parameterArgsCount = availableParametersArgumentsCount[parameterIndex];
 
@@ -206,9 +149,9 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild 
 
       continue;
     }
-    if (argument == availableParameters[0]) {
+    if (argument == availableParameters[CLI_PARAM_HELP]) {
       help:
-      const int             parameterIndex     = 0;
+      const int             parameterIndex     = CLI_PARAM_HELP;
       const wchar_t * const parameter          = availableParameters[parameterIndex];
       int                   parameterArgsCount = availableParametersArgumentsCount[parameterIndex];
 
@@ -217,23 +160,21 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild 
       arc_wprintf_cli(L"Usage: %ls [ parameterName [ parameterValue ... ] ... ] sourceCodeFilepath ..." L"\n", arguments[0].c_str());
       arc_wprintf_cli(L"\n");
       arc_wprintf_cli(L"Parameters:" L"\n");
-      for (int parameterIndex = 0, parametersCount = sizeof(availableParameters) / sizeof(availableParameters[0]); parameterIndex < parametersCount; parameterIndex += 1) {
-        int i = parametersOrderInHelpPrint[parameterIndex];
-
-        arc_wprintf_cli(L"  %ls", availableParameters[i]);
-        for (int parameterArgumentIndex = 0; parameterArgumentIndex < availableParametersArgumentsCount[i]; parameterArgumentIndex += 1) {
-          if (i == 2) {
+      for (int pi = 0, pc = sizeof(availableParameters) / sizeof(availableParameters[0]); pi < pc; pi += 1) {
+        arc_wprintf_cli(L"  %ls", availableParameters[pi]);
+        for (int parameterArgumentIndex = 0; parameterArgumentIndex < availableParametersArgumentsCount[pi]; parameterArgumentIndex += 1) {
+          if (pi == CLI_PARAM_DEBUG_PRINT_TO_CURSOR_POSITION) {
             if (parameterArgumentIndex == 0) { arc_wprintf_cli(L" <position value>"); }
             continue;
           }
 
-          if (i == 3) {
+          if (pi == CLI_PARAM_DEFINE) {
             if (parameterArgumentIndex == 0) { arc_wprintf_cli(L" <macro name>"); }
             if (parameterArgumentIndex == 1) { arc_wprintf_cli(L" <macro value 0 for undefined or 1 for defined>"); }
             continue;
           }
 
-          if (i == 6) {
+          if (pi == CLI_PARAM_RAWBUILD_FOLDER_FILE_EXT) {
             if (parameterArgumentIndex == 0) { arc_wprintf_cli(L" <file extension name without a dot>"); }
             continue;
           }
@@ -243,8 +184,8 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild 
       exit(0);
       continue;
     }
-    if (argument == availableParameters[1]) {
-      const int             parameterIndex     = 1;
+    if (argument == availableParameters[CLI_PARAM_LICENSE]) {
+      const int             parameterIndex     = CLI_PARAM_LICENSE;
       const wchar_t * const parameter          = availableParameters[parameterIndex];
       int                   parameterArgsCount = availableParametersArgumentsCount[parameterIndex];
 
@@ -252,8 +193,8 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild 
       exit(0);
       continue;
     }
-    if (argument == availableParameters[2]) {
-      const int             parameterIndex     = 2;
+    if (argument == availableParameters[CLI_PARAM_DEBUG_PRINT_TO_CURSOR_POSITION]) {
+      const int             parameterIndex     = CLI_PARAM_DEBUG_PRINT_TO_CURSOR_POSITION;
       const wchar_t * const parameter          = availableParameters[parameterIndex];
       int                   parameterArgsCount = availableParametersArgumentsCount[parameterIndex];
 
@@ -269,8 +210,8 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild 
 
       continue;
     }
-    if (argument == availableParameters[3]) {
-      const int             parameterIndex     = 3;
+    if (argument == availableParameters[CLI_PARAM_DEFINE]) {
+      const int             parameterIndex     = CLI_PARAM_DEFINE;
       const wchar_t * const parameter          = availableParameters[parameterIndex];
       int                   parameterArgsCount = availableParametersArgumentsCount[parameterIndex];
 
@@ -293,8 +234,8 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild 
 
       continue;
     }
-    if (argument == availableParameters[4]) {
-      const int             parameterIndex     = 4;
+    if (argument == availableParameters[CLI_PARAM_VERBOSE]) {
+      const int             parameterIndex     = CLI_PARAM_VERBOSE;
       const wchar_t * const parameter          = availableParameters[parameterIndex];
       int                   parameterArgsCount = availableParametersArgumentsCount[parameterIndex];
 
@@ -316,9 +257,9 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild 
     // NOTE(Constantine)(Jul 23, 2026):
     // Paths without command line parameters are considered to be files by Arc and files or folders by Arc rawbuild.
     if (stage1.wmainArgumentsParameters.rawbuildIsEnabled == 1) {
-      arc_s1p1_CompilerCommandIncludeSourceCodeFileOrFolder(stage1, argument);
+      arc_xs_CompilerCommandIncludeSourceCodeFileOrFolder(stage1, argument);
     } else {
-      arc_s1p1_CompilerCommandIncludeSourceCodeFile(stage1, argument);
+      arc_xs_CompilerCommandIncludeSourceCodeFile(stage1, argument);
     }
   }
 }

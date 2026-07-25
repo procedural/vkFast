@@ -26,8 +26,8 @@ void arcRawbuildBeforeStage1(ArcState * state) {
       arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] stage1->filesPath (count: %zu) array printing, file (0) or folder (1) or other/error/notfound (-1):" "\n", stage1->filesPath.size());
       for (uint64_t i = 0, count = stage1->filesPath.size(); i < count; i += 1) {
         // To free
-        const char * const cpath = arcCommonMallocWcharToChar(stage1->filesPath[i].c_str());
-        int type = arcCommonGetSystemPathType(cpath);
+        const char * const cpath = arc_xs_MallocWcharToChar(stage1->filesPath[i].c_str());
+        int type = arc_xs_GetSystemPathType(cpath);
         arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] [%d]: %d" "\n", i, type);
         free((void *)cpath);
 
