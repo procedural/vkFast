@@ -491,12 +491,14 @@ static void arc_s1p1_Stage1Pass1SourceCodeReplaceCommentsWithSpaceCharacters(Arc
         wchar_t possibleCharacter_InvSlash2 = arc_s1p1_PeekCharacter(stage1, i, 3);
         wchar_t possibleCharacter_r         = arc_s1p1_PeekCharacter(stage1, i, 4);
         wchar_t possibleCharacter_c         = arc_s1p1_PeekCharacter(stage1, i, 5);
+        wchar_t possibleCharacter_Space     = arc_s1p1_PeekCharacter(stage1, i, 6);
 
         if (
           possibleCharacter_InvSlash1 == L'\\' &&
           possibleCharacter_InvSlash2 == L'\\' &&
           possibleCharacter_r         == L'r'  &&
-          possibleCharacter_c         == L'c'
+          possibleCharacter_c         == L'c'  &&
+          possibleCharacter_Space     == L' '
         )
         {
           continue;

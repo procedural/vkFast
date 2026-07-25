@@ -722,14 +722,18 @@ static void arc_s1p2_Stage1Pass2SourceCodeFillTokenizerStruct(ArcStateStage1 & s
       wchar_t possibleCharacter_InvSlash2 = arc_s1p1_PeekCharacter(stage1, i, 3);
       wchar_t possibleCharacter_r         = arc_s1p1_PeekCharacter(stage1, i, 4);
       wchar_t possibleCharacter_c         = arc_s1p1_PeekCharacter(stage1, i, 5);
+      wchar_t possibleCharacter_Space     = arc_s1p1_PeekCharacter(stage1, i, 6);
 
       if (
         possibleCharacter_InvSlash1 == L'\\' &&
         possibleCharacter_InvSlash2 == L'\\' &&
         possibleCharacter_r         == L'r'  &&
-        possibleCharacter_c         == L'c'
+        possibleCharacter_c         == L'c'  &&
+        possibleCharacter_Space     == L' '
       )
       {
+        i += 7; // Skipping '//\\rc ' characters.
+
         // TODO(Constantine)(Jul 25, 2026): Parse command until newline character.
         arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &i);
         arc_wprintf_fatalError(L"\n");
