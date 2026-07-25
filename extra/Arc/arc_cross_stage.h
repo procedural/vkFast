@@ -1,7 +1,5 @@
 #pragma once
 
-#include "arc.h"
-
 #include "arc_cross_stage/HashFNV1a64.h"
 
 // NOTE(Constantine)(Jul 25, 2026):
