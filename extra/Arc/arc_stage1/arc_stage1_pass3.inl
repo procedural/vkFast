@@ -18,7 +18,7 @@ static ArcBool8 arc_s1p3_TokenGetEitherBoolean0Or1OtherwiseFatalError(const ArcS
   if (tokenString == L"1") {
     return 1;
   }
-  arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &token.stringOffset);
+  arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &token.stringOffset);
   arc_wprintf_fatalError(L"\n");
   arc_wprintf_fatalError(L"Fatal error: encountered a token that is expected to be of value 0 or 1, but is neither 0 nor 1." L"\n");
   arc_wprintf_fatalError(L"\n");
@@ -35,7 +35,7 @@ static void arc_s1p3_TokenCheckIfCompilerCommandDefinedMacroExistOtherwiseFatalE
       return;
     }
   }
-  arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &token.stringOffset);
+  arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &token.stringOffset);
   arc_wprintf_fatalError(L"\n");
   arc_wprintf_fatalError(L"Fatal error: encountered a token that is expected to be a defined or undefined macro, but was not found to be set neither by the command line interface nor by a custom compiler command call." L"\n");
   arc_wprintf_fatalError(L"\n");
@@ -49,7 +49,7 @@ static void arc_s1p3_TokenCheckIfCompilerCommandDefinedMacroExistOtherwiseFatalE
 template<typename T>
 static size_t arc_s1p3_GetLastIndexElseError(const std::vector<T> & v, const ArcStateStage1 & stage1) {
   if (v.size() == 0) {
-    arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, NULL);
+    arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, NULL);
     arc_wprintf_fatalError(L"\n");
     arc_wprintf_fatalError(L"Fatal internal compiler error: encountered an attempt to get the last index of an empty vector." L"\n");
     arc_wprintf_fatalError(L"\n");
@@ -109,7 +109,7 @@ static void arc_s1p3_Stage1Pass3ConditionalMacroTokenSyntaxChecks(ArcStateStage1
     )
     {
       if (openedConditionalMacroAlreadyHasAnElseCaseStack.size() == 0) {
-        arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &token1.stringOffset);
+        arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &token1.stringOffset);
         arc_wprintf_fatalError(L"\n");
         arc_wprintf_fatalError(L"Fatal error: a conditional macro was not opened before encountering this conditional macro." L"\n");
         arc_wprintf_fatalError(L"\n");
@@ -118,7 +118,7 @@ static void arc_s1p3_Stage1Pass3ConditionalMacroTokenSyntaxChecks(ArcStateStage1
         exit(1);
       }
       if (openedConditionalMacroAlreadyHasAnElseCaseStack[arc_s1p3_GetLastIndexElseError(openedConditionalMacroAlreadyHasAnElseCaseStack, stage1)] > 0) {
-        arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &token1.stringOffset);
+        arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &token1.stringOffset);
         arc_wprintf_fatalError(L"\n");
         arc_wprintf_fatalError(L"Fatal error: expected #endif, #else was already encountered previously." L"\n");
         arc_wprintf_fatalError(L"\n");
@@ -137,7 +137,7 @@ static void arc_s1p3_Stage1Pass3ConditionalMacroTokenSyntaxChecks(ArcStateStage1
     )
     {
       if (openedConditionalMacroMustNowFollowWithEitherElseCasesOrEndifStack.size() == 0) {
-        arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &token1.stringOffset);
+        arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &token1.stringOffset);
         arc_wprintf_fatalError(L"\n");
         arc_wprintf_fatalError(L"Fatal error: a conditional macro was not opened before encountering this conditional macro." L"\n");
         arc_wprintf_fatalError(L"\n");
@@ -161,7 +161,7 @@ static void arc_s1p3_Stage1Pass3ConditionalMacroTokenSyntaxChecks(ArcStateStage1
     )
     {
       if (openedConditionalMacroMustNowFollowWithEitherElseCasesOrEndifStack.size() == 0) {
-        arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &token1.stringOffset);
+        arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &token1.stringOffset);
         arc_wprintf_fatalError(L"\n");
         arc_wprintf_fatalError(L"Fatal error: a conditional macro was not opened before encountering this conditional macro." L"\n");
         arc_wprintf_fatalError(L"\n");
@@ -180,7 +180,7 @@ static void arc_s1p3_Stage1Pass3ConditionalMacroTokenSyntaxChecks(ArcStateStage1
     )
     {
       if (openedConditionalMacroMustNowFollowWithEitherElseCasesOrEndifStack.size() == 0) {
-        arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &token1.stringOffset);
+        arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &token1.stringOffset);
         arc_wprintf_fatalError(L"\n");
         arc_wprintf_fatalError(L"Fatal error: a conditional macro was not opened before encountering this conditional macro." L"\n");
         arc_wprintf_fatalError(L"\n");
@@ -197,7 +197,7 @@ static void arc_s1p3_Stage1Pass3ConditionalMacroTokenSyntaxChecks(ArcStateStage1
 
   if (openedConditionalMacroMustNowFollowWithEitherElseCasesOrEndifStack.size() > 0) {
     size_t lastCursorPosition = stage1.sourceCodeWithoutCommentsString.size() - 1;
-    arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &lastCursorPosition);
+    arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &lastCursorPosition);
     arc_wprintf_fatalError(L"\n");
     arc_wprintf_fatalError(L"Fatal error: a conditional macro was not closed before encountering the end of source code." L"\n");
     arc_wprintf_fatalError(L"\n");

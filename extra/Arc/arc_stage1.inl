@@ -16,7 +16,7 @@ void arcStage1(ArcState * state, ArcBool8 processWmainArguments) {
 
 #ifdef ARC_INTERNAL_COMPILER_DEBUG
   {
-    arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1[0], &stage1->wmainArgumentsParameters.debugPrintSourceCodeUpToAndIncludingCursorPosition);
+    arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1[0], &stage1->wmainArgumentsParameters.debugPrintSourceCodeUpToAndIncludingCursorPosition);
     arc_wprintf_info(L"\n");
   }
 #endif

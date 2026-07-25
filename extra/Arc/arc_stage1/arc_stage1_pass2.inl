@@ -99,7 +99,7 @@ static ArcBool8 arc_s1p2_CharacterIsKnownSymbol(wchar_t c) {
 
 static void arc_s1p2_SourceCodeAppendToken(ArcStateStage1 & stage1, const ArcToken & token) {
   if (token.stringLength == 0) {
-    arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &token.stringOffset);
+    arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &token.stringOffset);
     arc_wprintf_fatalError(L"\n");
     arc_wprintf_fatalError(L"Fatal internal compiler error: encountered a token at offset %zu with its length unexpectedly equal to 0." L"\n", token.stringOffset);
     arc_wprintf_fatalError(L"\n");
@@ -120,7 +120,7 @@ static std::wstring arc_s1p2_TokenToStringCanBeEmpty(const ArcStateStage1 & stag
 
 static std::wstring arc_s1p2_TokenToString(const ArcStateStage1 & stage1, const ArcToken & token) {
   if (token.stringLength == 0) {
-    arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &token.stringOffset);
+    arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &token.stringOffset);
     arc_wprintf_fatalError(L"\n");
     arc_wprintf_fatalError(L"Fatal internal compiler error: encountered a token at offset %zu with its length unexpectedly equal to 0." L"\n", token.stringOffset);
     arc_wprintf_fatalError(L"\n");
@@ -133,7 +133,7 @@ static std::wstring arc_s1p2_TokenToString(const ArcStateStage1 & stage1, const 
     tokenString += stage1.sourceCodeWithoutCommentsString[i];
   }
   if (tokenString.empty()) {
-    arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &token.stringOffset);
+    arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &token.stringOffset);
     arc_wprintf_fatalError(L"\n");
     arc_wprintf_fatalError(L"Fatal internal compiler error: encountered a token at offset %zu that unexpectedly converts to an empty string." L"\n", token.stringOffset);
     arc_wprintf_fatalError(L"\n");
@@ -239,7 +239,7 @@ static void arc_s1p2_TokenizerParseMulticharacterMacroSkipSpaceCharacters(const 
       continue;
     }
     if (character1 == L'\n' && continueParsingToNextLine == 0) {
-      arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &i);
+      arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &i);
       arc_wprintf_fatalError(L"\n");
       arc_wprintf_fatalError(L"Fatal error: macro parsing encountered an unexpected terminating new line character." L"\n");
       arc_wprintf_fatalError(L"\n");
@@ -286,7 +286,7 @@ static void arc_s1p2_TokenizerParseMulticharacterMacroSkipSpaceCharactersToTheTe
       continue;
     }
 
-    arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &i);
+    arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &i);
     arc_wprintf_fatalError(L"\n");
     arc_wprintf_fatalError(L"Fatal error: macro parsing encountered a character when the macro was expected to finish instead." L"\n");
     arc_wprintf_fatalError(L"\n");
@@ -298,7 +298,7 @@ static void arc_s1p2_TokenizerParseMulticharacterMacroSkipSpaceCharactersToTheTe
 
 static void arc_s1p2_CompilerCheckCharacterIsIdentifierBeginningOtherwiseFatalError(wchar_t character, const char * const functionName, const ArcStateStage1 & stage1, uint64_t & i) {
   if (arc_s1p2_CharacterIsIdentifierBeginning(character) == 0) {
-    arc_s1p1_InfoPrintAdditionalInfo(functionName, stage1, &i);
+    arc_s1p1_InfoPrintAdditionalInfo(__FILE__, functionName, stage1, &i);
     arc_wprintf_fatalError(L"\n");
     arc_wprintf_fatalError(L"Fatal error: encountered an unsupported character at the beginning of an identifier." L"\n");
     arc_wprintf_fatalError(L"\n");
@@ -382,7 +382,7 @@ static void arc_s1p2_CheckCompilerSupportsMacroOtherwiseFatalError(const ArcStat
   }
   else
   {
-    arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &i);
+    arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &i);
     arc_wprintf_fatalError(L"\n");
     arc_wprintf_fatalError(L"Fatal error: encountered an unknown or unsupported macro." L"\n");
     arc_wprintf_fatalError(L"\n");
@@ -424,7 +424,7 @@ static void arc_s1p2_TokenizerParseMulticharacterMacro(ArcStateStage1 & stage1, 
   {
     wchar_t character1 = arc_s1p1_PeekCharacter(stage1, i, 0);
     if (character1 != L'#') {
-      arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &i);
+      arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &i);
       arc_wprintf_fatalError(L"\n");
       arc_wprintf_fatalError(L"Fatal error: macro is expected to start with a # character." L"\n");
       arc_wprintf_fatalError(L"\n");
@@ -587,7 +587,7 @@ static void arc_s1p2_TokenizerParseMulticharacterString(ArcStateStage1 & stage1,
   {
     wchar_t character1 = arc_s1p1_PeekCharacter(stage1, i, 0);
     if (character1 != L'\"') {
-      arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &i);
+      arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &i);
       arc_wprintf_fatalError(L"\n");
       arc_wprintf_fatalError(L"Fatal error: multicharacter string literal parsing expected to start with a \" character." L"\n");
       arc_wprintf_fatalError(L"\n");
@@ -616,7 +616,7 @@ static void arc_s1p2_TokenizerParseMulticharacterString(ArcStateStage1 & stage1,
     }
 
     if (character1 == 0 || character1 == L'\n') {
-      arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &i);
+      arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &i);
       arc_wprintf_fatalError(L"\n");
       arc_wprintf_fatalError(L"Fatal error: encountered end of file or a new line terminating character when an opened string literal was not closed yet." L"\n");
       arc_wprintf_fatalError(L"\n");
@@ -632,7 +632,7 @@ static void arc_s1p2_TokenizerParseMulticharacterString(ArcStateStage1 & stage1,
   {
     wchar_t character1 = arc_s1p1_PeekCharacter(stage1, i, 0);
     if (character1 != L'\"') {
-      arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &i);
+      arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &i);
       arc_wprintf_fatalError(L"\n");
       arc_wprintf_fatalError(L"Fatal error: multicharacter string literal parsing expected to close with a \" character." L"\n");
       arc_wprintf_fatalError(L"\n");
@@ -717,12 +717,47 @@ static void arc_s1p2_Stage1Pass2SourceCodeFillTokenizerStruct(ArcStateStage1 & s
       continue;
     }
 
+    if (character1 == L'/' && character2 == L'/') {
+      wchar_t possibleCharacter_InvSlash1 = arc_s1p1_PeekCharacter(stage1, i, 2);
+      wchar_t possibleCharacter_InvSlash2 = arc_s1p1_PeekCharacter(stage1, i, 3);
+      wchar_t possibleCharacter_r         = arc_s1p1_PeekCharacter(stage1, i, 4);
+      wchar_t possibleCharacter_c         = arc_s1p1_PeekCharacter(stage1, i, 5);
+
+      if (
+        possibleCharacter_InvSlash1 == L'\\' &&
+        possibleCharacter_InvSlash2 == L'\\' &&
+        possibleCharacter_r         == L'r'  &&
+        possibleCharacter_c         == L'c'
+      )
+      {
+        // TODO(Constantine)(Jul 25, 2026): Parse command until newline character.
+        arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &i);
+        arc_wprintf_fatalError(L"\n");
+        arc_wprintf_fatalError(L"TODO(Constantine)(Jul 25, 2026): Parse command until newline character." L"\n");
+        arc_wprintf_fatalError(L"\n");
+        arc_s1p1_InfoPrintLinesAtCursorPosition(stage1, i);
+        arc_s1p1_FatalErrorAdditionalCalls();
+        exit(1);
+      }
+      else
+      {
+        arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &i);
+        arc_wprintf_fatalError(L"\n");
+        arc_wprintf_fatalError(L"Fatal error: unexpected comment command." L"\n");
+        arc_wprintf_fatalError(L"\n");
+        arc_s1p1_InfoPrintLinesAtCursorPosition(stage1, i);
+        arc_s1p1_FatalErrorAdditionalCalls();
+        exit(1);
+      }
+      continue;
+    }
+
     if (arc_s1p2_CharacterIsKnownSymbol(character1)) {
       arc_s1p2_TokenizerParseSingleOperator(stage1, i, count);
       continue;
     }
 
-    arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &i);
+    arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &i);
     arc_wprintf_fatalError(L"\n");
     arc_wprintf_fatalError(L"Fatal error: unexpected to the compiler symbol or character." L"\n");
     arc_wprintf_fatalError(L"\n");

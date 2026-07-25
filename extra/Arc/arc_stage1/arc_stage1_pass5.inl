@@ -8,7 +8,7 @@ static std::wstring arc_s1p5_Uint64ToWstring(uint64_t number) {
 
 uint64_t arc_s1p5_CursorPositionToLineIndex(const ArcStateStage1 & stage1, uint64_t cursorPosition) {
   if (cursorPosition >= stage1.sourceCodeWithoutCommentsString.size()) {
-    arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, NULL);
+    arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, NULL);
     arc_wprintf_fatalError(L"\n");
     arc_wprintf_fatalError(L"Fatal internal compiler error: passed cursor position is outside of source code string's bounds." L"\n");
     arc_wprintf_fatalError(L"\n");
@@ -140,7 +140,7 @@ static void arc_s1p5_Stage1Pass5PrintPragmaMessageAndErrorMacros(ArcStateStage1 
       )
     )
     {
-      arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &token1.stringOffset);
+      arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &token1.stringOffset);
       arc_wprintf_fatalError(L"\n");
       arc_wprintf_fatalError(L"Fatal error: encountered an #error macro." L"\n");
       arc_wprintf_fatalError(L"\n");

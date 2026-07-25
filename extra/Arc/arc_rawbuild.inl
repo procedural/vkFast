@@ -10,7 +10,7 @@ void arcRawbuildBeforeStage1(ArcState * state) {
   const ArcBool8 arcVerboseIsEnabled = stage1->wmainArgumentsParameters.verboseIsEnabled; // Needed for arc_wprintf_verbose
 
   if (stage1->wmainArgumentsParameters.rawbuildIsEnabled == 0) {
-    arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] Arc rawbuild is not enabled, skipping arcRawbuildBeforeStage1() stage." "\n");
+    arc_wprintf_verbose(L"[--verbose][%s][%s] Arc rawbuild is not enabled, skipping arcRawbuildBeforeStage1() stage." "\n", __FILE__, __FUNCTION__);
     return;
   }
 
@@ -19,20 +19,20 @@ void arcRawbuildBeforeStage1(ArcState * state) {
     ArcBool8 pathCanNotBeRead   = 0;
     ArcBool8 folderWasRequested = 0;
     {
-      arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] stage1->filesPath (count: %zu) array printing:" "\n", stage1->filesPath.size());
+      arc_wprintf_verbose(L"[--verbose][%s][%s] stage1->filesPath (count: %zu) array printing:" "\n", __FILE__, __FUNCTION__, stage1->filesPath.size());
       for (uint64_t i = 0, count = stage1->filesPath.size(); i < count; i += 1) {
-        arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] [%d]: \"%ls\"" "\n", i, stage1->filesPath[i].c_str());
+        arc_wprintf_verbose(L"[--verbose][%s][%s] [%d]: \"%ls\"" "\n", __FILE__, __FUNCTION__, i, stage1->filesPath[i].c_str());
       }
-      arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] stage1->filesSize (count: %zu) array printing:" "\n", stage1->filesSize.size());
+      arc_wprintf_verbose(L"[--verbose][%s][%s] stage1->filesSize (count: %zu) array printing:" "\n", __FILE__, __FUNCTION__, stage1->filesSize.size());
       for (uint64_t i = 0, count = stage1->filesSize.size(); i < count; i += 1) {
-        arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] [%d]: %zu" "\n", i, stage1->filesSize[i]);
+        arc_wprintf_verbose(L"[--verbose][%s][%s] [%d]: %zu" "\n", __FILE__, __FUNCTION__, i, stage1->filesSize[i]);
       }
-      arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] stage1->filesPath (count: %zu) array printing, file (0) or folder (1) or other/error/notfound (-1):" "\n", stage1->filesPath.size());
+      arc_wprintf_verbose(L"[--verbose][%s][%s] stage1->filesPath (count: %zu) array printing, file (0) or folder (1) or other/error/notfound (-1):" "\n", __FILE__, __FUNCTION__, stage1->filesPath.size());
       for (uint64_t i = 0, count = stage1->filesPath.size(); i < count; i += 1) {
         // To free
         const char * const cpath = arc_xs_MallocWcharToChar(stage1->filesPath[i].c_str());
         int type = arc_xs_GetSystemPathType(cpath);
-        arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] [%d]: %d" "\n", i, type);
+        arc_wprintf_verbose(L"[--verbose][%s][%s] [%d]: %d" "\n", __FILE__, __FUNCTION__, i, type);
         free((void *)cpath);
 
         if (type == -1) {
@@ -42,15 +42,15 @@ void arcRawbuildBeforeStage1(ArcState * state) {
           folderWasRequested = 1;
         }
       }
-      arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] state->rawbuild.lookInFoldersForFileExtensions (count: %zu) array printing:" "\n", state->rawbuild.lookInFoldersForFileExtensions.size());
+      arc_wprintf_verbose(L"[--verbose][%s][%s] state->rawbuild.lookInFoldersForFileExtensions (count: %zu) array printing:" "\n", __FILE__, __FUNCTION__, state->rawbuild.lookInFoldersForFileExtensions.size());
       for (uint64_t i = 0, count = state->rawbuild.lookInFoldersForFileExtensions.size(); i < count; i += 1) {
-        arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] [%d]: \"%ls\"" "\n", i, state->rawbuild.lookInFoldersForFileExtensions[i].c_str());
+        arc_wprintf_verbose(L"[--verbose][%s][%s] [%d]: \"%ls\"" "\n", __FILE__, __FUNCTION__, i, state->rawbuild.lookInFoldersForFileExtensions[i].c_str());
       }
     }
 
     if (pathCanNotBeRead == 1) {
       arc_wprintf_fatalError(L"\n");
-      arc_wprintf_fatalError(L"[rawbuild] Fatal error: a path that was provided is not a file or a folder. See --verbose log for details." "\n");
+      arc_wprintf_fatalError(L"[rawbuild][%s][%s] Fatal error: a path that was provided is not a file or a folder. See --verbose log for details." "\n", __FILE__, __FUNCTION__);
       arc_wprintf_fatalError(L"\n");
       arc_s1p1_FatalErrorAdditionalCalls();
       exit(1);
@@ -58,7 +58,7 @@ void arcRawbuildBeforeStage1(ArcState * state) {
 
     if (folderWasRequested == 1 && state->rawbuild.lookInFoldersForFileExtensions.empty()) {
       arc_wprintf_fatalError(L"\n");
-      arc_wprintf_fatalError(L"[rawbuild] Fatal error: a folder search was requested, but no file extensions to look for were provided. See --verbose log for details." "\n");
+      arc_wprintf_fatalError(L"[rawbuild][%s][%s] Fatal error: a folder search was requested, but no file extensions to look for were provided. See --verbose log for details." "\n", __FILE__, __FUNCTION__);
       arc_wprintf_fatalError(L"\n");
       arc_s1p1_FatalErrorAdditionalCalls();
       exit(1);
@@ -72,7 +72,7 @@ void arcRawbuildAfterStage1(ArcState * state) {
   const ArcBool8 arcVerboseIsEnabled = stage1->wmainArgumentsParameters.verboseIsEnabled; // Needed for arc_wprintf_verbose
 
   if (stage1->wmainArgumentsParameters.rawbuildIsEnabled == 0) {
-    arc_wprintf_verbose(L"[--verbose][arc_rawbuild.inl] Arc rawbuild is not enabled, skipping arcRawbuildAfterStage1() stage." "\n");
+    arc_wprintf_verbose(L"[--verbose][%s][%s] Arc rawbuild is not enabled, skipping arcRawbuildAfterStage1() stage." "\n", __FILE__, __FUNCTION__);
     return;
   }
 }

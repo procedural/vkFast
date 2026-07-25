@@ -20,19 +20,22 @@ static void arc_s1p1_DebugDataBreakpoint(std::wstring breakpointName) {
 }
 #endif
 
-static void arc_s1p1_InfoPrintAdditionalInfo(const char * const functionName, const ArcStateStage1 & stage1, const uint64_t * const optionalCursorPosition = NULL) {
-  arc_wprintf_info(L"Compiler arguments:");
-  for (uint64_t i = 0, count = stage1.wmainArguments.arguments.size(); i < count; i += 1) {
-    arc_wprintf_info(L" %ls", stage1.wmainArguments.arguments[i].c_str());
+static void arc_s1p1_InfoPrintAdditionalInfo(const char * const fileName, const char * const functionName, const ArcStateStage1 & stage1, const uint64_t * const optionalCursorPosition = NULL) {
+  {
+    arc_wprintf_info(L"Compiler arguments:");
+    for (uint64_t i = 0, count = stage1.wmainArguments.arguments.size(); i < count; i += 1) {
+      arc_wprintf_info(L" %ls", stage1.wmainArguments.arguments[i].c_str());
 
-    if (optionalCursorPosition != NULL && stage1.wmainArgumentsParameters.debugPrintSourceCodeUpToAndIncludingCursorPositionIsRequested == 0) {
-      if (i == (count - 1)) {
-        arc_wprintf_info(L" --debug-print-to-cursor-position %zu", optionalCursorPosition[0]);
+      if (optionalCursorPosition != NULL && stage1.wmainArgumentsParameters.debugPrintSourceCodeUpToAndIncludingCursorPositionIsRequested == 0) {
+        if (i == (count - 1)) {
+          arc_wprintf_info(L" --debug-print-to-cursor-position %zu", optionalCursorPosition[0]);
+        }
       }
     }
+    arc_wprintf_info(L"\n");
   }
   arc_wprintf_info(L"\n");
-  arc_wprintf_info(L"Function: %s" L"\n", functionName);
+  arc_wprintf_info(L"[%s][%s] ", fileName, functionName);
 }
 
 static void arc_s1p1_FatalErrorAdditionalCalls() {
@@ -42,7 +45,7 @@ static void arc_s1p1_FatalErrorAdditionalCalls() {
 }
 
 static void arc_s1p1_ProcessWmainArgumentsFatalError(std::wstring error, std::wstring parameterName, const ArcStateStage1 & stage1) {
-  arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, NULL);
+  arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, NULL);
   arc_wprintf_fatalError(L"\n");
   arc_wprintf_fatalError(error.c_str(), parameterName.c_str());
   arc_wprintf_fatalError(L"\n");
@@ -59,7 +62,7 @@ static void arc_s1p1_CompilerCommandDefineMacro(ArcStateStage1 & stage1, std::ws
     std::wstring alreadyDefinedMacroName = stage1.compilerCommandDefinedMacros.macrosName[i];
     
     if (alreadyDefinedMacroName == macroName) {
-      arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, NULL);
+      arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, NULL);
       arc_wprintf_fatalError(L"\n");
       arc_wprintf_fatalError(L"Fatal compiler command error: attempting to define (%ls) macro name \"%ls\" again when it was already defined previously." L"\n",
         isDefinedByCli == 1 ? L"by command line interface" : L"by a custom compiler command call",
@@ -295,7 +298,7 @@ static uint64_t arc_s1p1_GetFileCursorStartBasedOnCursorPosition(const ArcStateS
     }
     filesizeOffsetLast = filesizeOffset;
   }
-  arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &cursorPosition);
+  arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &cursorPosition);
   arc_wprintf_fatalError(L"\n");
   arc_wprintf_fatalError(L"Fatal internal compiler error: couldn't find the correct file cursor start based on cursor position value %zu." L"\n", cursorPosition);
   arc_wprintf_fatalError(L"\n");
@@ -312,7 +315,7 @@ static uint64_t arc_s1p1_GetFileIndexBasedOnCursorPosition(const ArcStateStage1 
       return i;
     }
   }
-  arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &cursorPosition);
+  arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &cursorPosition);
   arc_wprintf_fatalError(L"\n");
   arc_wprintf_fatalError(L"Fatal internal compiler error: couldn't find the correct file index based on cursor position value %zu." L"\n", cursorPosition);
   arc_wprintf_fatalError(L"\n");
@@ -482,6 +485,23 @@ static void arc_s1p1_Stage1Pass1SourceCodeReplaceCommentsWithSpaceCharacters(Arc
     }
 
     if (character1 == L'/' && character2 == L'/') {
+      // NOTE(Constantine)(Jul 25, 2026): We parse '//\\rc ' comments, which are Arc commands.
+      {
+        wchar_t possibleCharacter_InvSlash1 = arc_s1p1_PeekCharacter(stage1, i, 2);
+        wchar_t possibleCharacter_InvSlash2 = arc_s1p1_PeekCharacter(stage1, i, 3);
+        wchar_t possibleCharacter_r         = arc_s1p1_PeekCharacter(stage1, i, 4);
+        wchar_t possibleCharacter_c         = arc_s1p1_PeekCharacter(stage1, i, 5);
+
+        if (
+          possibleCharacter_InvSlash1 == L'\\' &&
+          possibleCharacter_InvSlash2 == L'\\' &&
+          possibleCharacter_r         == L'r'  &&
+          possibleCharacter_c         == L'c'
+        )
+        {
+          continue;
+        }
+      }
       arc_s1p1_ReplaceSingleLineCommentWithSpaces(stage1, i, count);
       continue;
     }
@@ -492,7 +512,7 @@ static void arc_s1p1_Stage1Pass1SourceCodeReplaceCommentsWithSpaceCharacters(Arc
     }
 
     if (character1 == L'*' && character2 == L'/') {
-      arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &i);
+      arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &i);
       arc_wprintf_fatalError(L"\n");
       arc_wprintf_fatalError(L"Fatal error: closing multi-line comment that was not opened." "\n");
       arc_wprintf_fatalError(L"\n");

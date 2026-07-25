@@ -34,7 +34,7 @@ static ArcBool8 arc_s1p4_TokenCanConditionalMacroPathBeTakenBasedOnIdentifier(Ar
       return value0or1;
     }
   }
-  arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, &tokenConditionalMacroStartToken.stringOffset);
+  arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, &tokenConditionalMacroStartToken.stringOffset);
   arc_wprintf_fatalError(L"\n");
   arc_wprintf_fatalError(L"Fatal internal compiler error: unexpected conditional macro." L"\n");
   arc_wprintf_fatalError(L"\n");
@@ -47,7 +47,7 @@ static ArcBool8 arc_s1p4_TokenCanConditionalMacroPathBeTakenBasedOnIdentifier(Ar
 static void arc_s1p4_RemoveToken(ArcStateStage1 & stage1, uint64_t removeTokenIndex, uint64_t & recalculateTokensCount) {
   size_t tokensCount = stage1.tokenizer.tokens.size();
   if (removeTokenIndex >= tokensCount) {
-    arc_s1p1_InfoPrintAdditionalInfo(__FUNCTION__, stage1, NULL);
+    arc_s1p1_InfoPrintAdditionalInfo(__FILE__, __FUNCTION__, stage1, NULL);
     arc_wprintf_fatalError(L"\n");
     arc_wprintf_fatalError(L"Fatal internal compiler error: attempting to access out of bounds token from tokens array." L"\n");
     arc_wprintf_fatalError(L"\n");
