@@ -77,8 +77,8 @@ static void arc_xs_CompilerCommandIncludeSourceCodeFileOrFolder(ArcStateStage1 &
 
 // Handle the naming differences between Windows and Linux/POSIX
 #if defined(_WIN32) || defined(_WIN64)
-  #define ARC_COMMON_STAT_STRUCT struct _stat
-  #define ARC_COMMON_STAT_FUNC _stat
+  #define ARC_XS_STAT_STRUCT struct _stat
+  #define ARC_XS_STAT_FUNC _stat
   // Windows defines S_IFDIR and S_IFREG, but lacks the POSIX macros
   #ifndef S_ISDIR
     #define S_ISDIR(mode) (((mode) & _S_IFMT) == _S_IFDIR)
@@ -88,8 +88,8 @@ static void arc_xs_CompilerCommandIncludeSourceCodeFileOrFolder(ArcStateStage1 &
   #endif
 #else
   #include <unistd.h>
-  #define ARC_COMMON_STAT_STRUCT struct stat
-  #define ARC_COMMON_STAT_FUNC stat
+  #define ARC_XS_STAT_STRUCT struct stat
+  #define ARC_XS_STAT_FUNC stat
 #endif
 
 static const char * const arc_xs_MallocWcharToChar(const wchar_t * const wstr) {
@@ -114,9 +114,9 @@ static const char * const arc_xs_MallocWcharToChar(const wchar_t * const wstr) {
 // Checks the system path type.
 // Returns: 0 if Regular File, 1 if Folder/Directory, -1 if Path Not Found/Error/Other Type
 static int arc_xs_GetSystemPathType(const char * const path) {
-  ARC_COMMON_STAT_STRUCT info = {0};
+  ARC_XS_STAT_STRUCT info = {0};
 
-  if (ARC_COMMON_STAT_FUNC(path, &info) != 0) {
+  if (ARC_XS_STAT_FUNC(path, &info) != 0) {
     return -1; // Path does not exist or is inaccessible
   }
 
