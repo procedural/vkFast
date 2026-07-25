@@ -1,5 +1,9 @@
 #include "arc.h"
 
+// NOTE(Constantine)(Jul 25, 2026):
+// arcRawbuildBeforeStage1() populates additional source code from cli-passed folders with cross stage source functions
+// before stage 1 tokenizes all this source code, after which arcRawbuildAfterStage1() can iterate over all created tokens.
+
 void arcRawbuildBeforeStage1(ArcState * state) {
   ArcStateStage1 * const stage1 = &state->stage1;
 
