@@ -24,6 +24,8 @@ int wmain(int ArgsCount, wchar_t * const * const Args) {
   SetConsoleOutputCP(65001);
   #endif
 
+  arcCrossStageInitialChecks();
+
   ArcState state = {};
   for (int i = 0; i < ArgsCount; i += 1) {
     state.stage1.wmainArguments.arguments.push_back(std::wstring(Args[i]));
@@ -37,9 +39,9 @@ int wmain(int ArgsCount, wchar_t * const * const Args) {
     #endif
   }
 #endif
-  arcStage1(&state, /*onlyProcessWmainArguments*/1);
+  arcStage1(&state, /*processWmainArguments*/1);
   arcRawbuildBeforeStage1(&state);
-  arcStage1(&state, /*onlyProcessWmainArguments*/0);
+  arcStage1(&state, /*processWmainArguments*/0);
   arcRawbuildAfterStage1(&state);
   arcStage2(&state);
 

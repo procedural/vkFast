@@ -73,9 +73,11 @@ typedef struct ArcState {
 } ArcState;
 
 void arcRawbuildBeforeStage1(ArcState * state);
-void arcStage1(ArcState * state, ArcBool8 onlyProcessWmainArguments);
+void arcStage1(ArcState * state, ArcBool8 processWmainArguments);
 void arcRawbuildAfterStage1(ArcState * state);
 void arcStage2(ArcState * state);
+
+#include "arc_cross_stage.h"
 
 // Common
 
