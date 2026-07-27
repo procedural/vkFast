@@ -8,7 +8,7 @@
 //\\rc rawbuild `gcc`
 //\\rc rawbuild debug ` -g -O0`
 //\\rc rawbuild release,release-fast ` -O2`
-//\\rc rawbuild ` main.c ../../vkfast.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so libimgui.so -lm`
+//\\rc rawbuild ` main.c ../Common/font_droid_sans_mono.c ../../vkfast.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so libimgui.so -lm`
 //\\rc rawbuild end
 
 #include "../../vkfast_ex.h"
@@ -19,6 +19,9 @@
 #include "../Common/vkfast_examples_common.h"
 // NOTE(Constantine): Dear ImGui 2016 needs GLFW.
 #include "../../extra/Dear ImGui 2016/imgui_reii.h"
+
+extern size_t        gFontDroidSansMonoFontGetBytesCount();
+extern unsigned char gFontDroidSansMonoFont[];
 
 int main() {
 #if defined(__MINGW32__)
@@ -159,11 +162,13 @@ int main() {
   style->windowRounding    = 0;
   style->frameRounding     = 0;
 
-  // NOTE(Constantine):
-  // For VS 2019, make sure to copy NotoSans.ttf file to project's folder,
-  // otherwise you'll get a runtime error at imgui_draw.cpp, line 1200
   float fontPixelSize = 22;
-  ImFontAtlas_AddFontFromFileTTF(io->fonts, "NotoSans.ttf", fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
+  size_t fontDataBytesCount = gFontDroidSansMonoFontGetBytesCount();
+  char * fontData = (char *)malloc(fontDataBytesCount);
+  REDGPU_2_EXPECTFL(fontData != NULL);
+  memcpy(fontData, gFontDroidSansMonoFont, fontDataBytesCount);
+  struct ImFont * imfont = ImFontAtlas_AddFontFromMemoryTTF(io->fonts, fontData, fontDataBytesCount, fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
+  // free(fontData); // NOTE(Constantine): Commented out intentionally, "ownership of font_data is transfered by Dear ImGui by default".
   imguiInvalidateFontTexture();
   imguiCreateFontTexture();
   REDGPU_2_EXPECTFL(ImFontAtlas_GetFontsCount(io->fonts) == 2);
@@ -210,7 +215,10 @@ int main() {
         ImFontAtlas_Clear(io->fonts);
         imguiInvalidateFontTexture();
         ImFontAtlas_AddFontDefault(io->fonts, NULL);
-        ImFontAtlas_AddFontFromFileTTF(io->fonts, "NotoSans.ttf", fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
+        fontData = (char *)malloc(fontDataBytesCount);
+        REDGPU_2_EXPECTFL(fontData != NULL);
+        memcpy(fontData, gFontDroidSansMonoFont, fontDataBytesCount);
+        imfont = ImFontAtlas_AddFontFromMemoryTTF(io->fonts, fontData, fontDataBytesCount, fontPixelSize, NULL, ImFontAtlas_GetGlyphRangesCyrillic(io->fonts));
         imguiCreateFontTexture();
         REDGPU_2_EXPECTFL(ImFontAtlas_GetFontsCount(io->fonts) == 2);
         ImFontAtlas_SetFontAsDefault(io->fonts, 1);
