@@ -1,5 +1,5 @@
 //\\rc rawbuild begin gcc-linux-64-bit
-//\\rc rawbuild require debug,release,release-fast
+//\\rc rawbuild require-config debug,release,release-fast
 //\\rc rawbuild `gcc -c`
 //\\rc rawbuild debug ` -g -O0`
 //\\rc rawbuild release,release-fast ` -O2 -fopenmp`

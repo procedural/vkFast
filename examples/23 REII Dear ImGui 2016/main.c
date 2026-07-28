@@ -1,5 +1,5 @@
 //\\rc rawbuild begin gcc-linux-64-bit
-//\\rc rawbuild require debug,release,release-fast
+//\\rc rawbuild require-config debug,release,release-fast
 //\\rc rawbuild `g++ -shared -fPIC -fvisibility=hidden`
 //\\rc rawbuild debug ` -g -O0`
 //\\rc rawbuild release,release-fast ` -O2`
@@ -12,7 +12,7 @@
 //\\rc rawbuild end
 
 //\\rc rawbuild begin clang-windows-64-bit
-//\\rc rawbuild require debug,release,release-fast
+//\\rc rawbuild require-config debug,release,release-fast
 //\\rc rawbuild `clang++ -shared -fvisibility=hidden`
 //\\rc rawbuild debug ` -g -O0`
 //\\rc rawbuild release,release-fast ` -O2`
