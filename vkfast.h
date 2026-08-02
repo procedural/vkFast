@@ -6,6 +6,11 @@
     #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_wsi.h"
     #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_2.h"
     #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_32.h"
+  #elif defined(VKFAST_INCLUDE_LINUX_PATHS)
+    #include "/home/linuxbrew/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
+    #include "/home/linuxbrew/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
+    #include "/home/linuxbrew/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
+    #include "/home/linuxbrew/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
   #else
     #include "C:/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
     #include "C:/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu

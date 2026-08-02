@@ -2,10 +2,15 @@
 
 #if defined(_WIN32)
   #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
-    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu.h"
-    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_wsi.h"
-    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_2.h"
-    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_32.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu
+  #elif defined(VKFAST_INCLUDE_LINUX_PATHS)
+    #include "/home/linuxbrew/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
+    #include "/home/linuxbrew/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
+    #include "/home/linuxbrew/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
+    #include "/home/linuxbrew/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
   #else
     #include "C:/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
     #include "C:/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu

@@ -18,6 +18,12 @@
     #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu_2.h"
     #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu_wsi.h"
     #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_context_from_vk.h"
+  #elif defined(VKFAST_INCLUDE_LINUX_PATHS)
+    #include "/home/linuxbrew/RedGpuSDK/misc/np/np.h"
+    #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu.h"
+    #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_2.h"
+    #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+    #include "/home/linuxbrew/RedGpuSDK/redgpu_context_from_vk.h"
   #else
     #include "C:/RedGpuSDK/misc/np/np.h"
     #include "C:/RedGpuSDK/misc/np/np_redgpu.h"
