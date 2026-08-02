@@ -6,5 +6,7 @@ glfw3.dll
 *.o
 *.spv
 *.so
+imgui.dll
 imgui.ini
 build-*
+libwinpthread-1.dll
