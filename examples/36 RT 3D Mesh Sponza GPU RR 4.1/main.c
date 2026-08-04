@@ -360,8 +360,8 @@ int main() {
       rays[i].origin[2] = 0.f;
 
       rays[i].direction[0] = -1.f;
-      rays[i].direction[1] = -1.f + (2.f / WINDOW_W) * y;
-      rays[i].direction[2] = -1.f + (2.f / WINDOW_H) * x;
+      rays[i].direction[1] = -1.f + (2.f / WINDOW_H) * y;
+      rays[i].direction[2] = -1.f + (2.f / WINDOW_W) * x;
 
       rays[i].min_t = 0.001f;
       rays[i].max_t = 100000.f;
