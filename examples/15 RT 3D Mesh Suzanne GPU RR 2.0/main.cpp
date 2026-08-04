@@ -74,7 +74,7 @@ int main() {
   void * window_handle = &windowData;
 #endif
 
-  gpu_handle_context_t ctx = vfContextInitEx(1, 1, NULL, FF, LL);
+  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
   vfWindowFullscreen(ctx, window_handle, "[vkFast] RT 3D Mesh Suzanne GPU RR 2.0", 700, 700, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
 
   const unsigned array65536[2] = {65536, 65536};
