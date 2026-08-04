@@ -1,0 +1,25 @@
+* On Linux, if you get a runtime error like this:
+  ```
+  Segmentation fault         (core dumped) XDG_SESSION_TYPE=x11 ./36_RT_3D_Mesh_Sponza_GPU_RR_4_1
+  ```
+  It means you forgot to run `ulimit -s unlimited` terminal command first.
+
+* If you get a runtime error like this:
+  ```
+  Validation Error: [ VUID-VkShaderModuleCreateInfo-pCode-08737 ] | MessageID = 0xa5625282
+  vkCreateShaderModule(): pCreateInfo->pCode (spirv-val produced an error):
+  Invalid SPIR-V binary version 1.3 for target environment SPIR-V 1.0 (under Vulkan 1.0 semantics).
+  Command to reproduce:
+          spirv-val <input.spv> --target-env vulkan1.0
+
+  The Vulkan spec states: If pCode is a pointer to SPIR-V code, pCode must adhere to the validation rules described by the Validation Rules within a Module section of the SPIR-V Environment appendix (https://vulkan.lunarg.com/doc/view/1.4.350.1/linux/antora/spec/latest/chapters/shaders.html#VUID-VkShaderModuleCreateInfo-pCode-08737)
+  ```
+  It means you forgot to uncomment the `#define VKFAST_DEFINE_ENABLE_FEATURE_COMPUTE_BASED_RAY_TRACING` line in vkfast.c
+
+* For Intel GPUs, if you get a runtime error like this:
+  ```
+  Validation Error: [ VUID-VkShaderModuleCreateInfo-pCode-08740 ] | MessageID = 0x6e224e9
+  vkCreateShaderModule(): SPIR-V Capability StorageBufferArrayNonUniformIndexing was declared, but one of the following requirements is required (VkPhysicalDeviceVulkan12Features::shaderStorageBufferArrayNonUniformIndexing).
+  The Vulkan spec states: If pCode is a pointer to SPIR-V code, and pCode declares any of the capabilities listed in the SPIR-V Environment appendix, one of the corresponding requirements must be satisfied (https://vulkan.lunarg.com/doc/view/1.4.350.1/linux/antora/spec/latest/chapters/shaders.html#VUID-VkShaderModuleCreateInfo-pCode-08740)
+  ```
+  It means you forgot to apply the `enable_compute_based_ray_tracing_for_intel_gpus_redgpu_commit_8faea2fa9.patch` to REDGPU SDK folder.

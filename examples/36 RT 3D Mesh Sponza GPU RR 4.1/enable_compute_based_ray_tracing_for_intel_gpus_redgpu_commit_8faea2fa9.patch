@@ -1,0 +1,22 @@
+diff --git a/RedGpuSDK/redgpu.c b/RedGpuSDK/redgpu.c
+index f5a0113..81e8563 100644
+--- a/RedGpuSDK/redgpu.c
++++ b/RedGpuSDK/redgpu.c
+@@ -3709,7 +3709,7 @@ void redInlineCreateContext(RedTypeProcedureMalloc customMalloc, RedTypeProcedur
+           }
+         } else {
+           // NOTE(Constantine): Ray tracing on Intel GPUs is disabled for now.
+-          wasRequestedAndWasFoundExtensionRayTracing = 0;
++          //wasRequestedAndWasFoundExtensionRayTracing = 0;
+         }
+         if (redInternalFindDeviceExtension(iGpuInfo, "VK_EXT_shader_subgroup_ballot", procedureId, 0, optionalFile, optionalLine) == 0) {
+           wasRequestedAndWasFoundExtensionRayTracing = 0;
+@@ -4079,7 +4079,7 @@ void redInlineCreateContext(RedTypeProcedureMalloc customMalloc, RedTypeProcedur
+         }
+       } else {
+         // NOTE(Constantine): Ray tracing on Intel GPUs is disabled for now.
+-        wasRequestedAndWasFoundExtensionRayTracing = 0;
++        //wasRequestedAndWasFoundExtensionRayTracing = 0;
+       }
+       if (redInternalFindDeviceExtension(iGpuInfo, "VK_EXT_shader_subgroup_ballot", procedureId, 0, optionalFile, optionalLine) == 0) {
+         wasRequestedAndWasFoundExtensionRayTracing = 0;
