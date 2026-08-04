@@ -1,4 +1,5 @@
 ﻿//#define VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
+//#define VKFAST_DEFINE_ENABLE_FEATURE_COMPUTE_BASED_RAY_TRACING
 
 #ifdef _WIN32
 #define GPU_API_PRE __declspec(dllexport)
@@ -1947,14 +1948,14 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
     #if defined(_WIN32)
     unsigned extensions[] = {
       RED_SDK_EXTENSION_WSI_WIN32,
-      #ifdef VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
+      #if defined(VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF) || defined(VKFAST_DEFINE_ENABLE_FEATURE_COMPUTE_BASED_RAY_TRACING)
       RED_SDK_EXTENSION_RAY_TRACING,
       #endif
     };
     #elif defined(__linux__) && !defined(__ANDROID__)
     unsigned extensions[] = {
       RED_SDK_EXTENSION_WSI_XLIB,
-      #ifdef VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
+      #if defined(VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF) || defined(VKFAST_DEFINE_ENABLE_FEATURE_COMPUTE_BASED_RAY_TRACING)
       RED_SDK_EXTENSION_RAY_TRACING,
       #endif
     };
