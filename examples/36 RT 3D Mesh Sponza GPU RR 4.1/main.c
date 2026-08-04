@@ -569,7 +569,22 @@ int main() {
     }
   }
 
-  stbi_write_jpg("redgpu_radeonrays_test_sponza_geom_isect.jpg", WINDOW_W, WINDOW_H, 4, &data[0], 120);
+  while (glfwWindowShouldClose(window) == 0) {
+    glfwPollEvents();
+
+    int os_window_w = 0;
+    int os_window_h = 0;
+    glfwGetWindowSize(window, &os_window_w, &os_window_h);
+
+    if (vfWindowIsMinimized(ctx) || os_window_w == 0 || os_window_h == 0) {
+      continue;
+    }
+
+    gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
+    vfDrawPixels(ctx, &data[0], NULL, countof(gpu_threads), gpu_threads, array65536, FF, LL);
+  }
+
+  vfAllQueuesWaitIdle(ctx, FF, LL);
 
   RR_CHECK(rrDestroyContext(context));
 
@@ -598,21 +613,6 @@ int main() {
   redMemoryFree(redcontext, redcontext->gpus[0].gpu, hits_buffer_memory_gpu, __FILE__, __LINE__, NULL);
   redMemoryFree(redcontext, redcontext->gpus[0].gpu, rays_buffer_memory_gpu, __FILE__, __LINE__, NULL);
   redMemoryFree(redcontext, redcontext->gpus[0].gpu, rays_buffer_memory_cpu, __FILE__, __LINE__, NULL);
-
-  while (glfwWindowShouldClose(window) == 0) {
-    glfwPollEvents();
-  
-    int os_window_w = 0;
-    int os_window_h = 0;
-    glfwGetWindowSize(window, &os_window_w, &os_window_h);
-
-    if (vfWindowIsMinimized(ctx) || os_window_w == 0 || os_window_h == 0) {
-      continue;
-    }
-
-  }
-
-  vfAllQueuesWaitIdle(ctx, FF, LL);
 
   vfGpuThreadDestroy(ctx, gpu_thread);
   vfContextDeinit(ctx, FF, LL);
