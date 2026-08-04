@@ -45,24 +45,11 @@ public:
         return logger;
     }
 
-    template <typename... Args>
-    void Info(Args&&... args);
-
-    template <typename... Args>
-    void Warn(Args&&... args);
-
-    template <typename... Args>
-    void Error(Args&&... args);
-
-    template <typename... Args>
-    void Debug(Args&&... args);
-
-    template <typename... Args>
-    void Trace(Args&&... args);
-
     void SetLogLevel(RRLogLevel log_level) const;
     void SetFileLogger(char const* filename);
     void SetConsoleLogger();
+
+    std::shared_ptr<spdlog::logger> logger_;
 
 private:
     Logger()
@@ -75,37 +62,6 @@ private:
 #endif
     }
     ~Logger() { spdlog::shutdown(); }
-    std::shared_ptr<spdlog::logger> logger_;
 };
-
-template <typename... Args>
-void Logger::Info(Args&&... args)
-{
-    logger_->info(std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void Logger::Warn(Args&&... args)
-{
-    logger_->warn(std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void Logger::Error(Args&&... args)
-{
-    logger_->error(std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void Logger::Debug(Args&&... args)
-{
-    logger_->debug(std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void Logger::Trace(Args&&... args)
-{
-    logger_->trace(std::forward<Args>(args)...);
-}
 
 }  // namespace rt

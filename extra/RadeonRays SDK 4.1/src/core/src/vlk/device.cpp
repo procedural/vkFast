@@ -53,7 +53,7 @@ std::shared_ptr<GpuHelper> Device::Get() const { return impl_; }
 
 void Device::CreateDeviceAndCommandQueue()
 {
-    Logger::Get().Debug("Initializing Vulkan internals");
+    Logger::Get().logger_->debug("Initializing Vulkan internals");
     vk::ApplicationInfo app_info = {"RadeonRays Library", 1, "RadeonRays", 1, VK_API_VERSION_1_2};
 
 
@@ -74,7 +74,7 @@ void Device::CreateDeviceAndCommandQueue()
     auto devices = instance.enumeratePhysicalDevices();
     if (devices.size() < 1)
     {
-        Logger::Get().Error("Cannot enumerate physical devices");
+        Logger::Get().logger_->error("Cannot enumerate physical devices");
         throw std::runtime_error("No physical devices.");
     }
 
@@ -94,7 +94,7 @@ void Device::CreateDeviceAndCommandQueue()
     }
     if (queue_index >= queue_count)
     {
-        Logger::Get().Error("No queue for compute");
+        Logger::Get().logger_->error("No queue for compute");
         throw std::runtime_error("No compute queue.");
     }
 
@@ -142,12 +142,12 @@ void Device::CreateDeviceAndCommandQueue()
     auto queue  = device.getQueue(queue_index, 0);
     impl_       = std::make_shared<GpuHelper>(device, physical_device, queue, queue_index, instance);
 
-    Logger::Get().Debug("Vulkan device and queue are successfully created");
+    Logger::Get().logger_->debug("Vulkan device and queue are successfully created");
 }
 
 void Device::InitializePools()
 {
-    Logger::Get().Debug("Initializing resource pools");
+    Logger::Get().logger_->debug("Initializing resource pools");
     // Initialize event pool creation functions.
     event_pool_.SetCreateFn([device = impl_->device]() {
         EventBackend<BackendType::kVulkan>* event = new Event;
@@ -220,7 +220,7 @@ void Device::ReleaseCommandStream(CommandStreamBase* command_stream_base)
 
 EventBase* Device::SubmitCommandStream(CommandStreamBase* command_stream_base, EventBase* wait_event_base)
 {
-    Logger::Get().Debug("Device::SubmitCommandStream()");
+    Logger::Get().logger_->debug("Device::SubmitCommandStream()");
 
     auto command_stream = dynamic_cast<CommandStreamBackend<BackendType::kVulkan>*>(command_stream_base);
 
@@ -241,14 +241,14 @@ EventBase* Device::SubmitCommandStream(CommandStreamBase* command_stream_base, E
 
 void Device::ReleaseEvent(EventBase* event_base)
 {
-    Logger::Get().Debug("Device::ReleaseEvent()");
+    Logger::Get().logger_->debug("Device::ReleaseEvent()");
     EventBackend<BackendType::kVulkan>* event = dynamic_cast<EventBackend<BackendType::kVulkan>*>(event_base);
     event_pool_.ReleaseObject(event);
 }
 
 void Device::WaitEvent(EventBase* event_base)
 {
-    Logger::Get().Debug("Device::WaitEvent()");
+    Logger::Get().logger_->debug("Device::WaitEvent()");
     EventBackend<BackendType::kVulkan>* event = dynamic_cast<EventBackend<BackendType::kVulkan>*>(event_base);
     // Loop until the fence is signalled:
     while (true)
@@ -262,7 +262,7 @@ void Device::WaitEvent(EventBase* event_base)
             break;
         }
         // Otherwise, we took longer than kInfiniteTime:
-        Logger::Get().Warn("Wait for fence: {}", vk::to_string(result));
+        Logger::Get().logger_->warn("Wait for fence: {}", vk::to_string(result));
 
         // If the result wasn't a timeout (e.g. error), we fail:
         if (result != vk::Result::eTimeout)

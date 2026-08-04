@@ -77,11 +77,11 @@ std::vector<TriangleMeshBuildInfo> GetTriangleMeshBuildInfo(const RRGeometryBuil
 
 RRError rrCreateContext(uint32_t api_version, RRApi api, RRContext* context)
 {
-    Logger::Get().Info("rrCreateContext({})", api_version);
+    Logger::Get().logger_->info("rrCreateContext({})", api_version);
 
     if (!context)
     {
-        Logger::Get().Error("Context is nullptr");
+        Logger::Get().logger_->error("Context is nullptr");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -92,7 +92,7 @@ RRError rrCreateContext(uint32_t api_version, RRApi api, RRContext* context)
 #if RR_ENABLE_DX12
         if (api == RR_API_DX)
         {
-            Logger::Get().Info("Creating DX12 default context");
+            Logger::Get().logger_->info("Creating DX12 default context");
             rtctx->device      = dx::CreateDevice();
             rtctx->intersector = dx::CreateIntersector(*(rtctx->device), dx::IntersectorType::kCompute);
             rtctx->api         = RR_API_DX;
@@ -101,7 +101,7 @@ RRError rrCreateContext(uint32_t api_version, RRApi api, RRContext* context)
 #if RR_ENABLE_VK
         if (api == RR_API_VK)
         {
-            Logger::Get().Info("Creating Vulkan context");
+            Logger::Get().logger_->info("Creating Vulkan context");
             rtctx->device      = vulkan::CreateDevice();
             rtctx->intersector = vulkan::CreateIntersector(*(rtctx->device), vulkan::IntersectorType::kCompute);
             rtctx->api         = RR_API_VK;
@@ -111,11 +111,11 @@ RRError rrCreateContext(uint32_t api_version, RRApi api, RRContext* context)
         *context = reinterpret_cast<RRContext>(rtctx);
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Context successfully created");
+    Logger::Get().logger_->debug("Context successfully created");
     return RR_SUCCESS;
 }
 
@@ -126,12 +126,12 @@ RRError rrSetLogLevel(RRLogLevel log_level)
         Logger::Get().SetLogLevel(log_level);
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INVALID_PARAMETER;
     }
 
     // logging it aftewards since off is possible
-    Logger::Get().Info("rrSetLogLevel({})", log_level);
+    Logger::Get().logger_->info("rrSetLogLevel({})", static_cast<int>(log_level));
     return RR_SUCCESS;
 }
 
@@ -139,7 +139,7 @@ RRError rrSetLogFile(char const* filename)
 {
     if (!filename)
     {
-        Logger::Get().Error("Invalid filename passed");
+        Logger::Get().logger_->error("Invalid filename passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
     try
@@ -147,12 +147,12 @@ RRError rrSetLogFile(char const* filename)
         Logger::Get().SetFileLogger(filename);
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
     // logging it aftewards since we just changed logging to file
-    Logger::Get().Info("rrSetLogFile({})", filename);
+    Logger::Get().logger_->info("rrSetLogFile({})", filename);
     return RR_SUCCESS;
 }
 
@@ -163,11 +163,11 @@ RRError rrCreateContextDX(uint32_t            api_version,
                           ID3D12CommandQueue* command_queue,
                           RRContext*          context)
 {
-    Logger::Get().Info("rrCreateContextDX({})", api_version);
+    Logger::Get().logger_->info("rrCreateContextDX({})", api_version);
 
     if (!context || !d3d_device || !command_queue)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -180,11 +180,11 @@ RRError rrCreateContextDX(uint32_t            api_version,
         *context         = reinterpret_cast<RRContext>(ctx);
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Context successfully created");
+    Logger::Get().logger_->debug("Context successfully created");
     return RR_SUCCESS;
 }
 #endif
@@ -197,11 +197,11 @@ RRError rrCreateContextVk(uint32_t         api_version,
                           uint32_t         queue_family_index,
                           RRContext*       context)
 {
-    Logger::Get().Info("rrCreateContextVk({})", api_version);
+    Logger::Get().logger_->info("rrCreateContextVk({})", api_version);
 
     if (!context || !device || !physical_device || !command_queue)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -214,28 +214,28 @@ RRError rrCreateContextVk(uint32_t         api_version,
         *context         = reinterpret_cast<RRContext>(ctx);
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Context successfully created");
+    Logger::Get().logger_->debug("Context successfully created");
     return RR_SUCCESS;
 }
 #endif
 
 RRError rrDestroyContext(RRContext context)
 {
-    Logger::Get().Info("rrDestroyContext");
+    Logger::Get().logger_->info("rrDestroyContext");
 
     if (!context)
     {
-        Logger::Get().Error("Context is nullptr");
+        Logger::Get().logger_->error("Context is nullptr");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
     delete reinterpret_cast<Context*>(context);
 
-    Logger::Get().Debug("Context successfully destroyed");
+    Logger::Get().logger_->debug("Context successfully destroyed");
     return RR_SUCCESS;
 }
 
@@ -247,11 +247,11 @@ RRError rrCmdBuildGeometry(RRContext                   context,
                            RRDevicePtr                 geometry_buffer,
                            RRCommandStream             command_stream)
 {
-    Logger::Get().Info("rrCmdBuildGeometry");
+    Logger::Get().logger_->info("rrCmdBuildGeometry");
 
     if (!context || !command_stream || !build_input)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -284,17 +284,17 @@ RRError rrCmdBuildGeometry(RRContext                   context,
             break;
         }
         default: {
-            Logger::Get().Error("Build input type not supported");
+            Logger::Get().logger_->error("Build input type not supported");
             return RR_ERROR_NOT_IMPLEMENTED;
         }
         }
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Geometry build command successfully recorded");
+    Logger::Get().logger_->debug("Geometry build command successfully recorded");
     return RR_SUCCESS;
 }
 
@@ -303,11 +303,11 @@ RRError rrGetGeometryBuildMemoryRequirements(RRContext                   context
                                              const RRBuildOptions*       build_options,
                                              RRMemoryRequirements*       memory_requirements)
 {
-    Logger::Get().Info("rrGetGeometryBuildMemoryRequirements");
+    Logger::Get().logger_->info("rrGetGeometryBuildMemoryRequirements");
 
     if (!context || !build_input || !memory_requirements)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -327,17 +327,17 @@ RRError rrGetGeometryBuildMemoryRequirements(RRContext                   context
             break;
         }
         default: {
-            Logger::Get().Error("Build input type not supported");
+            Logger::Get().logger_->error("Build input type not supported");
             return RR_ERROR_NOT_IMPLEMENTED;
         }
         }
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Successfully provided geometry memory requirements");
+    Logger::Get().logger_->debug("Successfully provided geometry memory requirements");
     return RR_SUCCESS;
 }
 
@@ -348,11 +348,11 @@ RRError rrCmdBuildScene(RRContext                context,
                         RRDevicePtr              scene_buffer,
                         RRCommandStream          command_stream)
 {
-    Logger::Get().Info("rrCmdBuildScene");
+    Logger::Get().logger_->info("rrCmdBuildScene");
 
     if (!context || !command_stream || !build_input)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -369,11 +369,11 @@ RRError rrCmdBuildScene(RRContext                context,
                                      reinterpret_cast<DevicePtrBase*>(scene_buffer));
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Scene build command successfully recorded");
+    Logger::Get().logger_->debug("Scene build command successfully recorded");
     return RR_SUCCESS;
 }
 
@@ -382,11 +382,11 @@ RRError rrGetSceneBuildMemoryRequirements(RRContext                context,
                                           const RRBuildOptions*    build_options,
                                           RRMemoryRequirements*    memory_requirements)
 {
-    Logger::Get().Info("rrGetSceneBuildMemoryRequirements");
+    Logger::Get().logger_->info("rrGetSceneBuildMemoryRequirements");
 
     if (!context || !build_input || !memory_requirements)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -400,11 +400,11 @@ RRError rrGetSceneBuildMemoryRequirements(RRContext                context,
         memory_requirements->temporary_update_buffer_size = info.update_scratch_size;
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Successfully provided scene memory requirements");
+    Logger::Get().logger_->debug("Successfully provided scene memory requirements");
     return RR_SUCCESS;
 }
 
@@ -419,11 +419,11 @@ RRError rrCmdIntersect(RRContext              context,
                        RRDevicePtr            scratch,
                        RRCommandStream        command_stream)
 {
-    Logger::Get().Info("rrCmdIntersect");
+    Logger::Get().logger_->info("rrCmdIntersect");
 
     if (!context || !scene_buffer || !rays || !hits || !scratch || !command_stream)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -442,21 +442,21 @@ RRError rrCmdIntersect(RRContext              context,
                                     reinterpret_cast<DevicePtrBase*>(scratch));
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Batch intersect command successfully recorded");
+    Logger::Get().logger_->debug("Batch intersect command successfully recorded");
     return RR_SUCCESS;
 }
 
 RRError rrAllocateCommandStream(RRContext context, RRCommandStream* command_stream)
 {
-    Logger::Get().Info("rrAllocateCommandStream");
+    Logger::Get().logger_->info("rrAllocateCommandStream");
 
     if (!context || !command_stream)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -467,21 +467,21 @@ RRError rrAllocateCommandStream(RRContext context, RRCommandStream* command_stre
         *command_stream = reinterpret_cast<RRCommandStream>(ctx->device->AllocateCommandStream());
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Command stream successfully allocated");
+    Logger::Get().logger_->debug("Command stream successfully allocated");
     return RR_SUCCESS;
 }
 
 RRError rrReleaseCommandStream(RRContext context, RRCommandStream command_stream)
 {
-    Logger::Get().Info("rrReleaseCommandStream");
+    Logger::Get().logger_->info("rrReleaseCommandStream");
 
     if (!context || !command_stream)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -493,21 +493,21 @@ RRError rrReleaseCommandStream(RRContext context, RRCommandStream command_stream
         ctx->device->ReleaseCommandStream(cmd_stream);
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Command stream successfully released");
+    Logger::Get().logger_->debug("Command stream successfully released");
     return RR_SUCCESS;
 }
 
 RRError rrSumbitCommandStream(RRContext context, RRCommandStream command_stream, RREvent wait_event, RREvent* event)
 {
-    Logger::Get().Info("rrSumbitCommandStream");
+    Logger::Get().logger_->info("rrSumbitCommandStream");
 
     if (!context || !command_stream || !event)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -520,21 +520,21 @@ RRError rrSumbitCommandStream(RRContext context, RRCommandStream command_stream,
         *event = reinterpret_cast<RREvent>(ctx->device->SubmitCommandStream(cmd_stream, rt_wait_event));
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Command stream successfully submitted");
+    Logger::Get().logger_->debug("Command stream successfully submitted");
     return RR_SUCCESS;
 }
 
 RRError rrReleaseEvent(RRContext context, RREvent event)
 {
-    Logger::Get().Info("rrReleaseEvent");
+    Logger::Get().logger_->info("rrReleaseEvent");
 
     if (!context || !event)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -546,21 +546,21 @@ RRError rrReleaseEvent(RRContext context, RREvent event)
         ctx->device->ReleaseEvent(evt);
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Event successfully released");
+    Logger::Get().logger_->debug("Event successfully released");
     return RR_SUCCESS;
 }
 
 RRError rrWaitEvent(RRContext context, RREvent event)
 {
-    Logger::Get().Info("rrReleaseEvent");
+    Logger::Get().logger_->info("rrReleaseEvent");
 
     if (!context || !event)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -572,27 +572,27 @@ RRError rrWaitEvent(RRContext context, RREvent event)
         ctx->device->WaitEvent(evt);
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Successful wait on event.");
+    Logger::Get().logger_->debug("Successful wait on event.");
     return RR_SUCCESS;
 }
 
 RRError rrReleaseDevicePtr(RRContext context, RRDevicePtr ptr)
 {
-    Logger::Get().Info("rrReleaseDevicePtr");
+    Logger::Get().logger_->info("rrReleaseDevicePtr");
 
     if (!context || !ptr)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
     delete reinterpret_cast<DevicePtrBase*>(ptr);
 
-    Logger::Get().Debug("Device pointer successfully released");
+    Logger::Get().logger_->debug("Device pointer successfully released");
     return RR_SUCCESS;
 }
 
@@ -602,11 +602,11 @@ RRError rrGetDevicePtrFromD3D12Resource(RRContext       context,
                                         size_t          offset,
                                         RRDevicePtr*    device_ptr)
 {
-    Logger::Get().Info("rrGetDevicePtrFromD3D12Resource");
+    Logger::Get().logger_->info("rrGetDevicePtrFromD3D12Resource");
 
     if (!context || !resource || !device_ptr)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -614,13 +614,13 @@ RRError rrGetDevicePtrFromD3D12Resource(RRContext       context,
 
     if (ctx->api != RR_API_DX)
     {
-        Logger::Get().Error("Not supported for selected API");
+        Logger::Get().logger_->error("Not supported for selected API");
         return RR_ERROR_UNSUPPORTED_INTEROP;
     }
 
     *device_ptr = reinterpret_cast<RRDevicePtr>(dx::CreateDevicePtr(resource, offset));
 
-    Logger::Get().Debug("Device pointer obtained from D3D12Resource");
+    Logger::Get().logger_->debug("Device pointer obtained from D3D12Resource");
     return RR_SUCCESS;
 }
 
@@ -628,11 +628,11 @@ RRError rrGetCommandStreamFromD3D12CommandList(RRContext                  contex
                                                ID3D12GraphicsCommandList* command_list,
                                                RRCommandStream*           command_stream)
 {
-    Logger::Get().Info("rrGetCommandStreamFromD3D12CommandList");
+    Logger::Get().logger_->info("rrGetCommandStreamFromD3D12CommandList");
 
     if (!context || !command_list || !command_stream)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -640,7 +640,7 @@ RRError rrGetCommandStreamFromD3D12CommandList(RRContext                  contex
 
     if (ctx->api != RR_API_DX)
     {
-        Logger::Get().Error("Not supported for selected API");
+        Logger::Get().logger_->error("Not supported for selected API");
         return RR_ERROR_UNSUPPORTED_INTEROP;
     }
 
@@ -651,22 +651,22 @@ RRError rrGetCommandStreamFromD3D12CommandList(RRContext                  contex
             new dx::CommandStream(reinterpret_cast<dx::Device&>(*ctx->device), command_list));
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Command stream obtained from D3D12CommandList");
+    Logger::Get().logger_->debug("Command stream obtained from D3D12CommandList");
     return RR_SUCCESS;
 }
 #endif
 #if RR_ENABLE_VK
 RRError rrGetDevicePtrFromVkBuffer(RRContext context, VkBuffer buffer, size_t offset, RRDevicePtr* device_ptr)
 {
-    Logger::Get().Info("rrGetDevicePtrFromVkBuffer");
+    Logger::Get().logger_->info("rrGetDevicePtrFromVkBuffer");
 
     if (!context || !buffer || !device_ptr)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -674,12 +674,12 @@ RRError rrGetDevicePtrFromVkBuffer(RRContext context, VkBuffer buffer, size_t of
 
     if (ctx->api != RR_API_VK)
     {
-        Logger::Get().Error("Not supported for selected API");
+        Logger::Get().logger_->error("Not supported for selected API");
         return RR_ERROR_UNSUPPORTED_INTEROP;
     }
 
     *device_ptr = reinterpret_cast<RRDevicePtr>(vulkan::CreateDevicePtr(buffer, offset));
-    Logger::Get().Debug("Device pointer obtained from VkBuffer");
+    Logger::Get().logger_->debug("Device pointer obtained from VkBuffer");
     return RR_SUCCESS;
 }
 
@@ -687,11 +687,11 @@ RRError rrGetCommandStreamFromVkCommandBuffer(RRContext        context,
                                               VkCommandBuffer  command_list,
                                               RRCommandStream* command_stream)
 {
-    Logger::Get().Info("rrGetCommandStreamFromVkCommandBuffer");
+    Logger::Get().logger_->info("rrGetCommandStreamFromVkCommandBuffer");
 
     if (!context || !command_list || !command_stream)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -699,7 +699,7 @@ RRError rrGetCommandStreamFromVkCommandBuffer(RRContext        context,
 
     if (ctx->api != RR_API_VK)
     {
-        Logger::Get().Error("Not supported for selected API");
+        Logger::Get().logger_->error("Not supported for selected API");
         return RR_ERROR_UNSUPPORTED_INTEROP;
     }
 
@@ -709,55 +709,55 @@ RRError rrGetCommandStreamFromVkCommandBuffer(RRContext        context,
             new vulkan::CommandStream(reinterpret_cast<vulkan::Device&>(*ctx->device), command_list));
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Command stream obtained from VkCommandBuffer");
+    Logger::Get().logger_->debug("Command stream obtained from VkCommandBuffer");
     return RR_SUCCESS;
 }
 #endif
 
 RRError rrReleaseExternalCommandStream(RRContext context, RRCommandStream command_stream)
 {
-    Logger::Get().Info("rrReleaseExternalCommandStream");
+    Logger::Get().logger_->info("rrReleaseExternalCommandStream");
 
     if (!context || !command_stream)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
     delete reinterpret_cast<CommandStreamBase*>(command_stream);
 
-    Logger::Get().Debug("External command stream successfully released");
+    Logger::Get().logger_->debug("External command stream successfully released");
     return RR_SUCCESS;
 }
 
 RRError rrGetTraceMemoryRequirements(RRContext context, uint32_t ray_count, size_t* scratch_size)
 {
-    Logger::Get().Info("rrGetTraceMemoryRequirements");
+    Logger::Get().logger_->info("rrGetTraceMemoryRequirements");
 
     if (!context || !scratch_size || !ray_count)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
     auto ctx      = reinterpret_cast<Context*>(context);
     *scratch_size = ctx->intersector->GetTraceMemoryRequirements(ray_count);
 
-    Logger::Get().Debug("Successfully provided trace memory requirements");
+    Logger::Get().logger_->debug("Successfully provided trace memory requirements");
     return RR_SUCCESS;
 }
 
 #ifdef RR_ENABLE_VK
 RRError rrAllocateDeviceBuffer(RRContext context, size_t size, RRDevicePtr* device_ptr)
 {
-    Logger::Get().Info("rrAllocateDeviceBuffer");
+    Logger::Get().logger_->info("rrAllocateDeviceBuffer");
 
     if (!context || !size || !device_ptr)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -765,7 +765,7 @@ RRError rrAllocateDeviceBuffer(RRContext context, size_t size, RRDevicePtr* devi
 
     if (ctx->api != RR_API_VK)
     {
-        Logger::Get().Error("Not supported for selected API");
+        Logger::Get().logger_->error("Not supported for selected API");
         return RR_ERROR_UNSUPPORTED_INTEROP;
     }
 
@@ -775,21 +775,21 @@ RRError rrAllocateDeviceBuffer(RRContext context, size_t size, RRDevicePtr* devi
         *device_ptr = reinterpret_cast<RRDevicePtr>(device.CreateAllocatedBuffer(size));
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Allocated vulkan buffer with size {}", size);
+    Logger::Get().logger_->debug("Allocated vulkan buffer with size {}", size);
     return RR_SUCCESS;
 }
 
 RRError rrMapDevicePtr(RRContext context, RRDevicePtr device_ptr, void** mapping_ptr)
 {
-    Logger::Get().Info("rrMapDevicePtr");
+    Logger::Get().logger_->info("rrMapDevicePtr");
 
     if (!context || !device_ptr)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -797,14 +797,14 @@ RRError rrMapDevicePtr(RRContext context, RRDevicePtr device_ptr, void** mapping
 
     if (ctx->api != RR_API_VK)
     {
-        Logger::Get().Error("Not supported for selected API");
+        Logger::Get().logger_->error("Not supported for selected API");
         return RR_ERROR_UNSUPPORTED_INTEROP;
     }
     auto base             = reinterpret_cast<DevicePtrBase*>(device_ptr);
     auto allocated_buffer = dynamic_cast<DevicePtrBackend<BackendType::kVulkan>*>(base);
     if (!allocated_buffer)
     {
-        Logger::Get().Error("Device pointer cannot be mapped");
+        Logger::Get().logger_->error("Device pointer cannot be mapped");
         return RR_ERROR_INVALID_PARAMETER;
     }
     try
@@ -812,26 +812,26 @@ RRError rrMapDevicePtr(RRContext context, RRDevicePtr device_ptr, void** mapping
         *mapping_ptr = allocated_buffer->Map();
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
     if (!*mapping_ptr)
     {
-        Logger::Get().Error("Device pointer cannot be mapped");
+        Logger::Get().logger_->error("Device pointer cannot be mapped");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
-    Logger::Get().Debug("Map vulkan buffer");
+    Logger::Get().logger_->debug("Map vulkan buffer");
     return RR_SUCCESS;
 }
 
 RRError rrUnmapDevicePtr(RRContext context, RRDevicePtr device_ptr, void** mapping_ptr)
 {
-    Logger::Get().Info("rrUnmapDevicePtr");
+    Logger::Get().logger_->info("rrUnmapDevicePtr");
 
     if (!context || !device_ptr)
     {
-        Logger::Get().Error("Invalid pointer passed");
+        Logger::Get().logger_->error("Invalid pointer passed");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -839,7 +839,7 @@ RRError rrUnmapDevicePtr(RRContext context, RRDevicePtr device_ptr, void** mappi
 
     if (ctx->api != RR_API_VK)
     {
-        Logger::Get().Error("Not supported for selected API");
+        Logger::Get().logger_->error("Not supported for selected API");
         return RR_ERROR_UNSUPPORTED_INTEROP;
     }
 
@@ -847,7 +847,7 @@ RRError rrUnmapDevicePtr(RRContext context, RRDevicePtr device_ptr, void** mappi
     auto allocated_buffer = dynamic_cast<DevicePtrBackend<BackendType::kVulkan>*>(base);
     if (!allocated_buffer)
     {
-        Logger::Get().Error("Device pointer cannot be unmapped");
+        Logger::Get().logger_->error("Device pointer cannot be unmapped");
         return RR_ERROR_INVALID_PARAMETER;
     }
 
@@ -857,11 +857,11 @@ RRError rrUnmapDevicePtr(RRContext context, RRDevicePtr device_ptr, void** mappi
         *mapping_ptr = nullptr;
     } catch (std::exception& e)
     {
-        Logger::Get().Error(e.what());
+        Logger::Get().logger_->error(e.what());
         return RR_ERROR_INTERNAL;
     }
 
-    Logger::Get().Debug("Unmap vulkan buffer");
+    Logger::Get().logger_->debug("Unmap vulkan buffer");
     return RR_SUCCESS;
 }
 #endif

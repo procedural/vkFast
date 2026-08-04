@@ -100,7 +100,7 @@ std::unique_ptr<IntersectorBase> CreateIntersector(std::shared_ptr<GpuHelper> gp
 PreBuildInfo Intersector::GetTriangleMeshPreBuildInfo(const std::vector<TriangleMeshBuildInfo>& build_info,
                                                       const RRBuildOptions*                     build_options)
 {
-    Logger::Get().Debug("Intersector::GetTriangleMeshPreBuildInfo()");
+    Logger::Get().logger_->debug("Intersector::GetTriangleMeshPreBuildInfo()");
 
     PreBuildInfo info;
     info.result_size         = 0;
@@ -122,7 +122,7 @@ PreBuildInfo Intersector::GetTriangleMeshPreBuildInfo(const std::vector<Triangle
 }
 PreBuildInfo Intersector::GetScenePreBuildInfo(uint32_t instance_count, const RRBuildOptions*)
 {
-    Logger::Get().Debug("Intersector::GetScenePreBuildInfo()");
+    Logger::Get().logger_->debug("Intersector::GetScenePreBuildInfo()");
 
     PreBuildInfo info;
     info.result_size         = 0;
@@ -140,7 +140,7 @@ void Intersector::BuildTriangleMesh(CommandStreamBase*                        co
                                     DevicePtrBase*                            temporary_buffer,
                                     DevicePtrBase*                            geometry_buffer)
 {
-    Logger::Get().Debug("Intersector::BuildTriangleMesh()");
+    Logger::Get().logger_->debug("Intersector::BuildTriangleMesh()");
     vk::CommandBuffer command_buffer = command_stream_cast(command_stream_base);
 
     assert(build_info.size() == 1);
@@ -179,7 +179,7 @@ void Intersector::UpdateTriangleMesh(CommandStreamBase*                        c
                                      DevicePtrBase*,
                                      DevicePtrBase* geometry_buffer)
 {
-    Logger::Get().Debug("Intersector::UpdateTriangleMesh()");
+    Logger::Get().logger_->debug("Intersector::UpdateTriangleMesh()");
     vk::CommandBuffer command_buffer = command_stream_cast(command_stream_base);
 
     assert(build_info.size() == 1);
@@ -209,8 +209,8 @@ void Intersector::BuildScene(CommandStreamBase* command_stream_base,
                              DevicePtrBase* temporary_buffer,
                              DevicePtrBase* scene_buffer)
 {
-    Logger::Get().Debug("Intersector::BuildScene()");
-    Logger::Get().Debug("Recording scene build with {} instances", instance_count);
+    Logger::Get().logger_->debug("Intersector::BuildScene()");
+    Logger::Get().logger_->debug("Recording scene build with {} instances", instance_count);
 
     // Allocate buffer and upload data.
     auto command_stream = dynamic_cast<CommandStreamBackend<BackendType::kVulkan>*>(command_stream_base);
@@ -225,7 +225,7 @@ void Intersector::BuildScene(CommandStreamBase* command_stream_base,
     if (kMaxInstances < instance_count)
     {
         constexpr const char* message = "Too big amount of instances per top-level acc structure";
-        Logger::Get().Error(message);
+        Logger::Get().logger_->error(message);
         throw std::runtime_error(message);
     }
     for (auto i = 0u; i < instance_count; ++i)
@@ -272,7 +272,7 @@ void Intersector::Intersect(CommandStreamBase*     command_stream_base,
                             DevicePtrBase*         hits,
                             DevicePtrBase*         scratch)
 {
-    Logger::Get().Debug("Intersector::Intersect()");
+    Logger::Get().logger_->debug("Intersector::Intersect()");
     auto              command_stream = dynamic_cast<CommandStreamBackend<BackendType::kVulkan>*>(command_stream_base);
     vk::CommandBuffer command_buffer = command_stream->Get();
 

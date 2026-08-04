@@ -119,7 +119,7 @@ void Dx12Intersector::BuildTriangleMesh(CommandStreamBase*                      
                                         DevicePtrBase*                            temporary_buffer,
                                         DevicePtrBase*                            geometry_buffer)
 {
-    Logger::Get().Debug("Dx12Intersector::BuildTriangleMesh()");
+    Logger::Get().logger_->debug("Dx12Intersector::BuildTriangleMesh()");
     auto                       command_stream = command_stream_cast(command_stream_base);
     ID3D12GraphicsCommandList* command_list   = command_stream->Get();
 
@@ -151,7 +151,7 @@ void Dx12Intersector::BuildTriangleMesh(CommandStreamBase*                      
 PreBuildInfo Dx12Intersector::GetTriangleMeshPreBuildInfo(const std::vector<TriangleMeshBuildInfo>& build_info,
                                                           const RRBuildOptions*                     build_options)
 {
-    Logger::Get().Debug("Dx12Intersector::GetTriangleMeshPreBuildInfo()");
+    Logger::Get().logger_->debug("Dx12Intersector::GetTriangleMeshPreBuildInfo()");
 
     PreBuildInfo info;
     info.result_size         = 0;
@@ -175,7 +175,7 @@ PreBuildInfo Dx12Intersector::GetTriangleMeshPreBuildInfo(const std::vector<Tria
 
 PreBuildInfo Dx12Intersector::GetScenePreBuildInfo(uint32_t instance_count, const RRBuildOptions*)
 {
-    Logger::Get().Debug("Dx12Intersector::GetScenePreBuildInfo()");
+    Logger::Get().logger_->debug("Dx12Intersector::GetScenePreBuildInfo()");
 
     PreBuildInfo info;
     info.update_scratch_size = 0;
@@ -192,7 +192,7 @@ void Dx12Intersector::UpdateTriangleMesh(CommandStreamBase*                     
                                          DevicePtrBase* temporary_buffer,
                                          DevicePtrBase* geometry_buffer)
 {
-    Logger::Get().Debug("Dx12Intersector::UpdateTriangleMesh()");
+    Logger::Get().logger_->debug("Dx12Intersector::UpdateTriangleMesh()");
     auto                       command_stream = command_stream_cast(command_stream_base);
     ID3D12GraphicsCommandList* command_list   = command_stream->Get();
 
@@ -224,8 +224,8 @@ void Dx12Intersector::BuildScene(CommandStreamBase* command_stream_base,
                                  DevicePtrBase* temporary_buffer,
                                  DevicePtrBase* scene_buffer)
 {
-    Logger::Get().Debug("Dx12Intersector::BuildScene()");
-    Logger::Get().Debug("Recording scene build with {} instances", instance_count);
+    Logger::Get().logger_->debug("Dx12Intersector::BuildScene()");
+    Logger::Get().logger_->debug("Recording scene build with {} instances", instance_count);
 
     // Allocate buffer and upload data.
     auto                       command_stream = command_stream_cast(command_stream_base);
@@ -304,7 +304,7 @@ void Dx12Intersector::Intersect(CommandStreamBase*     command_stream_base,
                                 DevicePtrBase*         hits,
                                 DevicePtrBase*         scratch)
 {
-    Logger::Get().Debug("Dx12Intersector::Intersect()");
+    Logger::Get().logger_->debug("Dx12Intersector::Intersect()");
 
     // Allocate buffer and upload data.
     auto                       command_stream = command_stream_cast(command_stream_base);

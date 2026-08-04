@@ -46,7 +46,7 @@ void Device::CreateDXGIAdapter(D3D_FEATURE_LEVEL feature_level)
             debug_controller->EnableDebugLayer();
         } else
         {
-            Logger::Get().Warn("Direct3D Debug Device is not available");
+            Logger::Get().logger_->warn("Direct3D Debug Device is not available");
         }
 
         ComPtr<IDXGIInfoQueue> dxgi_info_queue;
@@ -68,7 +68,7 @@ void Device::CreateDXGIAdapter(D3D_FEATURE_LEVEL feature_level)
         ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory_)), "Cannot create DXGI factory");
     }
 
-    Logger::Get().Debug("DXGI factory created");
+    Logger::Get().logger_->debug("DXGI factory created");
 
     // Now try to find the adapter.
     UINT selected_id = UINT_MAX;
@@ -92,7 +92,7 @@ void Device::CreateDXGIAdapter(D3D_FEATURE_LEVEL feature_level)
         {
             selected_id = id;
 
-            Logger::Get().Debug("Direct3D Adapter {}: VID:{}, DID:{} - {}",
+            Logger::Get().logger_->debug("Direct3D Adapter {}: VID:{}, DID:{} - {}",
                  id,
                  desc.VendorId,
                  desc.DeviceId,
@@ -111,13 +111,13 @@ void Device::CreateDXGIAdapter(D3D_FEATURE_LEVEL feature_level)
 
 void Device::CreateDeviceAndCommandQueue(D3D_FEATURE_LEVEL feature_level)
 {
-    Logger::Get().Debug("Initalizing DirectX in standalone mode");
+    Logger::Get().logger_->debug("Initalizing DirectX in standalone mode");
 
     // Create the DX12 API device object.
     ThrowIfFailed(D3D12CreateDevice(dxgi_adapter_.Get(), feature_level, IID_PPV_ARGS(&device_)),
                   "Cannot create D3D12 device");
 
-    Logger::Get().Debug("D3D12 device successfully created");
+    Logger::Get().logger_->debug("D3D12 device successfully created");
 
     D3D12_COMMAND_QUEUE_DESC queue_desc = {};
     queue_desc.Flags                    = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -126,14 +126,14 @@ void Device::CreateDeviceAndCommandQueue(D3D_FEATURE_LEVEL feature_level)
     ThrowIfFailed(device_->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&command_queue_)),
                   "Cannot create command queue");
 
-    Logger::Get().Debug("Command queue successfully created");
+    Logger::Get().logger_->debug("Command queue successfully created");
 }
 
 void Device::InitD3D()
 {
-    Logger::Get().Debug("Initializing resource pools");
+    Logger::Get().logger_->debug("Initializing resource pools");
     InitializePools();
-    Logger::Get().Debug("Resource pools initialized");
+    Logger::Get().logger_->debug("Resource pools initialized");
 }
 
 void Device::InitializePools()
@@ -203,7 +203,7 @@ void Device::ReleaseCommandStream(CommandStreamBase* command_stream_base)
 
 EventBase* Device::SubmitCommandStream(CommandStreamBase* command_stream_base, EventBase* wait_event_base)
 {
-    Logger::Get().Debug("Device::SubmitCommandStream()");
+    Logger::Get().logger_->debug("Device::SubmitCommandStream()");
 
     auto command_stream =
         dynamic_cast<CommandStreamBackend<BackendType::kDx12>*>(command_stream_base);
@@ -228,7 +228,7 @@ EventBase* Device::SubmitCommandStream(CommandStreamBase* command_stream_base, E
 
 void Device::ReleaseEvent(EventBase* event_base)
 {
-    Logger::Get().Debug("Device::ReleaseEvent()");
+    Logger::Get().logger_->debug("Device::ReleaseEvent()");
 
     EventBackend<BackendType::kDx12>* event = dynamic_cast<EventBackend<BackendType::kDx12>*>(event_base);
     event_pool_.ReleaseObject(event);
@@ -236,7 +236,7 @@ void Device::ReleaseEvent(EventBase* event_base)
 
 void Device::WaitEvent(EventBase* event_base)
 {
-    Logger::Get().Debug("Device::WaitEvent()");
+    Logger::Get().logger_->debug("Device::WaitEvent()");
 
     Event* event = reinterpret_cast<Event*>(event_base);
 
