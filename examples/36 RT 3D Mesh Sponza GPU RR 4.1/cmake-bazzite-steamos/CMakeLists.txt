@@ -11,6 +11,9 @@ add_executable(${PROJECT_NAME}
   /home/linuxbrew/RedGpuSDK/redgpu_2.c
   /home/linuxbrew/RedGpuSDK/redgpu_32.c
 )
+add_definitions(
+  -DVKFAST_DEFINE_ENABLE_FEATURE_COMPUTE_BASED_RAY_TRACING
+)
 include_directories(
   /home/linuxbrew/.linuxbrew/include/
   /home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/
