@@ -1,0 +1,11 @@
+build/
+*.json
+*.xcworkspacedata
+*.plist
+*.xcuserstate
+*.xcuserstate
+core/.DS_Store
+*.json
+resources/
+src/core/src/vlk/kernels/*.comp.*
+src/core/src/vlk/compiled*spv.h
