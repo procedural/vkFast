@@ -1,0 +1,4 @@
+sudo dnf install spdlog-devel
+cd build/
+cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTING=OFF -DENABLE_VULKAN=ON -DEMBEDDED_KERNELS=ON
+make
