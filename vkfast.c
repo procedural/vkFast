@@ -3019,6 +3019,19 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyn
   REDGPU_2_EXPECTWG(present != NULL);
 
   if (vkfast->presentPixelsCpuUpload_memory_and_array.array.handle == NULL && vkfast->presentPixelsCpuUpload_memory_allocation_size > 0) {
+    unsigned specificMemoryTypeCpuUpload = -1;
+    if (vkfast->specificMemoryTypesCpuUpload != -1) {
+      specificMemoryTypeCpuUpload = vkfast->specificMemoryTypesCpuUpload;
+    } else {
+      // NOTE(Constantine)(Aug 4, 2026):
+      // vkfast->specificMemoryTypesCpuUpload == -1 means that the user
+      // requested 0 bytes for memory storages of type cpu upload. If so,
+      // we can simply pick the first available upload memory type.
+      RedArray allMemoryTypes = {0};
+      allMemoryTypes.memoryTypesSupported = REDGPU_B32(1111,1111,1111,1111,1111,1111,1111,1111);
+      specificMemoryTypeCpuUpload = vfPickSpecificMemoryTypeCpuUpload(vkfast->gpuInfo, &allMemoryTypes);
+      REDGPU_2_EXPECTWG(specificMemoryTypeCpuUpload != -1);
+    }
     np(red2CreateArray,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
@@ -3031,7 +3044,7 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyn
       "maxAllowedOverallocationBytesCount", 0, // NOTE(Constantine): Intel UHD Graphics 730 on Windows 10 aligns CPU visible allocations to 64 bytes.
       "dedicate", 0,
       "mappable", 1,
-      "dedicateOrMappableMemoryTypeIndex", vkfast->specificMemoryTypesCpuUpload,
+      "dedicateOrMappableMemoryTypeIndex", specificMemoryTypeCpuUpload,
       "dedicateOrMappableMemoryBitflags", 0,
       "suballocateFromMemoryOnFirstMatchPointersCount", 0,
       "suballocateFromMemoryOnFirstMatchPointers", NULL,
