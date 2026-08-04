@@ -24,12 +24,11 @@ THE SOFTWARE.
 
 #ifdef PP_USE_SUBGROUP_OPS
 #extension GL_ARB_shader_ballot : require
+#extension GL_KHR_shader_subgroup_arithmetic : enable
 #ifdef PP_USE_NV_SHADER_SUBGROUP_PARTITIONED
-#extension GL_NV_shader_subgroup_partitioned : require
 #define PP_SUBGROUP_SIZE 32
 #endif
 #ifdef PP_USE_AMD_SHADER_BALLOT
-#extension GL_AMD_shader_ballot : require
 #define PP_SUBGROUP_SIZE 64
 #endif
 #endif
@@ -86,18 +85,10 @@ shared int lds_scanned_histogram[PP_NUM_HISTOGRAM_BINS];
 shared int lds_histogram[PP_NUM_HISTOGRAM_BINS];
 
 #ifdef PP_USE_SUBGROUP_OPS
-#ifdef PP_USE_NV_SHADER_SUBGROUP_PARTITIONED
 int SubroupScanExclusiveAdd(int key)
 {
-    return subgroupPartitionedExclusiveAddNV(key, uvec4(0xffffffffu));
+    return subgroupExclusiveAdd(key);
 }
-#endif
-#ifdef PP_USE_AMD_SHADER_BALLOT
-int SubroupScanExclusiveAdd(int key)
-{
-    return addInvocationsExclusiveScanAMD(key);
-}
-#endif
 #endif
 
 int BlockScanExclusiveAdd(int key)
