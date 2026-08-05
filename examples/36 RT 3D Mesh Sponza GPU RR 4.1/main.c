@@ -13,9 +13,6 @@
 #include "/home/linuxbrew/RedGpuSDK/misc/examples/sponza_ray_tracing/mesh_data_indices.h"
 #endif
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "../../extra/RadeonRays SDK 4.1/test/test_vk/stb_image_write.h"
-
 typedef enum RedHelperMemoryType {
   RED_HELPER_MEMORY_TYPE_VRAM     = 0,
   RED_HELPER_MEMORY_TYPE_UPLOAD   = 1,
