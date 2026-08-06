@@ -1,0 +1,4 @@
+google_tint_compiler_fedora44_dawn_monorepo-7562-gl.zip
+google_tint_compiler_fedora44_dawn_monorepo-7562-gl/*
+*.o
+a.out
