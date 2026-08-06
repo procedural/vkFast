@@ -19,10 +19,10 @@ uvec2 imageSize(void * _) {
 }
 
 void imageStore(void * _, ivec2 coord, vec4 color) {
-  screen[coord.y][coord.x][0] = (unsigned char)(color.b * 255.0f);
-  screen[coord.y][coord.x][1] = (unsigned char)(color.g * 255.0f);
-  screen[coord.y][coord.x][2] = (unsigned char)(color.r * 255.0f);
-  screen[coord.y][coord.x][3] = (unsigned char)(color.a * 255.0f);
+  screen[coord.y][coord.x][0] = (unsigned char)(sqrt(color.b) * 255.0f);
+  screen[coord.y][coord.x][1] = (unsigned char)(sqrt(color.g) * 255.0f);
+  screen[coord.y][coord.x][2] = (unsigned char)(sqrt(color.r) * 255.0f);
+  screen[coord.y][coord.x][3] = (unsigned char)(sqrt(color.a) * 255.0f);
 }
 
 #define SWIZ(X) X()
