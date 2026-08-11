@@ -1,5 +1,5 @@
 # For Bazzite/SteamOS only.
-project(39_REII_BSI_1_0_Capsule_Lines)
+project(39_REII_BSI_1_0_Capsule_Test)
 cmake_minimum_required(VERSION 3.20)
 add_executable(${PROJECT_NAME}
   ${CMAKE_SOURCE_DIR}/../main.c
@@ -22,7 +22,7 @@ target_link_libraries(${PROJECT_NAME}
   /home/linuxbrew/.linuxbrew/lib/libX11.so
   /home/linuxbrew/.linuxbrew/lib/libvulkan.so
   -lm
-  #-lasan # sudo dnf install libasan && LD_PRELOAD=/usr/lib64/libasan.so.8 ./39_REII_BSI_1_0_Capsule_Lines
+  #-lasan # sudo dnf install libasan && LD_PRELOAD=/usr/lib64/libasan.so.8 ./39_REII_BSI_1_0_Capsule_Test
 )
 target_compile_options(${PROJECT_NAME} PRIVATE
   -g #-fsanitize=address
