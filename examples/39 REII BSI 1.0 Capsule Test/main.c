@@ -276,35 +276,35 @@ int main() {
   struct float4 { float x, y, z, w; };
 
   enum mesh_capsule_enums {
-    #include "mesh_capsule/mesh_enums.h"
+    #include "../../extra/3D Various Mesh Headers/capsule/mesh_enums.h"
     BLENDER_MESH_ENUMS_COUNT
   };
   struct int3 mesh_capsule_indices[] = {
-    #include "mesh_capsule/mesh_indices.h"
+    #include "../../extra/3D Various Mesh Headers/capsule/mesh_indices.h"
   };
   struct float4 mesh_capsule_normals[] = {
-    #include "mesh_capsule/mesh_normals.h"
+    #include "../../extra/3D Various Mesh Headers/capsule/mesh_normals.h"
   };
   struct float2 mesh_capsule_uvs[] = {
-    #include "mesh_capsule/mesh_uvs.h"
+    #include "../../extra/3D Various Mesh Headers/capsule/mesh_uvs.h"
   };
   struct float4 mesh_capsule_vertices[] = {
-    #include "mesh_capsule/mesh_vertices.h"
+    #include "../../extra/3D Various Mesh Headers/capsule/mesh_vertices.h"
   };
   uint64_t mesh_capsule_submesh_tri_begin[] = {
-    #include "mesh_capsule/submesh_tri_begin.h"
+    #include "../../extra/3D Various Mesh Headers/capsule/submesh_tri_begin.h"
   };
   uint64_t mesh_capsule_submesh_tri_end[] = {
-    #include "mesh_capsule/submesh_tri_end.h"
+    #include "../../extra/3D Various Mesh Headers/capsule/submesh_tri_end.h"
   };
   struct float4 mesh_capsule_submesh_xform_scale[] = {
-    #include "mesh_capsule/submesh_xform_scale.h"
+    #include "../../extra/3D Various Mesh Headers/capsule/submesh_xform_scale.h"
   };
   struct float4 mesh_capsule_submesh_xform_rotation_quaternion[] = {
-    #include "mesh_capsule/submesh_xform_rotation_quaternion.h"
+    #include "../../extra/3D Various Mesh Headers/capsule/submesh_xform_rotation_quaternion.h"
   };
   struct float4 mesh_capsule_submesh_xform_translation[] = {
-    #include "mesh_capsule/submesh_xform_translation.h"
+    #include "../../extra/3D Various Mesh Headers/capsule/submesh_xform_translation.h"
   };
 
   uint64_t batch = 0;
