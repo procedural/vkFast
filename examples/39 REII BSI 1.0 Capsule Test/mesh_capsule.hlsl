@@ -33,7 +33,7 @@ interpolated main(uint vid: SV_VertexID, uint iid: SV_InstanceID) {
   float4 col = colors[vid];
 
   int move_after_scale = 0;
-  if (pos.y >= 0.1) {
+  if (pos.y >= 0.01) {
     move_after_scale = 1;
     pos.y -= 1; // Make it a sphere first, for scale to not affect capsule's final length
   }
