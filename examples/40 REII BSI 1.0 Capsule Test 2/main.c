@@ -1,0 +1,620 @@
+#define _USE_MATH_DEFINES // For M_PI
+
+#include "../../vkfast.h"
+#include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
+#include "../../extra/REII/vkfast_extra_reii.h"
+#define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
+#define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
+#include "../Common/vkfast_examples_common.h"
+
+int main() {
+#if defined(__MINGW32__)
+  SetProcessDPIAware();
+#elif defined(_WIN32)
+  SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+#endif
+
+#if defined(_MSC_VER) && defined(_DEBUG)
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
+  int window_w = 700;
+  int window_h = 700;
+
+  glfwInit();
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+  GLFWwindow * window = glfwCreateWindow(window_w, window_h, "[vkFast] REII BSI 1.0 Capsule Test 2", 0, 0);
+#if defined(_WIN32)
+  void * window_handle = (void *)glfwGetWin32Window(window);
+#elif defined(__linux__) && !defined(__ANDROID__)
+  // NOTE(Constantine): this struct's layout is defined in redgpu_32.c file of REDGPU 2 SDK.
+  struct X11WindowData {
+    Display * display;
+    Window    window;
+    Atom      wmDeleteMessage;
+  };
+  struct X11WindowData windowData = {0};
+  windowData.display = glfwGetX11Display();
+  windowData.window = glfwGetX11Window(window);
+  windowData.wmDeleteMessage = 0;
+  REDGPU_2_EXPECTFL(windowData.display != NULL || !"On Wayland, you need to run the app like this: XDG_SESSION_TYPE=x11 ./a.out");
+  REDGPU_2_EXPECTFL(windowData.window  != 0    || !"On Wayland, you need to run the app like this: XDG_SESSION_TYPE=x11 ./a.out");
+  void * window_handle = &windowData;
+#endif
+
+  gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
+  memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = (1024/*mb*/ * 1024 * 1024) - 64; // NOTE(Constantine)(Mar 20, 2026): '- 64' added for Intel iGPUs which can allocate not 1073741824, but 1073741820 max, lol.
+  memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_upload       = (512/*mb*/ * 1024 * 1024);
+  memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_readback     = (512/*mb*/ * 1024 * 1024);
+  memory_allocation_sizes.bytes_count_for_memory_present_pixels_type_cpu_upload = 0;
+  gpu_context_optional_parameters_t optional_parameters = {0};
+  optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
+
+  const int doDoubleGammaCorrection = 0;
+  // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
+  gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
+  vfWindowFullscreen(ctx, window_handle, "[vkFast] REII BSI 1.0 Capsule Test 2", window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
+
+  const unsigned array65536[2] = {65536, 65536};
+
+  gpu_thread_t gpu_thread = NULL;
+  vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
+
+  gpu_storage_t storage_gpu_only     = {0};
+  gpu_storage_t storage_cpu_upload   = {0};
+  gpu_storage_t storage_cpu_readback = {0};
+  vfeBanzaiStoragesCreate(ctx, &storage_gpu_only, &storage_cpu_upload, &storage_cpu_readback, FF, LL);
+
+  uint64_t storage_gpu_only_mem_offset = 0;
+  uint64_t storage_cpu_upload_mem_offset = 0;
+  uint64_t storage_cpu_readback_mem_offset = 0;
+
+  gpu_extra_cpu_gpu_array pos_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
+    64/*mb*/ * 1024 * 1024,
+    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
+    &storage_gpu_only,   &storage_gpu_only_mem_offset,
+    FF, LL
+  );
+  gpu_extra_cpu_gpu_array col_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
+    64/*mb*/ * 1024 * 1024,
+    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
+    &storage_gpu_only,   &storage_gpu_only_mem_offset,
+    FF, LL
+  );
+
+  #include "mesh.vs.h"
+  #include "mesh.fs.h"
+  gpu_program_info_t vp = {0};
+  vp.program_binary_bytes_count = sizeof(g_main_vs);
+  vp.program_binary             = g_main_vs;
+  gpu_program_info_t fp = {0};
+  fp.program_binary_bytes_count = sizeof(g_main_fs);
+  fp.program_binary             = g_main_fs;
+  char * vp_string = NULL;
+  char * fp_string = NULL;
+
+  RedStructDeclarationMember slots[2] = {0};
+  slots[0].slot            = 0;
+  slots[0].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
+  slots[0].count           = 1;
+  slots[0].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
+  slots[1].slot            = 1;
+  slots[1].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
+  slots[1].count           = 1;
+  slots[1].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
+  gpu_extra_reii_mesh_state_compile_info_t mesh_state_compile_info = {0};
+  mesh_state_compile_info.state_multisample_count     = RED_MULTISAMPLE_COUNT_BITFLAG_4;
+  mesh_state_compile_info.output_depth_stencil_enable = 1;
+  mesh_state_compile_info.output_depth_stencil_format = RED_FORMAT_DEPTH_32_FLOAT;
+  mesh_state_compile_info.output_color_format         = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
+  mesh_state_compile_info.variables_slot              = 2;
+  mesh_state_compile_info.variables_bytes_count       = 2 * sizeof(ReiiVec4);
+  mesh_state_compile_info.struct_members_count        = countof(slots);
+  mesh_state_compile_info.struct_members              = slots;
+  ReiiMeshState mesh_state                                  = {0};
+  mesh_state.compileInfo                                    = mesh_state_compile_info;
+  mesh_state.programVertex                                  = vp;
+  mesh_state.programFragment                                = fp;
+  mesh_state.codeVertex                                     = vp_string;
+  mesh_state.codeFragment                                   = fp_string;
+  mesh_state.rasterizationDepthClampEnable                  = 0;
+  mesh_state.rasterizationCullMode                          = REII_CULL_MODE_NONE;
+  mesh_state.rasterizationFrontFace                         = REII_FRONT_FACE_COUNTER_CLOCKWISE;
+  mesh_state.rasterizationDepthBiasEnable                   = 0;
+  mesh_state.rasterizationDepthBiasConstantFactor           = 0;
+  mesh_state.rasterizationDepthBiasSlopeFactor              = 0;
+  mesh_state.multisampleEnable                              = 1;
+  mesh_state.multisampleAlphaToCoverageEnable               = 0;
+  mesh_state.multisampleAlphaToOneEnable                    = 0;
+  mesh_state.depthTestEnable                                = 1;
+  mesh_state.depthTestDepthWriteEnable                      = 1;
+  mesh_state.depthTestDepthCompareOp                        = REII_COMPARE_OP_GREATER_OR_EQUAL;
+  mesh_state.stencilTestEnable                              = 0;
+  mesh_state.stencilTestFrontStencilTestFailOp              = REII_STENCIL_OP_KEEP;
+  mesh_state.stencilTestFrontStencilTestPassDepthTestPassOp = REII_STENCIL_OP_KEEP;
+  mesh_state.stencilTestFrontStencilTestPassDepthTestFailOp = REII_STENCIL_OP_KEEP;
+  mesh_state.stencilTestFrontCompareOp                      = REII_COMPARE_OP_NEVER;
+  mesh_state.stencilTestBackStencilTestFailOp               = REII_STENCIL_OP_KEEP;
+  mesh_state.stencilTestBackStencilTestPassDepthTestPassOp  = REII_STENCIL_OP_KEEP;
+  mesh_state.stencilTestBackStencilTestPassDepthTestFailOp  = REII_STENCIL_OP_KEEP;
+  mesh_state.stencilTestBackCompareOp                       = REII_COMPARE_OP_NEVER;
+  mesh_state.stencilTestFrontAndBackCompareMask             = 0;
+  mesh_state.stencilTestFrontAndBackWriteMask               = 0;
+  mesh_state.stencilTestFrontAndBackReference               = 0;
+  mesh_state.blendLogicOpEnable                             = 0;
+  mesh_state.blendLogicOp                                   = REII_LOGIC_OP_CLEAR;
+  mesh_state.blendConstants[0]                              = 0;
+  mesh_state.blendConstants[1]                              = 0;
+  mesh_state.blendConstants[2]                              = 0;
+  mesh_state.blendConstants[3]                              = 0;
+  mesh_state.outputColorWriteEnableR                        = 1;
+  mesh_state.outputColorWriteEnableG                        = 1;
+  mesh_state.outputColorWriteEnableB                        = 1;
+  mesh_state.outputColorWriteEnableA                        = 1;
+  mesh_state.outputColorBlendEnable                         = 0;
+  mesh_state.outputColorBlendColorFactorSource              = REII_BLEND_FACTOR_ZERO;
+  mesh_state.outputColorBlendColorFactorTarget              = REII_BLEND_FACTOR_ZERO;
+  mesh_state.outputColorBlendColorOp                        = REII_BLEND_OP_ADD;
+  mesh_state.outputColorBlendAlphaFactorSource              = REII_BLEND_FACTOR_ZERO;
+  mesh_state.outputColorBlendAlphaFactorTarget              = REII_BLEND_FACTOR_ZERO;
+  mesh_state.outputColorBlendAlphaOp                        = REII_BLEND_OP_ADD;
+  reiiMeshStateCompile(ctx, &mesh_state);
+
+  #include "mesh_capsule.vs.h"
+  #include "mesh_capsule.fs.h"
+  gpu_program_info_t vp_capsule = {0};
+  vp_capsule.program_binary_bytes_count = sizeof(g_main);
+  vp_capsule.program_binary             = g_main;
+  gpu_program_info_t fp_capsule = {0};
+  fp_capsule.program_binary_bytes_count = sizeof(g_main_capsule_fs);
+  fp_capsule.program_binary             = g_main_capsule_fs;
+  char * vp_capsule_string = NULL;
+  char * fp_capsule_string = NULL;
+
+  RedStructDeclarationMember slots_capsule[1] = {0};
+  slots_capsule[0].slot            = 0;
+  slots_capsule[0].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
+  slots_capsule[0].count           = 1;
+  slots_capsule[0].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
+  gpu_extra_reii_mesh_state_compile_info_t mesh_state_compile_info_capsule = {0};
+  mesh_state_compile_info_capsule.state_multisample_count     = RED_MULTISAMPLE_COUNT_BITFLAG_4;
+  mesh_state_compile_info_capsule.output_depth_stencil_enable = 1;
+  mesh_state_compile_info_capsule.output_depth_stencil_format = RED_FORMAT_DEPTH_32_FLOAT;
+  mesh_state_compile_info_capsule.output_color_format         = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
+  mesh_state_compile_info_capsule.variables_slot              = 2;
+  mesh_state_compile_info_capsule.variables_bytes_count       = 2 * sizeof(ReiiVec4);
+  mesh_state_compile_info_capsule.struct_members_count        = countof(slots_capsule);
+  mesh_state_compile_info_capsule.struct_members              = slots_capsule;
+  ReiiMeshState mesh_state_capsule                                  = {0};
+  mesh_state_capsule.compileInfo                                    = mesh_state_compile_info_capsule;
+  mesh_state_capsule.programVertex                                  = vp_capsule;
+  mesh_state_capsule.programFragment                                = fp_capsule;
+  mesh_state_capsule.codeVertex                                     = vp_capsule_string;
+  mesh_state_capsule.codeFragment                                   = fp_capsule_string;
+  mesh_state_capsule.rasterizationDepthClampEnable                  = 0;
+  mesh_state_capsule.rasterizationCullMode                          = REII_CULL_MODE_NONE;
+  mesh_state_capsule.rasterizationFrontFace                         = REII_FRONT_FACE_COUNTER_CLOCKWISE;
+  mesh_state_capsule.rasterizationDepthBiasEnable                   = 0;
+  mesh_state_capsule.rasterizationDepthBiasConstantFactor           = 0;
+  mesh_state_capsule.rasterizationDepthBiasSlopeFactor              = 0;
+  mesh_state_capsule.multisampleEnable                              = 1;
+  mesh_state_capsule.multisampleAlphaToCoverageEnable               = 0;
+  mesh_state_capsule.multisampleAlphaToOneEnable                    = 0;
+  mesh_state_capsule.depthTestEnable                                = 1;
+  mesh_state_capsule.depthTestDepthWriteEnable                      = 1;
+  mesh_state_capsule.depthTestDepthCompareOp                        = REII_COMPARE_OP_GREATER_OR_EQUAL;
+  mesh_state_capsule.stencilTestEnable                              = 0;
+  mesh_state_capsule.stencilTestFrontStencilTestFailOp              = REII_STENCIL_OP_KEEP;
+  mesh_state_capsule.stencilTestFrontStencilTestPassDepthTestPassOp = REII_STENCIL_OP_KEEP;
+  mesh_state_capsule.stencilTestFrontStencilTestPassDepthTestFailOp = REII_STENCIL_OP_KEEP;
+  mesh_state_capsule.stencilTestFrontCompareOp                      = REII_COMPARE_OP_NEVER;
+  mesh_state_capsule.stencilTestBackStencilTestFailOp               = REII_STENCIL_OP_KEEP;
+  mesh_state_capsule.stencilTestBackStencilTestPassDepthTestPassOp  = REII_STENCIL_OP_KEEP;
+  mesh_state_capsule.stencilTestBackStencilTestPassDepthTestFailOp  = REII_STENCIL_OP_KEEP;
+  mesh_state_capsule.stencilTestBackCompareOp                       = REII_COMPARE_OP_NEVER;
+  mesh_state_capsule.stencilTestFrontAndBackCompareMask             = 0;
+  mesh_state_capsule.stencilTestFrontAndBackWriteMask               = 0;
+  mesh_state_capsule.stencilTestFrontAndBackReference               = 0;
+  mesh_state_capsule.blendLogicOpEnable                             = 0;
+  mesh_state_capsule.blendLogicOp                                   = REII_LOGIC_OP_CLEAR;
+  mesh_state_capsule.blendConstants[0]                              = 0;
+  mesh_state_capsule.blendConstants[1]                              = 0;
+  mesh_state_capsule.blendConstants[2]                              = 0;
+  mesh_state_capsule.blendConstants[3]                              = 0;
+  mesh_state_capsule.outputColorWriteEnableR                        = 1;
+  mesh_state_capsule.outputColorWriteEnableG                        = 1;
+  mesh_state_capsule.outputColorWriteEnableB                        = 1;
+  mesh_state_capsule.outputColorWriteEnableA                        = 1;
+  mesh_state_capsule.outputColorBlendEnable                         = 0;
+  mesh_state_capsule.outputColorBlendColorFactorSource              = REII_BLEND_FACTOR_ZERO;
+  mesh_state_capsule.outputColorBlendColorFactorTarget              = REII_BLEND_FACTOR_ZERO;
+  mesh_state_capsule.outputColorBlendColorOp                        = REII_BLEND_OP_ADD;
+  mesh_state_capsule.outputColorBlendAlphaFactorSource              = REII_BLEND_FACTOR_ZERO;
+  mesh_state_capsule.outputColorBlendAlphaFactorTarget              = REII_BLEND_FACTOR_ZERO;
+  mesh_state_capsule.outputColorBlendAlphaOp                        = REII_BLEND_OP_ADD;
+  reiiMeshStateCompile(ctx, &mesh_state_capsule);
+
+  ReiiHandleTextureMemory outputDSTexMemory = {0};
+  reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL_MSAA, (288/*mb*/ * 1024 * 1024), &outputDSTexMemory);
+  ReiiHandleTexture houtputdstex = {0};
+  ReiiHandleTexture * outputdstex = &houtputdstex;
+  reiiCreateTextureFromTextureMemory(ctx, &outputDSTexMemory, REII_TEXTURE_BINDING_2D, &houtputdstex);
+  reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 4);
+  reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0);
+  reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 1);
+  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0, REII_TEXTURE_TEXEL_FORMAT_DS, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_DS, REII_TEXTURE_TEXEL_TYPE_FLOAT, 4, NULL, 1, &gpu_thread, array65536);
+
+  ReiiHandleTextureMemory outputTexMemory = {0};
+  reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_COLOR, (288/*mb*/ * 1024 * 1024), &outputTexMemory);
+  ReiiHandleTexture houtputtex = {0};
+  ReiiHandleTexture * outputtex = &houtputtex;
+  reiiCreateTextureFromTextureMemory(ctx, &outputTexMemory, REII_TEXTURE_BINDING_2D, &houtputtex);
+  reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0);
+  reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputtex, 1);
+  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
+
+  ReiiHandleTextureMemory outputMSTexMemory = {0};
+  reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_COLOR_MSAA, (288/*mb*/ * 1024 * 1024), &outputMSTexMemory);
+  ReiiHandleTexture houtputmstex = {0};
+  ReiiHandleTexture * outputmstex = &houtputmstex;
+  reiiCreateTextureFromTextureMemory(ctx, &outputMSTexMemory, REII_TEXTURE_BINDING_2D, &houtputmstex);
+  reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 4);
+  reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0);
+  reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
+  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
+
+  float suzanne_head_vertices[] = {
+    #include "../../extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
+  };
+
+  struct int3   { int   x, y, z; };
+  struct float2 { float x, y; };
+  struct float4 { float x, y, z, w; };
+
+  enum mesh_capsule_enums {
+    #include "../../extra/3D Various Mesh Headers/capsule/mesh_enums.h"
+    BLENDER_MESH_ENUMS_COUNT
+  };
+  struct int3 mesh_capsule_indices[] = {
+    #include "../../extra/3D Various Mesh Headers/capsule/mesh_indices.h"
+  };
+  struct float4 mesh_capsule_normals[] = {
+    #include "../../extra/3D Various Mesh Headers/capsule/mesh_normals.h"
+  };
+  struct float2 mesh_capsule_uvs[] = {
+    #include "../../extra/3D Various Mesh Headers/capsule/mesh_uvs.h"
+  };
+  struct float4 mesh_capsule_vertices[] = {
+    #include "../../extra/3D Various Mesh Headers/capsule/mesh_vertices.h"
+  };
+  uint64_t mesh_capsule_submesh_tri_begin[] = {
+    #include "../../extra/3D Various Mesh Headers/capsule/submesh_tri_begin.h"
+  };
+  uint64_t mesh_capsule_submesh_tri_end[] = {
+    #include "../../extra/3D Various Mesh Headers/capsule/submesh_tri_end.h"
+  };
+  struct float4 mesh_capsule_submesh_xform_scale[] = {
+    #include "../../extra/3D Various Mesh Headers/capsule/submesh_xform_scale.h"
+  };
+  struct float4 mesh_capsule_submesh_xform_rotation_quaternion[] = {
+    #include "../../extra/3D Various Mesh Headers/capsule/submesh_xform_rotation_quaternion.h"
+  };
+  struct float4 mesh_capsule_submesh_xform_translation[] = {
+    #include "../../extra/3D Various Mesh Headers/capsule/submesh_xform_translation.h"
+  };
+
+  gpu_extra_cpu_gpu_array mesh_capsule_vertex_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
+    21504, // NOTE(Constantine): Hardcoded for the current capsule mesh.
+    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
+    &storage_gpu_only,   &storage_gpu_only_mem_offset,
+    FF, LL
+  );
+
+  ReiiHandleUnorderedArray hmesh_capsule = {0};
+  ReiiHandleUnorderedArray * mesh_capsule = &hmesh_capsule;
+  mesh_capsule->position = mesh_capsule_vertex_array;
+  reiiCreateUnorderedArray(ctx, mesh_capsule);
+  reiiUnorderedArraySet(ctx, mesh_capsule);
+  for (int i = mesh_capsule_submesh_tri_begin[0]; i < mesh_capsule_submesh_tri_end[0]; i += 1) {
+    int v0i = mesh_capsule_indices[i].x;
+    int v1i = mesh_capsule_indices[i].y;
+    int v2i = mesh_capsule_indices[i].z;
+
+    struct float4 v0 = mesh_capsule_vertices[v0i];
+    struct float4 v1 = mesh_capsule_vertices[v1i];
+    struct float4 v2 = mesh_capsule_vertices[v2i];
+
+    // Scale
+
+    v0.x *= mesh_capsule_submesh_xform_scale[0].x;
+    v0.y *= mesh_capsule_submesh_xform_scale[0].y;
+    v0.z *= mesh_capsule_submesh_xform_scale[0].z;
+
+    v1.x *= mesh_capsule_submesh_xform_scale[0].x;
+    v1.y *= mesh_capsule_submesh_xform_scale[0].y;
+    v1.z *= mesh_capsule_submesh_xform_scale[0].z;
+
+    v2.x *= mesh_capsule_submesh_xform_scale[0].x;
+    v2.y *= mesh_capsule_submesh_xform_scale[0].y;
+    v2.z *= mesh_capsule_submesh_xform_scale[0].z;
+
+    // Rotate
+
+    quatRotateVec3Fast(&v0.x, &v0.x, &mesh_capsule_submesh_xform_rotation_quaternion[0].x);
+    quatRotateVec3Fast(&v1.x, &v1.x, &mesh_capsule_submesh_xform_rotation_quaternion[0].x);
+    quatRotateVec3Fast(&v2.x, &v2.x, &mesh_capsule_submesh_xform_rotation_quaternion[0].x);
+
+    // Translate
+
+    vec3Add(&v0.x, &mesh_capsule_submesh_xform_translation[0].x, &v0.x);
+    vec3Add(&v1.x, &mesh_capsule_submesh_xform_translation[0].x, &v1.x);
+    vec3Add(&v2.x, &mesh_capsule_submesh_xform_translation[0].x, &v2.x);
+
+    // Rotate everything from Blender coordinates to Vulkan coordinates
+
+    struct float4 q = {0, 0, 0, 1};
+    float axis[3] = {1, 0, 0};
+    quatFromAxisAngle(&q.x, axis, -90.f * (M_PI/180.f));
+    quatRotateVec3Fast(&v0.x, &v0.x, &q.x);
+    quatRotateVec3Fast(&v1.x, &v1.x, &q.x);
+    quatRotateVec3Fast(&v2.x, &v2.x, &q.x);
+
+    // Mirror everything from Blender coordinates to Vulkan coordinates
+
+    v0.x *= -1.f;
+    v1.x *= -1.f;
+    v2.x *= -1.f;
+
+    // Set vertex final position
+
+    reiiUnorderedArrayPosition(ctx, mesh_capsule, v0.x, v0.y, v0.z, 1);
+    reiiUnorderedArrayPosition(ctx, mesh_capsule, v1.x, v1.y, v1.z, 1);
+    reiiUnorderedArrayPosition(ctx, mesh_capsule, v2.x, v2.y, v2.z, 1);
+  }
+  reiiUnorderedArrayEnd(ctx, mesh_capsule, 1, &gpu_thread, array65536);
+
+  uint64_t batch = 0;
+  ReiiHandleCommandList hlist = {0};
+  ReiiHandleCommandList * list = &hlist;
+  Red2Output mutable_outputs_array[4]  = {0};
+  list->mutable_outputs_array.items    = mutable_outputs_array;
+  list->mutable_outputs_array.capacity = countof(mutable_outputs_array);
+  list->dynamic_mesh_position          = pos_array;
+  list->dynamic_mesh_color             = col_array;
+
+  ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState gammaCorrectionStaticState = {0};
+
+  ReiiVec4   camera_pos  = {0, 0, -2.f};
+  ReiiVec4   camera_quat = {0, 0, 0, 1};
+  ReiiBool32 camera_is_enabled = 1;
+  if (camera_is_enabled == 1) {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  }
+
+  glfwPollEvents();
+  double mouse_x = 0;
+  double mouse_y = 0;
+  glfwGetCursorPos(window, &mouse_x, &mouse_y);
+  double mouse_x_prev = mouse_x;
+  double mouse_y_prev = mouse_y;
+  int    mouse_right_mouse_button_state_prev = 0;
+
+  int previous_window_w = window_w;
+  int previous_window_h = window_h;
+
+  while (glfwWindowShouldClose(window) == 0) {
+    glfwPollEvents();
+  
+    int os_window_w = 0;
+    int os_window_h = 0;
+    glfwGetWindowSize(window, &os_window_w, &os_window_h);
+
+    if (vfWindowIsMinimized(ctx) || os_window_w == 0 || os_window_h == 0) {
+      continue;
+    }
+
+    {
+      vfWindowGetSize(ctx, &window_w, &window_h);
+
+      if (window_w != previous_window_w || window_h != previous_window_h) {
+        // Recreate output textures then.
+
+        vfAllQueuesWaitIdle(ctx, FF, LL);
+
+        vfGpuThreadDestroy(ctx, gpu_thread);
+        gpu_thread = NULL;
+        vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
+
+        reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputmstex);
+        reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);
+        reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputdstex);
+
+        reiiResetTextureMemory(ctx, &outputMSTexMemory);
+        reiiResetTextureMemory(ctx, &outputTexMemory);
+        reiiResetTextureMemory(ctx, &outputDSTexMemory);
+
+        reiiCreateTextureFromTextureMemory(ctx, &outputDSTexMemory, REII_TEXTURE_BINDING_2D, &houtputdstex);
+        reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 4);
+        reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0);
+        reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 1);
+        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputdstex, 0, REII_TEXTURE_TEXEL_FORMAT_DS, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_DS, REII_TEXTURE_TEXEL_TYPE_FLOAT, 4, NULL, 1, &gpu_thread, array65536);
+
+        reiiCreateTextureFromTextureMemory(ctx, &outputTexMemory, REII_TEXTURE_BINDING_2D, &houtputtex);
+        reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0);
+        reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputtex, 1);
+        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
+
+        reiiCreateTextureFromTextureMemory(ctx, &outputMSTexMemory, REII_TEXTURE_BINDING_2D, &houtputmstex);
+        reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 4);
+        reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0);
+        reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
+        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
+      }
+
+      previous_window_w = window_w;
+      previous_window_h = window_h;
+    }
+
+    glfwGetCursorPos(window, &mouse_x, &mouse_y);
+
+    int mouse_right_mouse_button_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2);
+
+    // NOTE(Constantine):
+    // Camera quaternion rotation and translation.
+    const float mouse_move_sensitivity = 0.0035f;
+    const float camera_move_speed      = 0.025f;
+    if (mouse_right_mouse_button_state == GLFW_PRESS && mouse_right_mouse_button_state != mouse_right_mouse_button_state_prev) {
+      camera_is_enabled = !camera_is_enabled;
+      glfwSetInputMode(window, GLFW_CURSOR, camera_is_enabled == 1 ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+    } else if (camera_is_enabled == 1) {
+      float mouse_move_x = (float)(mouse_x - mouse_x_prev) * mouse_move_sensitivity;
+      float mouse_move_y = (float)(mouse_y - mouse_y_prev) * mouse_move_sensitivity;
+
+      float key_f = glfwGetKey(window, GLFW_KEY_W);
+      float key_b = glfwGetKey(window, GLFW_KEY_S);
+
+      float key_r = glfwGetKey(window, GLFW_KEY_D);
+      float key_l = glfwGetKey(window, GLFW_KEY_A);
+
+      float key_u = glfwGetKey(window, GLFW_KEY_E);
+      float key_d = glfwGetKey(window, GLFW_KEY_Q);
+
+      float rot_x[4];
+      float rot_y[4];
+  
+      float axis_x[3] = {1, 0, 0};
+      float axis_y[3] = {0, 1, 0};
+      quatFromAxisAngle(rot_y, axis_y, mouse_move_x);
+      quatFromAxisAngle(rot_x, axis_x, mouse_move_y);
+  
+      quatMul(&camera_quat.x, &camera_quat.x, rot_x);
+      quatMul(&camera_quat.x, rot_y, &camera_quat.x);
+
+      float side_vec[3] = {1, 0, 0};
+      float   up_vec[3] = {0, 1, 0};
+      float  dir_vec[3] = {0, 0, 1};
+      quatRotateVec3Fast(side_vec, side_vec, &camera_quat.x);
+      quatRotateVec3Fast(  up_vec,   up_vec, &camera_quat.x);
+      quatRotateVec3Fast( dir_vec,  dir_vec, &camera_quat.x);
+
+      vec3Mulf(side_vec, side_vec, key_r - key_l);
+      vec3Mulf(  up_vec,   up_vec, key_u - key_d);
+      vec3Mulf( dir_vec,  dir_vec, key_f - key_b);
+  
+      float move_vec_normalized[3] = {0, 0, 0};
+
+      vec3Add(move_vec_normalized, move_vec_normalized, side_vec);
+      vec3Add(move_vec_normalized, move_vec_normalized,   up_vec);
+      vec3Add(move_vec_normalized, move_vec_normalized,  dir_vec);
+
+      float move_vec_len = sqrtf(
+        move_vec_normalized[0] * move_vec_normalized[0] +
+        move_vec_normalized[1] * move_vec_normalized[1] +
+        move_vec_normalized[2] * move_vec_normalized[2]
+      );
+      if (move_vec_len != 0) {
+        move_vec_normalized[0] /= move_vec_len;
+        move_vec_normalized[1] /= move_vec_len;
+        move_vec_normalized[2] /= move_vec_len;
+      }
+
+      vec3Mulf(move_vec_normalized, move_vec_normalized, camera_move_speed);
+
+      vec3Add(&camera_pos.x, &camera_pos.x, move_vec_normalized);
+    }
+
+    gpu_batch_info_t bindings_info = {0};
+    bindings_info.max_new_bindings_sets_count = 3;
+    bindings_info.max_storage_binds_count     = 3;
+    bindings_info.max_texture_rw_binds_count  = 1;
+    batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
+    list->batch_id = batch;
+    reiiCommandListReset(ctx, list);
+    reiiCommandSetViewportEx(ctx, list, 0, 0, window_w, window_h, 0, 1);
+    reiiCommandSetScissor(ctx, list, 0, 0, window_w, window_h);
+    reiiCommandClearTexture(ctx, list, outputdstex, outputmstex, outputmstex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
+    reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
+    reiiCommandBindNewBindingsSet(ctx, list, countof(slots), slots);
+    {
+      gpu_extra_cpu_gpu_array dynamicMeshPositionOffsetted = list->dynamic_mesh_position;
+      gpu_extra_cpu_gpu_array dynamicMeshColorOffsetted    = list->dynamic_mesh_color;
+      vfeCpuGpuArrayOffset(&dynamicMeshPositionOffsetted, list->dynamicMeshPositionVec4Offset * sizeof(ReiiVec4));
+      vfeCpuGpuArrayOffset(&dynamicMeshColorOffsetted, list->dynamicMeshColorVec4Offset * sizeof(ReiiVec4));
+      reiiCommandBindStorageRaw(ctx, list, 0, 1, &dynamicMeshPositionOffsetted.gpu);
+      reiiCommandBindStorageRaw(ctx, list, 1, 1, &dynamicMeshColorOffsetted.gpu);
+    }
+    reiiCommandBindNewBindingsEnd(ctx, list);
+    reiiCommandBindVariablesCopy(ctx, list, 0 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_pos);
+    reiiCommandBindVariablesCopy(ctx, list, 1 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_quat);
+    reiiCommandMeshSet(ctx, list);
+    // Draw colored triangle
+    {
+      reiiCommandMeshColor(ctx, list, 1, 0, 0, 1);
+      reiiCommandMeshPosition(ctx, list, 1,1,0, 1);
+      reiiCommandMeshColor(ctx, list, 0, 1, 0, 1);
+      reiiCommandMeshPosition(ctx, list, 0,2,0, 1);
+      reiiCommandMeshColor(ctx, list, 0, 0, 1, 1);
+      reiiCommandMeshPosition(ctx, list, 0,1,1, 1);
+    }
+    // Draw suzanne head
+    for (int i = 0, suzanne_head_vertices_count = countof(suzanne_head_vertices) / 3; i < suzanne_head_vertices_count; i += 1) {
+      float scale = 0.5f;
+      reiiCommandMeshColor(ctx, list, i * 0.00025f, 0, 0.1f, 1);
+      reiiCommandMeshPosition(ctx, list,
+        suzanne_head_vertices[i * 3 + 0] * scale,
+        suzanne_head_vertices[i * 3 + 1] * scale,
+        suzanne_head_vertices[i * 3 + 2] * scale,
+        1
+      );
+    }
+    reiiCommandMeshEndWithTale64BytesAlign(ctx, list, outputdstex, outputmstex, outputmstex->texture);
+    reiiCommandMeshSetState(ctx, list, &mesh_state_capsule, NULL);
+    reiiCommandBindNewBindingsSet(ctx, list, countof(slots_capsule), slots_capsule);
+    reiiCommandBindStorageRaw(ctx, list, 0, 1, &mesh_capsule->position.gpu);
+    reiiCommandBindNewBindingsEnd(ctx, list);
+    reiiCommandRenderTargetSet(ctx, list, outputdstex, outputmstex, outputmstex->texture);
+    reiiCommandUnorderedArrayDrawInstanced(ctx, list, mesh_capsule, 1);
+    reiiCommandRenderTargetEnd(ctx, list);
+    reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
+    vfBatchBarrierMemory(ctx, batch, FF, LL);
+    reiiCommandGammaCorrectColorTextureToTheInversePowerOf2(ctx, list, outputtex, doDoubleGammaCorrection, 1, &gammaCorrectionStaticState);
+    vfBatchEnd(ctx, batch, FF, LL);
+
+    RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
+    uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, 1, &gpu_thread, array65536, FF, LL);
+    vfAsyncWaitToFinish(ctx, wait, FF, LL);
+
+    gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
+    vfAsyncDrawImageRaw(ctx, outputtex->image.handle, NULL, 2, gpu_threads, array65536, FF, LL);
+
+    mouse_x_prev = mouse_x;
+    mouse_y_prev = mouse_y;
+    mouse_right_mouse_button_state_prev = mouse_right_mouse_button_state;
+  }
+
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+  vfAllQueuesWaitIdle(ctx, FF, LL);
+
+  vfGpuThreadDestroy(ctx, gpu_thread);
+  vfIdDestroy(1, &gammaCorrectionStaticState.programPipeline, FF, LL);
+  vfIdDestroy(1, &gammaCorrectionStaticState.programCompute, FF, LL);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, list);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputmstex);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputdstex);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &outputMSTexMemory);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &outputTexMemory);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &outputDSTexMemory);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE, &mesh_state);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE, &mesh_state_capsule);
+  uint64_t ids[] = {
+    batch,
+    storage_gpu_only.id,
+    storage_cpu_upload.id,
+    storage_cpu_readback.id,
+  };
+  vfIdDestroy(countof(ids), ids, FF, LL);
+  vfContextDeinit(ctx, FF, LL);
+  glfwTerminate();
+}
