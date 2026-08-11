@@ -503,7 +503,7 @@ int main() {
     }
     reiiCommandMeshEndWithTale64BytesAlign(ctx, list, outputdstex, outputmstex, outputmstex->texture);
     reiiCommandMeshSetState(ctx, list, &mesh_state_capsule, NULL);
-    reiiCommandBindNewBindingsSet(ctx, list, countof(slots), slots);
+    reiiCommandBindNewBindingsSet(ctx, list, countof(slots_capsule), slots_capsule);
     {
       gpu_extra_cpu_gpu_array dynamicMeshPositionOffsetted = list->dynamic_mesh_position;
       gpu_extra_cpu_gpu_array dynamicMeshColorOffsetted    = list->dynamic_mesh_color;
