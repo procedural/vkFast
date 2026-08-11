@@ -39,7 +39,7 @@ interpolated main(uint vid: SV_VertexID, uint iid: SV_InstanceID) {
   }
   pos *= 0.15; // NOTE(Constantine): For this example, the capsule's scale is currently hardcoded :P
   if (move_after_scale == 1) {
-    pos.y += 1;
+    pos.y += 1; // NOTE(Constantine): For this example, the capsule's final length is currently hardcoded :P
   }
 
   float3 translated = pos.xyz - variables.camera_pos.xyz;
