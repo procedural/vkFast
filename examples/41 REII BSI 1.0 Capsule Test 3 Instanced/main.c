@@ -423,7 +423,8 @@ int main() {
 
   ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState gammaCorrectionStaticState = {0};
 
-  ReiiVec4   camera_pos  = {0, 0, -2.f};
+  float mesh_capsule_scale = 0.05f;
+  ReiiVec4   camera_pos  = {0, 0, -2.f, mesh_capsule_scale}; // NOTE(Constantine): Capsule's HLSL shader reads capsule scale from camera_pos.w coordinate.
   ReiiVec4   camera_quat = {0, 0, 0, 1};
   ReiiBool32 camera_is_enabled = 1;
   if (camera_is_enabled == 1) {

@@ -38,7 +38,7 @@ interpolated main(uint vid: SV_VertexID, uint iid: SV_InstanceID) {
     move_after_scale = 1;
     pos.y -= 1; // Make it a sphere first, for scale to not affect capsule's final length
   }
-  pos *= 0.05; // NOTE(Constantine): For this example, the capsule's scale is currently hardcoded :P
+  pos *= variables.camera_pos.w; // NOTE(Constantine): Capsule's scale is stored in variables.camera_pos.w coordinate
   if (move_after_scale == 1) {
     pos.y += instance_pos.w; // Final length is stored in instance_positions[iid].w coordinate
   }
