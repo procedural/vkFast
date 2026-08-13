@@ -403,9 +403,9 @@ int main() {
   mesh_capsule_instances_xform->texcoord[1] = mesh_capsule_instances_quaternion_array;
   reiiCreateUnorderedArray(ctx, mesh_capsule_instances_xform);
   reiiUnorderedArraySet(ctx, mesh_capsule_instances_xform);
-  reiiUnorderedArrayTexcoord(ctx, mesh_capsule_instances_xform, 0, 1, 0, 0, 0);
-  reiiUnorderedArrayTexcoord(ctx, mesh_capsule_instances_xform, 0, 2, 0, 0, 0);
-  reiiUnorderedArrayTexcoord(ctx, mesh_capsule_instances_xform, 0, 3, 0, 0, 0);
+  reiiUnorderedArrayTexcoord(ctx, mesh_capsule_instances_xform, 0, 1, 0, 0, 1);    // Length of 1
+  reiiUnorderedArrayTexcoord(ctx, mesh_capsule_instances_xform, 0, 2, 0, 0, 0.75); // Length of 0.75
+  reiiUnorderedArrayTexcoord(ctx, mesh_capsule_instances_xform, 0, 3, 0, 0, 0.25); // Length of 0.25
 
   reiiUnorderedArrayTexcoord(ctx, mesh_capsule_instances_xform, 1, 0, 0, 0, 1);
   reiiUnorderedArrayTexcoord(ctx, mesh_capsule_instances_xform, 1, 0.3826834, 0, 0, 0.9238795); // 45 degrees rotation in X
