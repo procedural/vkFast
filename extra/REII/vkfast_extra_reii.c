@@ -466,6 +466,8 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   procstate.outputColorsBlendAlphaOp[6]                    = RED_BLEND_OP_ADD;
   procstate.outputColorsBlendAlphaOp[7]                    = RED_BLEND_OP_ADD;
 
+  const void * procstateex = state->extension;
+
   // To destroy
   RedHandleProcedure procedure = NULL;
   np(red2CreateProcedure,
@@ -483,7 +485,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
     "gpuCodeFragmentMainProcedureName", "main",
     "gpuCodeFragment", gpuCodeFragment,
     "state", &procstate,
-    "stateExtension", NULL,
+    "stateExtension", procstateex,
     "deriveBase", 0,
     "deriveFrom", NULL,
     "outProcedure", &procedure,

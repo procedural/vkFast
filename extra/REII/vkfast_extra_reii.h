@@ -191,6 +191,7 @@ typedef struct ReiiMeshState {
   ReiiBlendOp        outputColorBlendAlphaOp;
   char *             codeVertex;
   char *             codeFragment;
+  const void *       extension;
   gpu_program_info_t                       programVertex;
   gpu_program_info_t                       programFragment;
   gpu_extra_reii_mesh_state_compile_info_t compileInfo;
