@@ -1,5 +1,6 @@
 ﻿//#define VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
 //#define VKFAST_DEFINE_ENABLE_FEATURE_COMPUTE_BASED_RAY_TRACING
+//#define VKFAST_DEFINE_ENABLE_FEATURE_REII_MESH_STATE_RASTERIZATION_MODE
 
 #ifdef _WIN32
 #define GPU_API_PRE __declspec(dllexport)
@@ -1945,21 +1946,22 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
 
       optionalSettings = &createContextPerformance;
     }
-    #if defined(_WIN32)
+
     unsigned extensions[] = {
+      #if defined(_WIN32)
       RED_SDK_EXTENSION_WSI_WIN32,
-      #if defined(VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF) || defined(VKFAST_DEFINE_ENABLE_FEATURE_COMPUTE_BASED_RAY_TRACING)
-      RED_SDK_EXTENSION_RAY_TRACING,
       #endif
-    };
-    #elif defined(__linux__) && !defined(__ANDROID__)
-    unsigned extensions[] = {
+      #if defined(__linux__) && !defined(__ANDROID__)
       RED_SDK_EXTENSION_WSI_XLIB,
+      #endif
       #if defined(VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF) || defined(VKFAST_DEFINE_ENABLE_FEATURE_COMPUTE_BASED_RAY_TRACING)
       RED_SDK_EXTENSION_RAY_TRACING,
       #endif
+      #if defined(VKFAST_DEFINE_ENABLE_FEATURE_REII_MESH_STATE_RASTERIZATION_MODE)
+      RED_SDK_EXTENSION_RASTERIZATION_MODE,
+      #endif
     };
-    #endif
+
     np(redCreateContext,
       "malloc", red32MemoryCalloc,
       "free", red32MemoryFree,
