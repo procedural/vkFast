@@ -349,8 +349,6 @@ int main() {
     6,
   };
 
-  const int capsule_add_a_cap = 1;
-
   gpu_extra_cpu_gpu_array mesh_capsule_vertex_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
     21504 // NOTE(Constantine): Hardcoded for the current capsule mesh.
     + (18 * sizeof(ReiiVec4)), // NOTE(Constantine): 18 vertices for arrow cap.
