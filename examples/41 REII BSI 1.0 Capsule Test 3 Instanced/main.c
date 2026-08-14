@@ -313,8 +313,47 @@ int main() {
     #include "../../extra/3D Various Mesh Headers/capsule/submesh_xform_translation.h"
   };
 
+  struct int3 mesh_capsule_arrow_cap_indices[] = {
+    0, 4, 1,
+    1, 4, 2,
+    1, 3, 0,
+    2, 4, 3,
+    3, 4, 0,
+    1, 2, 3,
+  };
+  struct float4 mesh_capsule_arrow_cap_normals[] = {
+    +0.000000000, +0.969296038, -0.245897040, 0.0,
+    +0.969276369, +0.000000000, -0.245974466, 0.0,
+    +0.000000000, -0.969296038, -0.245897040, 0.0,
+    -0.969276369, +0.000000000, -0.245974466, 0.0,
+    +0.000000000, +0.000000000, +1.000000000, 0.0,
+  };
+  struct float2 mesh_capsule_arrow_cap_uvs[] = {
+    +0.750000000, +0.500000000,
+    +1.000000000, +0.250000000,
+    +0.750000000, +0.000000000,
+    +0.500000000, +0.250000000,
+    +0.250000000, +0.250000000,
+  };
+  struct float4 mesh_capsule_arrow_cap_vertices[] = {
+    +0.000000000, +1.250000000, +1.000000000, 0.0,
+    +1.250000000, +0.000000000, +1.000000000, 0.0,
+    +0.000000000, -1.250000000, +1.000000000, 0.0,
+    -1.250000000, +0.000000000, +1.000000000, 0.0,
+    +0.000000000, +0.000000000, +2.000000000, 0.0,
+  };
+  uint64_t mesh_capsule_arrow_cap_tri_begin[] = {
+    0,
+  };
+  uint64_t mesh_capsule_arrow_cap_tri_end[] = {
+    6,
+  };
+
+  const int capsule_add_a_cap = 1;
+
   gpu_extra_cpu_gpu_array mesh_capsule_vertex_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
-    21504, // NOTE(Constantine): Hardcoded for the current capsule mesh.
+    21504 // NOTE(Constantine): Hardcoded for the current capsule mesh.
+    + (18 * sizeof(ReiiVec4)), // NOTE(Constantine): 18 vertices for arrow cap.
     &storage_cpu_upload, &storage_cpu_upload_mem_offset,
     &storage_gpu_only,   &storage_gpu_only_mem_offset,
     FF, LL
@@ -394,6 +433,64 @@ int main() {
     reiiUnorderedArrayPosition(ctx, mesh_capsule, v0.x, v0.y, v0.z, 1);
     reiiUnorderedArrayPosition(ctx, mesh_capsule, v1.x, v1.y, v1.z, 1);
     reiiUnorderedArrayPosition(ctx, mesh_capsule, v2.x, v2.y, v2.z, 1);
+  }
+  if (capsule_add_a_cap == 1) {
+    for (int i = mesh_capsule_arrow_cap_tri_begin[0]; i < mesh_capsule_arrow_cap_tri_end[0]; i += 1) {
+      int v0i = mesh_capsule_arrow_cap_indices[i].x;
+      int v1i = mesh_capsule_arrow_cap_indices[i].y;
+      int v2i = mesh_capsule_arrow_cap_indices[i].z;
+
+      struct float4 v0 = mesh_capsule_arrow_cap_vertices[v0i];
+      struct float4 v1 = mesh_capsule_arrow_cap_vertices[v1i];
+      struct float4 v2 = mesh_capsule_arrow_cap_vertices[v2i];
+
+      // Scale
+
+      v0.x *= mesh_capsule_submesh_xform_scale[0].x;
+      v0.y *= mesh_capsule_submesh_xform_scale[0].y;
+      v0.z *= mesh_capsule_submesh_xform_scale[0].z;
+
+      v1.x *= mesh_capsule_submesh_xform_scale[0].x;
+      v1.y *= mesh_capsule_submesh_xform_scale[0].y;
+      v1.z *= mesh_capsule_submesh_xform_scale[0].z;
+
+      v2.x *= mesh_capsule_submesh_xform_scale[0].x;
+      v2.y *= mesh_capsule_submesh_xform_scale[0].y;
+      v2.z *= mesh_capsule_submesh_xform_scale[0].z;
+
+      // Rotate
+
+      quatRotateVec3Fast(&v0.x, &v0.x, &mesh_capsule_submesh_xform_rotation_quaternion[0].x);
+      quatRotateVec3Fast(&v1.x, &v1.x, &mesh_capsule_submesh_xform_rotation_quaternion[0].x);
+      quatRotateVec3Fast(&v2.x, &v2.x, &mesh_capsule_submesh_xform_rotation_quaternion[0].x);
+
+      // Translate
+
+      vec3Add(&v0.x, &mesh_capsule_submesh_xform_translation[0].x, &v0.x);
+      vec3Add(&v1.x, &mesh_capsule_submesh_xform_translation[0].x, &v1.x);
+      vec3Add(&v2.x, &mesh_capsule_submesh_xform_translation[0].x, &v2.x);
+
+      // Rotate everything from Blender coordinates to Vulkan coordinates
+
+      struct float4 q = {0, 0, 0, 1};
+      float axis[3] = {1, 0, 0};
+      quatFromAxisAngle(&q.x, axis, -90.f * (M_PI/180.f));
+      quatRotateVec3Fast(&v0.x, &v0.x, &q.x);
+      quatRotateVec3Fast(&v1.x, &v1.x, &q.x);
+      quatRotateVec3Fast(&v2.x, &v2.x, &q.x);
+
+      // Mirror everything from Blender coordinates to Vulkan coordinates
+
+      v0.x *= -1.f;
+      v1.x *= -1.f;
+      v2.x *= -1.f;
+
+      // Set vertex final position
+
+      reiiUnorderedArrayPosition(ctx, mesh_capsule, v0.x, v0.y, v0.z, 1);
+      reiiUnorderedArrayPosition(ctx, mesh_capsule, v1.x, v1.y, v1.z, 1);
+      reiiUnorderedArrayPosition(ctx, mesh_capsule, v2.x, v2.y, v2.z, 1);
+    }
   }
   reiiUnorderedArrayEnd(ctx, mesh_capsule, 1, &gpu_thread, array65536);
 
