@@ -434,63 +434,61 @@ int main() {
     reiiUnorderedArrayPosition(ctx, mesh_capsule, v1.x, v1.y, v1.z, 1);
     reiiUnorderedArrayPosition(ctx, mesh_capsule, v2.x, v2.y, v2.z, 1);
   }
-  if (capsule_add_a_cap == 1) {
-    for (int i = mesh_capsule_arrow_cap_tri_begin[0]; i < mesh_capsule_arrow_cap_tri_end[0]; i += 1) {
-      int v0i = mesh_capsule_arrow_cap_indices[i].x;
-      int v1i = mesh_capsule_arrow_cap_indices[i].y;
-      int v2i = mesh_capsule_arrow_cap_indices[i].z;
+  for (int i = mesh_capsule_arrow_cap_tri_begin[0]; i < mesh_capsule_arrow_cap_tri_end[0]; i += 1) {
+    int v0i = mesh_capsule_arrow_cap_indices[i].x;
+    int v1i = mesh_capsule_arrow_cap_indices[i].y;
+    int v2i = mesh_capsule_arrow_cap_indices[i].z;
 
-      struct float4 v0 = mesh_capsule_arrow_cap_vertices[v0i];
-      struct float4 v1 = mesh_capsule_arrow_cap_vertices[v1i];
-      struct float4 v2 = mesh_capsule_arrow_cap_vertices[v2i];
+    struct float4 v0 = mesh_capsule_arrow_cap_vertices[v0i];
+    struct float4 v1 = mesh_capsule_arrow_cap_vertices[v1i];
+    struct float4 v2 = mesh_capsule_arrow_cap_vertices[v2i];
 
-      // Scale
+    // Scale
 
-      v0.x *= mesh_capsule_submesh_xform_scale[0].x;
-      v0.y *= mesh_capsule_submesh_xform_scale[0].y;
-      v0.z *= mesh_capsule_submesh_xform_scale[0].z;
+    v0.x *= mesh_capsule_submesh_xform_scale[0].x;
+    v0.y *= mesh_capsule_submesh_xform_scale[0].y;
+    v0.z *= mesh_capsule_submesh_xform_scale[0].z;
 
-      v1.x *= mesh_capsule_submesh_xform_scale[0].x;
-      v1.y *= mesh_capsule_submesh_xform_scale[0].y;
-      v1.z *= mesh_capsule_submesh_xform_scale[0].z;
+    v1.x *= mesh_capsule_submesh_xform_scale[0].x;
+    v1.y *= mesh_capsule_submesh_xform_scale[0].y;
+    v1.z *= mesh_capsule_submesh_xform_scale[0].z;
 
-      v2.x *= mesh_capsule_submesh_xform_scale[0].x;
-      v2.y *= mesh_capsule_submesh_xform_scale[0].y;
-      v2.z *= mesh_capsule_submesh_xform_scale[0].z;
+    v2.x *= mesh_capsule_submesh_xform_scale[0].x;
+    v2.y *= mesh_capsule_submesh_xform_scale[0].y;
+    v2.z *= mesh_capsule_submesh_xform_scale[0].z;
 
-      // Rotate
+    // Rotate
 
-      quatRotateVec3Fast(&v0.x, &v0.x, &mesh_capsule_submesh_xform_rotation_quaternion[0].x);
-      quatRotateVec3Fast(&v1.x, &v1.x, &mesh_capsule_submesh_xform_rotation_quaternion[0].x);
-      quatRotateVec3Fast(&v2.x, &v2.x, &mesh_capsule_submesh_xform_rotation_quaternion[0].x);
+    quatRotateVec3Fast(&v0.x, &v0.x, &mesh_capsule_submesh_xform_rotation_quaternion[0].x);
+    quatRotateVec3Fast(&v1.x, &v1.x, &mesh_capsule_submesh_xform_rotation_quaternion[0].x);
+    quatRotateVec3Fast(&v2.x, &v2.x, &mesh_capsule_submesh_xform_rotation_quaternion[0].x);
 
-      // Translate
+    // Translate
 
-      vec3Add(&v0.x, &mesh_capsule_submesh_xform_translation[0].x, &v0.x);
-      vec3Add(&v1.x, &mesh_capsule_submesh_xform_translation[0].x, &v1.x);
-      vec3Add(&v2.x, &mesh_capsule_submesh_xform_translation[0].x, &v2.x);
+    vec3Add(&v0.x, &mesh_capsule_submesh_xform_translation[0].x, &v0.x);
+    vec3Add(&v1.x, &mesh_capsule_submesh_xform_translation[0].x, &v1.x);
+    vec3Add(&v2.x, &mesh_capsule_submesh_xform_translation[0].x, &v2.x);
 
-      // Rotate everything from Blender coordinates to Vulkan coordinates
+    // Rotate everything from Blender coordinates to Vulkan coordinates
 
-      struct float4 q = {0, 0, 0, 1};
-      float axis[3] = {1, 0, 0};
-      quatFromAxisAngle(&q.x, axis, -90.f * (M_PI/180.f));
-      quatRotateVec3Fast(&v0.x, &v0.x, &q.x);
-      quatRotateVec3Fast(&v1.x, &v1.x, &q.x);
-      quatRotateVec3Fast(&v2.x, &v2.x, &q.x);
+    struct float4 q = {0, 0, 0, 1};
+    float axis[3] = {1, 0, 0};
+    quatFromAxisAngle(&q.x, axis, -90.f * (M_PI/180.f));
+    quatRotateVec3Fast(&v0.x, &v0.x, &q.x);
+    quatRotateVec3Fast(&v1.x, &v1.x, &q.x);
+    quatRotateVec3Fast(&v2.x, &v2.x, &q.x);
 
-      // Mirror everything from Blender coordinates to Vulkan coordinates
+    // Mirror everything from Blender coordinates to Vulkan coordinates
 
-      v0.x *= -1.f;
-      v1.x *= -1.f;
-      v2.x *= -1.f;
+    v0.x *= -1.f;
+    v1.x *= -1.f;
+    v2.x *= -1.f;
 
-      // Set vertex final position
+    // Set vertex final position
 
-      reiiUnorderedArrayPosition(ctx, mesh_capsule, v0.x, v0.y, v0.z, 1);
-      reiiUnorderedArrayPosition(ctx, mesh_capsule, v1.x, v1.y, v1.z, 1);
-      reiiUnorderedArrayPosition(ctx, mesh_capsule, v2.x, v2.y, v2.z, 1);
-    }
+    reiiUnorderedArrayPosition(ctx, mesh_capsule, v0.x, v0.y, v0.z, 1);
+    reiiUnorderedArrayPosition(ctx, mesh_capsule, v1.x, v1.y, v1.z, 1);
+    reiiUnorderedArrayPosition(ctx, mesh_capsule, v2.x, v2.y, v2.z, 1);
   }
   reiiUnorderedArrayEnd(ctx, mesh_capsule, 1, &gpu_thread, array65536);
 
@@ -712,7 +710,7 @@ int main() {
     reiiCommandBindStorageRaw(ctx, list, 2, 1, &mesh_capsule_instances_xform->texcoord[1].gpu);
     reiiCommandBindNewBindingsEnd(ctx, list);
     reiiCommandRenderTargetSet(ctx, list, outputdstex, outputmstex, outputmstex->texture);
-    reiiCommandUnorderedArrayDrawInstanced(ctx, list, mesh_capsule, 3); // NOTE(Constantine): Hardcoded for the current example.
+    reiiCommandUnorderedArrayDrawInstancedEx(ctx, list, mesh_capsule, 3, mesh_capsule->positionVec4Count - 18); // NOTE(Constantine): Hardcoded for the current example, -18 vertices to not draw arrow cap.
     reiiCommandRenderTargetEnd(ctx, list);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     vfBatchBarrierMemory(ctx, batch, FF, LL);
