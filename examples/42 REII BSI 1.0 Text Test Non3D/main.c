@@ -588,7 +588,7 @@ int main() {
     reiiCommandBindStorageRaw(ctx, list, 1, 1, &mesh_ascii_monospace_instances_position_array.gpu);
     reiiCommandBindNewBindingsEnd(ctx, list);
     reiiCommandRenderTargetSet(ctx, list, outputdstex, outputmstex, outputmstex->texture);
-    reiiCommandUnorderedArrayDrawInstanced(ctx, list, mesh_ascii_monospace, 3);
+    reiiCommandUnorderedArrayDraw(ctx, list, mesh_ascii_monospace);
     reiiCommandRenderTargetEnd(ctx, list);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     vfBatchBarrierMemory(ctx, batch, FF, LL);
