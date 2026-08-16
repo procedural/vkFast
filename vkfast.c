@@ -2078,7 +2078,7 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
     if (internalMemoryAllocationSizeGpuVramArrays > 0) {
       uint64_t bytesCount = internalMemoryAllocationSizeGpuVramArrays;
       const char * handleName = "vkFast_vfInternalContextInit_memoryGpuVramForArrays_array";
-      uint64_t maxAllowedOverallocationBytesCount = 0;
+      uint64_t maxAllowedOverallocationBytesCount = 64; // NOTE(Constantine)(Aug 15, 2026): Vulkan SDK Frame Capture feature needs 64 bytes of overallocation here.
       RedArray array = {0};
 
       np(redCreateArray,
