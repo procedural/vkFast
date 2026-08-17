@@ -2539,7 +2539,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstanced(gpu_handle_
   );
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstancedEx(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleUnorderedArray * unorderedArray, unsigned instanceCount, unsigned vertexCount) {
+GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstancedEx(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned vertexCount, unsigned instanceFirst, unsigned instanceCount) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -2550,7 +2550,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstancedEx(gpu_handl
     "vertexCount", vertexCount,
     "instanceCount", instanceCount,
     "vertexFirst", 0,
-    "instanceFirst", 0
+    "instanceFirst", instanceFirst
   );
 }
 
