@@ -171,23 +171,18 @@ int main() {
   char * vp_ascii_monospace_string = NULL;
   char * fp_ascii_monospace_string = NULL;
 
-  RedStructDeclarationMember slots_ascii_monospace[2] = {0};
+  RedStructDeclarationMember slots_ascii_monospace[1] = {0};
   slots_ascii_monospace[0].slot            = 0;
   slots_ascii_monospace[0].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
   slots_ascii_monospace[0].count           = 1;
   slots_ascii_monospace[0].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
-
-  slots_ascii_monospace[1].slot            = 1;
-  slots_ascii_monospace[1].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
-  slots_ascii_monospace[1].count           = 1;
-  slots_ascii_monospace[1].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
   gpu_extra_reii_mesh_state_compile_info_t mesh_state_compile_info_ascii_monospace = {0};
   mesh_state_compile_info_ascii_monospace.state_multisample_count     = RED_MULTISAMPLE_COUNT_BITFLAG_4;
   mesh_state_compile_info_ascii_monospace.output_depth_stencil_enable = 1;
   mesh_state_compile_info_ascii_monospace.output_depth_stencil_format = RED_FORMAT_DEPTH_32_FLOAT;
   mesh_state_compile_info_ascii_monospace.output_color_format         = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
-  mesh_state_compile_info_ascii_monospace.variables_slot              = 2;
-  mesh_state_compile_info_ascii_monospace.variables_bytes_count       = 0;
+  mesh_state_compile_info_ascii_monospace.variables_slot              = 1;
+  mesh_state_compile_info_ascii_monospace.variables_bytes_count       = 1 * sizeof(ReiiVec4);
   mesh_state_compile_info_ascii_monospace.struct_members_count        = countof(slots_ascii_monospace);
   mesh_state_compile_info_ascii_monospace.struct_members              = slots_ascii_monospace;
   ReiiMeshState mesh_state_ascii_monospace                                  = {0};
@@ -310,13 +305,6 @@ int main() {
 
   gpu_extra_cpu_gpu_array mesh_ascii_monospace_vertex_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
     157104, // NOTE(Constantine): Hardcoded for the current ascii monospace mesh.
-    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
-    &storage_gpu_only,   &storage_gpu_only_mem_offset,
-    FF, LL
-  );
-
-  gpu_extra_cpu_gpu_array mesh_ascii_monospace_instances_position_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
-    3 * sizeof(ReiiVec4), // NOTE(Constantine): Hardcoded for the current example.
     &storage_cpu_upload, &storage_cpu_upload_mem_offset,
     &storage_gpu_only,   &storage_gpu_only_mem_offset,
     FF, LL
@@ -585,10 +573,12 @@ int main() {
     reiiCommandMeshSetState(ctx, list, &mesh_state_ascii_monospace, NULL);
     reiiCommandBindNewBindingsSet(ctx, list, countof(slots_ascii_monospace), slots_ascii_monospace);
     reiiCommandBindStorageRaw(ctx, list, 0, 1, &mesh_ascii_monospace->position.gpu);
-    reiiCommandBindStorageRaw(ctx, list, 1, 1, &mesh_ascii_monospace_instances_position_array.gpu);
     reiiCommandBindNewBindingsEnd(ctx, list);
     reiiCommandRenderTargetSet(ctx, list, outputdstex, outputmstex, outputmstex->texture);
-    reiiCommandUnorderedArrayDraw(ctx, list, mesh_ascii_monospace);
+    const int char_id = 4;
+    ReiiVec4 params = {-1, -1, mesh_ascii_monospace_submesh_tri_begin[char_id] * 3, 0};
+    reiiCommandBindVariablesCopy(ctx, list, 0 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &params);
+    reiiCommandUnorderedArrayDrawInstancedEx(ctx, list, (mesh_ascii_monospace_submesh_tri_end[char_id] - mesh_ascii_monospace_submesh_tri_begin[char_id]) * 3, 0, 1);
     reiiCommandRenderTargetEnd(ctx, list);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     vfBatchBarrierMemory(ctx, batch, FF, LL);
