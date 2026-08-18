@@ -578,7 +578,7 @@ int main() {
     const int char_id = 4;
     ReiiVec4 params = {-1, -1, mesh_ascii_monospace_submesh_tri_begin[char_id] * 3, 0};
     reiiCommandBindVariablesCopy(ctx, list, 0 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &params);
-    reiiCommandUnorderedArrayDrawInstancedEx(ctx, list, (mesh_ascii_monospace_submesh_tri_end[char_id] - mesh_ascii_monospace_submesh_tri_begin[char_id]) * 3, 0, 1);
+    reiiCommandUnorderedArrayDrawInstancedEx(ctx, list, 0, (mesh_ascii_monospace_submesh_tri_end[char_id] - mesh_ascii_monospace_submesh_tri_begin[char_id]) * 3, 0, 1);
     reiiCommandRenderTargetEnd(ctx, list);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     vfBatchBarrierMemory(ctx, batch, FF, LL);

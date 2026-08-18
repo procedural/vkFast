@@ -708,7 +708,7 @@ int main() {
     reiiCommandBindStorageRaw(ctx, list, 2, 1, &mesh_capsule_instances_xform->texcoord[1].gpu);
     reiiCommandBindNewBindingsEnd(ctx, list);
     reiiCommandRenderTargetSet(ctx, list, outputdstex, outputmstex, outputmstex->texture);
-    reiiCommandUnorderedArrayDrawInstancedEx(ctx, list, mesh_capsule->positionVec4Count - 18, 0, 3); // NOTE(Constantine): Hardcoded for the current example, -18 vertices to not draw arrow cap.
+    reiiCommandUnorderedArrayDrawInstancedEx(ctx, list, 0, mesh_capsule->positionVec4Count - 18, 0, 3); // NOTE(Constantine): Hardcoded for the current example, -18 vertices to not draw arrow cap.
     reiiCommandRenderTargetEnd(ctx, list);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     vfBatchBarrierMemory(ctx, batch, FF, LL);

@@ -335,7 +335,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandGammaCorrectColorTextureToTheInversePow
 GPU_API_PRE void GPU_API_POST reiiCommandCopyFromColorTextureToStorageRaw (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * texture, RedStructMemberArray * storageRaw);
 GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDraw               (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleUnorderedArray * unorderedArray);
 GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstanced      (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleUnorderedArray * unorderedArray, unsigned instanceCount);
-GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstancedEx    (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned vertexCount, unsigned instanceFirst, unsigned instanceCount);
+GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstancedEx    (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned vertexFirst, unsigned vertexCount, unsigned instanceFirst, unsigned instanceCount);
 
 // Unordered array
 
