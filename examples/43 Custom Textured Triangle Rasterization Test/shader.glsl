@@ -6,7 +6,7 @@ vec3 hash3(float n) {
     return normalize(vec3(fract(sin(n)*43758.54f), fract(sin(n+1.f)*43758.54f), fract(sin(n+2.f)*43758.54f)) * 2.0f - 1.0f);
 }
 
-void main_image_inner(uvec3 id, vec2 fragCoord) {
+void mainImage(uvec3 id, vec2 fragCoord) {
     // 1. Animated Quaternion & Rotation Matrix Setup
     float seed = 42.0f;
     vec3 axis = hash3(seed);
@@ -28,7 +28,7 @@ void main_image_inner(uvec3 id, vec2 fragCoord) {
     //vec2 uvA = vec2(0,0), uvB = vec2(4,0), uvC = vec2(2,4); // High tiling factor
 
     vec3 o = vec3(0, 0, -2);
-    vec2 res = vec2(textureSize(_texture0));
+    vec2 res = vec2(SWIZ(iChannelResolution[0].xy));
     ivec2 iRes = ivec2(res);
 
     vec4 colorAccum = vec4(0.0);
@@ -42,7 +42,7 @@ void main_image_inner(uvec3 id, vec2 fragCoord) {
             vec2 subPixelOffset = (vec2(float(i), float(j)) - 1.5f) * 0.25f;
 
             // Generate unique, aspect-corrected ray direction for this sub-sample
-            vec2 p = (fragCoord + subPixelOffset - SWIZ(vec2(imageSize(_screen)).xy) * 0.5f) / vec2(imageSize(_screen)).y;
+            vec2 p = (fragCoord + subPixelOffset - SWIZ(vec2(iResolution).xy) * 0.5f) / vec2(iResolution).y;
             vec3 d = normalize(vec3(p, 1));
 
             float weight = (1.0f - abs(subPixelOffset.x)) * (1.0f - abs(subPixelOffset.y));
@@ -59,7 +59,7 @@ void main_image_inner(uvec3 id, vec2 fragCoord) {
             float w = 1.0f - u - v;
 
             if (t > 0.0f && u >= 0.0f && v >= 0.0f && w >= 0.0f) {
-                vec4 sampleColor = imageLoad(_texture0, ivec2(fract(u * uvA + v * uvB + w * uvC) * vec2(textureSize(_texture0))), 0);
+                vec4 sampleColor = imageLoad(_texture0, ivec2(fract(u * uvA + v * uvB + w * uvC) * vec2(SWIZ(iChannelResolution[0].xy))), 0);
 
                 colorAccum += sampleColor * weight;
                 totalWeight += weight;

@@ -20,9 +20,8 @@ float texture0[TEXTURE0_SIZE_WIDTH][TEXTURE0_SIZE_HEIGHT][4] = {};
 
 float iTime = 0.0f;
 
-uvec2 imageSize(void * _) {
-  return uvec2(WINDOW_WIDTH, WINDOW_HEIGHT);
-}
+uvec2 iResolution           = {WINDOW_WIDTH, WINDOW_HEIGHT};
+ivec2 iChannelResolution[1] = {{TEXTURE0_SIZE_WIDTH, TEXTURE0_SIZE_HEIGHT}};
 
 void imageStore(void * _, ivec2 coord, vec4 color) {
   screen[coord.y][coord.x][0] = (unsigned char)(sqrt(color.b) * 255.0f);
@@ -38,10 +37,6 @@ vec4 imageLoad(void * _, ivec2 coord, int __) {
     texture0[coord.y][coord.x][2],
     texture0[coord.y][coord.x][3]
   );
-}
-
-ivec2 textureSize(void * _) {
-  return ivec2(TEXTURE0_SIZE_WIDTH, TEXTURE0_SIZE_HEIGHT); // NOTE(Constantine): Hardcoded.
 }
 
 #define SWIZ(X) X()
@@ -95,7 +90,7 @@ int main() {
         float yf = (float)y;
         vec2 fragCoord = {xf + 0.5f, (WINDOW_HEIGHT-yf) + 0.5f}; // https://registry.khronos.org/OpenGL-Refpages/gl4/html/gl_FragCoord.xhtml
 
-        main_image_inner(uvec3(x, y, 0), fragCoord);
+        mainImage(uvec3(x, y, 0), fragCoord);
       }
     }
 
