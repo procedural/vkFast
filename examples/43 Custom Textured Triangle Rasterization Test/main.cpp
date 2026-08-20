@@ -30,7 +30,7 @@ void imageStore(void * _, ivec2 coord, vec4 color) {
   screen[coord.y][coord.x][3] = (unsigned char)(sqrt(color.a) * 255.0f);
 }
 
-vec4 imageLoad(void * _, ivec2 coord, int __) {
+vec4 texelFetch(void * _, ivec2 coord, int __) {
   return vec4(
     texture0[coord.y][coord.x][0],
     texture0[coord.y][coord.x][1],

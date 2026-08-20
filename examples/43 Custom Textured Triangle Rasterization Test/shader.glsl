@@ -1,5 +1,4 @@
-#define _screen NULL
-#define _texture0 NULL
+#define iChannel0 NULL
 
 // Hash function to generate a pseudo-random direction axis
 vec3 hash3(float n) {
@@ -59,7 +58,7 @@ void mainImage(uvec3 id, vec2 fragCoord) {
             float w = 1.0f - u - v;
 
             if (t > 0.0f && u >= 0.0f && v >= 0.0f && w >= 0.0f) {
-                vec4 sampleColor = imageLoad(_texture0, ivec2(fract(u * uvA + v * uvB + w * uvC) * vec2(SWIZ(iChannelResolution[0].xy))), 0);
+                vec4 sampleColor = texelFetch(iChannel0, ivec2(fract(u * uvA + v * uvB + w * uvC) * vec2(SWIZ(iChannelResolution[0].xy))), 0);
 
                 colorAccum += sampleColor * weight;
                 totalWeight += weight;
@@ -73,5 +72,5 @@ void mainImage(uvec3 id, vec2 fragCoord) {
     }
 
     // Final normalized color emit
-    imageStore(_screen, ivec2(SWIZ(id.xy)), colorAccum / totalWeight);
+    imageStore(screen, ivec2(SWIZ(id.xy)), colorAccum / totalWeight);
 }
