@@ -4,6 +4,8 @@
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLM
 #include "../Common/vkfast_examples_common.h"
 
+#include <time.h> // For struct timespec
+
 using namespace glm;
 typedef unsigned uint;
 
@@ -79,7 +81,11 @@ int main() {
     }
   }
 
+  struct timespec start, end;
+
   while (vfWindowLoop(ctx)) {
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     // NOTE(Constantine): Enable "Project properties -> C/C++ -> Language -> Open MP Support"
     #pragma omp parallel for
     for (int y = 0; y < WINDOW_HEIGHT; y += 1) {
@@ -93,12 +99,18 @@ int main() {
       }
     }
 
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
     vfDrawPixels(ctx, screen, NULL, 2, gpu_threads, array65536, FF, LL);
 
     iTime += 0.1f;
 
-    printf("iTime: %f\n", iTime);
+    long long nanoseconds = (end.tv_sec - start.tv_sec) * 1000000000LL + (end.tv_nsec - start.tv_nsec);
+    double microseconds = (double)nanoseconds / 1000.0;
+    double milliseconds = (double)nanoseconds / 1000000.0;
+    double fps = 1000.0 / milliseconds;
+    printf("Triangle render time: %f ms (%f fps)\n", milliseconds, fps);
   }
 
   vfAllQueuesWaitIdle(ctx, FF, LL);
