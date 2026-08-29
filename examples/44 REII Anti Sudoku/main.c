@@ -517,6 +517,20 @@ int main() {
       if (igButton("Fill anti center cell with available posi numbers", buttonSize)) {
         Sudoku9x9FillAntiCenterCellWithAvailablePosiNumbers(cel, centerIndex);
       }
+      if (igButton("Fill all anti cells with available posi numbers", buttonSize)) {
+        for (int i = 0; i < 81; i += 1) {
+          int hasPosi = 0;
+          for (int j = 0; j < 9; j += 1) {
+            if (cel[i].posi[j] == 1) {
+              hasPosi = 1;
+              break;
+            }
+          }
+          if (hasPosi == 0) {
+            Sudoku9x9FillAntiCenterCellWithAvailablePosiNumbers(cel, i);
+          }
+        }
+      }
 
       igEnd();
     }
