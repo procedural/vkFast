@@ -61,6 +61,12 @@ void Sudoku9x9CellSetPosiImmutable(SudokuCell * cel,
   }
 }
 
+void Sudoku9x9ClearAntiCell(SudokuCell * cel, int cellIndex) {
+  for (int j = 0; j < 9; j += 1) {
+    cel[cellIndex].anti[j] = 0;
+  }
+}
+
 void Sudoku9x9ClearAllAntiCells(SudokuCell * cel) {
   for (int i = 0; i < 81; i += 1) {
     for (int j = 0; j < 9; j += 1) {
@@ -515,9 +521,12 @@ int main() {
         Sudoku9x9ClearAllAntiCells(cel);
       }
       if (igButton("Fill anti center cell with available posi numbers", buttonSize)) {
+        Sudoku9x9ClearAntiCell(cel, centerIndex);
         Sudoku9x9FillAntiCenterCellWithAvailablePosiNumbers(cel, centerIndex);
       }
       if (igButton("Fill all anti cells with available posi numbers", buttonSize)) {
+        Sudoku9x9ClearAllAntiCells(cel);
+
         for (int i = 0; i < 81; i += 1) {
           int hasPosi = 0;
           for (int j = 0; j < 9; j += 1) {
