@@ -64,17 +64,13 @@ extern wchar_t const * g_arc_compilerLicense;
 
 typedef unsigned char ArcBool8;
 
-#include "arc_state/arc_state_rawbuild.inl"
 #include "arc_state/arc_state_stage1.inl"
 
 typedef struct ArcState {
-  ArcRawbuild    rawbuild;
   ArcStateStage1 stage1;
 } ArcState;
 
-void arcRawbuildBeforeStage1(ArcState * state);
-void arcStage1(ArcState * state, ArcBool8 processWmainArguments);
-void arcRawbuildAfterStage1(ArcState * state);
+void arcStage1(ArcState * state);
 void arcStage2(ArcState * state);
 
 #include "arc_cross_stage.h"

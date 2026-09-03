@@ -39,10 +39,7 @@ int wmain(int ArgsCount, wchar_t * const * const Args) {
     #endif
   }
 #endif
-  arcStage1(&state, /*processWmainArguments*/1);
-  arcRawbuildBeforeStage1(&state);
-  arcStage1(&state, /*processWmainArguments*/0);
-  arcRawbuildAfterStage1(&state);
+  arcStage1(&state);
   arcStage2(&state);
 
   return 0;
@@ -76,5 +73,4 @@ int main(int ArgsCount, char * const * const Args) {
 #endif
 
 #include "arc_stage1.inl"
-#include "arc_rawbuild.inl"
 #include "arc_stage2.inl"

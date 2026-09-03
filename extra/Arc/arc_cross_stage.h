@@ -31,30 +31,7 @@ static void arc_xs_FileWrite(std::wstring filepath, std::wstring writeString) {
   fs.close();
 }
 
-static void arc_xs_CompilerCommandIncludeSourceCodeFile(ArcStateStage1 & stage1, std::wstring filepath) {
-  std::wstring fileSourceCode = arc_xs_FileRead(filepath);
-
-  if (fileSourceCode.size() > 0) {
-    // Do nothing then.
-  } else {
-    // Skip empty file.
-    return;
-  }
-
-  {
-    wchar_t lastCharacter = fileSourceCode[fileSourceCode.size() - 1];
-    if (lastCharacter != L'\n') {
-      fileSourceCode += L"\n";
-    }
-  }
-
-  stage1.sourceCodeWithoutCommentsString += fileSourceCode;
-  stage1.filesPath.push_back(filepath);
-  stage1.filesSize.push_back(fileSourceCode.size());
-  stage1.filesOriginalSourceCodeString.push_back(fileSourceCode);
-}
-
-static void arc_xs_CompilerCommandIncludeSourceCodeFileOrFolder(ArcStateStage1 & stage1, std::wstring filepath) {
+static void arc_xs_CompilerCommandIncludeSourceCodeByFilepath(ArcStateStage1 & stage1, std::wstring filepath) {
   std::wstring fileSourceCode = arc_xs_FileRead(filepath);
 
   if (fileSourceCode.size() > 0) {
@@ -70,7 +47,6 @@ static void arc_xs_CompilerCommandIncludeSourceCodeFileOrFolder(ArcStateStage1 &
   stage1.filesOriginalSourceCodeString.push_back(fileSourceCode);
 }
 
-#include <sys/types.h>
 #include <sys/stat.h>
 
 // Handle the naming differences between Windows and Linux/POSIX
@@ -90,6 +66,24 @@ static void arc_xs_CompilerCommandIncludeSourceCodeFileOrFolder(ArcStateStage1 &
   #define ARC_XS_STAT_FUNC stat
 #endif
 
+// Checks the system path type.
+// Returns: 0 if Regular File, 1 if Folder/Directory, -1 if Path Not Found/Error/Other Type
+static int arc_xs_GetSystemPathType(const char * const path) {
+  ARC_XS_STAT_STRUCT info = {0};
+
+  if (ARC_XS_STAT_FUNC(path, &info) != 0) {
+    return -1; // Path does not exist or is inaccessible
+  }
+
+  if (S_ISDIR(info.st_mode)) {
+    return 1; // It's a folder/directory
+  } else if (S_ISREG(info.st_mode)) {
+    return 0; // It's a regular file
+  }
+
+  return -1; // Other type (e.g., pipe, socket, device, etc.)
+}
+
 static const char * const arc_xs_MallocWcharToChar(const wchar_t * const wstr) {
   // Determine required buffer size (passing NULL as the destination)
   size_t size = wcstombs(NULL, wstr, 0);
@@ -107,22 +101,4 @@ static const char * const arc_xs_MallocWcharToChar(const wchar_t * const wstr) {
   wcstombs(str, wstr, size + 1);
 
   return (const char * const)str;
-}
-
-// Checks the system path type.
-// Returns: 0 if Regular File, 1 if Folder/Directory, -1 if Path Not Found/Error/Other Type
-static int arc_xs_GetSystemPathType(const char * const path) {
-  ARC_XS_STAT_STRUCT info = {0};
-
-  if (ARC_XS_STAT_FUNC(path, &info) != 0) {
-    return -1; // Path does not exist or is inaccessible
-  }
-
-  if (S_ISDIR(info.st_mode)) {
-    return 1; // It's a folder/directory
-  } else if (S_ISREG(info.st_mode)) {
-    return 0; // It's a regular file
-  }
-
-  return -1; // Other type (e.g., pipe, socket, device, etc.)
 }

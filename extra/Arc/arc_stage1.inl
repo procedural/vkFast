@@ -6,13 +6,10 @@
 #include "arc_stage1/arc_stage1_pass4.inl" // NOTE(Constantine): Pass 4. Eliminates false code paths of conditional macro tokens.
 #include "arc_stage1/arc_stage1_pass5.inl" // NOTE(Constantine): Pass 5. Prints and removes encountered '#pragma message' and '#error' macro tokens.
 
-void arcStage1(ArcState * state, ArcBool8 processWmainArguments) {
+void arcStage1(ArcState * state) {
   ArcStateStage1 * const stage1 = &state->stage1;
 
-  if (processWmainArguments == 1) {
-    arc_s1p1_ProcessWmainArguments(stage1[0], state->rawbuild);
-    return;
-  }
+  arc_s1p1_ProcessWmainArguments(stage1[0]);
 
 #ifdef ARC_INTERNAL_COMPILER_DEBUG
   {
@@ -39,11 +36,10 @@ void arcStage1(ArcState * state, ArcBool8 processWmainArguments) {
 
   arc_s1p1_Stage1Pass1SourceCodeReplaceCommentsWithSpaceCharacters(stage1[0]);
   arc_s1p2_Stage1Pass2SourceCodeFillTokenizerStruct(stage1[0]);
-  if (stage1->wmainArgumentsParameters.rawbuildIsEnabled == 0) {
-    arc_s1p3_Stage1Pass3ConditionalMacroTokenSyntaxChecks(stage1[0]);
-    arc_s1p4_Stage1Pass4ConditionalMacroTokenFalseCodePathsElimination(stage1[0]);
-    arc_s1p5_Stage1Pass5PrintPragmaMessageAndErrorMacros(stage1[0]);
-  }
+  // NOTE(Constantine)(Sep 03, 2026): Should I move the following passes to a later stage? Hmm...
+  arc_s1p3_Stage1Pass3ConditionalMacroTokenSyntaxChecks(stage1[0]);
+  arc_s1p4_Stage1Pass4ConditionalMacroTokenFalseCodePathsElimination(stage1[0]);
+  arc_s1p5_Stage1Pass5PrintPragmaMessageAndErrorMacros(stage1[0]);
 
 #ifdef ARC_INTERNAL_COMPILER_DEBUG
   arc_s1p2_WprintfDebugTokenizer(stage1[0], arc_np_0000_optionalPrintPerLineTokensCount{1});

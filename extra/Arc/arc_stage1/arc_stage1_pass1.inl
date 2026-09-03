@@ -94,33 +94,27 @@ static void arc_s1p1_CompilerCommandDefineMacro(ArcStateStage1 & stage1, std::ws
   stage1.compilerCommandDefinedMacros.macrosIsDefinedByCli.push_back(isDefinedByCli);
 }
 
-static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild & rawbuild) {
+static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1) {
   enum {
-    CLI_PARAM_RAWBUILD = 0,
-    CLI_PARAM_HELP,
+    CLI_PARAM_HELP = 0,
     CLI_PARAM_LICENSE,
     CLI_PARAM_DEBUG_PRINT_TO_CURSOR_POSITION,
     CLI_PARAM_DEFINE,
     CLI_PARAM_VERBOSE,
-    CLI_PARAM_RAWBUILD_FOLDER_FILE_EXT,
   };
   const wchar_t * const availableParameters[] = {
-    [CLI_PARAM_RAWBUILD] = L"rawbuild",
     [CLI_PARAM_HELP]     = L"--help",
     [CLI_PARAM_LICENSE]  = L"--license",
     [CLI_PARAM_DEBUG_PRINT_TO_CURSOR_POSITION] = L"--debug-print-to-cursor-position",
     [CLI_PARAM_DEFINE]   = L"--define",
     [CLI_PARAM_VERBOSE]  = L"--verbose",
-    [CLI_PARAM_RAWBUILD_FOLDER_FILE_EXT] = L"--rawbuild-folder-file-ext",
   };
   int availableParametersArgumentsCount[] = {
-    [CLI_PARAM_RAWBUILD] = 0,
     [CLI_PARAM_HELP]     = 0,
     [CLI_PARAM_LICENSE]  = 0,
     [CLI_PARAM_DEBUG_PRINT_TO_CURSOR_POSITION] = 1,
     [CLI_PARAM_DEFINE]   = 2,
     [CLI_PARAM_VERBOSE]  = 0,
-    [CLI_PARAM_RAWBUILD_FOLDER_FILE_EXT] = 1,
   };
 
   for (size_t i = 0, argumentsCount = stage1.wmainArguments.arguments.size(); i < argumentsCount; i += 1) {
@@ -130,26 +124,6 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild 
       goto help;
     }
     if (i == 0) {
-      continue;
-    }
-    if (argument == availableParameters[CLI_PARAM_RAWBUILD]) {
-      if (i != 1) {
-        arc_s1p1_ProcessWmainArgumentsFatalError(L"Fatal command line interface error: parameter \"%ls\" must come first in the command line, before any other command." "\n", L"rawbuild", stage1);
-      }
-      stage1.wmainArgumentsParameters.rawbuildIsEnabled = 1;
-      continue;
-    }
-    if (argument == availableParameters[CLI_PARAM_RAWBUILD_FOLDER_FILE_EXT]) {
-      const int             parameterIndex     = CLI_PARAM_RAWBUILD_FOLDER_FILE_EXT;
-      const wchar_t * const parameter          = availableParameters[parameterIndex];
-      int                   parameterArgsCount = availableParametersArgumentsCount[parameterIndex];
-
-      if (i + parameterArgsCount >= argumentsCount) { arc_s1p1_ProcessWmainArgumentsFatalError(L"Fatal command line interface error: not enough arguments for parameter \"%ls\"." "\n", parameter, stage1); }
-
-      std::wstring argument0 = std::wstring(arguments[++i]);
-
-      rawbuild.lookInFoldersForFileExtensions.push_back(argument0);
-
       continue;
     }
     if (argument == availableParameters[CLI_PARAM_HELP]) {
@@ -174,11 +148,6 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild 
           if (pi == CLI_PARAM_DEFINE) {
             if (parameterArgumentIndex == 0) { arc_wprintf_cli(L" <macro name>"); }
             if (parameterArgumentIndex == 1) { arc_wprintf_cli(L" <macro value 0 for undefined or 1 for defined>"); }
-            continue;
-          }
-
-          if (pi == CLI_PARAM_RAWBUILD_FOLDER_FILE_EXT) {
-            if (parameterArgumentIndex == 0) { arc_wprintf_cli(L" <file extension name without a dot>"); }
             continue;
           }
         }
@@ -257,13 +226,9 @@ static void arc_s1p1_ProcessWmainArguments(ArcStateStage1 & stage1, ArcRawbuild 
       continue;
     }
 
-    // NOTE(Constantine)(Jul 23, 2026):
-    // Paths without command line parameters are considered to be files by Arc and files or folders by Arc rawbuild.
-    if (stage1.wmainArgumentsParameters.rawbuildIsEnabled == 1) {
-      arc_xs_CompilerCommandIncludeSourceCodeFileOrFolder(stage1, argument);
-    } else {
-      arc_xs_CompilerCommandIncludeSourceCodeFile(stage1, argument);
-    }
+    // NOTE(Constantine)(Sep 03, 2026):
+    // Paths without command line parameters are considered to be files by Arc.
+    arc_xs_CompilerCommandIncludeSourceCodeByFilepath(stage1, argument);
   }
 }
 
@@ -486,7 +451,8 @@ static void arc_s1p1_Stage1Pass1SourceCodeReplaceCommentsWithSpaceCharacters(Arc
 
     if (character1 == L'/' && character2 == L'/') {
       // NOTE(Constantine)(Jul 25, 2026): We parse '//\\rc ' comments, which are Arc commands.
-      {
+      // NOTE(Constantine)(Sep 03, 2026): Disable parsing of '//\\rc ' commands for now.
+      if (0) {
         wchar_t possibleCharacter_InvSlash1 = arc_s1p1_PeekCharacter(stage1, i, 2);
         wchar_t possibleCharacter_InvSlash2 = arc_s1p1_PeekCharacter(stage1, i, 3);
         wchar_t possibleCharacter_r         = arc_s1p1_PeekCharacter(stage1, i, 4);
