@@ -14,7 +14,6 @@
                 {
                 "id": "Intel_Embree_RayTracer_lin",
                 "steps": [
-                    "sudo cp /opt/intel/oneapi/compiler/2024.1/lib/libsycl.so.7 /opt/intel/oneapi/compiler/latest/lib/",
                     "unset ZE_FLAT_DEVICE_HIERARCHY",
 		    "cd cpu",
 		    "mkdir build",
