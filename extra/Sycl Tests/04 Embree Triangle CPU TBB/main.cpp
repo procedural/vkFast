@@ -13,7 +13,7 @@ LD_LIBRARY_PATH=/home/constantine/Desktop/embree/build/:$LD_LIBRARY_PATH ./sycl_
 #include <embree4/rtcore.h>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "../03 Embree Triangle/stb_image_write.h"
+#include "../Common/stb_image_write.h"
 
 // Define image constants
 const int WIDTH = 800;
