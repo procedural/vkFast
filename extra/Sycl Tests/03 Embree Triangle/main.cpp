@@ -46,7 +46,7 @@ int main() {
 
     indices[0] = 0; indices[1] = 1; indices[2] = 2;
 
-    // Assign USM buffers to Embree geometry
+    // Assign buffers to Embree geometry
     rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, vertices, 0, 3 * sizeof(float), 3);
     rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, indices, 0, 3 * sizeof(unsigned int), 1);
 

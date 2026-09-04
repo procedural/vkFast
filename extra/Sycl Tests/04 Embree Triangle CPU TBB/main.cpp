@@ -36,8 +36,9 @@ int main() {
     RTCScene scene = rtcNewScene(device);
     RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
-    float* vertices = (float*)rtcSetNewGeometryBuffer(geom, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, 3 * sizeof(float), 3);
-    unsigned int* indices = (unsigned int*)rtcSetNewGeometryBuffer(geom, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, 3 * sizeof(unsigned int), 1);
+    // 3. Allocate Memory for Vertices and Indices
+    float* vertices = (float*)malloc(3 * 3 * sizeof(float));
+    unsigned int* indices = (unsigned int*)malloc(3 * sizeof(unsigned int));
 
     // Hardcode a single simple triangle in front of the camera
     vertices[0] =  0.0f; vertices[1] =  0.5f; vertices[2] = 2.0f; // Top
@@ -45,6 +46,10 @@ int main() {
     vertices[6] =  0.5f; vertices[7] = -0.5f; vertices[8] = 2.0f; // Bottom Right
 
     indices[0] = 0; indices[1] = 1; indices[2] = 2;
+
+    // Assign buffers to Embree geometry
+    rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, vertices, 0, 3 * sizeof(float), 3);
+    rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, indices, 0, 3 * sizeof(unsigned int), 1);
 
     rtcCommitGeometry(geom);
     rtcAttachGeometry(scene, geom);
@@ -55,7 +60,7 @@ int main() {
     RTCTraversable traversable = rtcGetSceneTraversable(scene);
 
     // 4. Create an output frame buffer
-    std::vector<uint8_t> pixels(WIDTH * HEIGHT * 3);
+    uint8_t* pixels = (uint8_t*)malloc(WIDTH * HEIGHT * 3);
 
     // 5. Launch the CPU Ray-Tracing loop via TBB
     tbb::parallel_for(tbb::blocked_range2d<int>(0, HEIGHT, 0, WIDTH), [&](const tbb::blocked_range2d<int>& r) {
@@ -111,10 +116,13 @@ int main() {
     });
 
     // 6. Save image
-    stbi_write_png("output.png", WIDTH, HEIGHT, 3, pixels.data(), WIDTH * 3);
+    stbi_write_png("output.png", WIDTH, HEIGHT, 3, pixels, WIDTH * 3);
     std::cout << "Image successfully written to output.png" << std::endl;
 
     // 7. Cleanup
+    free(pixels);
+    free(vertices);
+    free(indices);
     rtcReleaseScene(scene);
     rtcReleaseDevice(device);
 
