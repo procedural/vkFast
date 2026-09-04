@@ -63,57 +63,59 @@ int main() {
     uint8_t* pixels = (uint8_t*)malloc(WIDTH * HEIGHT * 3);
 
     // 5. Launch the CPU Ray-Tracing loop via TBB
-    tbb::parallel_for(tbb::blocked_range2d<int>(0, HEIGHT, 0, WIDTH), [&](const tbb::blocked_range2d<int>& r) {
+    tbb::parallel_for(
+      tbb::blocked_range2d<int>(0, HEIGHT, 0, WIDTH), [&](const tbb::blocked_range2d<int>& r) {
         for (int y = r.rows().begin(); y != r.rows().end(); ++y) {
-            for (int x = r.cols().begin(); x != r.cols().end(); ++x) {
+          for (int x = r.cols().begin(); x != r.cols().end(); ++x) {
 
-                // Normalize coordinates to [-1, 1] range
-                float u = (x + 0.5f) / WIDTH * 2.0f - 1.0f;
-                float v = 1.0f - (y + 0.5f) / HEIGHT * 2.0f; // Flip Y for typical image coordinates
-                float aspect = (float)WIDTH / (float)HEIGHT;
-                u *= aspect;
+            // Normalize coordinates to [-1, 1] range
+            float u = (x + 0.5f) / WIDTH * 2.0f - 1.0f;
+            float v = 1.0f - (y + 0.5f) / HEIGHT * 2.0f; // Flip Y for typical image coordinates
+            float aspect = (float)WIDTH / (float)HEIGHT;
+            u *= aspect;
 
-                // Define Ray Structure
-                alignas(16) RTCRayHit rayhit;
-                rayhit.ray.org_x = 0.0f;
-                rayhit.ray.org_y = 0.0f;
-                rayhit.ray.org_z = 0.0f;
-                rayhit.ray.dir_x = u;
-                rayhit.ray.dir_y = v;
-                rayhit.ray.dir_z = 1.0f; // Facing positive Z
-                rayhit.ray.tnear = 0.0f;
-                rayhit.ray.tfar  = std::numeric_limits<float>::infinity();
-                rayhit.ray.mask  = -1;
-                rayhit.ray.time  = 0.0f;
-                rayhit.ray.flags = 0;
+            // Define Ray Structure
+            RTCRayHit rayhit;
+            rayhit.ray.org_x = 0.0f;
+            rayhit.ray.org_y = 0.0f;
+            rayhit.ray.org_z = 0.0f;
+            rayhit.ray.dir_x = u;
+            rayhit.ray.dir_y = v;
+            rayhit.ray.dir_z = 1.0f; // Facing positive Z
+            rayhit.ray.tnear = 0.0f;
+            rayhit.ray.tfar  = std::numeric_limits<float>::infinity();
+            rayhit.ray.mask  = -1;
+            rayhit.ray.time  = 0.0f;
+            rayhit.ray.flags = 0;
 
-                rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
-                rayhit.hit.primID = RTC_INVALID_GEOMETRY_ID;
-                rayhit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
+            rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
+            rayhit.hit.primID = RTC_INVALID_GEOMETRY_ID;
+            rayhit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
 
-                // Configure intersection arguments
-                RTCIntersectArguments args;
-                rtcInitIntersectArguments(&args);
-                args.feature_mask = RTC_FEATURE_FLAG_TRIANGLE; // Performance flag optimization
+            // Configure intersection arguments
+            RTCIntersectArguments args;
+            rtcInitIntersectArguments(&args);
+            args.feature_mask = RTC_FEATURE_FLAG_TRIANGLE; // Performance flag optimization
 
-                // Embree 4 Device-side Intersection
-                rtcTraversableIntersect1(traversable, &rayhit, &args);
+            // Embree 4 Device-side Intersection
+            rtcTraversableIntersect1(traversable, &rayhit, &args);
 
-                int pixel_index = (y * WIDTH + x) * 3;
-                if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID) {
-                    // Shading code if hit (Orange Triangle)
-                    pixels[pixel_index + 0] = 255; // Red
-                    pixels[pixel_index + 1] = 128; // Green
-                    pixels[pixel_index + 2] = 0;   // Blue
-                } else {
-                    // Background color (Dark Gray)
-                    pixels[pixel_index + 0] = 32;
-                    pixels[pixel_index + 1] = 32;
-                    pixels[pixel_index + 2] = 32;
-                }
+            int pixel_index = (y * WIDTH + x) * 3;
+            if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID) {
+                // Shading code if hit (Orange Triangle)
+                pixels[pixel_index + 0] = 255; // Red
+                pixels[pixel_index + 1] = 128; // Green
+                pixels[pixel_index + 2] = 0;   // Blue
+            } else {
+                // Background color (Dark Gray)
+                pixels[pixel_index + 0] = 32;
+                pixels[pixel_index + 1] = 32;
+                pixels[pixel_index + 2] = 32;
             }
+          }
         }
-    });
+      }
+    );
 
     // 6. Save image
     stbi_write_png("output.png", WIDTH, HEIGHT, 3, pixels, WIDTH * 3);
