@@ -15,11 +15,9 @@ LD_LIBRARY_PATH=/home/constantine/Desktop/embree/build/:$LD_LIBRARY_PATH ./sycl_
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "../03 Embree Triangle/stb_image_write.h"
 
+// Define image constants
 const int WIDTH = 800;
 const int HEIGHT = 600;
-
-struct Vertex   { float x, y, z; };
-struct Triangle { unsigned int v0, v1, v2; };
 
 void embreeErrorCallback(void* userPtr, RTCError code, const char* str) {
     std::cerr << "Embree Error: " << str << " (Code: " << code << ")" << std::endl;
@@ -38,14 +36,15 @@ int main() {
     RTCScene scene = rtcNewScene(device);
     RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
-    Vertex* vertices = (Vertex*)rtcSetNewGeometryBuffer(geom, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(Vertex), 3);
-    Triangle* triangles = (Triangle*)rtcSetNewGeometryBuffer(geom, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, sizeof(Triangle), 1);
+    float* vertices = (float*)rtcSetNewGeometryBuffer(geom, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, 3 * sizeof(float), 3);
+    unsigned int* indices = (unsigned int*)rtcSetNewGeometryBuffer(geom, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, 3 * sizeof(unsigned int), 1);
 
     // Hardcode a single simple triangle in front of the camera
-    vertices[0] = {  0.0f,  0.5f, 2.0f }; // Top
-    vertices[1] = { -0.5f, -0.5f, 2.0f }; // Bottom Left
-    vertices[2] = {  0.5f, -0.5f, 2.0f }; // Bottom Right
-    triangles[0] = { 0, 1, 2 };
+    vertices[0] =  0.0f; vertices[1] =  0.5f; vertices[2] = 2.0f; // Top
+    vertices[3] = -0.5f; vertices[4] = -0.5f; vertices[5] = 2.0f; // Bottom Left
+    vertices[6] =  0.5f; vertices[7] = -0.5f; vertices[8] = 2.0f; // Bottom Right
+
+    indices[0] = 0; indices[1] = 1; indices[2] = 2;
 
     rtcCommitGeometry(geom);
     rtcAttachGeometry(scene, geom);
