@@ -18,6 +18,10 @@ int main() {
     // 2. Initialize Embree Device matching the SYCL context
     // In Embree 4, passing the SYCL context allows sharing USM memory and executing device kernels.
     RTCDevice device = rtcNewSYCLDevice(queue.get_context(), nullptr);
+    if (!device) {
+        std::cerr << "Failed to create Embree device\n";
+        return 1;
+    }
     RTCScene scene = rtcNewScene(device);
 
     // 3. Create a simple triangle geometry on the host
