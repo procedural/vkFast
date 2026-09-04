@@ -18,6 +18,10 @@ LD_LIBRARY_PATH=/home/constantine/Desktop/embree/build/:$LD_LIBRARY_PATH ./sycl_
 const int WIDTH = 800;
 const int HEIGHT = 600;
 
+void embreeErrorCallback(void* userPtr, RTCError code, const char* str) {
+    std::cerr << "Embree Error: " << str << " (Code: " << code << ")" << std::endl;
+}
+
 int main() {
     // 1. Initialize SYCL Queue targeting a GPU (or default selector)
     sycl::queue queue(sycl::gpu_selector_v);
@@ -30,6 +34,7 @@ int main() {
         std::cerr << "Failed to create Embree device\n";
         return 1;
     }
+    rtcSetDeviceErrorFunction(device, embreeErrorCallback, nullptr);
 
     // 2. Create the Embree scene and geometry
     RTCScene scene = rtcNewScene(device);
