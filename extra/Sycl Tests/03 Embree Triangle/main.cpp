@@ -19,17 +19,17 @@ const int WIDTH = 800;
 const int HEIGHT = 600;
 
 int main() {
-    // 1. Initialize SYCL Queue and Context using Embree's device selector
-    sycl::device sycl_device(rtcSYCLDeviceSelector);
-    sycl::queue queue(sycl_device, [](sycl::exception_list el) {
-        for (auto& e : el) std::rethrow_exception(e);
-    });
-    sycl::context context = queue.get_context();
+    // 1. Initialize SYCL Queue targeting a GPU (or default selector)
+    sycl::queue queue(sycl::gpu_selector_v);
 
-    std::cout << "Running on device: " << sycl_device.get_info<sycl::info::device::name>() << std::endl;
+    std::cout << "Running on device: " << queue.get_device().get_info<sycl::info::device::name>() << std::endl;
 
-    RTCDevice device = rtcNewSYCLDevice(context, "");
-    rtcSetDeviceSYCLDevice(device, sycl_device);
+    // In Embree 4, passing the SYCL context allows sharing USM memory and executing device kernels.
+    RTCDevice device = rtcNewSYCLDevice(queue.get_context(), nullptr);
+    if (!device) {
+        std::cerr << "Failed to create Embree device\n";
+        return 1;
+    }
 
     // 2. Create the Embree scene and geometry
     RTCScene scene = rtcNewScene(device);
