@@ -28,9 +28,10 @@ int main() {
 
     std::cout << "Running on device: " << sycl_device.get_info<sycl::info::device::name>() << std::endl;
 
-    // 2. Create the Embree SYCL device, scene, and geometry
     RTCDevice device = rtcNewSYCLDevice(context, "");
     rtcSetDeviceSYCLDevice(device, sycl_device);
+
+    // 2. Create the Embree scene and geometry
     RTCScene scene = rtcNewScene(device);
     RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
