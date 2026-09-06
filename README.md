@@ -16,7 +16,7 @@ The examples are tested on Intel i3 12100 CPU and Nvidia RTX 2060 (Turing) GPU, 
 Install instructions for Ubuntu
 -------------------------------
 
-First open a terminal and run:
+First, open a terminal and run:
 ```sh
 sudo apt install build-essential procps curl file git
 ```
