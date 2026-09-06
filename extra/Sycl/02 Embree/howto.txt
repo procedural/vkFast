@@ -3,7 +3,10 @@ cd embree
 git checkout 3d9cb89b9ea099c630e6272d37767e7dd4e78e74
 mkdir build
 cd build
+sudo apt install intel-opencl-icd libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl-dev libglx-dev
 source /opt/intel/oneapi/setvars.sh intel64
+sycl-ls
 CC=icx CXX=icpx cmake .. -DEMBREE_SYCL_SUPPORT=ON
+make -j8
 export ONEAPI_DEVICE_SELECTOR=level_zero:0
 XDG_SESSION_TYPE=x11 ./embree_pathtracer_sycl
