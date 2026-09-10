@@ -44,6 +44,8 @@
   #define VFE_ARC_API_POST
 #endif
 
+VFE_ARC_API_PRE gpu_handle_context_t VFE_ARC_API_POST vfeArcContextInit    (int enableDebugMode, const gpu_context_optional_parameters_t * optionalParameters, const char * optionalFile, int optionalLine);
+
 VFE_ARC_API_PRE void   VFE_ARC_API_POST vfeArcGetMemoryBudget              (gpu_handle_context_t context, RedMemoryBudget * outMemoryBudget);
 VFE_ARC_API_PRE void * VFE_ARC_API_POST vfeArcMallocSharedB580ReBARHeap0v1 (gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray); // v1 from Sep 10, 2026
 VFE_ARC_API_PRE void * VFE_ARC_API_POST vfeArcMallocSharedB580ReBARHeap1v1 (gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray); // v1 from Sep 10, 2026
@@ -53,6 +55,25 @@ VFE_ARC_API_PRE void   VFE_ARC_API_POST vfeArcFreeSharedB580ReBARHeap      (gpu_
   #define VFE_ARC_IMPLEMENTATION
 #endif
 #ifdef VFE_ARC_IMPLEMENTATION
+
+VFE_ARC_API_PRE gpu_handle_context_t VFE_ARC_API_POST vfeArcContextInit(int enableDebugMode, const gpu_context_optional_parameters_t * optionalParameters, const char * optionalFile, int optionalLine) {
+  // NOTE(Constantine):
+  // This procedure is the same as vfContextInit(), vfeArcContextInit() just doesn't allocate most of memory by default if optionalParameters are not passed.
+
+  if (optionalParameters != NULL) {
+    return vfContextInit(enableDebugMode, optionalParameters, optionalFile, optionalLine);
+  } else {
+    gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
+    memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = 0;
+    memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_upload       = 0;
+    memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_readback     = 0;
+    memory_allocation_sizes.bytes_count_for_memory_present_pixels_type_cpu_upload = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_PIXELS_CPU_UPLOAD_288MB;
+    gpu_context_optional_parameters_t optional_parameters = {0};
+    optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
+
+    return vfContextInit(enableDebugMode, &optional_parameters, optionalFile, optionalLine);
+  }
+}
 
 VFE_ARC_API_PRE void VFE_ARC_API_POST vfeArcGetMemoryBudget(gpu_handle_context_t context, RedMemoryBudget * outMemoryBudget) {
   const char * optionalFile = NULL;
