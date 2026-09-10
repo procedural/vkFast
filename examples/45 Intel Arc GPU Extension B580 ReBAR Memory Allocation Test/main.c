@@ -11,7 +11,15 @@
 #include "../Common/vkfast_examples_common.h"
 
 int main() {
-  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
+  gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
+  memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = 0;
+  memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_upload       = 0;
+  memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_readback     = 0;
+  memory_allocation_sizes.bytes_count_for_memory_present_pixels_type_cpu_upload = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_PIXELS_CPU_UPLOAD_288MB;
+  gpu_context_optional_parameters_t optional_parameters = {0};
+  optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
+
+  gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
 
   RedMemoryBudget budget = {};
   vfeArcGetMemoryBudget(ctx, &budget);
