@@ -15,7 +15,7 @@ int main() {
 
   RedMemoryBudget budget = {};
   vfeArcGetMemoryBudget(ctx, &budget);
-  REDGPU_2_EXPECTFL(budget.memoryHeapsBudget[0] >= 10ULL * 1024*1024*1024 || !"Bro, we need to guarantee at least 10 GB of free GPU memory on Arc B580. Wtf is your OS doing?");
+  REDGPU_2_EXPECTFL(budget.memoryHeapsBudget[0] >= 10ULL * 1024*1024*1024 || !"Bro, we need to guarantee at least 10 GB of free GPU memory on Arc B580. Wtf is your OS doing? Try to close your web browsers or other apps that can eat GPU memory.");
 
   // ReBAR Heap 0 Test
   {
