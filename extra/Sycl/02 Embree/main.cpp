@@ -1,8 +1,8 @@
 #if 0
 # Build and run commands:
 source /opt/intel/oneapi/setvars.sh intel64
-icpx -fsycl -fsycl-targets=spir64 -Xclang -fsycl-allow-func-ptr -I/home/constantine/Desktop/embree/include -L/home/constantine/Desktop/embree/build/ main.cpp -lembree4_sycl -lembree4 -o sycl_embree_demo
-LD_LIBRARY_PATH=/home/constantine/Desktop/embree/build/:$LD_LIBRARY_PATH ./sycl_embree_demo
+icpx -fsycl -fsycl-targets=spir64 -Xclang -fsycl-allow-func-ptr -I/opt/intel-embree/include -L/opt/intel-embree/build/ main.cpp -lembree4_sycl -lembree4 -o sycl_embree_demo
+LD_LIBRARY_PATH=/opt/intel-embree/build/:$LD_LIBRARY_PATH ./sycl_embree_demo
 #endif
 
 #include <iostream>

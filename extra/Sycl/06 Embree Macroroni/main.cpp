@@ -1,14 +1,14 @@
 #if 0 // GPU
 # Build and run commands:
 source /opt/intel/oneapi/setvars.sh intel64
-icpx -DRTM_ENABLE_EMBREE_GPU -fsycl -fsycl-targets=spir64 -Xclang -fsycl-allow-func-ptr -I/home/constantine/Desktop/embree/include -L/home/constantine/Desktop/embree/build/ main.cpp -lembree4_sycl -lembree4 -o embree_macroroni
-LD_LIBRARY_PATH=/home/constantine/Desktop/embree/build/:$LD_LIBRARY_PATH ./embree_macroroni
+icpx -DRTM_ENABLE_EMBREE_GPU -fsycl -fsycl-targets=spir64 -Xclang -fsycl-allow-func-ptr -I/opt/intel-embree/include -L/opt/intel-embree/build/ main.cpp -lembree4_sycl -lembree4 -o embree_macroroni
+LD_LIBRARY_PATH=/opt/intel-embree/build/:$LD_LIBRARY_PATH ./embree_macroroni
 #endif
 #if 0 // CPU
 # Build and run commands:
 source /opt/intel/oneapi/setvars.sh intel64
-icpx -DRTM_ENABLE_EMBREE_CPU -I/home/constantine/Desktop/embree/include -L/home/constantine/Desktop/embree/build/ main.cpp -lembree4 -ltbb -o embree_macroroni
-LD_LIBRARY_PATH=/home/constantine/Desktop/embree/build/:$LD_LIBRARY_PATH ./embree_macroroni
+icpx -DRTM_ENABLE_EMBREE_CPU -I/opt/intel-embree/include -L/opt/intel-embree/build/ main.cpp -lembree4 -ltbb -o embree_macroroni
+LD_LIBRARY_PATH=/opt/intel-embree/build/:$LD_LIBRARY_PATH ./embree_macroroni
 #endif
 
 #include <iostream>

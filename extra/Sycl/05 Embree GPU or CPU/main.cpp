@@ -1,14 +1,14 @@
 #if 0 // GPU
 # Build and run commands:
 source /opt/intel/oneapi/setvars.sh intel64
-icpx -fsycl -fsycl-targets=spir64 -Xclang -fsycl-allow-func-ptr -I/home/constantine/Desktop/embree/include -L/home/constantine/Desktop/embree/build/ main.cpp -lembree4_sycl -lembree4 -o sycl_embree_gpu_or_cpu
-LD_LIBRARY_PATH=/home/constantine/Desktop/embree/build/:$LD_LIBRARY_PATH ./sycl_embree_gpu_or_cpu
+icpx -fsycl -fsycl-targets=spir64 -Xclang -fsycl-allow-func-ptr -I/opt/intel-embree/include -L/opt/intel-embree/build/ main.cpp -lembree4_sycl -lembree4 -o sycl_embree_gpu_or_cpu
+LD_LIBRARY_PATH=/opt/intel-embree/build/:$LD_LIBRARY_PATH ./sycl_embree_gpu_or_cpu
 #endif
 #if 0 // CPU
 # Build and run commands:
 source /opt/intel/oneapi/setvars.sh intel64
-icpx -DVKFAST_EXTRA_SYCL_EMBREE_CPU -I/home/constantine/Desktop/embree/include -L/home/constantine/Desktop/embree/build/ main.cpp -lembree4 -ltbb -o sycl_embree_gpu_or_cpu
-LD_LIBRARY_PATH=/home/constantine/Desktop/embree/build/:$LD_LIBRARY_PATH ./sycl_embree_gpu_or_cpu
+icpx -DVKFAST_EXTRA_SYCL_EMBREE_CPU -I/opt/intel-embree/include -L/opt/intel-embree/build/ main.cpp -lembree4 -ltbb -o sycl_embree_gpu_or_cpu
+LD_LIBRARY_PATH=/opt/intel-embree/build/:$LD_LIBRARY_PATH ./sycl_embree_gpu_or_cpu
 #endif
 
 #include <iostream>
@@ -45,6 +45,7 @@ int main() {
     #ifdef VKFAST_EXTRA_SYCL_EMBREE_CPU
     // 1. Initialize host-side Embree device
     RTCDevice device = rtcNewDevice(nullptr);
+    std::cout << "Running on device: " << "CPU TBB" << std::endl;
     #else
     // 1. Initialize SYCL Queue targeting a GPU (or default selector)
     sycl::queue queue(sycl::gpu_selector_v);

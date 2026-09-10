@@ -1,8 +1,8 @@
 #if 0
 # Build and run commands:
 source /opt/intel/oneapi/setvars.sh intel64
-icpx -I/home/constantine/Desktop/embree/include -L/home/constantine/Desktop/embree/build/ main.cpp -lembree4 -ltbb -o sycl_embree_triangle_cpu_tbb_demo
-LD_LIBRARY_PATH=/home/constantine/Desktop/embree/build/:$LD_LIBRARY_PATH ./sycl_embree_triangle_cpu_tbb_demo
+icpx -I/opt/intel-embree/include -L/opt/intel-embree/build/ main.cpp -lembree4 -ltbb -o sycl_embree_triangle_cpu_tbb_demo
+LD_LIBRARY_PATH=/opt/intel-embree/build/:$LD_LIBRARY_PATH ./sycl_embree_triangle_cpu_tbb_demo
 #endif
 
 #include <iostream>
