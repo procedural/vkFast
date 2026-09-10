@@ -3057,6 +3057,8 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyn
       "optionalLine", optionalLine,
       "optionalUserData", NULL
     );
+    REDGPU_2_EXPECTWG(vkfast->presentPixelsCpuUpload_memory_and_array.array.handle != NULL);
+    REDGPU_2_EXPECTWG(vkfast->presentPixelsCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory != NULL);
     np(redMemoryMap,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
