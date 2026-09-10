@@ -7,7 +7,7 @@
 //\\rc rawbuild end
 
 #include "../../vkfast.h"
-#include "../../extra/vkFast Extension Intel Arc GPU/vkfast_ext_intel_arc_gpu.h"
+#include "../../extra/vkFast Extensions/Intel Arc GPU/vkfast_ext_intel_arc_gpu.h"
 #include "../Common/vkfast_examples_common.h"
 
 int main() {

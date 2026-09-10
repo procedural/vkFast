@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../vkfast.h"
-#include "../../vkfast_ex.h"
-#include "../../vkfast_ids.h"
+#include "../../../vkfast.h"
+#include "../../../vkfast_ex.h"
+#include "../../../vkfast_ids.h"
 
 #ifndef __cplusplus
   #ifndef REDGPU_DISABLE_NAMED_PARAMETERS
