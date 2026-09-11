@@ -23,17 +23,17 @@ int main() {
     Red2Array part2_4GB_array = {};
     Red2Array part3_2GB_array = {};
 
-    void * part1_4GB = vfeReBARMallocSharedB580ReBARHeap0v1(ctx, 4ULL * 1024*1024*1024 - 64, &part1_4GB_array);
-    void * part2_4GB = vfeReBARMallocSharedB580ReBARHeap0v1(ctx, 4ULL * 1024*1024*1024 - 64, &part2_4GB_array);
-    void * part3_2GB = vfeReBARMallocSharedB580ReBARHeap0v1(ctx, 2ULL * 1024*1024*1024 - 64, &part3_2GB_array);
+    void * part1_4GB = vfeReBARMallocSharedB580Heap0v1(ctx, 4ULL * 1024*1024*1024 - 64, &part1_4GB_array);
+    void * part2_4GB = vfeReBARMallocSharedB580Heap0v1(ctx, 4ULL * 1024*1024*1024 - 64, &part2_4GB_array);
+    void * part3_2GB = vfeReBARMallocSharedB580Heap0v1(ctx, 2ULL * 1024*1024*1024 - 64, &part3_2GB_array);
 
     REDGPU_2_EXPECTFL(part1_4GB != NULL);
     REDGPU_2_EXPECTFL(part2_4GB != NULL);
     REDGPU_2_EXPECTFL(part3_2GB != NULL);
 
-    vfeReBARFreeSharedB580ReBARHeap(ctx, &part1_4GB_array);
-    vfeReBARFreeSharedB580ReBARHeap(ctx, &part2_4GB_array);
-    vfeReBARFreeSharedB580ReBARHeap(ctx, &part3_2GB_array);
+    vfeReBARFreeSharedB580Heap(ctx, &part1_4GB_array);
+    vfeReBARFreeSharedB580Heap(ctx, &part2_4GB_array);
+    vfeReBARFreeSharedB580Heap(ctx, &part3_2GB_array);
     part1_4GB = NULL;
     part2_4GB = NULL;
     part3_2GB = NULL;

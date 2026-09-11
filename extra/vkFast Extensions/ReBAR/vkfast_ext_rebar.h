@@ -45,9 +45,9 @@
 #endif
 
 VFE_REBAR_API_PRE void   VFE_REBAR_API_POST vfeReBARGetMemoryBudget              (gpu_handle_context_t context, RedMemoryBudget * outMemoryBudget);
-VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580ReBARHeap0v1 (gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray); // v1 from Sep 10, 2026
-VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580ReBARHeap1v1 (gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray); // v1 from Sep 10, 2026
-VFE_REBAR_API_PRE void   VFE_REBAR_API_POST vfeReBARFreeSharedB580ReBARHeap      (gpu_handle_context_t context, Red2Array * array);
+VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580Heap0v1 (gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray); // v1 from Sep 10, 2026
+VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580Heap1v1 (gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray); // v1 from Sep 10, 2026
+VFE_REBAR_API_PRE void   VFE_REBAR_API_POST vfeReBARFreeSharedB580Heap      (gpu_handle_context_t context, Red2Array * array);
 
 #ifndef VFE_REBAR_API_NON_STATIC
   #define VFE_REBAR_IMPLEMENTATION
@@ -78,7 +78,7 @@ VFE_REBAR_API_PRE void VFE_REBAR_API_POST vfeReBARGetMemoryBudget(gpu_handle_con
   }
 }
 
-VFE_REBAR_API_PRE void VFE_REBAR_API_POST vfeReBARFreeSharedB580ReBARHeap(gpu_handle_context_t context, Red2Array * array) {
+VFE_REBAR_API_PRE void VFE_REBAR_API_POST vfeReBARFreeSharedB580Heap(gpu_handle_context_t context, Red2Array * array) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -116,7 +116,7 @@ VFE_REBAR_API_PRE void VFE_REBAR_API_POST vfeReBARFreeSharedB580ReBARHeap(gpu_ha
   );
 }
 
-static void * vfeReBARInternalMallocSharedB580ReBARHeapv1(vf_handle_context_t * vkfast, uint64_t bytesCount, unsigned memoryTypeIndexReBAR, Red2Array * outArray) {
+static void * vfeReBARInternalMallocSharedB580Heapv1(vf_handle_context_t * vkfast, uint64_t bytesCount, unsigned memoryTypeIndexReBAR, Red2Array * outArray) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -164,7 +164,7 @@ static void * vfeReBARInternalMallocSharedB580ReBARHeapv1(vf_handle_context_t * 
   return volatilePointer;
 }
 
-VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580ReBARHeap0v1(gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray) {
+VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580Heap0v1(gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -245,10 +245,10 @@ VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580ReBARHeap0v1
 
   unsigned memoryTypeIndexReBAR = 3;
 
-  return vfeReBARInternalMallocSharedB580ReBARHeapv1(vkfast, bytesCount, memoryTypeIndexReBAR, outArray);
+  return vfeReBARInternalMallocSharedB580Heapv1(vkfast, bytesCount, memoryTypeIndexReBAR, outArray);
 }
 
-VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580ReBARHeap1v1(gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray) {
+VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580Heap1v1(gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -329,7 +329,7 @@ VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580ReBARHeap1v1
 
   unsigned memoryTypeIndexReBAR = 6;
 
-  return vfeReBARInternalMallocSharedB580ReBARHeapv1(vkfast, bytesCount, memoryTypeIndexReBAR, outArray);
+  return vfeReBARInternalMallocSharedB580Heapv1(vkfast, bytesCount, memoryTypeIndexReBAR, outArray);
 }
 
 #endif // VFE_REBAR_IMPLEMENTATION
