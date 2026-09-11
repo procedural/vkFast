@@ -39,43 +39,22 @@
   #error Unsupported OS for now
 #endif
 
-#ifndef VFE_ARC_API_NON_STATIC
-  #define VFE_ARC_API_PRE  static
-  #define VFE_ARC_API_POST
+#ifndef VFE_REBAR_API_NON_STATIC
+  #define VFE_REBAR_API_PRE  static
+  #define VFE_REBAR_API_POST
 #endif
 
-VFE_ARC_API_PRE gpu_handle_context_t VFE_ARC_API_POST vfeArcContextInit    (int enableDebugMode, const gpu_context_optional_parameters_t * optionalParameters, const char * optionalFile, int optionalLine);
+VFE_REBAR_API_PRE void   VFE_REBAR_API_POST vfeReBARGetMemoryBudget              (gpu_handle_context_t context, RedMemoryBudget * outMemoryBudget);
+VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580ReBARHeap0v1 (gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray); // v1 from Sep 10, 2026
+VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580ReBARHeap1v1 (gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray); // v1 from Sep 10, 2026
+VFE_REBAR_API_PRE void   VFE_REBAR_API_POST vfeReBARFreeSharedB580ReBARHeap      (gpu_handle_context_t context, Red2Array * array);
 
-VFE_ARC_API_PRE void   VFE_ARC_API_POST vfeArcGetMemoryBudget              (gpu_handle_context_t context, RedMemoryBudget * outMemoryBudget);
-VFE_ARC_API_PRE void * VFE_ARC_API_POST vfeArcMallocSharedB580ReBARHeap0v1 (gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray); // v1 from Sep 10, 2026
-VFE_ARC_API_PRE void * VFE_ARC_API_POST vfeArcMallocSharedB580ReBARHeap1v1 (gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray); // v1 from Sep 10, 2026
-VFE_ARC_API_PRE void   VFE_ARC_API_POST vfeArcFreeSharedB580ReBARHeap      (gpu_handle_context_t context, Red2Array * array);
-
-#ifndef VFE_ARC_API_NON_STATIC
-  #define VFE_ARC_IMPLEMENTATION
+#ifndef VFE_REBAR_API_NON_STATIC
+  #define VFE_REBAR_IMPLEMENTATION
 #endif
-#ifdef VFE_ARC_IMPLEMENTATION
+#ifdef VFE_REBAR_IMPLEMENTATION
 
-VFE_ARC_API_PRE gpu_handle_context_t VFE_ARC_API_POST vfeArcContextInit(int enableDebugMode, const gpu_context_optional_parameters_t * optionalParameters, const char * optionalFile, int optionalLine) {
-  // NOTE(Constantine):
-  // This procedure is the same as vfContextInit(), vfeArcContextInit() just doesn't allocate most of memory by default if optionalParameters are not passed.
-
-  if (optionalParameters != NULL) {
-    return vfContextInit(enableDebugMode, optionalParameters, optionalFile, optionalLine);
-  } else {
-    gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
-    memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = 0;
-    memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_upload       = 0;
-    memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_readback     = 0;
-    memory_allocation_sizes.bytes_count_for_memory_present_pixels_type_cpu_upload = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_PIXELS_CPU_UPLOAD_288MB;
-    gpu_context_optional_parameters_t optional_parameters = {0};
-    optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
-
-    return vfContextInit(enableDebugMode, &optional_parameters, optionalFile, optionalLine);
-  }
-}
-
-VFE_ARC_API_PRE void VFE_ARC_API_POST vfeArcGetMemoryBudget(gpu_handle_context_t context, RedMemoryBudget * outMemoryBudget) {
+VFE_REBAR_API_PRE void VFE_REBAR_API_POST vfeReBARGetMemoryBudget(gpu_handle_context_t context, RedMemoryBudget * outMemoryBudget) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -99,7 +78,7 @@ VFE_ARC_API_PRE void VFE_ARC_API_POST vfeArcGetMemoryBudget(gpu_handle_context_t
   }
 }
 
-VFE_ARC_API_PRE void VFE_ARC_API_POST vfeArcFreeSharedB580ReBARHeap(gpu_handle_context_t context, Red2Array * array) {
+VFE_REBAR_API_PRE void VFE_REBAR_API_POST vfeReBARFreeSharedB580ReBARHeap(gpu_handle_context_t context, Red2Array * array) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -137,7 +116,7 @@ VFE_ARC_API_PRE void VFE_ARC_API_POST vfeArcFreeSharedB580ReBARHeap(gpu_handle_c
   );
 }
 
-static void * vfeArcInternalMallocSharedB580ReBARHeapv1(vf_handle_context_t * vkfast, uint64_t bytesCount, unsigned memoryTypeIndexReBAR, Red2Array * outArray) {
+static void * vfeReBARInternalMallocSharedB580ReBARHeapv1(vf_handle_context_t * vkfast, uint64_t bytesCount, unsigned memoryTypeIndexReBAR, Red2Array * outArray) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -185,7 +164,7 @@ static void * vfeArcInternalMallocSharedB580ReBARHeapv1(vf_handle_context_t * vk
   return volatilePointer;
 }
 
-VFE_ARC_API_PRE void * VFE_ARC_API_POST vfeArcMallocSharedB580ReBARHeap0v1(gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray) {
+VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580ReBARHeap0v1(gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -266,10 +245,10 @@ VFE_ARC_API_PRE void * VFE_ARC_API_POST vfeArcMallocSharedB580ReBARHeap0v1(gpu_h
 
   unsigned memoryTypeIndexReBAR = 3;
 
-  return vfeArcInternalMallocSharedB580ReBARHeapv1(vkfast, bytesCount, memoryTypeIndexReBAR, outArray);
+  return vfeReBARInternalMallocSharedB580ReBARHeapv1(vkfast, bytesCount, memoryTypeIndexReBAR, outArray);
 }
 
-VFE_ARC_API_PRE void * VFE_ARC_API_POST vfeArcMallocSharedB580ReBARHeap1v1(gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray) {
+VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocSharedB580ReBARHeap1v1(gpu_handle_context_t context, uint64_t bytesCount, Red2Array * outArray) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -350,7 +329,7 @@ VFE_ARC_API_PRE void * VFE_ARC_API_POST vfeArcMallocSharedB580ReBARHeap1v1(gpu_h
 
   unsigned memoryTypeIndexReBAR = 6;
 
-  return vfeArcInternalMallocSharedB580ReBARHeapv1(vkfast, bytesCount, memoryTypeIndexReBAR, outArray);
+  return vfeReBARInternalMallocSharedB580ReBARHeapv1(vkfast, bytesCount, memoryTypeIndexReBAR, outArray);
 }
 
-#endif // VFE_ARC_IMPLEMENTATION
+#endif // VFE_REBAR_IMPLEMENTATION
