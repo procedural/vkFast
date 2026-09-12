@@ -1,6 +1,7 @@
 ﻿//#define VKFAST_DEFINE_ENABLE_FEATURE_GPU_DEBUG_PRINTF
 //#define VKFAST_DEFINE_ENABLE_FEATURE_COMPUTE_BASED_RAY_TRACING
 //#define VKFAST_DEFINE_ENABLE_FEATURE_REII_MESH_STATE_RASTERIZATION_MODE
+//#define VKFAST_DEFINE_ENABLE_FEATURE_ARRAY_TIMESTAMP
 
 #ifdef _WIN32
 #define GPU_API_PRE __declspec(dllexport)
@@ -19,18 +20,21 @@
     #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu.h"
     #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu_2.h"
     #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu_array_timestamp.h"
     #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_context_from_vk.h"
   #elif defined(VKFAST_INCLUDE_LINUX_PATHS)
     #include "/home/linuxbrew/RedGpuSDK/misc/np/np.h"
     #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu.h"
     #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_2.h"
     #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+    #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_array_timestamp.h"
     #include "/home/linuxbrew/RedGpuSDK/redgpu_context_from_vk.h"
   #else
     #include "C:/RedGpuSDK/misc/np/np.h"
     #include "C:/RedGpuSDK/misc/np/np_redgpu.h"
     #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
     #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+    #include "C:/RedGpuSDK/misc/np/np_redgpu_array_timestamp.h"
     #include "C:/RedGpuSDK/redgpu_context_from_vk.h"
   #endif
 #elif defined(__linux__) && !defined(__ANDROID__)
@@ -38,6 +42,7 @@
   #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu.h"
   #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_2.h"
   #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_array_timestamp.h"
   #include "/home/linuxbrew/RedGpuSDK/redgpu_context_from_vk.h"
 #else
   #error Unsupported OS for now
@@ -1960,6 +1965,9 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
       #if defined(VKFAST_DEFINE_ENABLE_FEATURE_REII_MESH_STATE_RASTERIZATION_MODE)
       RED_SDK_EXTENSION_RASTERIZATION_MODE,
       #endif
+      #if defined(VKFAST_DEFINE_ENABLE_FEATURE_ARRAY_TIMESTAMP)
+      RED_SDK_EXTENSION_ARRAY_TIMESTAMP,
+      #endif
     };
 
     np(redCreateContext,
@@ -2416,6 +2424,25 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
   vkfast->presentPixelsCpuUpload_void_ptr_original = NULL;
   vkfast->presentVsyncMode = RED_PRESENT_VSYNC_MODE_ON;
   vkfast->presentImagesCount = 3;
+  vkfast->featureArrayTimestampEnabled = 0;
+  vkfast->featureArrayTimestampInfo = NULL;
+
+  #if defined(VKFAST_DEFINE_ENABLE_FEATURE_ARRAY_TIMESTAMP)
+  {
+    RedGpuInfoOptionalInfoIterator * optionalInfo = (RedGpuInfoOptionalInfoIterator *)gpuInfo->optionalInfo;
+    while (optionalInfo != NULL) {
+      if (optionalInfo->optionalInfo == RED_GPU_INFO_OPTIONAL_INFO_ARRAY_TIMESTAMP) {
+        break;
+      }
+      const void * nextInfo = optionalInfo->next;
+      optionalInfo = (RedGpuInfoOptionalInfoIterator *)nextInfo;
+    }
+    REDGPU_2_EXPECTWG(!"VKFAST_DEFINE_ENABLE_FEATURE_ARRAY_TIMESTAMP is defined, but its gpuInfo->optionalInfo is not found." || optionalInfo != NULL);
+
+    vkfast->featureArrayTimestampEnabled = 1;
+    vkfast->featureArrayTimestampInfo    = (const RedGpuInfoOptionalInfoArrayTimestamp *)optionalInfo;
+  }
+  #endif
 
   return (gpu_handle_context_t)(void *)vkfast;
 }
@@ -4767,4 +4794,133 @@ GPU_API_PRE void GPU_API_POST vfAllQueuesWaitIdle(gpu_handle_context_t context, 
       "optionalUserData", NULL
     );
   }
+}
+
+GPU_API_PRE RedBool32 GPU_API_POST vfArrayTimestampFeatureIsSupported(gpu_handle_context_t context, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(!"Define VKFAST_DEFINE_ENABLE_FEATURE_ARRAY_TIMESTAMP macro either at the beginning of vkfast.c file or globally" || (vkfast->featureArrayTimestampEnabled == 1));
+
+  return (RedBool32)vkfast->featureArrayTimestampInfo->supportsArrayTimestamp;
+}
+
+GPU_API_PRE float GPU_API_POST vfArrayTimestampFeatureGetNanosecondsPerTick(gpu_handle_context_t context, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(vkfast->featureArrayTimestampEnabled == 1);
+  REDGPU_2_EXPECTWG(vkfast->featureArrayTimestampInfo->supportsArrayTimestamp == 1);
+
+  return vkfast->featureArrayTimestampInfo->nanosecondsPerTick;
+}
+
+GPU_API_PRE gpu_ex_array_timestamp_t GPU_API_POST vfArrayTimestampCreate(gpu_handle_context_t context, unsigned timestamps_count, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(vkfast->featureArrayTimestampEnabled == 1);
+  REDGPU_2_EXPECTWG(vkfast->featureArrayTimestampInfo->supportsArrayTimestamp == 1);
+
+  RedHandleArrayTimestamp array_timestamp = NULL;
+  np(redCreateArrayTimestamp,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "handleName", NULL,
+    "count", timestamps_count,
+    "outArrayTimestamp", &array_timestamp,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+  REDGPU_2_EXPECTWG(array_timestamp != NULL);
+
+  return (gpu_ex_array_timestamp_t)array_timestamp;
+}
+
+GPU_API_PRE void GPU_API_POST vfArrayTimestampDestroy(gpu_handle_context_t context, gpu_ex_array_timestamp_t array_timestamp, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(vkfast->featureArrayTimestampEnabled == 1);
+  REDGPU_2_EXPECTWG(vkfast->featureArrayTimestampInfo->supportsArrayTimestamp == 1);
+
+  np(redDestroyArrayTimestamp,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "arrayTimestamp", (RedHandleArrayTimestamp)array_timestamp,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+}
+
+GPU_API_PRE void GPU_API_POST vfBatchArrayTimestampWrite(uint64_t batch_id, gpu_ex_array_timestamp_t array_timestamp, unsigned index) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
+  vf_handle_context_t * vkfast = batch->vkfast;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(vkfast->featureArrayTimestampEnabled == 1);
+  REDGPU_2_EXPECTWG(vkfast->featureArrayTimestampInfo->supportsArrayTimestamp == 1);
+
+  REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
+
+  RedHandleCalls callsHandle = batch->batch.calls.handle;
+
+  np(redCallArrayTimestampWrite,
+    "calls", callsHandle,
+    "context", vkfast->context,
+    "arrayTimestamp", (RedHandleArrayTimestamp)array_timestamp,
+    "index", index
+  );
+}
+
+GPU_API_PRE void GPU_API_POST vfArrayTimestampReadEx(gpu_handle_context_t context, gpu_ex_array_timestamp_t array_timestamp, unsigned range_first, unsigned range_count, uint64_t * out_64_bit_ticks_counts, unsigned calibrated_to_queue_index, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(vkfast->featureArrayTimestampEnabled == 1);
+  REDGPU_2_EXPECTWG(vkfast->featureArrayTimestampInfo->supportsArrayTimestamp == 1);
+
+  np(redArrayTimestampRead,
+    "context", vkfast->context,
+    "gpu", vkfast->gpu,
+    "arrayTimestamp", (RedHandleArrayTimestamp)array_timestamp,
+    "rangeFirst", range_first,
+    "rangeCount", range_count,
+    "out64BitTicksCounts", (void *)out_64_bit_ticks_counts,
+    "outStatuses", NULL,
+    "optionalFile", optionalFile,
+    "optionalLine", optionalLine,
+    "optionalUserData", NULL
+  );
+
+  // NOTE(Constantine): Timestamps calibration.
+  {
+    REDGPU_2_EXPECTWG(calibrated_to_queue_index < vkfast->gpuInfo->queuesCount);
+
+    const unsigned valid_bits_count = vkfast->featureArrayTimestampInfo->queuesPrecisionBits64BitTicksCount[calibrated_to_queue_index];
+    const uint64_t bit_mask = (valid_bits_count == 64) ? 0xFFFFFFFFFFFFFFFFULL : ((1ULL << valid_bits_count) - 1);
+
+    for (unsigned i = 0; i < range_count; i += 1) {
+      uint64_t raw_timestamp = out_64_bit_ticks_counts[i];
+      out_64_bit_ticks_counts[i] = raw_timestamp & bit_mask;
+    }
+  }
+}
+
+GPU_API_PRE void GPU_API_POST vfArrayTimestampRead(gpu_handle_context_t context, gpu_ex_array_timestamp_t array_timestamp, unsigned range_first, unsigned range_count, uint64_t * out_64_bit_ticks_counts, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  vfArrayTimestampReadEx(context, array_timestamp, range_first, range_count, out_64_bit_ticks_counts, vkfast->mainQueueIndex, optionalFile, optionalLine);
 }

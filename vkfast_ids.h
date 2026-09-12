@@ -4,22 +4,26 @@
   #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
     #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
     #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
-    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu
-    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_array_timestamp.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
   #elif defined(VKFAST_INCLUDE_LINUX_PATHS)
     #include "/home/linuxbrew/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
     #include "/home/linuxbrew/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
+    #include "/home/linuxbrew/RedGpuSDK/redgpu_array_timestamp.h"
     #include "/home/linuxbrew/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
     #include "/home/linuxbrew/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
   #else
     #include "C:/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
     #include "C:/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
+    #include "C:/RedGpuSDK/redgpu_array_timestamp.h"
     #include "C:/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
     #include "C:/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
   #endif
 #elif defined(__linux__)
   #include "/home/linuxbrew/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
   #include "/home/linuxbrew/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
+  #include "/home/linuxbrew/RedGpuSDK/redgpu_array_timestamp.h"
   #include "/home/linuxbrew/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
   #include "/home/linuxbrew/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
 #else
@@ -94,6 +98,9 @@ typedef struct vf_handle_context_t {
 
   RedPresentVsyncMode presentVsyncMode;
   int                 presentImagesCount;
+
+  int                featureArrayTimestampEnabled;
+  const RedGpuInfoOptionalInfoArrayTimestamp * featureArrayTimestampInfo;
 } vf_handle_context_t;
 
 typedef struct vf_handle_storage_t {
