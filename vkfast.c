@@ -6,6 +6,9 @@
 #ifdef _WIN32
 #define GPU_API_PRE __declspec(dllexport)
 #define GPU_API_POST
+#else
+#define GPU_API_PRE __attribute__((visibility("default")))
+#define GPU_API_POST
 #endif
 
 #include "vkfast_ex.h"
