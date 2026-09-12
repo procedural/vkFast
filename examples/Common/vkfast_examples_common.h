@@ -163,12 +163,12 @@ static gpu_extra_cpu_gpu_array OffsetAllocateCpuGpuArrayWithTale64BytesAlign(uin
 }
 #endif // #ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
 
-static gpu_handle_context_t vfContextInitNoDefaultAllocs(int enableDebugMode, const gpu_context_optional_parameters_t * optionalParameters, const char * optionalFile, int optionalLine) {
+static gpu_handle_context_t vfContextInitNoDefaultAllocs(int enable_debug_mode, const gpu_context_optional_parameters_t * optionalParameters, const char * optionalFile, int optionalLine) {
   // NOTE(Constantine):
   // This procedure is the same as vfContextInit(), it just doesn't allocate most of memory by default if optionalParameters are not passed.
 
   if (optionalParameters != NULL) {
-    return vfContextInit(enableDebugMode, optionalParameters, optionalFile, optionalLine);
+    return vfContextInit(enable_debug_mode, optionalParameters, optionalFile, optionalLine);
   } else {
     gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
     memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = 0;
@@ -178,7 +178,26 @@ static gpu_handle_context_t vfContextInitNoDefaultAllocs(int enableDebugMode, co
     gpu_context_optional_parameters_t optional_parameters = {0};
     optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
 
-    return vfContextInit(enableDebugMode, &optional_parameters, optionalFile, optionalLine);
+    return vfContextInit(enable_debug_mode, &optional_parameters, optionalFile, optionalLine);
+  }
+}
+
+static gpu_handle_context_t vfContextInitExNoDefaultAllocs(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optionalParameters, const char * optionalFile, int optionalLine) {
+  // NOTE(Constantine):
+  // This procedure is the same as vfContextInitEx(), it just doesn't allocate most of memory by default if optionalParameters are not passed.
+
+  if (optionalParameters != NULL) {
+    return vfContextInitEx(enable_debug_mode, gpu_index, optionalParameters, optionalFile, optionalLine);
+  } else {
+    gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
+    memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = 0;
+    memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_upload       = 0;
+    memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_readback     = 0;
+    memory_allocation_sizes.bytes_count_for_memory_present_pixels_type_cpu_upload = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_PIXELS_CPU_UPLOAD_288MB;
+    gpu_context_optional_parameters_t optional_parameters = {0};
+    optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
+
+    return vfContextInitEx(enable_debug_mode, gpu_index, &optional_parameters, optionalFile, optionalLine);
   }
 }
 
