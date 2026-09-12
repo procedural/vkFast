@@ -17,23 +17,23 @@ int main() {
   vfeReBARGetMemoryBudget(ctx, &budget);
   REDGPU_2_EXPECTFL(budget.memoryHeapsBudget[0] >= 10ULL * 1024*1024*1024 || !"Bro, we need to guarantee at least 10 GB of free GPU memory on Arc B580. Wtf is your OS doing? Try to close your web browsers or other apps that can eat GPU memory.");
 
-  // ReBAR Heap 0 Test
+  // ReBAR Test
   {
-    Red2Array part1_4GB_array = {};
-    Red2Array part2_4GB_array = {};
-    Red2Array part3_2GB_array = {};
+    VfeReBARMallocShared part1_4GB_array = {};
+    VfeReBARMallocShared part2_4GB_array = {};
+    VfeReBARMallocShared part3_2GB_array = {};
 
-    void * part1_4GB = vfeReBARMallocSharedB580Heap0v1(ctx, 4ULL * 1024*1024*1024 - 64, &part1_4GB_array);
-    void * part2_4GB = vfeReBARMallocSharedB580Heap0v1(ctx, 4ULL * 1024*1024*1024 - 64, &part2_4GB_array);
-    void * part3_2GB = vfeReBARMallocSharedB580Heap0v1(ctx, 2ULL * 1024*1024*1024 - 64, &part3_2GB_array);
+    void * part1_4GB = vfeReBARMallocShared(ctx, 4ULL * 1024*1024*1024 - 64, &part1_4GB_array);
+    void * part2_4GB = vfeReBARMallocShared(ctx, 4ULL * 1024*1024*1024 - 64, &part2_4GB_array);
+    void * part3_2GB = vfeReBARMallocShared(ctx, 2ULL * 1024*1024*1024 - 64, &part3_2GB_array);
 
     REDGPU_2_EXPECTFL(part1_4GB != NULL);
     REDGPU_2_EXPECTFL(part2_4GB != NULL);
     REDGPU_2_EXPECTFL(part3_2GB != NULL);
 
-    vfeReBARFreeSharedB580Heap(ctx, &part1_4GB_array);
-    vfeReBARFreeSharedB580Heap(ctx, &part2_4GB_array);
-    vfeReBARFreeSharedB580Heap(ctx, &part3_2GB_array);
+    vfeReBARFreeShared(ctx, &part1_4GB_array);
+    vfeReBARFreeShared(ctx, &part2_4GB_array);
+    vfeReBARFreeShared(ctx, &part3_2GB_array);
     part1_4GB = NULL;
     part2_4GB = NULL;
     part3_2GB = NULL;
