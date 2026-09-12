@@ -4799,6 +4799,59 @@ GPU_API_PRE void GPU_API_POST vfAllQueuesWaitIdle(gpu_handle_context_t context, 
   }
 }
 
+// vkfast_ex.h gpu to cpu signal feature
+
+GPU_API_PRE gpu_ex_gpu_to_cpu_signal_t GPU_API_POST vfGpuToCpuSignalCreate(gpu_handle_context_t context, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  RedHandleGpuToCpuSignal gpuToCpuSignal = NULL;
+  redCreateGpuToCpuSignal(vkfast->context, vkfast->gpu, NULL/*handleName*/, &gpuToCpuSignal, NULL/*outStatuses*/, optionalFile, optionalLine, NULL/*optionalUserData*/);
+  REDGPU_2_EXPECTWG(gpuToCpuSignal != NULL);
+
+  return (gpu_ex_gpu_to_cpu_signal_t)gpuToCpuSignal;
+}
+
+GPU_API_PRE void GPU_API_POST vfGpuToCpuSignalDestroy(gpu_handle_context_t context, gpu_ex_gpu_to_cpu_signal_t gpu_to_cpu_signal, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  redDestroyGpuToCpuSignal(vkfast->context, vkfast->gpu, (RedHandleGpuToCpuSignal)gpu_to_cpu_signal, optionalFile, optionalLine, NULL/*optionalUserData*/);
+}
+
+GPU_API_PRE void GPU_API_POST vfBatchGpuToCpuSignalSignal(uint64_t batch_id, gpu_ex_gpu_to_cpu_signal_t gpu_to_cpu_signal) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
+  vf_handle_context_t * vkfast = batch->vkfast;
+  RedHandleGpu gpu = vkfast->gpu;
+  REDGPU_2_EXPECTWG(batch->handle_id == VF_HANDLE_ID_BATCH);
+
+  RedTypeProcedureCallGpuToCpuSignalSignal addr_redCallGpuToCpuSignalSignal = batch->batch.addresses.redCallGpuToCpuSignalSignal;
+  REDGPU_2_EXPECTWG(addr_redCallGpuToCpuSignalSignal != NULL);
+
+  addr_redCallGpuToCpuSignalSignal(batch->batch.calls.handle, (RedHandleGpuToCpuSignal)gpu_to_cpu_signal, 8192/*setTo8192*/);
+}
+
+GPU_API_PRE RedBool32 GPU_API_POST vfGpuToCpuSignalIsSignaled(gpu_handle_context_t context, gpu_ex_gpu_to_cpu_signal_t gpu_to_cpu_signal, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  RedStatus gpu_to_cpu_signal_status = RED_STATUS_GPU_TO_CPU_SIGNAL_UNSIGNALED;
+  redGpuToCpuSignalGetStatus(vkfast->context, vkfast->gpu, (RedHandleGpuToCpuSignal)gpu_to_cpu_signal, &gpu_to_cpu_signal_status, optionalFile, optionalLine, NULL/*optionalUserData*/);
+  REDGPU_2_EXPECTWG(gpu_to_cpu_signal_status == RED_STATUS_GPU_TO_CPU_SIGNAL_SIGNALED || gpu_to_cpu_signal_status == RED_STATUS_GPU_TO_CPU_SIGNAL_UNSIGNALED);
+
+  return gpu_to_cpu_signal_status == RED_STATUS_GPU_TO_CPU_SIGNAL_SIGNALED ? 1 : 0;
+}
+
+GPU_API_PRE void GPU_API_POST vfGpuToCpuSignalUnsignal(gpu_handle_context_t context, gpu_ex_gpu_to_cpu_signal_t gpu_to_cpu_signal, const char * optionalFile, int optionalLine) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  redGpuToCpuSignalUnsignal(vkfast->context, vkfast->gpu, (RedHandleGpuToCpuSignal)gpu_to_cpu_signal, NULL/*outStatuses*/, optionalFile, optionalLine, NULL/*optionalUserData*/);
+}
+
+// vkfast_ex.h array timestamp feature
+
 GPU_API_PRE RedBool32 GPU_API_POST vfArrayTimestampFeatureIsSupported(gpu_handle_context_t context, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
 
