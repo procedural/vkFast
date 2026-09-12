@@ -15,7 +15,12 @@ int main() {
 
   RedMemoryBudget budget = {};
   vfeReBARGetMemoryBudget(ctx, &budget);
-  REDGPU_2_EXPECTFL(budget.memoryHeapsBudget[0] >= 10ULL * 1024*1024*1024 || !"Bro, we need to guarantee at least 10 GB of free GPU memory on Arc B580. Wtf is your OS doing? Try to close your web browsers or other apps that can eat GPU memory.");
+  REDGPU_2_EXPECTFL(
+    budget.memoryHeapsBudget[0] >= 10ULL * 1024*1024*1024 ||
+    !"This example is hardcoded for either a ReBAR-capable dGPU with 12+ GB of VRAM or any iGPU, and we need to guarantee at least 10 GB of free GPU memory available." ||
+    !"If your GPU meets this requirement, try to close your web browsers or other apps that can consume GPU memory and re-run this example program again."
+  );
+  REDGPU_2_EXPECTFL(vfeReBARGetMaxMallocSharedSize(ctx) >= (4ULL * 1024*1024*1024 - 1));
 
   // ReBAR Test
   {

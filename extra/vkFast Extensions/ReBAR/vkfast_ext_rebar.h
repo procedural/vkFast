@@ -49,9 +49,10 @@ typedef struct VfeReBARMallocShared {
   #define VFE_REBAR_API_POST
 #endif
 
-VFE_REBAR_API_PRE void   VFE_REBAR_API_POST vfeReBARGetMemoryBudget (gpu_handle_context_t context, RedMemoryBudget * outMemoryBudget);
-VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocShared    (gpu_handle_context_t context, uint64_t bytesCount, VfeReBARMallocShared * outArray);
-VFE_REBAR_API_PRE void   VFE_REBAR_API_POST vfeReBARFreeShared      (gpu_handle_context_t context, VfeReBARMallocShared * array);
+VFE_REBAR_API_PRE void     VFE_REBAR_API_POST vfeReBARGetMemoryBudget        (gpu_handle_context_t context, RedMemoryBudget * outMemoryBudget);
+VFE_REBAR_API_PRE uint64_t VFE_REBAR_API_POST vfeReBARGetMaxMallocSharedSize (gpu_handle_context_t context);
+VFE_REBAR_API_PRE void *   VFE_REBAR_API_POST vfeReBARMallocShared           (gpu_handle_context_t context, uint64_t bytesCount, VfeReBARMallocShared * outArray);
+VFE_REBAR_API_PRE void     VFE_REBAR_API_POST vfeReBARFreeShared             (gpu_handle_context_t context, VfeReBARMallocShared * array);
 
 #ifndef VFE_REBAR_API_NON_STATIC
   #define VFE_REBAR_IMPLEMENTATION
@@ -171,6 +172,11 @@ VFE_REBAR_API_PRE void VFE_REBAR_API_POST vfeReBARGetMemoryBudget(gpu_handle_con
       "optionalUserData", NULL
     );
   }
+}
+
+VFE_REBAR_API_PRE uint64_t VFE_REBAR_API_POST vfeReBARGetMaxMallocSharedSize(gpu_handle_context_t context) {
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+  return (uint64_t)vkfast->gpuInfo->maxArrayRORWStructMemberRangeBytesCount;
 }
 
 VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocShared(gpu_handle_context_t context, uint64_t bytesCount, VfeReBARMallocShared * outArray) {
