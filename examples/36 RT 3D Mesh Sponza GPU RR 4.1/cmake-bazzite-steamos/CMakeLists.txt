@@ -20,7 +20,7 @@ include_directories(
   /var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/
 )
 target_link_libraries(${PROJECT_NAME}
-  /home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/lib/libglfw3.a
+  /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a
   "${CMAKE_SOURCE_DIR}/../../../extra/RadeonRays SDK 4.1/build/bin/libradeonrays.so"
   /home/linuxbrew/.linuxbrew/lib/libX11.so
   /home/linuxbrew/.linuxbrew/lib/libvulkan.so

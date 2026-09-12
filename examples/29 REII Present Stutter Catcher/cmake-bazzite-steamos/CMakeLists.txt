@@ -21,7 +21,7 @@ include_directories(
 target_link_libraries(${PROJECT_NAME}
   /home/linuxbrew/.linuxbrew/lib/libX11.so
   /home/linuxbrew/.linuxbrew/lib/libvulkan.so
-  /home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/lib/libglfw3.a # /home/linuxbrew/.linuxbrew/lib/libSDL3.so
+  /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a # /home/linuxbrew/.linuxbrew/lib/libSDL3.so
   ${CMAKE_SOURCE_DIR}/../libimgui.so # NOTE(Constantine): I assume it's compiled already by ./main.c
   -lm
   #-lasan # sudo dnf install libasan && LD_PRELOAD=/usr/lib64/libasan.so.8 ./29_REII_Present_Stutter_Catcher

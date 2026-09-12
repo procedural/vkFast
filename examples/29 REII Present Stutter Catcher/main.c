@@ -11,7 +11,7 @@
 //\\rc rawbuild release,release-fast ` -O2`
 //\\rc rawbuild sdl3 ` -DVKFAST_EXAMPLE_29_ENABLE_GLFW3_TO_SDL3`
 //\\rc rawbuild ` main.c ../Common/font_droid_sans_mono.c ../../vkfast.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/`
-//\\rc rawbuild glfw3 ` /home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/lib/libglfw3.a`
+//\\rc rawbuild glfw3 ` /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a`
 //\\rc rawbuild sdl3 ` /home/linuxbrew/.linuxbrew/lib/libSDL3.so`
 //\\rc rawbuild ` /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so libimgui.so -lm`
 //\\rc rawbuild end

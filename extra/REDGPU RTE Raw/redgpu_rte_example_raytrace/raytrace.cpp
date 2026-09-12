@@ -1,6 +1,6 @@
 #if 0
 gcc -c /home/linuxbrew/RedGpuSDK/redgpu.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/
-g++ -std=c++20 raytrace.cpp redgpu.o -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ -I../redgpu_rte/nvpro_core -I../redgpu_rte/nvpro_core/nvp -I../redgpu_rte/nvpro_core/third_party/tinygltf -I../redgpu_rte/nvpro_core/third_party/imgui -I../redgpu_rte/nvpro_core/third_party/vma/include ../redgpu_rte/build/libredgpu_rte.so /home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/lib/libglfw3.a /home/linuxbrew/.linuxbrew/Cellar/libxext/1.3.7/lib/libXext.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
+g++ -std=c++20 raytrace.cpp redgpu.o -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ -I../redgpu_rte/nvpro_core -I../redgpu_rte/nvpro_core/nvp -I../redgpu_rte/nvpro_core/third_party/tinygltf -I../redgpu_rte/nvpro_core/third_party/imgui -I../redgpu_rte/nvpro_core/third_party/vma/include ../redgpu_rte/build/libredgpu_rte.so /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/Cellar/libxext/1.3.7/lib/libXext.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
 exit
 #endif
 /*

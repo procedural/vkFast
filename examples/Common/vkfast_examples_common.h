@@ -202,8 +202,8 @@ static gpu_handle_context_t vfContextInitNoDefaultAllocs(int enableDebugMode, co
     // brew install glfw
     #define GLFW_INCLUDE_NONE
     #define GLFW_EXPOSE_NATIVE_X11
-    #include "/home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/include/GLFW/glfw3.h"
-    #include "/home/linuxbrew/.linuxbrew/Cellar/glfw/3.4/include/GLFW/glfw3native.h"
+    #include "/home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/include/GLFW/glfw3.h"       // NOTE(Constantine): GLFW 3.5.1 as of Sep 12, 2026
+    #include "/home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/include/GLFW/glfw3native.h" // NOTE(Constantine): GLFW 3.5.1 as of Sep 12, 2026
   #else
     #error
   #endif
