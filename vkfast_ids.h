@@ -88,7 +88,8 @@ typedef struct vf_handle_context_t {
   RedHandleGpuSignal presentGpuSignalSubmit;
   RedCalls           presentCopyCalls;
   uint64_t           presentPixelsCpuUpload_memory_allocation_size;
-  Red2Array          presentPixelsCpuUpload_memory_and_array;
+  RedHandleMemory    presentPixelsCpuUpload_memory;
+  RedArray           presentPixelsCpuUpload_array;
   void *             presentPixelsCpuUpload_void_ptr_original;
 
   RedPresentVsyncMode presentVsyncMode;

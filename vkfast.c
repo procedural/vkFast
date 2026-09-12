@@ -2175,16 +2175,25 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
       specificMemoryTypesGpuVram = optional_ex3_parameters->optionalSpecificMemoryTypeGpuVram[0];
     } else {
       specificMemoryTypesGpuVram = vfPickSpecificMemoryTypeGpuVram(gpuInfo, &memoryGpuVramForArrays_array);
+      if (internalMemoryAllocationSizeGpuVramArrays > 0) {
+        REDGPU_2_EXPECTWG(!"Memory type pick fail" || (specificMemoryTypesGpuVram != -1));
+      }
     }
     if (userSpecificMemoryTypeCpuUpload == 1) {
       specificMemoryTypesCpuUpload = optional_ex3_parameters->optionalSpecificMemoryTypeCpuUpload[0];
     } else {
       specificMemoryTypesCpuUpload = vfPickSpecificMemoryTypeCpuUpload(gpuInfo, &memoryCpuUpload_array);
+      if (internalMemoryAllocationSizeCpuVisible > 0) {
+        REDGPU_2_EXPECTWG(!"Memory type pick fail" || (specificMemoryTypesCpuUpload != -1));
+      }
     }
     if (userSpecificMemoryTypeCpuReadback == 1) {
       specificMemoryTypesCpuReadback = optional_ex3_parameters->optionalSpecificMemoryTypeCpuReadback[0];
     } else {
       specificMemoryTypesCpuReadback = vfPickSpecificMemoryTypeCpuReadback(gpuInfo, &memoryCpuReadback_array);
+      if (internalMemoryAllocationSizeCpuReadback > 0) {
+        REDGPU_2_EXPECTWG(!"Memory type pick fail" || (specificMemoryTypesCpuReadback != -1));
+      }
     }
     if (internalMemoryAllocationSizeGpuVramArrays > 0) { REDGPU_2_EXPECTWG(specificMemoryTypesGpuVram     != -1); }
     if (internalMemoryAllocationSizeCpuVisible    > 0) { REDGPU_2_EXPECTWG(specificMemoryTypesCpuUpload   != -1); }
@@ -2195,7 +2204,7 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
         "context", context,
         "gpu", gpu,
         "handleName", "vkFast_vfInternalContextInit_memoryGpuVramForArrays_memory",
-        "bytesCount", internalMemoryAllocationSizeGpuVramArrays,
+        "bytesCount", memoryGpuVramForArrays_array.memoryBytesCount,
         "memoryTypeIndex", specificMemoryTypesGpuVram,
         "dedicateToArray", NULL,
         "dedicateToImage", NULL,
@@ -2234,7 +2243,7 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
         "context", context,
         "gpu", gpu,
         "handleName", "vkFast_vfInternalContextInit_memoryCpuUpload_memory",
-        "bytesCount", internalMemoryAllocationSizeCpuVisible,
+        "bytesCount", memoryCpuUpload_array.memoryBytesCount,
         "memoryTypeIndex", specificMemoryTypesCpuUpload,
         "dedicateToArray", NULL,
         "dedicateToImage", NULL,
@@ -2273,7 +2282,7 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
         "gpu", gpu,
         "mappableMemory", memoryCpuUpload_memory,
         "mappableMemoryBytesFirst", 0,
-        "mappableMemoryBytesCount", memoryCpuUpload_array.memoryBytesCount,
+        "mappableMemoryBytesCount", internalMemoryAllocationSizeCpuVisible,
         "outVolatilePointer", &memoryCpuUpload_mapped_void_ptr,
         "outStatuses", NULL,
         "optionalFile", optionalFile,
@@ -2288,7 +2297,7 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
         "context", context,
         "gpu", gpu,
         "handleName", "vkFast_vfInternalContextInit_memoryCpuReadback_memory",
-        "bytesCount", internalMemoryAllocationSizeCpuReadback,
+        "bytesCount", memoryCpuReadback_array.memoryBytesCount,
         "memoryTypeIndex", specificMemoryTypesCpuReadback,
         "dedicateToArray", NULL,
         "dedicateToImage", NULL,
@@ -2327,7 +2336,7 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
         "gpu", gpu,
         "mappableMemory", memoryCpuReadback_memory,
         "mappableMemoryBytesFirst", 0,
-        "mappableMemoryBytesCount", memoryCpuReadback_array.memoryBytesCount,
+        "mappableMemoryBytesCount", internalMemoryAllocationSizeCpuReadback,
         "outVolatilePointer", &memoryCpuReadback_mapped_void_ptr,
         "outStatuses", NULL,
         "optionalFile", optionalFile,
@@ -2402,7 +2411,8 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
   vkfast->presentGpuSignalSubmit = NULL;
   vkfast->presentCopyCalls = presentCopyCalls;
   vkfast->presentPixelsCpuUpload_memory_allocation_size = internalMemoryAllocationSizeCpuVisiblePresentPixels;
-  vkfast->presentPixelsCpuUpload_memory_and_array = REDGPU_32_STRUCT(Red2Array, 0);
+  vkfast->presentPixelsCpuUpload_memory = NULL;
+  vkfast->presentPixelsCpuUpload_array = REDGPU_32_STRUCT(RedArray, 0);
   vkfast->presentPixelsCpuUpload_void_ptr_original = NULL;
   vkfast->presentVsyncMode = RED_PRESENT_VSYNC_MODE_ON;
   vkfast->presentImagesCount = 3;
@@ -2554,11 +2564,11 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
 
   // NOTE(Constantine): WSI.
   {
-    if (vkfast->presentPixelsCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory != NULL) {
+    if (vkfast->presentPixelsCpuUpload_memory != NULL) {
       np(redMemoryUnmap,
         "context", vkfast->context,
         "gpu", vkfast->gpu,
-        "mappableMemory", vkfast->presentPixelsCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory,
+        "mappableMemory", vkfast->presentPixelsCpuUpload_memory,
         "optionalFile", optionalFile,
         "optionalLine", optionalLine,
         "optionalUserData", NULL
@@ -2568,7 +2578,7 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
       "context", vkfast->context,
       "gpu", vkfast->gpu,
       "handleType", RED_HANDLE_TYPE_ARRAY,
-      "handle", vkfast->presentPixelsCpuUpload_memory_and_array.array.handle,
+      "handle", vkfast->presentPixelsCpuUpload_array.handle,
       "optionalHandle2", NULL,
       "optionalFile", optionalFile,
       "optionalLine", optionalLine,
@@ -2578,7 +2588,7 @@ GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, cons
       "context", vkfast->context,
       "gpu", vkfast->gpu,
       "handleType", RED_HANDLE_TYPE_MEMORY,
-      "handle", vkfast->presentPixelsCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory,
+      "handle", vkfast->presentPixelsCpuUpload_memory,
       "optionalHandle2", NULL,
       "optionalFile", optionalFile,
       "optionalLine", optionalLine,
@@ -3021,50 +3031,88 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyn
   );
   REDGPU_2_EXPECTWG(present != NULL);
 
-  if (vkfast->presentPixelsCpuUpload_memory_and_array.array.handle == NULL && vkfast->presentPixelsCpuUpload_memory_allocation_size > 0) {
-    unsigned specificMemoryTypeCpuUpload = -1;
-    if (vkfast->specificMemoryTypesCpuUpload != -1) {
-      specificMemoryTypeCpuUpload = vkfast->specificMemoryTypesCpuUpload;
-    } else {
-      // NOTE(Constantine)(Aug 4, 2026):
-      // vkfast->specificMemoryTypesCpuUpload == -1 means that the user
-      // requested 0 bytes for memory storages of type cpu upload. If so,
-      // we can simply pick the first available upload memory type.
-      RedArray allMemoryTypes = {0};
-      allMemoryTypes.memoryTypesSupported = REDGPU_B32(1111,1111,1111,1111,1111,1111,1111,1111);
-      specificMemoryTypeCpuUpload = vfPickSpecificMemoryTypeCpuUpload(vkfast->gpuInfo, &allMemoryTypes);
-      REDGPU_2_EXPECTWG(specificMemoryTypeCpuUpload != -1);
+  if (vkfast->presentPixelsCpuUpload_array.handle == NULL && vkfast->presentPixelsCpuUpload_memory_allocation_size > 0) {
+    {
+      uint64_t bytesCount = vkfast->presentPixelsCpuUpload_memory_allocation_size;
+      uint64_t maxAllowedOverallocationBytesCount = 0;
+      RedArray array = {0};
+
+      np(redCreateArray,
+        "context", vkfast->context,
+        "gpu", vkfast->gpu,
+        "handleName", "vkFast_vfInternalRebuildPresent_presentPixelsCpuUpload_array",
+        "type", RED_ARRAY_TYPE_ARRAY_RO,
+        "bytesCount", bytesCount,
+        "structuredBufferElementBytesCount", 0,
+        "restrictToAccess", RED_ACCESS_BITFLAG_COPY_R,
+        "initialQueueFamilyIndex", vkfast->gpuInfo->queuesCount > 1 ? -1 : (unsigned)vkfast->gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
+        "dedicate", 0,
+        "outArray", &array,
+        "outStatuses", NULL,
+        "optionalFile", optionalFile,
+        "optionalLine", optionalLine,
+        "optionalUserData", NULL
+      );
+      REDGPU_2_EXPECTWG(array.handle != NULL);
+      size_t bytesToNextAlignmentBoundary = REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(array.memoryBytesCount, array.memoryBytesAlignment);
+      REDGPU_2_EXPECTWG(bytesToNextAlignmentBoundary == 0);
+      REDGPU_2_EXPECTWG((array.memoryBytesCount - bytesCount) <= maxAllowedOverallocationBytesCount);
+
+      vkfast->presentPixelsCpuUpload_array = array;
     }
-    np(red2CreateArray,
+
+    unsigned specificMemoryTypesPixelsCpuUpload = -1;
+    if (vkfast->specificMemoryTypesCpuUpload != -1) {
+      specificMemoryTypesPixelsCpuUpload = vkfast->specificMemoryTypesCpuUpload;
+    } else {
+      specificMemoryTypesPixelsCpuUpload = vfPickSpecificMemoryTypeCpuUpload(vkfast->gpuInfo, &vkfast->presentPixelsCpuUpload_array);
+      REDGPU_2_EXPECTWG(!"Memory type pick fail" || (specificMemoryTypesPixelsCpuUpload != -1));
+    }
+
+    np(redMemoryAllocate,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
-      "handleName", "vkFast_vfInternalRebuildPresent_presentPixelsCpuUpload_memory_and_array",
-      "type", RED_ARRAY_TYPE_ARRAY_RO,
-      "bytesCount", vkfast->presentPixelsCpuUpload_memory_allocation_size,
-      "structuredBufferElementBytesCount", 0,
-      "restrictToAccess", RED_ACCESS_BITFLAG_COPY_R,
-      "initialQueueFamilyIndex", vkfast->gpuInfo->queuesCount > 1 ? -1 : (unsigned)vkfast->gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
-      "maxAllowedOverallocationBytesCount", 0, // NOTE(Constantine): Intel UHD Graphics 730 on Windows 10 aligns CPU visible allocations to 64 bytes.
-      "dedicate", 0,
-      "mappable", 1,
-      "dedicateOrMappableMemoryTypeIndex", specificMemoryTypeCpuUpload,
-      "dedicateOrMappableMemoryBitflags", 0,
-      "suballocateFromMemoryOnFirstMatchPointersCount", 0,
-      "suballocateFromMemoryOnFirstMatchPointers", NULL,
-      "outArray", &vkfast->presentPixelsCpuUpload_memory_and_array,
+      "handleName", "vkFast_vfInternalRebuildPresent_presentPixelsCpuUpload_memory",
+      "bytesCount", vkfast->presentPixelsCpuUpload_array.memoryBytesCount,
+      "memoryTypeIndex", specificMemoryTypesPixelsCpuUpload,
+      "dedicateToArray", NULL,
+      "dedicateToImage", NULL,
+      "memoryBitflags", 0,
+      "outMemory", &vkfast->presentPixelsCpuUpload_memory,
       "outStatuses", NULL,
       "optionalFile", optionalFile,
       "optionalLine", optionalLine,
       "optionalUserData", NULL
     );
-    REDGPU_2_EXPECTWG(vkfast->presentPixelsCpuUpload_memory_and_array.array.handle != NULL);
-    REDGPU_2_EXPECTWG(vkfast->presentPixelsCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory != NULL);
+    REDGPU_2_EXPECTWG(vkfast->presentPixelsCpuUpload_memory != NULL);
+
+    RedMemoryArray memoryArray = {0};
+    memoryArray.setTo1000157000  = 1000157000;
+    memoryArray.setTo0           = 0;
+    memoryArray.array            = vkfast->presentPixelsCpuUpload_array.handle;
+    memoryArray.memory           = vkfast->presentPixelsCpuUpload_memory;
+    memoryArray.memoryBytesFirst = 0;
+    RedStatuses opstatuses = {0};
+    np(redMemorySet,
+      "context", vkfast->context,
+      "gpu", vkfast->gpu,
+      "memoryArraysCount", 1,
+      "memoryArrays", &memoryArray,
+      "memoryImagesCount", 0,
+      "memoryImages", NULL,
+      "outStatuses", &opstatuses,
+      "optionalFile", optionalFile,
+      "optionalLine", optionalLine,
+      "optionalUserData", NULL
+    );
+    REDGPU_2_EXPECTWG(opstatuses.statusError == RED_STATUS_SUCCESS);
+
     np(redMemoryMap,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
-      "mappableMemory", vkfast->presentPixelsCpuUpload_memory_and_array.handleAllocatedDedicatedOrMappableMemoryOrPickedMemory,
+      "mappableMemory", vkfast->presentPixelsCpuUpload_memory,
       "mappableMemoryBytesFirst", 0,
-      "mappableMemoryBytesCount", vkfast->presentPixelsCpuUpload_memory_and_array.array.memoryBytesCount,
+      "mappableMemoryBytesCount", vkfast->presentPixelsCpuUpload_memory_allocation_size,
       "outVolatilePointer", &vkfast->presentPixelsCpuUpload_void_ptr_original,
       "outStatuses", NULL,
       "optionalFile", optionalFile,
@@ -3072,7 +3120,7 @@ static int vfInternalRebuildPresent(gpu_handle_context_t context, RedPresentVsyn
       "optionalUserData", NULL
     );
     REDGPU_2_EXPECTWG(vkfast->presentPixelsCpuUpload_void_ptr_original != NULL);
-    REDGPU_2_EXPECTWG(0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)vkfast->presentPixelsCpuUpload_void_ptr_original, vkfast->gpuInfo->minMemoryAllocateBytesAlignment)); // NOTE(Constantine): Start address is guaranteed to be aligned.
+    REDGPU_2_EXPECTWG(!"Start address is not aligned" || (0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)vkfast->presentPixelsCpuUpload_void_ptr_original, vkfast->gpuInfo->minMemoryAllocateBytesAlignment)));
   }
 
   vkfast->surface;
@@ -4663,7 +4711,7 @@ GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const vo
   RedHandleGpu gpu = vkfast->gpu;
 
   RedStructMemberArray presentPixels_storage_raw = {0};
-  presentPixels_storage_raw.array = vkfast->presentPixelsCpuUpload_memory_and_array.array.handle;
+  presentPixels_storage_raw.array = vkfast->presentPixelsCpuUpload_array.handle;
   presentPixels_storage_raw.arrayRangeBytesFirst = 0;
   presentPixels_storage_raw.arrayRangeBytesCount = vkfast->presentPixelsCpuUpload_memory_allocation_size;
 
