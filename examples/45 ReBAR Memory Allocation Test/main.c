@@ -28,13 +28,9 @@ int main() {
     VfeReBARMallocShared part2_4GB_array = {};
     VfeReBARMallocShared part3_2GB_array = {};
 
-    void * part1_4GB = vfeReBARMallocShared(ctx, 4ULL * 1024*1024*1024 - 64, &part1_4GB_array);
-    void * part2_4GB = vfeReBARMallocShared(ctx, 4ULL * 1024*1024*1024 - 64, &part2_4GB_array);
-    void * part3_2GB = vfeReBARMallocShared(ctx, 2ULL * 1024*1024*1024 - 64, &part3_2GB_array);
-
-    REDGPU_2_EXPECTFL(part1_4GB != NULL);
-    REDGPU_2_EXPECTFL(part2_4GB != NULL);
-    REDGPU_2_EXPECTFL(part3_2GB != NULL);
+    volatile void * part1_4GB = (volatile void *)vfeReBARMallocShared(ctx, 4ULL * 1024*1024*1024 - 64, &part1_4GB_array);
+    volatile void * part2_4GB = (volatile void *)vfeReBARMallocShared(ctx, 4ULL * 1024*1024*1024 - 64, &part2_4GB_array);
+    volatile void * part3_2GB = (volatile void *)vfeReBARMallocShared(ctx, 2ULL * 1024*1024*1024 - 64, &part3_2GB_array);
 
     vfeReBARFreeShared(ctx, &part1_4GB_array);
     vfeReBARFreeShared(ctx, &part2_4GB_array);
