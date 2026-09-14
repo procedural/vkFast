@@ -1,0 +1,2 @@
+RedHandleArray redDebugArrayGetHandle(RedContext context, RedHandleGpu gpu, RedStatuses* outStatuses, char* optionalFile, int optionalLine, void* optionalUserData)
+void redDebugArrayCallPrint(RedContext context, RedHandleGpu gpu, RedHandleCalls calls, RedStatuses* outStatuses, char* optionalFile, int optionalLine, void* optionalUserData)

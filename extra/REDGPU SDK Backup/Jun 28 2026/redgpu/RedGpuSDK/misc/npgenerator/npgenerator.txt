@@ -1,0 +1,4 @@
+:: npgenerator.bat np_radeonrays np_radeonrays_redgpu np_redgpu np_redgpu_array_timestamp np_redgpu_computing_language np_redgpu_debug np_redgpu_wsi np_redgpu_2
+for %%x in (%*) do (
+   npgenerator.exe %%~x.txt > %%~x.h
+)

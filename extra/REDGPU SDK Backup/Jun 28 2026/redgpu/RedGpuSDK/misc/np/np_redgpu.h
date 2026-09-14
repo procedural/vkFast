@@ -1,0 +1,827 @@
+#pragma once
+
+#define _np1_redMemoryGetBudget context
+#define _np2_redMemoryGetBudget gpu
+#define _np3_redMemoryGetBudget outMemoryBudget
+#define _np4_redMemoryGetBudget outStatuses
+#define _np5_redMemoryGetBudget optionalFile
+#define _np6_redMemoryGetBudget optionalLine
+#define _np7_redMemoryGetBudget optionalUserData
+
+#define _np1_redMemoryAllocate context
+#define _np2_redMemoryAllocate gpu
+#define _np3_redMemoryAllocate handleName
+#define _np4_redMemoryAllocate bytesCount
+#define _np5_redMemoryAllocate memoryTypeIndex
+#define _np6_redMemoryAllocate dedicateToArray
+#define _np7_redMemoryAllocate dedicateToImage
+#define _np8_redMemoryAllocate memoryBitflags
+#define _np9_redMemoryAllocate outMemory
+#define _np10_redMemoryAllocate outStatuses
+#define _np11_redMemoryAllocate optionalFile
+#define _np12_redMemoryAllocate optionalLine
+#define _np13_redMemoryAllocate optionalUserData
+
+#define _np1_redMemoryAllocateMappable context
+#define _np2_redMemoryAllocateMappable gpu
+#define _np3_redMemoryAllocateMappable handleName
+#define _np4_redMemoryAllocateMappable dedicate
+#define _np5_redMemoryAllocateMappable array
+#define _np6_redMemoryAllocateMappable arrayMemoryBytesCount
+#define _np7_redMemoryAllocateMappable memoryTypeIndex
+#define _np8_redMemoryAllocateMappable memoryBitflags
+#define _np9_redMemoryAllocateMappable outMemory
+#define _np10_redMemoryAllocateMappable outStatuses
+#define _np11_redMemoryAllocateMappable optionalFile
+#define _np12_redMemoryAllocateMappable optionalLine
+#define _np13_redMemoryAllocateMappable optionalUserData
+
+#define _np1_redMemoryFree context
+#define _np2_redMemoryFree gpu
+#define _np3_redMemoryFree memory
+#define _np4_redMemoryFree optionalFile
+#define _np5_redMemoryFree optionalLine
+#define _np6_redMemoryFree optionalUserData
+
+#define _np1_redMemorySet context
+#define _np2_redMemorySet gpu
+#define _np3_redMemorySet memoryArraysCount
+#define _np4_redMemorySet memoryArrays
+#define _np5_redMemorySet memoryImagesCount
+#define _np6_redMemorySet memoryImages
+#define _np7_redMemorySet outStatuses
+#define _np8_redMemorySet optionalFile
+#define _np9_redMemorySet optionalLine
+#define _np10_redMemorySet optionalUserData
+
+#define _np1_redMemoryMap context
+#define _np2_redMemoryMap gpu
+#define _np3_redMemoryMap mappableMemory
+#define _np4_redMemoryMap mappableMemoryBytesFirst
+#define _np5_redMemoryMap mappableMemoryBytesCount
+#define _np6_redMemoryMap outVolatilePointer
+#define _np7_redMemoryMap outStatuses
+#define _np8_redMemoryMap optionalFile
+#define _np9_redMemoryMap optionalLine
+#define _np10_redMemoryMap optionalUserData
+
+#define _np1_redMemoryUnmap context
+#define _np2_redMemoryUnmap gpu
+#define _np3_redMemoryUnmap mappableMemory
+#define _np4_redMemoryUnmap optionalFile
+#define _np5_redMemoryUnmap optionalLine
+#define _np6_redMemoryUnmap optionalUserData
+
+#define _np1_redMemoryNonCoherentFlush context
+#define _np2_redMemoryNonCoherentFlush gpu
+#define _np3_redMemoryNonCoherentFlush mappableMemoryRangesCount
+#define _np4_redMemoryNonCoherentFlush mappableMemoryRanges
+#define _np5_redMemoryNonCoherentFlush outStatuses
+#define _np6_redMemoryNonCoherentFlush optionalFile
+#define _np7_redMemoryNonCoherentFlush optionalLine
+#define _np8_redMemoryNonCoherentFlush optionalUserData
+
+#define _np1_redMemoryNonCoherentInvalidate context
+#define _np2_redMemoryNonCoherentInvalidate gpu
+#define _np3_redMemoryNonCoherentInvalidate mappableMemoryRangesCount
+#define _np4_redMemoryNonCoherentInvalidate mappableMemoryRanges
+#define _np5_redMemoryNonCoherentInvalidate outStatuses
+#define _np6_redMemoryNonCoherentInvalidate optionalFile
+#define _np7_redMemoryNonCoherentInvalidate optionalLine
+#define _np8_redMemoryNonCoherentInvalidate optionalUserData
+
+#define _np1_redStructsMemoryAllocate context
+#define _np2_redStructsMemoryAllocate gpu
+#define _np3_redStructsMemoryAllocate handleName
+#define _np4_redStructsMemoryAllocate maxStructsCount
+#define _np5_redStructsMemoryAllocate maxStructsMembersOfTypeArrayROConstantCount
+#define _np6_redStructsMemoryAllocate maxStructsMembersOfTypeArrayROOrArrayRWCount
+#define _np7_redStructsMemoryAllocate maxStructsMembersOfTypeTextureROCount
+#define _np8_redStructsMemoryAllocate maxStructsMembersOfTypeTextureRWCount
+#define _np9_redStructsMemoryAllocate outStructsMemory
+#define _np10_redStructsMemoryAllocate outStatuses
+#define _np11_redStructsMemoryAllocate optionalFile
+#define _np12_redStructsMemoryAllocate optionalLine
+#define _np13_redStructsMemoryAllocate optionalUserData
+
+#define _np1_redStructsMemoryAllocateSamplers context
+#define _np2_redStructsMemoryAllocateSamplers gpu
+#define _np3_redStructsMemoryAllocateSamplers handleName
+#define _np4_redStructsMemoryAllocateSamplers maxStructsCount
+#define _np5_redStructsMemoryAllocateSamplers maxStructsMembersOfTypeSamplerCount
+#define _np6_redStructsMemoryAllocateSamplers outStructsMemory
+#define _np7_redStructsMemoryAllocateSamplers outStatuses
+#define _np8_redStructsMemoryAllocateSamplers optionalFile
+#define _np9_redStructsMemoryAllocateSamplers optionalLine
+#define _np10_redStructsMemoryAllocateSamplers optionalUserData
+
+#define _np1_redStructsMemorySuballocateStructs context
+#define _np2_redStructsMemorySuballocateStructs gpu
+#define _np3_redStructsMemorySuballocateStructs handleNames
+#define _np4_redStructsMemorySuballocateStructs structsMemory
+#define _np5_redStructsMemorySuballocateStructs structsDeclarationsCount
+#define _np6_redStructsMemorySuballocateStructs structsDeclarations
+#define _np7_redStructsMemorySuballocateStructs outStructs
+#define _np8_redStructsMemorySuballocateStructs outStatuses
+#define _np9_redStructsMemorySuballocateStructs optionalFile
+#define _np10_redStructsMemorySuballocateStructs optionalLine
+#define _np11_redStructsMemorySuballocateStructs optionalUserData
+
+#define _np1_redStructsMemoryReset context
+#define _np2_redStructsMemoryReset gpu
+#define _np3_redStructsMemoryReset structsMemory
+#define _np4_redStructsMemoryReset outStatuses
+#define _np5_redStructsMemoryReset optionalFile
+#define _np6_redStructsMemoryReset optionalLine
+#define _np7_redStructsMemoryReset optionalUserData
+
+#define _np1_redStructsMemoryFree context
+#define _np2_redStructsMemoryFree gpu
+#define _np3_redStructsMemoryFree structsMemory
+#define _np4_redStructsMemoryFree optionalFile
+#define _np5_redStructsMemoryFree optionalLine
+#define _np6_redStructsMemoryFree optionalUserData
+
+#define _np1_redStructsSet context
+#define _np2_redStructsSet gpu
+#define _np3_redStructsSet structsMembersCount
+#define _np4_redStructsSet structsMembers
+#define _np5_redStructsSet optionalFile
+#define _np6_redStructsSet optionalLine
+#define _np7_redStructsSet optionalUserData
+
+#define _np1_redCreateContext malloc
+#define _np2_redCreateContext free
+#define _np3_redCreateContext optionalMallocTagged
+#define _np4_redCreateContext optionalFreeTagged
+#define _np5_redCreateContext debugCallback
+#define _np6_redCreateContext sdkVersion
+#define _np7_redCreateContext sdkExtensionsCount
+#define _np8_redCreateContext sdkExtensions
+#define _np9_redCreateContext optionalProgramName
+#define _np10_redCreateContext optionalProgramVersion
+#define _np11_redCreateContext optionalEngineName
+#define _np12_redCreateContext optionalEngineVersion
+#define _np13_redCreateContext optionalSettings
+#define _np14_redCreateContext outContext
+#define _np15_redCreateContext outStatuses
+#define _np16_redCreateContext optionalFile
+#define _np17_redCreateContext optionalLine
+#define _np18_redCreateContext optionalUserData
+
+#define _np1_redCreateArray context
+#define _np2_redCreateArray gpu
+#define _np3_redCreateArray handleName
+#define _np4_redCreateArray type
+#define _np5_redCreateArray bytesCount
+#define _np6_redCreateArray structuredBufferElementBytesCount
+#define _np7_redCreateArray restrictToAccess
+#define _np8_redCreateArray initialQueueFamilyIndex
+#define _np9_redCreateArray dedicate
+#define _np10_redCreateArray outArray
+#define _np11_redCreateArray outStatuses
+#define _np12_redCreateArray optionalFile
+#define _np13_redCreateArray optionalLine
+#define _np14_redCreateArray optionalUserData
+
+#define _np1_redCreateImage context
+#define _np2_redCreateImage gpu
+#define _np3_redCreateImage handleName
+#define _np4_redCreateImage dimensions
+#define _np5_redCreateImage format
+#define _np6_redCreateImage width
+#define _np7_redCreateImage height
+#define _np8_redCreateImage depth
+#define _np9_redCreateImage levelsCount
+#define _np10_redCreateImage layersCount
+#define _np11_redCreateImage multisampleCount
+#define _np12_redCreateImage restrictToAccess
+#define _np13_redCreateImage initialQueueFamilyIndex
+#define _np14_redCreateImage dedicate
+#define _np15_redCreateImage outImage
+#define _np16_redCreateImage outStatuses
+#define _np17_redCreateImage optionalFile
+#define _np18_redCreateImage optionalLine
+#define _np19_redCreateImage optionalUserData
+
+#define _np1_redCreateSampler context
+#define _np2_redCreateSampler gpu
+#define _np3_redCreateSampler handleName
+#define _np4_redCreateSampler filteringMag
+#define _np5_redCreateSampler filteringMin
+#define _np6_redCreateSampler filteringMip
+#define _np7_redCreateSampler behaviorOutsideTextureCoordinateU
+#define _np8_redCreateSampler behaviorOutsideTextureCoordinateV
+#define _np9_redCreateSampler behaviorOutsideTextureCoordinateW
+#define _np10_redCreateSampler mipLodBias
+#define _np11_redCreateSampler enableAnisotropy
+#define _np12_redCreateSampler maxAnisotropy
+#define _np13_redCreateSampler enableCompare
+#define _np14_redCreateSampler compareOp
+#define _np15_redCreateSampler minLod
+#define _np16_redCreateSampler maxLod
+#define _np17_redCreateSampler outSampler
+#define _np18_redCreateSampler outStatuses
+#define _np19_redCreateSampler optionalFile
+#define _np20_redCreateSampler optionalLine
+#define _np21_redCreateSampler optionalUserData
+
+#define _np1_redCreateTexture context
+#define _np2_redCreateTexture gpu
+#define _np3_redCreateTexture handleName
+#define _np4_redCreateTexture image
+#define _np5_redCreateTexture parts
+#define _np6_redCreateTexture dimensions
+#define _np7_redCreateTexture format
+#define _np8_redCreateTexture levelsFirst
+#define _np9_redCreateTexture levelsCount
+#define _np10_redCreateTexture layersFirst
+#define _np11_redCreateTexture layersCount
+#define _np12_redCreateTexture restrictToAccess
+#define _np13_redCreateTexture outTexture
+#define _np14_redCreateTexture outStatuses
+#define _np15_redCreateTexture optionalFile
+#define _np16_redCreateTexture optionalLine
+#define _np17_redCreateTexture optionalUserData
+
+#define _np1_redCreateGpuCode context
+#define _np2_redCreateGpuCode gpu
+#define _np3_redCreateGpuCode handleName
+#define _np4_redCreateGpuCode irBytesCount
+#define _np5_redCreateGpuCode ir
+#define _np6_redCreateGpuCode outGpuCode
+#define _np7_redCreateGpuCode outStatuses
+#define _np8_redCreateGpuCode optionalFile
+#define _np9_redCreateGpuCode optionalLine
+#define _np10_redCreateGpuCode optionalUserData
+
+#define _np1_redCreateOutputDeclaration context
+#define _np2_redCreateOutputDeclaration gpu
+#define _np3_redCreateOutputDeclaration handleName
+#define _np4_redCreateOutputDeclaration outputDeclarationMembers
+#define _np5_redCreateOutputDeclaration outputDeclarationMembersResolveSources
+#define _np6_redCreateOutputDeclaration dependencyByRegion
+#define _np7_redCreateOutputDeclaration dependencyByRegionAllowUsageAliasOrderBarriers
+#define _np8_redCreateOutputDeclaration outOutputDeclaration
+#define _np9_redCreateOutputDeclaration outStatuses
+#define _np10_redCreateOutputDeclaration optionalFile
+#define _np11_redCreateOutputDeclaration optionalLine
+#define _np12_redCreateOutputDeclaration optionalUserData
+
+#define _np1_redCreateStructDeclaration context
+#define _np2_redCreateStructDeclaration gpu
+#define _np3_redCreateStructDeclaration handleName
+#define _np4_redCreateStructDeclaration structDeclarationMembersCount
+#define _np5_redCreateStructDeclaration structDeclarationMembers
+#define _np6_redCreateStructDeclaration structDeclarationMembersArrayROCount
+#define _np7_redCreateStructDeclaration structDeclarationMembersArrayRO
+#define _np8_redCreateStructDeclaration procedureParametersHandlesDeclaration
+#define _np9_redCreateStructDeclaration outStructDeclaration
+#define _np10_redCreateStructDeclaration outStatuses
+#define _np11_redCreateStructDeclaration optionalFile
+#define _np12_redCreateStructDeclaration optionalLine
+#define _np13_redCreateStructDeclaration optionalUserData
+
+#define _np1_redCreateProcedureParameters context
+#define _np2_redCreateProcedureParameters gpu
+#define _np3_redCreateProcedureParameters handleName
+#define _np4_redCreateProcedureParameters procedureParametersDeclaration
+#define _np5_redCreateProcedureParameters outProcedureParameters
+#define _np6_redCreateProcedureParameters outStatuses
+#define _np7_redCreateProcedureParameters optionalFile
+#define _np8_redCreateProcedureParameters optionalLine
+#define _np9_redCreateProcedureParameters optionalUserData
+
+#define _np1_redCreateProcedureCache context
+#define _np2_redCreateProcedureCache gpu
+#define _np3_redCreateProcedureCache handleName
+#define _np4_redCreateProcedureCache fromBlobBytesCount
+#define _np5_redCreateProcedureCache fromBlob
+#define _np6_redCreateProcedureCache outProcedureCache
+#define _np7_redCreateProcedureCache outStatuses
+#define _np8_redCreateProcedureCache optionalFile
+#define _np9_redCreateProcedureCache optionalLine
+#define _np10_redCreateProcedureCache optionalUserData
+
+#define _np1_redCreateProcedure context
+#define _np2_redCreateProcedure gpu
+#define _np3_redCreateProcedure handleName
+#define _np4_redCreateProcedure procedureCache
+#define _np5_redCreateProcedure outputDeclaration
+#define _np6_redCreateProcedure procedureParameters
+#define _np7_redCreateProcedure gpuCodeVertexMainProcedureName
+#define _np8_redCreateProcedure gpuCodeVertex
+#define _np9_redCreateProcedure gpuCodeFragmentMainProcedureName
+#define _np10_redCreateProcedure gpuCodeFragment
+#define _np11_redCreateProcedure state
+#define _np12_redCreateProcedure stateExtension
+#define _np13_redCreateProcedure deriveBase
+#define _np14_redCreateProcedure deriveFrom
+#define _np15_redCreateProcedure outProcedure
+#define _np16_redCreateProcedure outStatuses
+#define _np17_redCreateProcedure optionalFile
+#define _np18_redCreateProcedure optionalLine
+#define _np19_redCreateProcedure optionalUserData
+
+#define _np1_redCreateProcedureCompute context
+#define _np2_redCreateProcedureCompute gpu
+#define _np3_redCreateProcedureCompute handleName
+#define _np4_redCreateProcedureCompute procedureCache
+#define _np5_redCreateProcedureCompute procedureParameters
+#define _np6_redCreateProcedureCompute gpuCodeMainProcedureName
+#define _np7_redCreateProcedureCompute gpuCode
+#define _np8_redCreateProcedureCompute outProcedure
+#define _np9_redCreateProcedureCompute outStatuses
+#define _np10_redCreateProcedureCompute optionalFile
+#define _np11_redCreateProcedureCompute optionalLine
+#define _np12_redCreateProcedureCompute optionalUserData
+
+#define _np1_redCreateOutput context
+#define _np2_redCreateOutput gpu
+#define _np3_redCreateOutput handleName
+#define _np4_redCreateOutput outputDeclaration
+#define _np5_redCreateOutput outputMembers
+#define _np6_redCreateOutput outputMembersResolveTargets
+#define _np7_redCreateOutput width
+#define _np8_redCreateOutput height
+#define _np9_redCreateOutput outOutput
+#define _np10_redCreateOutput outStatuses
+#define _np11_redCreateOutput optionalFile
+#define _np12_redCreateOutput optionalLine
+#define _np13_redCreateOutput optionalUserData
+
+#define _np1_redCreateCpuSignal context
+#define _np2_redCreateCpuSignal gpu
+#define _np3_redCreateCpuSignal handleName
+#define _np4_redCreateCpuSignal createSignaled
+#define _np5_redCreateCpuSignal outCpuSignal
+#define _np6_redCreateCpuSignal outStatuses
+#define _np7_redCreateCpuSignal optionalFile
+#define _np8_redCreateCpuSignal optionalLine
+#define _np9_redCreateCpuSignal optionalUserData
+
+#define _np1_redCreateGpuSignal context
+#define _np2_redCreateGpuSignal gpu
+#define _np3_redCreateGpuSignal handleName
+#define _np4_redCreateGpuSignal outGpuSignal
+#define _np5_redCreateGpuSignal outStatuses
+#define _np6_redCreateGpuSignal optionalFile
+#define _np7_redCreateGpuSignal optionalLine
+#define _np8_redCreateGpuSignal optionalUserData
+
+#define _np1_redCreateGpuToCpuSignal context
+#define _np2_redCreateGpuToCpuSignal gpu
+#define _np3_redCreateGpuToCpuSignal handleName
+#define _np4_redCreateGpuToCpuSignal outGpuToCpuSignal
+#define _np5_redCreateGpuToCpuSignal outStatuses
+#define _np6_redCreateGpuToCpuSignal optionalFile
+#define _np7_redCreateGpuToCpuSignal optionalLine
+#define _np8_redCreateGpuToCpuSignal optionalUserData
+
+#define _np1_redCreateCalls context
+#define _np2_redCreateCalls gpu
+#define _np3_redCreateCalls handleName
+#define _np4_redCreateCalls queueFamilyIndex
+#define _np5_redCreateCalls outCalls
+#define _np6_redCreateCalls outStatuses
+#define _np7_redCreateCalls optionalFile
+#define _np8_redCreateCalls optionalLine
+#define _np9_redCreateCalls optionalUserData
+
+#define _np1_redCreateCallsReusable context
+#define _np2_redCreateCallsReusable gpu
+#define _np3_redCreateCallsReusable handleName
+#define _np4_redCreateCallsReusable queueFamilyIndex
+#define _np5_redCreateCallsReusable outCalls
+#define _np6_redCreateCallsReusable outStatuses
+#define _np7_redCreateCallsReusable optionalFile
+#define _np8_redCreateCallsReusable optionalLine
+#define _np9_redCreateCallsReusable optionalUserData
+
+#define _np1_redDestroyContext context
+#define _np2_redDestroyContext optionalFile
+#define _np3_redDestroyContext optionalLine
+#define _np4_redDestroyContext optionalUserData
+
+#define _np1_redDestroyArray context
+#define _np2_redDestroyArray gpu
+#define _np3_redDestroyArray array
+#define _np4_redDestroyArray optionalFile
+#define _np5_redDestroyArray optionalLine
+#define _np6_redDestroyArray optionalUserData
+
+#define _np1_redDestroyImage context
+#define _np2_redDestroyImage gpu
+#define _np3_redDestroyImage image
+#define _np4_redDestroyImage optionalFile
+#define _np5_redDestroyImage optionalLine
+#define _np6_redDestroyImage optionalUserData
+
+#define _np1_redDestroySampler context
+#define _np2_redDestroySampler gpu
+#define _np3_redDestroySampler sampler
+#define _np4_redDestroySampler optionalFile
+#define _np5_redDestroySampler optionalLine
+#define _np6_redDestroySampler optionalUserData
+
+#define _np1_redDestroyTexture context
+#define _np2_redDestroyTexture gpu
+#define _np3_redDestroyTexture texture
+#define _np4_redDestroyTexture optionalFile
+#define _np5_redDestroyTexture optionalLine
+#define _np6_redDestroyTexture optionalUserData
+
+#define _np1_redDestroyGpuCode context
+#define _np2_redDestroyGpuCode gpu
+#define _np3_redDestroyGpuCode gpuCode
+#define _np4_redDestroyGpuCode optionalFile
+#define _np5_redDestroyGpuCode optionalLine
+#define _np6_redDestroyGpuCode optionalUserData
+
+#define _np1_redDestroyOutputDeclaration context
+#define _np2_redDestroyOutputDeclaration gpu
+#define _np3_redDestroyOutputDeclaration outputDeclaration
+#define _np4_redDestroyOutputDeclaration optionalFile
+#define _np5_redDestroyOutputDeclaration optionalLine
+#define _np6_redDestroyOutputDeclaration optionalUserData
+
+#define _np1_redDestroyStructDeclaration context
+#define _np2_redDestroyStructDeclaration gpu
+#define _np3_redDestroyStructDeclaration structDeclaration
+#define _np4_redDestroyStructDeclaration optionalFile
+#define _np5_redDestroyStructDeclaration optionalLine
+#define _np6_redDestroyStructDeclaration optionalUserData
+
+#define _np1_redDestroyProcedureParameters context
+#define _np2_redDestroyProcedureParameters gpu
+#define _np3_redDestroyProcedureParameters procedureParameters
+#define _np4_redDestroyProcedureParameters optionalFile
+#define _np5_redDestroyProcedureParameters optionalLine
+#define _np6_redDestroyProcedureParameters optionalUserData
+
+#define _np1_redDestroyProcedureCache context
+#define _np2_redDestroyProcedureCache gpu
+#define _np3_redDestroyProcedureCache procedureCache
+#define _np4_redDestroyProcedureCache optionalFile
+#define _np5_redDestroyProcedureCache optionalLine
+#define _np6_redDestroyProcedureCache optionalUserData
+
+#define _np1_redDestroyProcedure context
+#define _np2_redDestroyProcedure gpu
+#define _np3_redDestroyProcedure procedure
+#define _np4_redDestroyProcedure optionalFile
+#define _np5_redDestroyProcedure optionalLine
+#define _np6_redDestroyProcedure optionalUserData
+
+#define _np1_redDestroyOutput context
+#define _np2_redDestroyOutput gpu
+#define _np3_redDestroyOutput output
+#define _np4_redDestroyOutput optionalFile
+#define _np5_redDestroyOutput optionalLine
+#define _np6_redDestroyOutput optionalUserData
+
+#define _np1_redDestroyCpuSignal context
+#define _np2_redDestroyCpuSignal gpu
+#define _np3_redDestroyCpuSignal cpuSignal
+#define _np4_redDestroyCpuSignal optionalFile
+#define _np5_redDestroyCpuSignal optionalLine
+#define _np6_redDestroyCpuSignal optionalUserData
+
+#define _np1_redDestroyGpuSignal context
+#define _np2_redDestroyGpuSignal gpu
+#define _np3_redDestroyGpuSignal gpuSignal
+#define _np4_redDestroyGpuSignal optionalFile
+#define _np5_redDestroyGpuSignal optionalLine
+#define _np6_redDestroyGpuSignal optionalUserData
+
+#define _np1_redDestroyGpuToCpuSignal context
+#define _np2_redDestroyGpuToCpuSignal gpu
+#define _np3_redDestroyGpuToCpuSignal gpuToCpuSignal
+#define _np4_redDestroyGpuToCpuSignal optionalFile
+#define _np5_redDestroyGpuToCpuSignal optionalLine
+#define _np6_redDestroyGpuToCpuSignal optionalUserData
+
+#define _np1_redDestroyCalls context
+#define _np2_redDestroyCalls gpu
+#define _np3_redDestroyCalls calls
+#define _np4_redDestroyCalls callsMemory
+#define _np5_redDestroyCalls optionalFile
+#define _np6_redDestroyCalls optionalLine
+#define _np7_redDestroyCalls optionalUserData
+
+#define _np1_redProcedureCacheGetBlob context
+#define _np2_redProcedureCacheGetBlob gpu
+#define _np3_redProcedureCacheGetBlob procedureCache
+#define _np4_redProcedureCacheGetBlob outBlobBytesCount
+#define _np5_redProcedureCacheGetBlob outBlob
+#define _np6_redProcedureCacheGetBlob outStatuses
+#define _np7_redProcedureCacheGetBlob optionalFile
+#define _np8_redProcedureCacheGetBlob optionalLine
+#define _np9_redProcedureCacheGetBlob optionalUserData
+
+#define _np1_redProcedureCacheMergeCaches context
+#define _np2_redProcedureCacheMergeCaches gpu
+#define _np3_redProcedureCacheMergeCaches sourceProcedureCachesCount
+#define _np4_redProcedureCacheMergeCaches sourceProcedureCaches
+#define _np5_redProcedureCacheMergeCaches targetProcedureCache
+#define _np6_redProcedureCacheMergeCaches outStatuses
+#define _np7_redProcedureCacheMergeCaches optionalFile
+#define _np8_redProcedureCacheMergeCaches optionalLine
+#define _np9_redProcedureCacheMergeCaches optionalUserData
+
+#define _np1_redCpuSignalGetStatus context
+#define _np2_redCpuSignalGetStatus gpu
+#define _np3_redCpuSignalGetStatus cpuSignal
+#define _np4_redCpuSignalGetStatus outStatus
+#define _np5_redCpuSignalGetStatus optionalFile
+#define _np6_redCpuSignalGetStatus optionalLine
+#define _np7_redCpuSignalGetStatus optionalUserData
+
+#define _np1_redCpuSignalWait context
+#define _np2_redCpuSignalWait gpu
+#define _np3_redCpuSignalWait cpuSignalsCount
+#define _np4_redCpuSignalWait cpuSignals
+#define _np5_redCpuSignalWait waitAll
+#define _np6_redCpuSignalWait outStatuses
+#define _np7_redCpuSignalWait optionalFile
+#define _np8_redCpuSignalWait optionalLine
+#define _np9_redCpuSignalWait optionalUserData
+
+#define _np1_redCpuSignalUnsignal context
+#define _np2_redCpuSignalUnsignal gpu
+#define _np3_redCpuSignalUnsignal cpuSignalsCount
+#define _np4_redCpuSignalUnsignal cpuSignals
+#define _np5_redCpuSignalUnsignal outStatuses
+#define _np6_redCpuSignalUnsignal optionalFile
+#define _np7_redCpuSignalUnsignal optionalLine
+#define _np8_redCpuSignalUnsignal optionalUserData
+
+#define _np1_redGpuToCpuSignalGetStatus context
+#define _np2_redGpuToCpuSignalGetStatus gpu
+#define _np3_redGpuToCpuSignalGetStatus gpuToCpuSignal
+#define _np4_redGpuToCpuSignalGetStatus outStatus
+#define _np5_redGpuToCpuSignalGetStatus optionalFile
+#define _np6_redGpuToCpuSignalGetStatus optionalLine
+#define _np7_redGpuToCpuSignalGetStatus optionalUserData
+
+#define _np1_redGpuToCpuSignalUnsignal context
+#define _np2_redGpuToCpuSignalUnsignal gpu
+#define _np3_redGpuToCpuSignalUnsignal gpuToCpuSignal
+#define _np4_redGpuToCpuSignalUnsignal outStatuses
+#define _np5_redGpuToCpuSignalUnsignal optionalFile
+#define _np6_redGpuToCpuSignalUnsignal optionalLine
+#define _np7_redGpuToCpuSignalUnsignal optionalUserData
+
+#define _np1_redCallsSet context
+#define _np2_redCallsSet gpu
+#define _np3_redCallsSet calls
+#define _np4_redCallsSet callsMemory
+#define _np5_redCallsSet callsReusable
+#define _np6_redCallsSet outStatuses
+#define _np7_redCallsSet optionalFile
+#define _np8_redCallsSet optionalLine
+#define _np9_redCallsSet optionalUserData
+
+#define _np1_redCallsEnd context
+#define _np2_redCallsEnd gpu
+#define _np3_redCallsEnd calls
+#define _np4_redCallsEnd callsMemory
+#define _np5_redCallsEnd outStatuses
+#define _np6_redCallsEnd optionalFile
+#define _np7_redCallsEnd optionalLine
+#define _np8_redCallsEnd optionalUserData
+
+#define _np1_redGetCallProceduresAndAddresses context
+#define _np2_redGetCallProceduresAndAddresses gpu
+#define _np3_redGetCallProceduresAndAddresses outCallProceduresAndAddresses
+#define _np4_redGetCallProceduresAndAddresses outStatuses
+#define _np5_redGetCallProceduresAndAddresses optionalFile
+#define _np6_redGetCallProceduresAndAddresses optionalLine
+#define _np7_redGetCallProceduresAndAddresses optionalUserData
+
+#define _np1_redCallGpuToCpuSignalSignal calls
+#define _np2_redCallGpuToCpuSignalSignal signalGpuToCpuSignal
+#define _np3_redCallGpuToCpuSignalSignal setTo8192
+
+#define _np1_redCallCopyArrayToArray calls
+#define _np2_redCallCopyArrayToArray arrayR
+#define _np3_redCallCopyArrayToArray arrayW
+#define _np4_redCallCopyArrayToArray rangesCount
+#define _np5_redCallCopyArrayToArray ranges
+
+#define _np1_redCallCopyImageToImage calls
+#define _np2_redCallCopyImageToImage imageR
+#define _np3_redCallCopyImageToImage setTo1
+#define _np4_redCallCopyImageToImage imageW
+#define _np5_redCallCopyImageToImage setTo01
+#define _np6_redCallCopyImageToImage rangesCount
+#define _np7_redCallCopyImageToImage ranges
+
+#define _np1_redCallCopyArrayToImage calls
+#define _np2_redCallCopyArrayToImage arrayR
+#define _np3_redCallCopyArrayToImage imageW
+#define _np4_redCallCopyArrayToImage setTo1
+#define _np5_redCallCopyArrayToImage rangesCount
+#define _np6_redCallCopyArrayToImage ranges
+
+#define _np1_redCallCopyImageToArray calls
+#define _np2_redCallCopyImageToArray imageR
+#define _np3_redCallCopyImageToArray setTo1
+#define _np4_redCallCopyImageToArray arrayW
+#define _np5_redCallCopyImageToArray rangesCount
+#define _np6_redCallCopyImageToArray ranges
+
+#define _np1_redCallProcedure calls
+#define _np2_redCallProcedure vertexCount
+#define _np3_redCallProcedure instanceCount
+#define _np4_redCallProcedure vertexFirst
+#define _np5_redCallProcedure instanceFirst
+
+#define _np1_redCallProcedureIndexed calls
+#define _np2_redCallProcedureIndexed indexCount
+#define _np3_redCallProcedureIndexed instanceCount
+#define _np4_redCallProcedureIndexed indexFirst
+#define _np5_redCallProcedureIndexed vertexBase
+#define _np6_redCallProcedureIndexed instanceFirst
+
+#define _np1_redCallProcedureCompute calls
+#define _np2_redCallProcedureCompute workgroupsCountX
+#define _np3_redCallProcedureCompute workgroupsCountY
+#define _np4_redCallProcedureCompute workgroupsCountZ
+
+#define _np1_redCallSetProcedure calls
+#define _np2_redCallSetProcedure procedureType
+#define _np3_redCallSetProcedure procedure
+
+#define _np1_redCallSetProcedureIndices calls
+#define _np2_redCallSetProcedureIndices array
+#define _np3_redCallSetProcedureIndices setTo0
+#define _np4_redCallSetProcedureIndices setTo1
+
+#define _np1_redCallSetProcedureParametersVariables calls
+#define _np2_redCallSetProcedureParametersVariables procedureParameters
+#define _np3_redCallSetProcedureParametersVariables visibleToStages
+#define _np4_redCallSetProcedureParametersVariables variablesBytesFirst
+#define _np5_redCallSetProcedureParametersVariables dataBytesCount
+#define _np6_redCallSetProcedureParametersVariables data
+
+#define _np1_redCallSetProcedureParametersStructs calls
+#define _np2_redCallSetProcedureParametersStructs procedureType
+#define _np3_redCallSetProcedureParametersStructs procedureParameters
+#define _np4_redCallSetProcedureParametersStructs procedureParametersDeclarationStructsDeclarationsFirst
+#define _np5_redCallSetProcedureParametersStructs structsCount
+#define _np6_redCallSetProcedureParametersStructs structs
+#define _np7_redCallSetProcedureParametersStructs setTo0
+#define _np8_redCallSetProcedureParametersStructs setTo00
+
+#define _np1_redCallSetProcedureParametersHandles calls
+#define _np2_redCallSetProcedureParametersHandles procedureType
+#define _np3_redCallSetProcedureParametersHandles procedureParameters
+#define _np4_redCallSetProcedureParametersHandles procedureParametersDeclarationStructsDeclarationsCount
+#define _np5_redCallSetProcedureParametersHandles handlesCount
+#define _np6_redCallSetProcedureParametersHandles handles
+
+#define _np1_redCallSetDynamicDepthBias calls
+#define _np2_redCallSetDynamicDepthBias constantFactor
+#define _np3_redCallSetDynamicDepthBias clamp
+#define _np4_redCallSetDynamicDepthBias slopeFactor
+
+#define _np1_redCallSetDynamicDepthBounds calls
+#define _np2_redCallSetDynamicDepthBounds min
+#define _np3_redCallSetDynamicDepthBounds max
+
+#define _np1_redCallSetDynamicStencilCompareMask calls
+#define _np2_redCallSetDynamicStencilCompareMask face
+#define _np3_redCallSetDynamicStencilCompareMask compareMask
+
+#define _np1_redCallSetDynamicStencilWriteMask calls
+#define _np2_redCallSetDynamicStencilWriteMask face
+#define _np3_redCallSetDynamicStencilWriteMask writeMask
+
+#define _np1_redCallSetDynamicStencilReference calls
+#define _np2_redCallSetDynamicStencilReference face
+#define _np3_redCallSetDynamicStencilReference reference
+
+#define _np1_redCallSetDynamicBlendConstants calls
+#define _np2_redCallSetDynamicBlendConstants blendConstants
+
+#define _np1_redCallSetDynamicViewport address
+#define _np2_redCallSetDynamicViewport calls
+#define _np3_redCallSetDynamicViewport x
+#define _np4_redCallSetDynamicViewport y
+#define _np5_redCallSetDynamicViewport width
+#define _np6_redCallSetDynamicViewport height
+#define _np7_redCallSetDynamicViewport depthMin
+#define _np8_redCallSetDynamicViewport depthMax
+
+#define _np1_redCallSetDynamicScissor address
+#define _np2_redCallSetDynamicScissor calls
+#define _np3_redCallSetDynamicScissor x
+#define _np4_redCallSetDynamicScissor y
+#define _np5_redCallSetDynamicScissor width
+#define _np6_redCallSetDynamicScissor height
+
+#define _np1_redCallSetStructsMemory address
+#define _np2_redCallSetStructsMemory calls
+#define _np3_redCallSetStructsMemory structsMemory
+#define _np4_redCallSetStructsMemory structsMemorySamplers
+
+#define _np1_redCallSetProcedureParameters address
+#define _np2_redCallSetProcedureParameters calls
+#define _np3_redCallSetProcedureParameters procedureType
+#define _np4_redCallSetProcedureParameters procedureParameters
+
+#define _np1_redCallSetProcedureOutput address
+#define _np2_redCallSetProcedureOutput calls
+#define _np3_redCallSetProcedureOutput outputDeclaration
+#define _np4_redCallSetProcedureOutput output
+#define _np5_redCallSetProcedureOutput inlineOutput
+#define _np6_redCallSetProcedureOutput outputWidth
+#define _np7_redCallSetProcedureOutput outputHeight
+#define _np8_redCallSetProcedureOutput outputDepthStencilEnable
+#define _np9_redCallSetProcedureOutput outputColorsCount
+#define _np10_redCallSetProcedureOutput depthClearValue
+#define _np11_redCallSetProcedureOutput stencilClearValue
+#define _np12_redCallSetProcedureOutput colorsClearValuesFloat
+#define _np13_redCallSetProcedureOutput colorsClearValuesSint
+#define _np14_redCallSetProcedureOutput colorsClearValuesUint
+
+#define _np1_redCallEndProcedureOutput address
+#define _np2_redCallEndProcedureOutput calls
+
+#define _np1_redCallUsageAliasOrderBarrier address
+#define _np2_redCallUsageAliasOrderBarrier calls
+#define _np3_redCallUsageAliasOrderBarrier context
+#define _np4_redCallUsageAliasOrderBarrier arrayUsagesCount
+#define _np5_redCallUsageAliasOrderBarrier arrayUsages
+#define _np6_redCallUsageAliasOrderBarrier imageUsagesCount
+#define _np7_redCallUsageAliasOrderBarrier imageUsages
+#define _np8_redCallUsageAliasOrderBarrier aliasesCount
+#define _np9_redCallUsageAliasOrderBarrier aliases
+#define _np10_redCallUsageAliasOrderBarrier ordersCount
+#define _np11_redCallUsageAliasOrderBarrier orders
+#define _np12_redCallUsageAliasOrderBarrier dependencyByRegion
+
+#define _np1_redCallMark address
+#define _np2_redCallMark calls
+#define _np3_redCallMark mark
+
+#define _np1_redCallMarkSet address
+#define _np2_redCallMarkSet calls
+#define _np3_redCallMarkSet mark
+
+#define _np1_redCallMarkEnd address
+#define _np2_redCallMarkEnd calls
+
+#define _np1_redQueueSubmit context
+#define _np2_redQueueSubmit gpu
+#define _np3_redQueueSubmit queue
+#define _np4_redQueueSubmit timelinesCount
+#define _np5_redQueueSubmit timelines
+#define _np6_redQueueSubmit signalCpuSignal
+#define _np7_redQueueSubmit outStatuses
+#define _np8_redQueueSubmit optionalFile
+#define _np9_redQueueSubmit optionalLine
+#define _np10_redQueueSubmit optionalUserData
+
+#define _np1_redMark mark
+#define _np2_redMark optionalFile
+#define _np3_redMark optionalLine
+#define _np4_redMark optionalUserData
+
+#define _np1_redMarkSet mark
+#define _np2_redMarkSet optionalFile
+#define _np3_redMarkSet optionalLine
+#define _np4_redMarkSet optionalUserData
+
+#define _np1_redMarkEnd optionalFile
+#define _np2_redMarkEnd optionalLine
+#define _np3_redMarkEnd optionalUserData
+
+#define _np1_redStructsMemoryAllocateWithInlineSamplers context
+#define _np2_redStructsMemoryAllocateWithInlineSamplers gpu
+#define _np3_redStructsMemoryAllocateWithInlineSamplers handleName
+#define _np4_redStructsMemoryAllocateWithInlineSamplers maxStructsCount
+#define _np5_redStructsMemoryAllocateWithInlineSamplers maxStructsMembersOfTypeArrayROConstantCount
+#define _np6_redStructsMemoryAllocateWithInlineSamplers maxStructsMembersOfTypeArrayROOrArrayRWCount
+#define _np7_redStructsMemoryAllocateWithInlineSamplers maxStructsMembersOfTypeTextureROCount
+#define _np8_redStructsMemoryAllocateWithInlineSamplers maxStructsMembersOfTypeTextureRWCount
+#define _np9_redStructsMemoryAllocateWithInlineSamplers maxStructsMembersOfTypeInlineSamplerCount
+#define _np10_redStructsMemoryAllocateWithInlineSamplers outStructsMemory
+#define _np11_redStructsMemoryAllocateWithInlineSamplers outStatuses
+#define _np12_redStructsMemoryAllocateWithInlineSamplers optionalFile
+#define _np13_redStructsMemoryAllocateWithInlineSamplers optionalLine
+#define _np14_redStructsMemoryAllocateWithInlineSamplers optionalUserData
+
+#define _np1_redStructsMemoryAllocateSamplersWithInlineSamplers context
+#define _np2_redStructsMemoryAllocateSamplersWithInlineSamplers gpu
+#define _np3_redStructsMemoryAllocateSamplersWithInlineSamplers handleName
+#define _np4_redStructsMemoryAllocateSamplersWithInlineSamplers maxStructsCount
+#define _np5_redStructsMemoryAllocateSamplersWithInlineSamplers maxStructsMembersOfTypeSamplerCount
+#define _np6_redStructsMemoryAllocateSamplersWithInlineSamplers maxStructsMembersOfTypeInlineSamplerCount
+#define _np7_redStructsMemoryAllocateSamplersWithInlineSamplers outStructsMemory
+#define _np8_redStructsMemoryAllocateSamplersWithInlineSamplers outStatuses
+#define _np9_redStructsMemoryAllocateSamplersWithInlineSamplers optionalFile
+#define _np10_redStructsMemoryAllocateSamplersWithInlineSamplers optionalLine
+#define _np11_redStructsMemoryAllocateSamplersWithInlineSamplers optionalUserData
+
