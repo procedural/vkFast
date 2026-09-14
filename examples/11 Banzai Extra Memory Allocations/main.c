@@ -106,13 +106,12 @@ int main() {
   slots[0].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
   slots[0].count           = 1;
   slots[0].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE;
-  gpu_program_pipeline_compute_info_t pp_info = {0};
-  pp_info.compute_program       = cs;
+  gpu_program_pipeline_info_t pp_info = {0};
   pp_info.variables_slot        = 2;
   pp_info.variables_bytes_count = sizeof(struct Variables);
   pp_info.struct_members_count  = countof(slots);
   pp_info.struct_members        = slots;
-  uint64_t pp = vfProgramPipelineCreateCompute(ctx, &pp_info, FF, LL);
+  uint64_t pp = vfProgramPipelineCreateCompute(ctx, cs, &pp_info, NULL, FF, LL);
   
   uint64_t batch = 0;
 
