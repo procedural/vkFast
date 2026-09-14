@@ -125,9 +125,7 @@ typedef enum vf_procedure_type_t {
 } vf_procedure_type_t;
 
 typedef struct vf_handle_procedure_t {
-  union {
-    gpu_program_pipeline_compute_info_t infoCompute; // NOTE(Constantine): Optional debug name is a stale pointer, do not use.
-  };
+  gpu_program_pipeline_info_t            pipelineInfo;        // NOTE(Constantine): Do not use pipelineInfo's pointers, they can become stale.
   vf_procedure_type_t                    procedureType;
   Red2ProcedureParametersAndDeclarations procedureParameters;
   RedHandleProcedure                     procedure;

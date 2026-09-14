@@ -3381,28 +3381,28 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompute(gpu_handle_co
   return (uint64_t)(void *)handle;
 }
 
-GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_context_t context, const gpu_program_pipeline_compute_info_t * program_pipeline_compute_info, const char * optionalFile, int optionalLine) {
+GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_context_t context, uint64_t compute_program, const gpu_program_pipeline_info_t * program_pipeline_info,  const char * optional_debug_name, const char * optionalFile, int optionalLine) {
   vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
   
   RedHandleGpu gpu = vkfast->gpu;
 
-  vf_handle_t * gpuCodeCompute = (vf_handle_t *)(void *)program_pipeline_compute_info->compute_program;
+  vf_handle_t * gpuCodeCompute = (vf_handle_t *)(void *)compute_program;
   REDGPU_2_EXPECTWG(gpuCodeCompute->handle_id == VF_HANDLE_ID_GPU_CODE);
   REDGPU_2_EXPECTWG(gpuCodeCompute->gpuCode.gpuCodeType == VF_GPU_CODE_TYPE_COMPUTE);
 
-  if (program_pipeline_compute_info->variables_bytes_count > 0) {
-    for (unsigned i = 0; i < program_pipeline_compute_info->struct_members_count; i += 1) {
-      REDGPU_2_EXPECTWG(program_pipeline_compute_info->variables_slot != program_pipeline_compute_info->struct_members[i].slot);
+  if (program_pipeline_info->variables_bytes_count > 0) {
+    for (unsigned i = 0; i < program_pipeline_info->struct_members_count; i += 1) {
+      REDGPU_2_EXPECTWG(program_pipeline_info->variables_slot != program_pipeline_info->struct_members[i].slot);
     }
   }
 
   Red2ProcedureParametersDeclaration parameters = {0};
-  parameters.variablesSlot            = program_pipeline_compute_info->variables_slot;
-  parameters.variablesVisibleToStages = program_pipeline_compute_info->variables_bytes_count == 0 ? 0 : RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE;
-  parameters.variablesBytesCount      = program_pipeline_compute_info->variables_bytes_count;
-  parameters.structsDeclarationsCount = program_pipeline_compute_info->struct_members_count == 0 ? 0 : 1;
-  parameters.structsDeclarations[0].structDeclarationMembersCount        = program_pipeline_compute_info->struct_members_count;
-  parameters.structsDeclarations[0].structDeclarationMembers             = program_pipeline_compute_info->struct_members;
+  parameters.variablesSlot            = program_pipeline_info->variables_slot;
+  parameters.variablesVisibleToStages = program_pipeline_info->variables_bytes_count == 0 ? 0 : RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE;
+  parameters.variablesBytesCount      = program_pipeline_info->variables_bytes_count;
+  parameters.structsDeclarationsCount = program_pipeline_info->struct_members_count == 0 ? 0 : 1;
+  parameters.structsDeclarations[0].structDeclarationMembersCount        = program_pipeline_info->struct_members_count;
+  parameters.structsDeclarations[0].structDeclarationMembers             = program_pipeline_info->struct_members;
   parameters.structsDeclarations[0].structDeclarationMembersArrayROCount = 0;
   parameters.structsDeclarations[0].structDeclarationMembersArrayRO      = NULL;
 
@@ -3411,7 +3411,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_cont
   np(red2CreateProcedureParameters,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
-    "handleName", program_pipeline_compute_info->optional_debug_name,
+    "handleName", optional_debug_name,
     "procedureParametersDeclaration", &parameters,
     "outProcedureParametersAndDeclarations", &procedureParameters,
     "outStatuses", NULL,
@@ -3426,7 +3426,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_cont
   np(redCreateProcedureCompute,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
-    "handleName", program_pipeline_compute_info->optional_debug_name,
+    "handleName", optional_debug_name,
     "procedureCache", NULL,
     "procedureParameters", procedureParameters.procedureParameters,
     "gpuCodeMainProcedureName", "main",
@@ -3448,7 +3448,7 @@ GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_cont
   vf_handle_procedure_t;
   handle->vkfast                        = vkfast;
   handle->handle_id                     = VF_HANDLE_ID_PROCEDURE;
-  handle->procedure.infoCompute         = program_pipeline_compute_info[0];
+  handle->procedure.pipelineInfo        = program_pipeline_info[0];
   handle->procedure.procedureType       = VF_PROCEDURE_TYPE_COMPUTE;
   handle->procedure.procedureParameters = procedureParameters;
   handle->procedure.procedure           = procedure;

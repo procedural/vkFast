@@ -110,14 +110,12 @@ typedef struct gpu_program_info_t {
   const char * optional_debug_name;
 } gpu_program_info_t;
 
-typedef struct gpu_program_pipeline_compute_info_t {
-  uint64_t                           compute_program;
+typedef struct gpu_program_pipeline_info_t {
   unsigned                           variables_slot;
   unsigned                           variables_bytes_count;
   unsigned                           struct_members_count;
   const RedStructDeclarationMember * struct_members;
-  const char *                       optional_debug_name;
-} gpu_program_pipeline_compute_info_t;
+} gpu_program_pipeline_info_t;
 
 typedef struct gpu_batch_info_t {
   int max_new_bindings_sets_count;
@@ -152,7 +150,7 @@ GPU_API_PRE void GPU_API_POST vfExit(int exit_code);
 GPU_API_PRE void GPU_API_POST vfStorageCreate(gpu_handle_context_t context, const gpu_storage_info_t * storage_info, gpu_storage_t * out_storage, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfStorageGetRaw(gpu_handle_context_t context, uint64_t storage_id, RedStructMemberArray * out_storage_raw, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompute(gpu_handle_context_t context, const gpu_program_info_t * program_info, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_context_t context, const gpu_program_pipeline_compute_info_t * program_pipeline_compute_info, const char * optional_file, int optional_line);
+GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_context_t context, uint64_t compute_program, const gpu_program_pipeline_info_t * program_pipeline_info,  const char * optional_debug_name, const char * optional_file, int optional_line);
 GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(gpu_handle_context_t context, uint64_t existing_batch_id, const gpu_batch_info_t * batch_info, const char * optional_debug_name, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromCpuToGpu(gpu_handle_context_t context, uint64_t batch_id, uint64_t from_cpu_storage_id, uint64_t to_gpu_storage_id, const char * optional_file, int optional_line);
 GPU_API_PRE void GPU_API_POST vfBatchStorageCopyFromGpuToCpu(gpu_handle_context_t context, uint64_t batch_id, uint64_t from_gpu_storage_id, uint64_t to_cpu_storage_id, const char * optional_file, int optional_line);

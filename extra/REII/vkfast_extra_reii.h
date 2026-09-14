@@ -136,70 +136,67 @@ typedef enum ReiiBlendOp {
   REII_BLEND_OP_MAX              = 0x8008,
 } ReiiBlendOp;
 
-typedef struct gpu_extra_reii_mesh_state_compile_info_t {
-  RedMultisampleCountBitflag         state_multisample_count;
-  unsigned                           variables_slot;
-  unsigned                           variables_bytes_count;
-  unsigned                           struct_members_count;
-  const RedStructDeclarationMember * struct_members;
-  unsigned                           samplers_count;
-  RedBool32                          output_depth_stencil_enable;
-  RedFormat                          output_depth_stencil_format;
-  RedFormat                          output_color_format;
-  const char *                       optional_debug_name;
-} gpu_extra_reii_mesh_state_compile_info_t;
+typedef struct ReiiMeshStateCompileInfo {
+  RedMultisampleCountBitflag state_multisample_count;
+  RedBool32                  output_depth_stencil_enable;
+  RedFormat                  output_depth_stencil_format;
+  RedFormat                  output_color_format;
+} ReiiMeshStateCompileInfo;
 
 typedef struct ReiiMeshState {
-  uint64_t           _; // NOTE(Constantine): Ignore this, it's here for ReiiMeshState's struct layout compatibility with the original GL1.4-based REII.
-  ReiiBool32         rasterizationDepthClampEnable;
-  ReiiCullMode       rasterizationCullMode;
-  ReiiFrontFace      rasterizationFrontFace;
-  ReiiBool32         rasterizationDepthBiasEnable;
-  float              rasterizationDepthBiasConstantFactor;
-  float              rasterizationDepthBiasSlopeFactor;
-  ReiiBool32         multisampleEnable;
-  ReiiBool32         multisampleAlphaToCoverageEnable;
-  ReiiBool32         multisampleAlphaToOneEnable;
-  ReiiBool32         depthTestEnable;
-  ReiiBool32         depthTestDepthWriteEnable;
-  ReiiCompareOp      depthTestDepthCompareOp;
-  ReiiBool32         stencilTestEnable;
-  ReiiStencilOp      stencilTestFrontStencilTestFailOp;
-  ReiiStencilOp      stencilTestFrontStencilTestPassDepthTestPassOp;
-  ReiiStencilOp      stencilTestFrontStencilTestPassDepthTestFailOp;
-  ReiiCompareOp      stencilTestFrontCompareOp;
-  ReiiStencilOp      stencilTestBackStencilTestFailOp;
-  ReiiStencilOp      stencilTestBackStencilTestPassDepthTestPassOp;
-  ReiiStencilOp      stencilTestBackStencilTestPassDepthTestFailOp;
-  ReiiCompareOp      stencilTestBackCompareOp;
-  unsigned           stencilTestFrontAndBackCompareMask;
-  unsigned           stencilTestFrontAndBackWriteMask;
-  unsigned           stencilTestFrontAndBackReference;
-  ReiiBool32         blendLogicOpEnable;
-  ReiiLogicOp        blendLogicOp;
-  float              blendConstants[4];
-  ReiiBool32         outputColorWriteEnableR;
-  ReiiBool32         outputColorWriteEnableG;
-  ReiiBool32         outputColorWriteEnableB;
-  ReiiBool32         outputColorWriteEnableA;
-  ReiiBool32         outputColorBlendEnable;
-  ReiiBlendFactor    outputColorBlendColorFactorSource;
-  ReiiBlendFactor    outputColorBlendColorFactorTarget;
-  ReiiBlendOp        outputColorBlendColorOp;
-  ReiiBlendFactor    outputColorBlendAlphaFactorSource;
-  ReiiBlendFactor    outputColorBlendAlphaFactorTarget;
-  ReiiBlendOp        outputColorBlendAlphaOp;
-  char *             codeVertex;
-  char *             codeFragment;
-  const void *       extension;
-  gpu_program_info_t                       programVertex;
-  gpu_program_info_t                       programFragment;
-  gpu_extra_reii_mesh_state_compile_info_t compileInfo;
+  uint64_t        _; // NOTE(Constantine): Ignore this, it's here for ReiiMeshState's struct layout compatibility with the original GL1.4-based REII.
+  ReiiBool32      rasterizationDepthClampEnable;
+  ReiiCullMode    rasterizationCullMode;
+  ReiiFrontFace   rasterizationFrontFace;
+  ReiiBool32      rasterizationDepthBiasEnable;
+  float           rasterizationDepthBiasConstantFactor;
+  float           rasterizationDepthBiasSlopeFactor;
+  ReiiBool32      multisampleEnable;
+  ReiiBool32      multisampleAlphaToCoverageEnable;
+  ReiiBool32      multisampleAlphaToOneEnable;
+  ReiiBool32      depthTestEnable;
+  ReiiBool32      depthTestDepthWriteEnable;
+  ReiiCompareOp   depthTestDepthCompareOp;
+  ReiiBool32      stencilTestEnable;
+  ReiiStencilOp   stencilTestFrontStencilTestFailOp;
+  ReiiStencilOp   stencilTestFrontStencilTestPassDepthTestPassOp;
+  ReiiStencilOp   stencilTestFrontStencilTestPassDepthTestFailOp;
+  ReiiCompareOp   stencilTestFrontCompareOp;
+  ReiiStencilOp   stencilTestBackStencilTestFailOp;
+  ReiiStencilOp   stencilTestBackStencilTestPassDepthTestPassOp;
+  ReiiStencilOp   stencilTestBackStencilTestPassDepthTestFailOp;
+  ReiiCompareOp   stencilTestBackCompareOp;
+  unsigned        stencilTestFrontAndBackCompareMask;
+  unsigned        stencilTestFrontAndBackWriteMask;
+  unsigned        stencilTestFrontAndBackReference;
+  ReiiBool32      blendLogicOpEnable;
+  ReiiLogicOp     blendLogicOp;
+  float           blendConstants[4];
+  ReiiBool32      outputColorWriteEnableR;
+  ReiiBool32      outputColorWriteEnableG;
+  ReiiBool32      outputColorWriteEnableB;
+  ReiiBool32      outputColorWriteEnableA;
+  ReiiBool32      outputColorBlendEnable;
+  ReiiBlendFactor outputColorBlendColorFactorSource;
+  ReiiBlendFactor outputColorBlendColorFactorTarget;
+  ReiiBlendOp     outputColorBlendColorOp;
+  ReiiBlendFactor outputColorBlendAlphaFactorSource;
+  ReiiBlendFactor outputColorBlendAlphaFactorTarget;
+  ReiiBlendOp     outputColorBlendAlphaOp;
+  char *          codeVertex;
+  char *          codeFragment;
+  const void *    extension;
+  gpu_program_info_t          programVertex;
+  gpu_program_info_t          programFragment;
+  ReiiMeshStateCompileInfo    compileInfo;
+  gpu_program_pipeline_info_t programPipelineInfo;
+  unsigned                    programPipelineInfoSamplersCount; // NOTE(Constantine)(Sep 14, 2026): REII binds all samplers globally in the second struct.
+  const char *                optionalDebugName;
   // Internal
-  RedHandleGpuCode                         gpuCodeVertex;       // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
-  RedHandleGpuCode                         gpuCodeFragment;     // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
-  Red2ProcedureParametersAndDeclarations   procedureParameters; // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
-  RedHandleProcedure                       procedure;           // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
+  RedHandleGpuCode                       gpuCodeVertex;         // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
+  RedHandleGpuCode                       gpuCodeFragment;       // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
+  Red2ProcedureParametersAndDeclarations procedureParameters;   // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
+  RedHandleProcedure                     procedure;             // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
 } ReiiMeshState;
 
 typedef enum gpu_extra_reii_texture_type {

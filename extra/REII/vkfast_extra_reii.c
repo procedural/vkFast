@@ -209,7 +209,8 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   REDGPU_2_EXPECTWG(
     state->compileInfo.output_color_format == RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1
   );
-  REDGPU_2_EXPECTWG(state->compileInfo.samplers_count <= REII_INTERNAL_MAX_SAMPLERS_COUNT);
+
+  REDGPU_2_EXPECTWG(state->programPipelineInfoSamplersCount <= REII_INTERNAL_MAX_SAMPLERS_COUNT);
 
   // To destroy
   RedHandleGpuCode gpuCodeVertex = NULL;
@@ -243,30 +244,30 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   );
   REDGPU_2_EXPECTWG(gpuCodeFragment != NULL);
 
-  if (state->compileInfo.variables_bytes_count > 0) {
-    for (unsigned i = 0; i < state->compileInfo.struct_members_count; i += 1) {
-      REDGPU_2_EXPECTWG(state->compileInfo.variables_slot != state->compileInfo.struct_members[i].slot);
+  if (state->programPipelineInfo.variables_bytes_count > 0) {
+    for (unsigned i = 0; i < state->programPipelineInfo.struct_members_count; i += 1) {
+      REDGPU_2_EXPECTWG(state->programPipelineInfo.variables_slot != state->programPipelineInfo.struct_members[i].slot);
     }
   }
 
   Red2ProcedureParametersDeclaration parameters = {0};
-  parameters.variablesSlot            = state->compileInfo.variables_slot;
-  parameters.variablesVisibleToStages = state->compileInfo.variables_bytes_count == 0 ? 0 : (RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX | RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT);
-  parameters.variablesBytesCount      = state->compileInfo.variables_bytes_count;
-  parameters.structsDeclarationsCount = (state->compileInfo.struct_members_count == 0 ? 0 : 1) + (state->compileInfo.samplers_count == 0 ? 0 : 1);
-  parameters.structsDeclarations[0].structDeclarationMembersCount        = state->compileInfo.struct_members_count;
-  parameters.structsDeclarations[0].structDeclarationMembers             = state->compileInfo.struct_members;
+  parameters.variablesSlot            = state->programPipelineInfo.variables_slot;
+  parameters.variablesVisibleToStages = state->programPipelineInfo.variables_bytes_count == 0 ? 0 : (RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX | RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT);
+  parameters.variablesBytesCount      = state->programPipelineInfo.variables_bytes_count;
+  parameters.structsDeclarationsCount = (state->programPipelineInfo.struct_members_count == 0 ? 0 : 1) + (state->programPipelineInfoSamplersCount == 0 ? 0 : 1);
+  parameters.structsDeclarations[0].structDeclarationMembersCount        = state->programPipelineInfo.struct_members_count;
+  parameters.structsDeclarations[0].structDeclarationMembers             = state->programPipelineInfo.struct_members;
   parameters.structsDeclarations[0].structDeclarationMembersArrayROCount = 0;
   parameters.structsDeclarations[0].structDeclarationMembersArrayRO      = NULL;
   RedStructDeclarationMember samplers[REII_INTERNAL_MAX_SAMPLERS_COUNT] = {0}; // NOTE(Constantine): Kinda big on stack size, but whatever.
-  if (state->compileInfo.samplers_count > 0) {
-    for (unsigned i = 0; i < state->compileInfo.samplers_count; i += 1) {
+  if (state->programPipelineInfoSamplersCount > 0) {
+    for (unsigned i = 0; i < state->programPipelineInfoSamplersCount; i += 1) {
       samplers[i].slot            = i;
       samplers[i].type            = RED_STRUCT_MEMBER_TYPE_SAMPLER;
       samplers[i].count           = 1;
       samplers[i].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT; // NOTE(Constantine): I doubt anyone needs to sample textures in vertex shaders?
     }
-    parameters.structsDeclarations[1].structDeclarationMembersCount        = state->compileInfo.samplers_count;
+    parameters.structsDeclarations[1].structDeclarationMembersCount        = state->programPipelineInfoSamplersCount;
     parameters.structsDeclarations[1].structDeclarationMembers             = samplers;
     parameters.structsDeclarations[1].structDeclarationMembersArrayROCount = 0;
     parameters.structsDeclarations[1].structDeclarationMembersArrayRO      = NULL;
@@ -277,7 +278,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   np(red2CreateProcedureParameters,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
-    "handleName", state->compileInfo.optional_debug_name,
+    "handleName", state->optionalDebugName,
     "procedureParametersDeclaration", &parameters,
     "outProcedureParametersAndDeclarations", &procedureParameters,
     "outStatuses", NULL,
@@ -473,7 +474,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   np(red2CreateProcedure,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
-    "handleName", state->compileInfo.optional_debug_name,
+    "handleName", state->optionalDebugName,
     "procedureCache", NULL,
     "outputDeclarationMembers", &outputs,
     "outputDeclarationMembersResolveSources", NULL,
@@ -2436,13 +2437,12 @@ GPU_API_PRE void GPU_API_POST reiiCommandGammaCorrectColorTextureToTheInversePow
   slots[0].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE;
 
   if (state->programPipeline == 0) {
-    gpu_program_pipeline_compute_info_t pp_info = {0};
-    pp_info.compute_program       = state->programCompute;
+    gpu_program_pipeline_info_t pp_info = {0};
     pp_info.variables_slot        = 1;
     pp_info.variables_bytes_count = 1 * 4*sizeof(int);
     pp_info.struct_members_count  = 1;
     pp_info.struct_members        = slots;
-    uint64_t pp = vfProgramPipelineCreateCompute(context, &pp_info, optionalFile, optionalLine);
+    uint64_t pp = vfProgramPipelineCreateCompute(context, state->programCompute, &pp_info, NULL, optionalFile, optionalLine);
 
     state->programPipeline = pp;
     REDGPU_2_EXPECT(state->programPipeline != 0);
