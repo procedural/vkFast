@@ -62,11 +62,14 @@ Here are all the 6 ways to perfectly pack a 16-byte window with zero wasted spac
 
 32-bit scalars:
  * `float a; float b; float c; float d;`
+
 vec2:
  * `vec2 ab; float c; float d;`
  * `float a; float b; vec2 cd;`
  * `vec2 ab; vec2 cd;`
+
 vec3:
  * `vec3 abc; float d;`
+
 vec4:
  * `vec4 abcd;`
