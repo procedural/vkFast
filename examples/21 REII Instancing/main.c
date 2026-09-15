@@ -192,6 +192,7 @@ int main() {
   mesh_state.programPipelineInfo.variables_bytes_count = 2 * sizeof(ReiiVec4);
   mesh_state.programPipelineInfo.struct_members_count  = countof(slots);
   mesh_state.programPipelineInfo.struct_members        = slots;
+  mesh_state.programPipelineInfoSamplersCount          = 0;
 
   reiiMeshStateCompile(ctx, &mesh_state);
 
