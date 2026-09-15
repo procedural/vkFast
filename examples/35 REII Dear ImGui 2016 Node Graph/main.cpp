@@ -152,7 +152,7 @@ int main() {
     100, // uint64_t mutableOutputsArrayMaxCapacity
     imgui_mutableOutputsArray, // Red2Output * mutableOutputsArray
     outputtex, // ReiiHandleTexture * outputTexture
-    gpu_thread, // gpu_thread_t gpuThread
+    &gpu_thread, // gpu_thread_t * gpuThread
     0, // unsigned optionalQueueFamilyIndex
     NULL // RedHandleQueue optionalQueue
   );
