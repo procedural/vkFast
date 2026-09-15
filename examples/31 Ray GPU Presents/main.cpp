@@ -371,13 +371,12 @@ int main() {
     pp_slots[1].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
     pp_slots[1].count           = 1;
     pp_slots[1].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_COMPUTE;
-    gpu_program_pipeline_compute_info_t pp_info = {0};
-    pp_info.compute_program       = cs;
+    gpu_program_pipeline_info_t pp_info = {0};
     pp_info.variables_slot        = 2;
     pp_info.variables_bytes_count = 2 * sizeof(float);
     pp_info.struct_members_count  = countof(pp_slots);
     pp_info.struct_members        = pp_slots;
-    pp = vfProgramPipelineCreateCompute(ctx, &pp_info, FF, LL);
+    pp = vfProgramPipelineCreateCompute(ctx, cs, &pp_info, NULL, FF, LL);
   }
 
   while (glfwWindowShouldClose(window) == 0) {
