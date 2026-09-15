@@ -4,4 +4,5 @@ a.exe
 a.out
 glfw3.dll
 *.spv
+texture.ppm
 texture.png
