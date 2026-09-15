@@ -8,7 +8,7 @@
 //\\rc rawbuild `gcc`
 //\\rc rawbuild debug ` -g -O0`
 //\\rc rawbuild release,release-fast ` -O2`
-//\\rc rawbuild ` main.c ../../vkfast.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so libimgui.so -lm`
+//\\rc rawbuild ` main.c ../../vkfast.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so ./libimgui.so -lm`
 //\\rc rawbuild end
 
 //\\rc rawbuild begin clang-windows-64-bit
@@ -136,31 +136,7 @@ int main() {
   char * vp_string = NULL;
   char * fp_string = NULL;
 
-  RedStructDeclarationMember slots[2] = {0};
-  slots[0].slot            = 0;
-  slots[0].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
-  slots[0].count           = 1;
-  slots[0].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
-  slots[1].slot            = 1;
-  slots[1].type            = RED_STRUCT_MEMBER_TYPE_TEXTURE_RO;
-  slots[1].count           = 1;
-  slots[1].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT;
-  gpu_extra_reii_mesh_state_compile_info_t mesh_state_compile_info = {0};
-  mesh_state_compile_info.state_multisample_count     = RED_MULTISAMPLE_COUNT_BITFLAG_4;
-  mesh_state_compile_info.output_depth_stencil_enable = 0;
-  mesh_state_compile_info.output_depth_stencil_format = RED_FORMAT_DEPTH_32_FLOAT;
-  mesh_state_compile_info.output_color_format         = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
-  mesh_state_compile_info.variables_slot              = 3;
-  mesh_state_compile_info.variables_bytes_count       = 2 * sizeof(ReiiVec4);
-  mesh_state_compile_info.struct_members_count        = countof(slots);
-  mesh_state_compile_info.struct_members              = slots;
-  mesh_state_compile_info.samplers_count              = 1;
   ReiiMeshState mesh_state                                  = {0};
-  mesh_state.compileInfo                                    = mesh_state_compile_info;
-  mesh_state.programVertex                                  = vp;
-  mesh_state.programFragment                                = fp;
-  mesh_state.codeVertex                                     = vp_string;
-  mesh_state.codeFragment                                   = fp_string;
   mesh_state.rasterizationDepthClampEnable                  = 0;
   mesh_state.rasterizationCullMode                          = REII_CULL_MODE_NONE;
   mesh_state.rasterizationFrontFace                         = REII_FRONT_FACE_COUNTER_CLOCKWISE;
@@ -202,6 +178,32 @@ int main() {
   mesh_state.outputColorBlendAlphaFactorSource              = REII_BLEND_FACTOR_ZERO;
   mesh_state.outputColorBlendAlphaFactorTarget              = REII_BLEND_FACTOR_ZERO;
   mesh_state.outputColorBlendAlphaOp                        = REII_BLEND_OP_ADD;
+  mesh_state.codeVertex                                     = vp_string;
+  mesh_state.codeFragment                                   = fp_string;
+  mesh_state.extension                                      = NULL;
+  mesh_state.programVertex                                  = vp;
+  mesh_state.programFragment                                = fp;
+  mesh_state.compileInfo.state_multisample_count            = RED_MULTISAMPLE_COUNT_BITFLAG_4;
+  mesh_state.compileInfo.output_depth_stencil_enable        = 0;
+  mesh_state.compileInfo.output_depth_stencil_format        = RED_FORMAT_DEPTH_32_FLOAT;
+  mesh_state.compileInfo.output_color_format                = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
+
+  RedStructDeclarationMember slots[2] = {0};
+  slots[0].slot            = 0;
+  slots[0].type            = RED_STRUCT_MEMBER_TYPE_ARRAY_RO_RW;
+  slots[0].count           = 1;
+  slots[0].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
+  slots[1].slot            = 1;
+  slots[1].type            = RED_STRUCT_MEMBER_TYPE_TEXTURE_RO;
+  slots[1].count           = 1;
+  slots[1].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT;
+
+  mesh_state.programPipelineInfo.variables_slot        = 3;
+  mesh_state.programPipelineInfo.variables_bytes_count = 2 * sizeof(ReiiVec4);
+  mesh_state.programPipelineInfo.struct_members_count  = countof(slots);
+  mesh_state.programPipelineInfo.struct_members        = slots;
+  mesh_state.programPipelineInfoSamplersCount          = 1;
+
   reiiMeshStateCompile(ctx, &mesh_state);
 
   ReiiHandleTextureMemory outputDSTexMemory = {0};
