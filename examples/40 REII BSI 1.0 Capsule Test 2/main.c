@@ -240,7 +240,7 @@ int main() {
   slots_capsule[0].count           = 1;
   slots_capsule[0].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX;
 
-  mesh_state_capsule.programPipelineInfo.variables_slot        = 2;
+  mesh_state_capsule.programPipelineInfo.variables_slot        = 1;
   mesh_state_capsule.programPipelineInfo.variables_bytes_count = 2 * sizeof(ReiiVec4);
   mesh_state_capsule.programPipelineInfo.struct_members_count  = countof(slots_capsule);
   mesh_state_capsule.programPipelineInfo.struct_members        = slots_capsule;
