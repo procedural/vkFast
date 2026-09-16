@@ -188,6 +188,72 @@ static RedSamplerBehaviorOutsideTextureCoordinate ReiiSamplerBehaviorOutsideText
   return (RedSamplerBehaviorOutsideTextureCoordinate)0;
 }
 
+static void ReiiFillMemoryTypeIsSupportedArray(unsigned resourceMemoryTypesSupported, unsigned char * outMemoryTypeIsSupportedArrayOf32) {
+  outMemoryTypeIsSupportedArrayOf32[0]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0001)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[1]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0010)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[2]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0100)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[3]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,1000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[4]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0001,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[5]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0010,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[6]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0100,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[7]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,1000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[8]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0001,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[9]  = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0010,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[10] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0100,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[11] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,1000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[12] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0001,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[13] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0010,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[14] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0100,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[15] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,1000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[16] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0001,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[17] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0010,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[18] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,0100,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[19] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0000,1000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[20] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0001,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[21] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0010,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[22] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,0100,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[23] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0000,1000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[24] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0001,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[25] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0010,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[26] = (resourceMemoryTypesSupported & REDGPU_B32(0000,0100,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[27] = (resourceMemoryTypesSupported & REDGPU_B32(0000,1000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[28] = (resourceMemoryTypesSupported & REDGPU_B32(0001,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[29] = (resourceMemoryTypesSupported & REDGPU_B32(0010,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[30] = (resourceMemoryTypesSupported & REDGPU_B32(0100,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+  outMemoryTypeIsSupportedArrayOf32[31] = (resourceMemoryTypesSupported & REDGPU_B32(1000,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
+}
+
+static unsigned ReiiPickSpecificMemoryTypeGpuVram(const RedGpuInfo * gpuInfo, unsigned memoryTypesSupported) {
+  unsigned char arrayMemoryTypeIsSupported[32] = {0};
+  ReiiFillMemoryTypeIsSupportedArray(memoryTypesSupported, arrayMemoryTypeIsSupported);
+
+  for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
+    const RedMemoryType * type = &gpuInfo->memoryTypes[i];
+    if (arrayMemoryTypeIsSupported[i] == 1 &&
+      type->isGpuVram     == 1 &&
+      type->isCpuMappable == 0 &&
+      type->isCpuCoherent == 0 &&
+      type->isCpuCached   == 0 &&
+      gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == 1 &&
+      gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
+    {
+      return i;
+    }
+  }
+  for (unsigned i = 0; i < gpuInfo->memoryTypesCount; i += 1) {
+    const RedMemoryType * type = &gpuInfo->memoryTypes[i];
+    if (arrayMemoryTypeIsSupported[i] == 1 &&
+      type->isGpuVram == 1 &&
+      gpuInfo->memoryHeaps[type->memoryHeapIndex].isGpuVram == 1 &&
+      gpuInfo->memoryHeaps[type->memoryHeapIndex].memoryBytesCount > 0)
+    {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
 GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context, ReiiMeshState * state) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
@@ -633,13 +699,15 @@ GPU_API_PRE void GPU_API_POST reiiCreateTextureMemory(gpu_handle_context_t conte
   RedHandleMemory memory = NULL;
 
   if (texturesType == GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL) {
+    unsigned firstPickedMemoryTypeGpuVram = ReiiPickSpecificMemoryTypeGpuVram(vkfast->gpuInfo, -1);
+    REDGPU_2_EXPECTWG(firstPickedMemoryTypeGpuVram != -1 || !"reiiCreateTextureMemory(): no VRAM memory types found.");
     // To destroy
     np(redMemoryAllocate,
       "context", vkfast->context,
       "gpu", vkfast->gpu,
       "handleName", optional_debug_name,
       "bytesCount", bytesCount,
-      "memoryTypeIndex", vkfast->specificMemoryTypesGpuVram, // NOTE(Constantine): Assumed that image memory type index is the same as array memory type index
+      "memoryTypeIndex", firstPickedMemoryTypeGpuVram, // NOTE(Constantine): Assuming that the first picked VRAM memory type is right for general texture allocations.
       "dedicateToArray", NULL,
       "dedicateToImage", NULL,
       "memoryBitflags", 0,
@@ -862,42 +930,8 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
     );
     REDGPU_2_EXPECTWG(image.handle != NULL);
 
-    {
-      unsigned memoryTypeIsSupported[32];
-      memoryTypeIsSupported[31] = (image.memoryTypesSupported & REDGPU_B32(1000,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[30] = (image.memoryTypesSupported & REDGPU_B32(0100,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[29] = (image.memoryTypesSupported & REDGPU_B32(0010,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[28] = (image.memoryTypesSupported & REDGPU_B32(0001,0000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[27] = (image.memoryTypesSupported & REDGPU_B32(0000,1000,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[26] = (image.memoryTypesSupported & REDGPU_B32(0000,0100,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[25] = (image.memoryTypesSupported & REDGPU_B32(0000,0010,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[24] = (image.memoryTypesSupported & REDGPU_B32(0000,0001,0000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[23] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,1000,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[22] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0100,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[21] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0010,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[20] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0001,0000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[19] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,1000,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[18] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0100,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[17] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0010,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[16] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0001,0000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[15] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,1000,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[14] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0100,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[13] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0010,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[12] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0001,0000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[11] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,1000,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[10] = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0100,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[9]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0010,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[8]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0001,0000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[7]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,1000,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[6]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0100,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[5]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0010,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[4]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0001,0000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[3]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,1000)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[2]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0100)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[1]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0010)) == 0 ? 0 : 1;
-      memoryTypeIsSupported[0]  = (image.memoryTypesSupported & REDGPU_B32(0000,0000,0000,0000,0000,0000,0000,0001)) == 0 ? 0 : 1;
-      REDGPU_2_EXPECTWG(memoryTypeIsSupported[vkfast->specificMemoryTypesGpuVram] == 1 || !"NOTE(Constantine): Assumed that image memory type index is the same as array memory type index");
-    }
+    unsigned pickedMemoryTypeGpuVram = ReiiPickSpecificMemoryTypeGpuVram(vkfast->gpuInfo, image.memoryTypesSupported);
+    REDGPU_2_EXPECTWG(pickedMemoryTypeGpuVram != -1 || !"reiiTextureDefineEx(): no VRAM memory types for image found.");
 
     REDGPU_2_EXPECTWG((bindingTexture->textureMemory->bytesOffset + image.memoryBytesCount) <= bindingTexture->textureMemory->bytesCount);
 
@@ -908,7 +942,7 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
         "gpu", vkfast->gpu,
         "handleName", bindingTexture->optional_debug_name,
         "bytesCount", image.memoryBytesCount,
-        "memoryTypeIndex", vkfast->specificMemoryTypesGpuVram,
+        "memoryTypeIndex", pickedMemoryTypeGpuVram,
         "dedicateToArray", NULL,
         "dedicateToImage", image.handle,
         "memoryBitflags", 0,
