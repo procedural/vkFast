@@ -178,7 +178,7 @@ int main() {
   }
   reiiCommandMeshEnd(ctx, lucy_list);
   reiiCommandListEnd(ctx, lucy_list);
-  printf("lucy.obj is loading to GL display lists successfully.\n");
+  printf("lucy.obj is finished loading to GL display lists successfully.\n");
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
