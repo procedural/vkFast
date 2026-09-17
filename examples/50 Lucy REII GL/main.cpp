@@ -1,7 +1,7 @@
 #if 0
+gcc -shared -fPIC -o bypass_free.so bypass_free.c -ldl
 gcc -c ../../extra/REII\ Backport/reii.c
 g++ -O2 -march=native main.cpp *.o /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so -lm
-gcc -shared -fPIC -o bypass_free.so bypass_free.c -ldl
 DRI_PRIME=0 XDG_SESSION_TYPE=x11 LD_PRELOAD=./bypass_free.so ./a.out
 exit
 #endif
@@ -247,9 +247,9 @@ int main() {
       move_vec_z = pos_z * rot_cos + pos_x * rot_sin;
     }
 
-    pos_x += move_vec_x * 0.025;
-    pos_y += move_vec_y * 0.025;
-    pos_z += move_vec_z * 0.025;
+    pos_x += move_vec_x * 0.1;
+    pos_y += move_vec_y * 0.1;
+    pos_z += move_vec_z * 0.1;
 
     reiiSetProgramEnvironmentValueVertex(ctx, 0, pos_x, pos_y, pos_z, 0);
     reiiSetProgramEnvironmentValueVertex(ctx, 1, cosf(-rot_x), sinf(-rot_x), cosf(-rot_y), sinf(-rot_y));
