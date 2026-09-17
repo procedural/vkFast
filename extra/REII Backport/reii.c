@@ -1,5 +1,5 @@
-#include "../rei/rei.h"
-#include "../rei/rei.c"
+#include "rei.h"
+#include "rei.c"
 
 #include <string.h>
 #include <stdio.h>
