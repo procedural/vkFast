@@ -11,6 +11,9 @@
 //\\rc rawbuild ` main.cpp *.o -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm`
 //\\rc rawbuild end
 
+// sudo apt install mangohud
+// DRI_PRIME=0 XDG_SESSION_TYPE=x11 mangohud ./a.out
+
 #include "../../vkfast.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
 #include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
