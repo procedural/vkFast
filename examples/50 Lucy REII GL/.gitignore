@@ -1,0 +1,8 @@
+dxc/*
+x64/*
+*.o
+a.exe
+a.out
+glfw3.dll
+lucy.obj
+bypass_free.so
