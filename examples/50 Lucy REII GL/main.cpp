@@ -5,6 +5,8 @@ g++ -O2 -march=native main.cpp *.o /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/
 DRI_PRIME=0 XDG_SESSION_TYPE=x11 LD_PRELOAD=./bypass_free.so ./a.out
 exit
 #endif
+// GALLIUM_HUD=help ./a.out
+// GALLIUM_HUD="fps;primitives-generated+samples-passed" ./a.out
 
 #define GLFW_INCLUDE_NONE
 #define GLFW_EXPOSE_NATIVE_X11
