@@ -252,7 +252,7 @@ VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocShared(gpu_handle_cont
   memoryArray.array            = array.handle;
   memoryArray.memory           = memory;
   memoryArray.memoryBytesFirst = 0;
-  RedStatuses opstatuses = {0};
+  RedStatuses opstatuses = {(RedStatus)0};
   np(redMemorySet,
     "context", vkfast->context,
     "gpu", vkfast->gpu,
@@ -290,7 +290,7 @@ VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocShared(gpu_handle_cont
 
   REDGPU_2_EXPECTWG(outArray != NULL);
   // Filling
-  VfeReBARMallocShared;
+  // VfeReBARMallocShared;
   outArray->array      = array;
   outArray->memory     = memory;
   outArray->storageRaw = storageRaw;
