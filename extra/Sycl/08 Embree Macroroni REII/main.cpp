@@ -41,7 +41,7 @@ int main() {
   REDGPU_2_EXPECTFL(windowMonitorArea[3] == HEIGHT);
 
   gpu_handle_context_t ctx = vfContextInitNoDefaultAllocs(1, NULL, FF, LL);
-  vfWindowFullscreen(ctx, NULL, "[vkFast] ReBAR Mandelbrot set CPU", WIDTH, HEIGHT, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
+  vfWindowFullscreen(ctx, NULL, "[vkFast] Embree Macroroni REII", WIDTH, HEIGHT, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
 
   const unsigned array65536[2] = {65536, 65536};
 
