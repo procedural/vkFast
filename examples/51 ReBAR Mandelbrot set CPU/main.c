@@ -1,0 +1,89 @@
+//\\rc rawbuild begin gcc-linux-64-bit
+//\\rc rawbuild require-config debug,release,release-fast
+//\\rc rawbuild `gcc`
+//\\rc rawbuild debug ` -g -O0`
+//\\rc rawbuild release,release-fast ` -O2`
+//\\rc rawbuild ` main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm`
+//\\rc rawbuild end
+
+#include "../../vkfast.h"
+#include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
+#include "../Common/vkfast_examples_common.h"
+
+int main() {
+  #define window_w 1920
+  #define window_h 1080
+
+  int windowMonitorArea[4] = {0};
+  vfGetMainMonitorAreaRectangle(windowMonitorArea, FF, LL);
+  REDGPU_2_EXPECTFL(windowMonitorArea[2] == window_w);
+  REDGPU_2_EXPECTFL(windowMonitorArea[3] == window_h);
+
+  gpu_handle_context_t ctx = vfContextInitNoDefaultAllocs(1, NULL, FF, LL);
+  vfWindowFullscreen(ctx, NULL, "[vkFast] ReBAR Mandelbrot set CPU", window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
+
+  const unsigned array65536[2] = {65536, 65536};
+
+  gpu_thread_t gpu_thread = NULL;
+  vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
+
+  struct Pixels {
+    unsigned char pixels[window_h][window_w][4];
+  };
+  VfeReBARMallocShared pixelsHandles = {};
+  volatile struct Pixels * pix = (volatile struct Pixels *)vfeReBARMallocShared(ctx, sizeof(struct Pixels), &pixelsHandles);
+
+  while (vfWindowLoop(ctx)) {
+    volatile unsigned char * pixels = &pix->pixels[0][0][0];
+    // Clear pixels:
+    for (int y = 0; y < window_h; y += 1) {
+      for (int x = 0; x < window_w; x += 1) {
+        pixels[y * window_w * 4 + x * 4 + 0] = 0;
+        pixels[y * window_w * 4 + x * 4 + 1] = 0;
+        pixels[y * window_w * 4 + x * 4 + 2] = 0;
+        pixels[y * window_w * 4 + x * 4 + 3] = 0;
+      }
+    }
+    // Draw pixels:
+    for (int iy = 0; iy < window_h; iy += 1) {
+      for (int ix = 0; ix < window_w; ix += 1) {
+        int   W = window_w;
+        int   H = window_h;
+        int   X = (int)(ix);
+        int   Y = (int)(iy);
+        float U = (float)(X) / (W-1);
+        float V = (float)(Y) / (H-1);
+
+        float cx = (U - 0.5f) * 3.f * (16.f / 9.f);
+        float cy = (V - 0.5f) * 3.f;
+        int i    = 0;
+        int iter = 100;
+        float zx = cx;
+        float zy = cy;
+        for (i = 0; i < iter; i += 1) {
+          float x = (zx * zx - zy * zy) + cx;
+          float y = (zy * zx + zx * zy) + cy;
+          if ((x * x + y * y) > 4.f) {
+            break;
+          }
+          zx = x;
+          zy = y;
+        }
+
+        pixels[iy * window_w * 4 + ix * 4 + 0] = ((i == iter ? 0.f : (float)(i)) / 50.f) * 255.f;
+        pixels[iy * window_w * 4 + ix * 4 + 1] = 0;
+        pixels[iy * window_w * 4 + ix * 4 + 2] = 0;
+        pixels[iy * window_w * 4 + ix * 4 + 3] = 255;
+      }
+    }
+    gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
+    vfAsyncDrawPixelsRaw(ctx, &pixelsHandles.storageRaw, NULL, 2, gpu_threads, array65536, FF, LL);
+  }
+  
+  vfAllQueuesWaitIdle(ctx, FF, LL);
+
+  vfGpuThreadDestroy(ctx, gpu_thread);
+  vfeReBARFreeShared(ctx, &pixelsHandles);
+  vfContextDeinit(ctx, FF, LL);
+  vfExit(0);
+}
