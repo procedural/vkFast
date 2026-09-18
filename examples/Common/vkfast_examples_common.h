@@ -174,7 +174,7 @@ static gpu_handle_context_t vfContextInitNoDefaultAllocs(int enable_debug_mode, 
     memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = 0;
     memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_upload       = 0;
     memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_readback     = 0;
-    memory_allocation_sizes.bytes_count_for_memory_present_pixels_type_cpu_upload = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_PIXELS_CPU_UPLOAD_288MB;
+    memory_allocation_sizes.bytes_count_for_memory_present_pixels_type_cpu_upload = 0;
     gpu_context_optional_parameters_t optional_parameters = {0};
     optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
 
