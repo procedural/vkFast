@@ -6,7 +6,7 @@ cd build
 sudo apt install intel-opencl-icd libze1 libze-intel-gpu1 libze-intel-gpu-raytracing libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl-dev libglx-dev
 source /opt/intel/oneapi/setvars.sh intel64
 sycl-ls
-CC=icx CXX=icpx cmake .. -DEMBREE_SYCL_SUPPORT=ON
+CC=icx CXX=icpx cmake .. -DEMBREE_SYCL_SUPPORT=ON -DEMBREE_TUTORIALS=ON -DEMBREE_MAX_INSTANCE_LEVEL_COUNT=2
 make -j8
 export ONEAPI_DEVICE_SELECTOR=level_zero:0
 XDG_SESSION_TYPE=x11 ./embree_pathtracer_sycl
