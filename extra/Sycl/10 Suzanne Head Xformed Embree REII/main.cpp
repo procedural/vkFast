@@ -70,6 +70,8 @@ bool embreeMemoryMonitorCallback(void* userPtr, ssize_t bytes, bool post) {
 }
 
 int main() {
+  REDGPU_2_EXPECTFL(RTC_MAX_INSTANCE_LEVEL_COUNT >= 2 || !"Recompile Embree with -DEMBREE_MAX_INSTANCE_LEVEL_COUNT=2");
+
   #define WIDTH 1920
   #define HEIGHT 1080
 
@@ -139,9 +141,6 @@ int main() {
   rtcReleaseGeometry(geom);
   rtcCommitScene(meshScene);
 
-  RTCGeometry instanceGeom = rtcNewGeometry(rtm_rtc_device, RTC_GEOMETRY_TYPE_INSTANCE);
-  rtcSetGeometryInstancedScene(instanceGeom, meshScene);
-
   float m3x4[3*4] = {0};
 
   // Column 0
@@ -164,6 +163,9 @@ int main() {
   m3x4[10] = 0.0f;
   m3x4[11] = 0.0f;
 
+  // Create an instance of geometry
+  RTCGeometry instanceGeom = rtcNewGeometry(rtm_rtc_device, RTC_GEOMETRY_TYPE_INSTANCE);
+  rtcSetGeometryInstancedScene(instanceGeom, meshScene);
   rtcSetGeometryTransform(instanceGeom, 0, RTC_FORMAT_FLOAT3X4_COLUMN_MAJOR, m3x4);
   rtcCommitGeometry(instanceGeom);
 
@@ -173,7 +175,20 @@ int main() {
   rtcReleaseGeometry(instanceGeom);
   rtcCommitScene(instanceScene);
 
-  // Update transform separately here
+  // Create a world instance of all instances
+  RTCGeometry worldGeometry = rtcNewGeometry(rtm_rtc_device, RTC_GEOMETRY_TYPE_INSTANCE);
+  rtcSetGeometryInstancedScene(worldGeometry, instanceScene);
+  //...
+  rtcSetGeometryTransform(worldGeometry, 0, RTC_FORMAT_FLOAT3X4_COLUMN_MAJOR, m3x4);
+  rtcCommitGeometry(worldGeometry);
+
+  RTCScene worldScene = rtcNewScene(rtm_rtc_device);
+  rtcSetSceneFlags(worldScene, RTC_SCENE_FLAG_DYNAMIC);
+  unsigned worldInstanceID = rtcAttachGeometry(worldScene, worldGeometry);
+  rtcReleaseGeometry(worldGeometry);
+  rtcCommitScene(worldScene);
+
+  // Update geometry's instance transform separately here
   RTCGeometry dynamicGeom = rtcGetGeometry(instanceScene, instanceID);
   // Column 3 (Translation vector)
   m3x4[9]  = 0.0f;
@@ -184,7 +199,7 @@ int main() {
   rtcCommitScene(instanceScene);
 
   // Get traversable handle needed for rtm_rtc_device-side tracing in Embree 4
-  RTCTraversable traversable = rtcGetSceneTraversable(instanceScene);
+  RTCTraversable traversable = rtcGetSceneTraversable(worldScene);
 
   // 4. Create an output frame buffer using USM shared allocation
   uint8_t * pixels = (uint8_t *)rtmMallocShared(WIDTH * HEIGHT * 4, rtm_sycl_queue);
@@ -222,7 +237,7 @@ int main() {
       // Configure intersection arguments
       RTCIntersectArguments args;
       rtcInitIntersectArguments(&args);
-      args.feature_mask = RTC_FEATURE_FLAG_TRIANGLE; // Performance flag optimization
+      args.feature_mask = (RTCFeatureFlags)(RTC_FEATURE_FLAG_TRIANGLE | RTC_FEATURE_FLAG_INSTANCE);
 
       // Embree 4 Device-side Intersection
       rtcTraversableIntersect1(traversable, &rayhit, &args);
@@ -278,6 +293,7 @@ int main() {
   rtmFree(pixels, rtm_sycl_queue);
   rtmFree(vertices, rtm_sycl_queue);
   rtmFree(indices, rtm_sycl_queue);
+  rtcReleaseScene(worldScene);
   rtcReleaseScene(instanceScene);
   rtcReleaseScene(meshScene);
   rtcReleaseDevice(rtm_rtc_device);

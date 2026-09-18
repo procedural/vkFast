@@ -161,7 +161,7 @@ int main() {
       // Configure intersection arguments
       RTCIntersectArguments args;
       rtcInitIntersectArguments(&args);
-      args.feature_mask = RTC_FEATURE_FLAG_TRIANGLE; // Performance flag optimization
+      args.feature_mask = (RTCFeatureFlags)(RTC_FEATURE_FLAG_TRIANGLE | RTC_FEATURE_FLAG_INSTANCE);
 
       // Embree 4 Device-side Intersection
       rtcTraversableIntersect1(traversable, &rayhit, &args);
