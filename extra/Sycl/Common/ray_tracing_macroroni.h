@@ -42,8 +42,8 @@ limitations under the License.
 
 #ifdef RTM_ENABLE_EMBREE_CPU
 
-  #define RTM_CREATE_EMBREE_DEVICE_AND_SYCL_QUEUE() \
-    RTCDevice rtm_rtc_device = rtcNewDevice(NULL);
+  #define RTM_CREATE_EMBREE_DEVICE_AND_SYCL_QUEUE(CONFIG) \
+    RTCDevice rtm_rtc_device = rtcNewDevice(CONFIG);
 
   #define rtmSyclQueueGetDeviceName(SYCL_QUEUE) std::string("CPU TBB")
 
@@ -69,9 +69,9 @@ limitations under the License.
 
 #ifdef RTM_ENABLE_EMBREE_GPU
 
-  #define RTM_CREATE_EMBREE_DEVICE_AND_SYCL_QUEUE() \
+  #define RTM_CREATE_EMBREE_DEVICE_AND_SYCL_QUEUE(CONFIG) \
     sycl::queue rtm_sycl_queue(sycl::gpu_selector_v); \
-    RTCDevice rtm_rtc_device = rtcNewSYCLDevice(rtm_sycl_queue.get_context(), NULL);
+    RTCDevice rtm_rtc_device = rtcNewSYCLDevice(rtm_sycl_queue.get_context(), CONFIG);
 
   #define rtmSyclQueueGetDeviceName(SYCL_QUEUE) (SYCL_QUEUE).get_device().get_info<sycl::info::device::name>()
 
