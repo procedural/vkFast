@@ -230,6 +230,7 @@ int main() {
       rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
       rayhit.hit.primID = RTC_INVALID_GEOMETRY_ID;
       rayhit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
+      rayhit.hit.instID[1] = RTC_INVALID_GEOMETRY_ID;
 
       vec3 rayOrg = {rayhit.ray.org_x, rayhit.ray.org_y, rayhit.ray.org_z};
       vec3 rayDir = {rayhit.ray.dir_x, rayhit.ray.dir_y, rayhit.ray.dir_z};
