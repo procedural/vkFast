@@ -162,14 +162,25 @@ int main() {
   // Column 3 (Translation vector)
   m3x4[9]  = 0.0f;
   m3x4[10] = 0.0f;
-  m3x4[11] = 2.0f;
+  m3x4[11] = 0.0f;
 
   rtcSetGeometryTransform(instanceGeom, 0, RTC_FORMAT_FLOAT3X4_COLUMN_MAJOR, m3x4);
   rtcCommitGeometry(instanceGeom);
 
   RTCScene parentScene = rtcNewScene(rtm_rtc_device);
-  rtcAttachGeometry(parentScene, instanceGeom);
+  rtcSetSceneFlags(parentScene, RTC_SCENE_FLAG_DYNAMIC);
+  unsigned instanceID = rtcAttachGeometry(parentScene, instanceGeom);
   rtcReleaseGeometry(instanceGeom);
+  rtcCommitScene(parentScene);
+
+  // Update transform separately here
+  RTCGeometry dynamicGeom = rtcGetGeometry(parentScene, instanceID);
+  // Column 3 (Translation vector)
+  m3x4[9]  = 0.0f;
+  m3x4[10] = 0.0f;
+  m3x4[11] = 2.0f;
+  rtcSetGeometryTransform(dynamicGeom, 0, RTC_FORMAT_FLOAT3X4_COLUMN_MAJOR, m3x4);
+  rtcCommitGeometry(dynamicGeom);
   rtcCommitScene(parentScene);
 
   // Get traversable handle needed for rtm_rtc_device-side tracing in Embree 4
