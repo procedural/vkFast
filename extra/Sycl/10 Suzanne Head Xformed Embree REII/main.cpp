@@ -167,24 +167,24 @@ int main() {
   rtcSetGeometryTransform(instanceGeom, 0, RTC_FORMAT_FLOAT3X4_COLUMN_MAJOR, m3x4);
   rtcCommitGeometry(instanceGeom);
 
-  RTCScene parentScene = rtcNewScene(rtm_rtc_device);
-  rtcSetSceneFlags(parentScene, RTC_SCENE_FLAG_DYNAMIC);
-  unsigned instanceID = rtcAttachGeometry(parentScene, instanceGeom);
+  RTCScene instanceScene = rtcNewScene(rtm_rtc_device);
+  rtcSetSceneFlags(instanceScene, RTC_SCENE_FLAG_DYNAMIC);
+  unsigned instanceID = rtcAttachGeometry(instanceScene, instanceGeom);
   rtcReleaseGeometry(instanceGeom);
-  rtcCommitScene(parentScene);
+  rtcCommitScene(instanceScene);
 
   // Update transform separately here
-  RTCGeometry dynamicGeom = rtcGetGeometry(parentScene, instanceID);
+  RTCGeometry dynamicGeom = rtcGetGeometry(instanceScene, instanceID);
   // Column 3 (Translation vector)
   m3x4[9]  = 0.0f;
   m3x4[10] = 0.0f;
   m3x4[11] = 2.0f;
   rtcSetGeometryTransform(dynamicGeom, 0, RTC_FORMAT_FLOAT3X4_COLUMN_MAJOR, m3x4);
   rtcCommitGeometry(dynamicGeom);
-  rtcCommitScene(parentScene);
+  rtcCommitScene(instanceScene);
 
   // Get traversable handle needed for rtm_rtc_device-side tracing in Embree 4
-  RTCTraversable traversable = rtcGetSceneTraversable(parentScene);
+  RTCTraversable traversable = rtcGetSceneTraversable(instanceScene);
 
   // 4. Create an output frame buffer using USM shared allocation
   uint8_t * pixels = (uint8_t *)rtmMallocShared(WIDTH * HEIGHT * 4, rtm_sycl_queue);
@@ -278,7 +278,7 @@ int main() {
   rtmFree(pixels, rtm_sycl_queue);
   rtmFree(vertices, rtm_sycl_queue);
   rtmFree(indices, rtm_sycl_queue);
-  rtcReleaseScene(parentScene);
+  rtcReleaseScene(instanceScene);
   rtcReleaseScene(meshScene);
   rtcReleaseDevice(rtm_rtc_device);
   vfAllQueuesWaitIdle(ctx, FF, LL);
