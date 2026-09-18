@@ -4740,6 +4740,8 @@ GPU_API_PRE int GPU_API_POST vfDrawPixels(gpu_handle_context_t context, const vo
 
   RedHandleGpu gpu = vkfast->gpu;
 
+  REDGPU_2_EXPECTWG(vkfast->memoryAllocationSizeCpuUploadPresentPixels > 0);
+
   RedStructMemberArray presentPixels_storage_raw = {0};
   presentPixels_storage_raw.array = vkfast->presentPixelsCpuUpload_array.handle;
   presentPixels_storage_raw.arrayRangeBytesFirst = 0;
