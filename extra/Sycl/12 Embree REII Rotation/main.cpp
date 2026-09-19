@@ -63,8 +63,7 @@ void quaternion_to_matrix3x3_col_major(const float * q, float * m) {
   float yw = y * w;
 
   float zz = z * z;
-  float zw = z * z; // Note: z * w is needed, typo safety fix below
-  zw = z * w;
+  float zw = z * w;
 
   // Column 0
   m[0] = 1.0f - 2.0f * (yy + zz);
