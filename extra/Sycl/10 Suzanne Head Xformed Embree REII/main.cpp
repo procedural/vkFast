@@ -290,6 +290,8 @@ int main() {
     vfAsyncDrawPixelsRaw(ctx, &pixelsHandles.storageRaw, NULL, 2, gpu_threads, array65536, FF, LL);
   }
 
+  vfAllQueuesWaitIdle(ctx, FF, LL);
+
   // 8. Cleanup
   rtmFree(pixels, rtm_sycl_queue);
   rtmFree(vertices, rtm_sycl_queue);
@@ -298,7 +300,6 @@ int main() {
   rtcReleaseScene(instanceScene);
   rtcReleaseScene(meshScene);
   rtcReleaseDevice(rtm_rtc_device);
-  vfAllQueuesWaitIdle(ctx, FF, LL);
 
   vfGpuThreadDestroy(ctx, gpu_thread);
   vfeReBARFreeShared(ctx, &pixelsHandles);
