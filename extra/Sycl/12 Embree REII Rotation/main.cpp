@@ -395,6 +395,9 @@ int main() {
       rtcCommitScene(worldXform1InstanceScene);
     }
 
+    #ifdef RTM_ENABLE_EMBREE_GPU
+    auto syclQueueSubmitEvent =
+    #endif
     RTM_TBB_SYCL_PARALLEL_FOR_XY_BEGIN(WIDTH, HEIGHT, rtm_sycl_queue) {
       // Normalize coordinates to [-1, 1] range
       float u = (x + 0.5f) / WIDTH * 2.0f - 1.0f;
@@ -472,6 +475,15 @@ int main() {
 
     // Wait for execution to finish
     rtmSyclQueueWait(rtm_sycl_queue);
+
+    #ifdef RTM_ENABLE_EMBREE_GPU
+    if (0) {
+      auto end   = syclQueueSubmitEvent.get_profiling_info<sycl::info::event_profiling::command_end>();
+      auto start = syclQueueSubmitEvent.get_profiling_info<sycl::info::event_profiling::command_start>();
+
+      std::cout << "Sycl queue submit elapsed time: " << (end - start) / 1000.0 << " microseconds.\n";
+    }
+    #endif
 
     // Copy pixels and draw
     memcpy((void *)&pix->pixels[0][0][0], pixels, WIDTH * HEIGHT * 4);

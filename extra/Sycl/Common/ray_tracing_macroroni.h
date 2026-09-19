@@ -70,7 +70,8 @@ limitations under the License.
 #ifdef RTM_ENABLE_EMBREE_GPU
 
   #define RTM_CREATE_EMBREE_DEVICE_AND_SYCL_QUEUE(CONFIG) \
-    sycl::queue rtm_sycl_queue(sycl::gpu_selector_v); \
+    sycl::property_list rtm_sycl_queue_properties{sycl::property::queue::enable_profiling()}; \
+    sycl::queue rtm_sycl_queue(sycl::gpu_selector_v, rtm_sycl_queue_properties); \
     RTCDevice rtm_rtc_device = rtcNewSYCLDevice(rtm_sycl_queue.get_context(), CONFIG);
 
   #define rtmSyclQueueGetDeviceName(SYCL_QUEUE) (SYCL_QUEUE).get_device().get_info<sycl::info::device::name>()
