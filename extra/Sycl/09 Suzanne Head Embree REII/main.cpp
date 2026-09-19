@@ -122,7 +122,7 @@ int main() {
   rtcReleaseGeometry(geom);
   rtcCommitScene(scene);
 
-  // Get traversable handle needed for rtm_rtc_device-side tracing in Embree 4
+  // Get traversable handle needed for device-side tracing in Embree 4
   RTCTraversable traversable = rtcGetSceneTraversable(scene);
 
   // 4. Create an output frame buffer using USM shared allocation
