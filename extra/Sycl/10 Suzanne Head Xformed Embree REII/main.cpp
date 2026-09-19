@@ -97,7 +97,6 @@ int main() {
   // Sycl start
 
   RTM_CREATE_EMBREE_DEVICE_AND_SYCL_QUEUE("memory_monitor=1")
-  rtcSetDeviceMemoryMonitorFunction(rtm_rtc_device, embreeMemoryMonitorCallback, NULL);
 
   std::cout << "Running ray tracing on device: " << rtmSyclQueueGetDeviceName(rtm_sycl_queue) << std::endl;
 
@@ -106,6 +105,7 @@ int main() {
     return 1;
   }
   rtcSetDeviceErrorFunction(rtm_rtc_device, embreeErrorCallback, NULL);
+  rtcSetDeviceMemoryMonitorFunction(rtm_rtc_device, embreeMemoryMonitorCallback, NULL);
 
   // 2. Create the Embree meshScene and geometry
   RTCScene meshScene = rtcNewScene(rtm_rtc_device);
