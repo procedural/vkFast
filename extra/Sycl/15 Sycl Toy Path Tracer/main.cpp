@@ -1149,6 +1149,8 @@ int main() {
   sycl::property_list sycl_queue_properties{sycl::property::queue::enable_profiling()};
   sycl::queue sycl_queue(sycl::gpu_selector_v, sycl_queue_properties);
 
+  std::cout << "Running Sycl on device: " << sycl_queue.get_device().get_info<sycl::info::device::name>() << std::endl;
+
   // Create an output frame buffer using USM shared allocation
   struct Pixels * pixels = (struct Pixels *)sycl::malloc_shared(sizeof(struct Pixels), sycl_queue);
   struct PixelsSamples * pixelsSamples = (struct PixelsSamples *)sycl::malloc_shared(sizeof(struct PixelsSamples), sycl_queue);
