@@ -1147,12 +1147,8 @@ int main() {
   gpu_thread_t gpu_thread = NULL;
   vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
 
-  unsigned char pixels[WINDOW_HEIGHT][WINDOW_WIDTH][4] = {
-    255,0,0,255,  255,0,0,255,  255,0,0,255,  255,0,0,255,
-    0,255,0,255,  0,255,0,255,  0,255,0,255,  0,255,0,255,
-    0,0,255,255,  0,0,255,255,  0,0,255,255,  0,0,255,255,
-  };
-  float pixelsSamples[WINDOW_HEIGHT][WINDOW_WIDTH][4] = {};
+  unsigned char pixels[WINDOW_HEIGHT][WINDOW_WIDTH][4] = {};
+  float  pixelsSamples[WINDOW_HEIGHT][WINDOW_WIDTH][4] = {};
 
   int sampleCount = 0;
 
@@ -1240,11 +1236,16 @@ int main() {
     for (int y = 0; y < WINDOW_HEIGHT; y += 1) {
       #pragma omp parallel for
       for (int x = 0; x < WINDOW_WIDTH; x += 1) {
-        // NOTE(Constantine): BGRA
-        pixels[y][x][2] = (char)((pixelsSamples[y][x][0] / (float)(sampleCount)) * 255.0f);
-        pixels[y][x][1] = (char)((pixelsSamples[y][x][1] / (float)(sampleCount)) * 255.0f);
-        pixels[y][x][0] = (char)((pixelsSamples[y][x][2] / (float)(sampleCount)) * 255.0f);
-        pixels[y][x][3] = (char)((pixelsSamples[y][x][3] / (float)(sampleCount)) * 255.0f);
+        char r = (char)((pixelsSamples[y][x][0] / (float)(sampleCount)) * 255.0f);
+        char g = (char)((pixelsSamples[y][x][1] / (float)(sampleCount)) * 255.0f);
+        char b = (char)((pixelsSamples[y][x][2] / (float)(sampleCount)) * 255.0f);
+        char a = (char)((pixelsSamples[y][x][3] / (float)(sampleCount)) * 255.0f);
+
+        // NOTE(Constantine): pixels are in BGRA order.
+        pixels[y][x][0] = b;
+        pixels[y][x][1] = g;
+        pixels[y][x][2] = r;
+        pixels[y][x][3] = a;
        }
     }
 
