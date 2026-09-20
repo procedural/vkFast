@@ -12,7 +12,9 @@
   #pragma comment(lib, "shcore") // For SetProcessDpiAwareness
 #endif
 
+#ifndef VKFAST_EXAMPLES_COMMON_INCLUDE_GLM // NOTE(Constantine)(20 Sep, 2026): GLM defines its own countof().
 #define countof(x) (sizeof(x) / sizeof((x)[0]))
+#endif
 
 #define FF __FILE__
 #define LL __LINE__
@@ -201,8 +203,9 @@ static gpu_handle_context_t vfContextInitExNoDefaultAllocs(int enable_debug_mode
   }
 }
 
-#ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_GLM // https://github.com/g-truc/glm
-  #include "glm/glm/glm.hpp"
+#ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_GLM // https://github.com/g-truc/glm/releases/tag/0.9.9.6
+  #define GLM_FORCE_SWIZZLE
+  #include "glm-0.9.9.6/glm/glm.hpp"
 #endif
 
 #ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3 // https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip

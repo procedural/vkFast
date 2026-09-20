@@ -1,5 +1,3 @@
-#define GLM_FORCE_SWIZZLE
-
 #include "../../vkfast.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLM
 #include "../Common/vkfast_examples_common.h"

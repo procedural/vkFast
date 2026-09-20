@@ -14,8 +14,6 @@
 // NOTE(Constantine):
 // Based on "Ray Tracing - Primitives" code by Reinder Nijhoff (@reindernijhoff), 2019, MIT License: https://www.shadertoy.com/view/tl23Rm
 
-#define GLM_FORCE_SWIZZLE
-
 #include "../../vkfast.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLM
