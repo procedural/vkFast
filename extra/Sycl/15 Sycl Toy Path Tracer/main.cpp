@@ -1110,7 +1110,7 @@ void mainImage(vec4 & fragColor, vec2 fragCoord, vec2 iResolution, vec2 iMouse, 
 int main() {
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZABLE, 0);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
   GLFWwindow * window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "[vkFast] Sycl Toy Path Tracer", 0, 0);
   #if defined(_WIN32)
   void * window_handle = (void *)glfwGetWin32Window(window);

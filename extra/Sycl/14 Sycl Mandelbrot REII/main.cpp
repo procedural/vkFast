@@ -33,7 +33,7 @@ int main() {
 
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZABLE, 0);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
   GLFWwindow * window = glfwCreateWindow(WIDTH, HEIGHT, "[vkFast] Sycl Mandelbrot REII", 0, 0);
   #if defined(_WIN32)
   void * window_handle = (void *)glfwGetWin32Window(window);
