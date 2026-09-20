@@ -1218,10 +1218,10 @@ int main() {
 
         mainImage(color, fragCoord, iResolution, iMouse, iTime);
 
-        char r = (char)(color.r * 255.0f);
-        char g = (char)(color.g * 255.0f);
-        char b = (char)(color.b * 255.0f);
-        char a = (char)(color.a * 255.0f);
+        unsigned char r = (unsigned char)(color.r * 255.0f);
+        unsigned char g = (unsigned char)(color.g * 255.0f);
+        unsigned char b = (unsigned char)(color.b * 255.0f);
+        unsigned char a = (unsigned char)(color.a * 255.0f);
 
         pixelsSamples[y][x][0] += color.r;
         pixelsSamples[y][x][1] += color.g;
@@ -1236,10 +1236,10 @@ int main() {
     for (int y = 0; y < WINDOW_HEIGHT; y += 1) {
       #pragma omp parallel for
       for (int x = 0; x < WINDOW_WIDTH; x += 1) {
-        char r = (char)((pixelsSamples[y][x][0] / (float)(sampleCount)) * 255.0f);
-        char g = (char)((pixelsSamples[y][x][1] / (float)(sampleCount)) * 255.0f);
-        char b = (char)((pixelsSamples[y][x][2] / (float)(sampleCount)) * 255.0f);
-        char a = (char)((pixelsSamples[y][x][3] / (float)(sampleCount)) * 255.0f);
+        unsigned char r = (unsigned char)((pixelsSamples[y][x][0] / (float)(sampleCount)) * 255.0f);
+        unsigned char g = (unsigned char)((pixelsSamples[y][x][1] / (float)(sampleCount)) * 255.0f);
+        unsigned char b = (unsigned char)((pixelsSamples[y][x][2] / (float)(sampleCount)) * 255.0f);
+        unsigned char a = (unsigned char)((pixelsSamples[y][x][3] / (float)(sampleCount)) * 255.0f);
 
         // NOTE(Constantine): pixels are in BGRA order.
         pixels[y][x][0] = b;
