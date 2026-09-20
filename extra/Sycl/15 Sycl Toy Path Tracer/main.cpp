@@ -1146,15 +1146,15 @@ int main() {
     float pixels[WINDOW_HEIGHT][WINDOW_WIDTH][4];
   };
 
-  VfeReBARMallocShared pixelsHandles = {};
-  volatile struct Pixels * pix = (volatile struct Pixels *)vfeReBARMallocShared(ctx, sizeof(struct Pixels), &pixelsHandles);
-
   sycl::property_list sycl_queue_properties{sycl::property::queue::enable_profiling()};
   sycl::queue sycl_queue(sycl::gpu_selector_v, sycl_queue_properties);
 
   // Create an output frame buffer using USM shared allocation
   struct Pixels * pixels = (struct Pixels *)sycl::malloc_shared(sizeof(struct Pixels), sycl_queue);
   struct PixelsSamples * pixelsSamples = (struct PixelsSamples *)sycl::malloc_shared(sizeof(struct PixelsSamples), sycl_queue);
+
+  VfeReBARMallocShared pixelsHandles = {};
+  volatile struct Pixels * pix = (volatile struct Pixels *)vfeReBARMallocShared(ctx, sizeof(struct Pixels), &pixelsHandles);
 
   int sampleCount = 0;
 
@@ -1169,14 +1169,6 @@ int main() {
 
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
-
-    int os_window_w = 0;
-    int os_window_h = 0;
-    glfwGetWindowSize(window, &os_window_w, &os_window_h);
-
-    if (vfWindowIsMinimized(ctx) || os_window_w == 0 || os_window_h == 0) {
-      continue;
-    }
 
     // Check if the Left Mouse Button is currently held down
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
@@ -1271,6 +1263,8 @@ int main() {
 
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
     vfAsyncDrawPixelsRaw(ctx, &pixelsHandles.storageRaw, NULL, 2, gpu_threads, array65536, FF, LL);
+
+    glfwSwapBuffers(window);
   }
 
   vfAllQueuesWaitIdle(ctx, FF, LL);
@@ -1279,10 +1273,10 @@ int main() {
   sycl::free(pixels, sycl_queue);
   sycl::free(pixelsSamples, sycl_queue);
 
-  vfGpuThreadDestroy(ctx, gpu_thread);
   vfeReBARFreeShared(ctx, &pixelsHandles);
+
+  vfGpuThreadDestroy(ctx, gpu_thread);
+
   vfContextDeinit(ctx, FF, LL);
   glfwTerminate();
-
-  vfExit(0);
 }
