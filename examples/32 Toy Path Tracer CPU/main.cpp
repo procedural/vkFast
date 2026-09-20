@@ -1217,7 +1217,7 @@ int main() {
         float xf = (float)x;
         float yf = (float)y;
 
-        vec4 color;
+        vec4 color = {};
         vec2 fragCoord = {xf + 0.5f, (WINDOW_HEIGHT-yf) + 0.5f}; // https://registry.khronos.org/OpenGL-Refpages/gl4/html/gl_FragCoord.xhtml
 
         mainImage(color, fragCoord, iResolution, iMouse, iTime);
