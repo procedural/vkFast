@@ -23,7 +23,7 @@ using namespace glm;
 typedef unsigned uint;
 
 float rand(float n) {
-  return fract(sin(n) * 43758.5453123f);
+  return fract(sinf(n) * 43758.5453123f);
 }
 
 typedef union UnionConverter {
@@ -38,7 +38,7 @@ uint asuint(float x) {
 }
 
 float inversesqrt(float x) {
-  return 1.0 / sqrt(x);
+  return 1.0 / sqrtf(x);
 }
 
 uint floatBitsToUint(float x) {
@@ -83,7 +83,7 @@ float iSphere(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, float sphereRadiu
   if (h < 0.) {
     return MAX_DIST;
   } else {
-    h = sqrt(h);
+    h = sqrtf(h);
     float d1 = -b - h;
     float d2 = -b + h;
     if (d1 >= distBound.x && d1 <= distBound.y) {
@@ -157,7 +157,7 @@ float iCylinder(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3 pa, vec3 p
 
   if (h < 0.) return MAX_DIST;
 
-  h = sqrt(h);
+  h = sqrtf(h);
   float d = (-b-h)/a;
 
   float y = caoc + d*card;
@@ -192,7 +192,7 @@ float iTorus(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec2 torus) {
   float m = dot(ro, ro);
   float n = dot(ro, rd);
 
-#if 1
+  #if 1
   float k = (m + Ra2 - ra2) / 2.0;
   float k3 = n;
   vec2 rd_xy = rd.xy();
@@ -203,15 +203,15 @@ float iTorus(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec2 torus) {
   float k2 = n * n - Ra2 * A + k;
   float k1 = n * k - Ra2 * B;
   float k0 = k * k - Ra2 * C;
-#else
+  #else
   float k = (m - Ra2 - ra2) / 2.0;
   float k3 = n;
   float k2 = n * n + Ra2 * rd.z * rd.z + k;
   float k1 = k * n + Ra2 * ro.z * rd.z;
   float k0 = k * k + Ra2 * ro.z * ro.z - Ra2 * ra2;
-#endif
+  #endif
 
-#if 1
+  #if 1
   // prevent |c1| from being too close to zero
   if (abs(k3 * (k3 * k3 - k2) + k1) < 0.01) {
     po = -1.0;
@@ -221,7 +221,7 @@ float iTorus(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec2 torus) {
     k2 = k2 * k0;
     k3 = k3 * k0;
   }
-#endif
+  #endif
 
   // reduced cubic
   float c2 = k2 * 2.0 - 3.0 * k3 * k3;
@@ -240,14 +240,14 @@ float iTorus(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec2 torus) {
 
   if (h >= 0.0) {
     // 2 intersections
-    h = sqrt(h);
+    h = sqrtf(h);
 
     float v = sign(R + h) * pow(abs(R + h), 1.0 / 3.0); // cube root
     float u = sign(R - h) * pow(abs(R - h), 1.0 / 3.0); // cube root
 
-    vec2 s = vec2((v + u) + 4.0 * c2, (v - u) * sqrt(3.0));
+    vec2 s = vec2((v + u) + 4.0 * c2, (v - u) * sqrtf(3.0));
 
-    float y = sqrt(0.5 * (length(s) + s.x));
+    float y = sqrtf(0.5 * (length(s) + s.x));
     float x = 0.5 * s.y / y;
     float r = 2.0 * c1 / (x * x + y * y);
 
@@ -258,14 +258,14 @@ float iTorus(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec2 torus) {
     if (t2 >= distBound.x) t = min(t, t2);
   } else {
     // 4 intersections
-    float sQ = sqrt(Q);
-    float w = sQ * cos(acos(-R / (sQ * Q)) / 3.0);
+    float sQ = sqrtf(Q);
+    float w = sQ * cosf(acosf(-R / (sQ * Q)) / 3.0);
 
     float d2 = -(w + c2); if (d2 < 0.0) return MAX_DIST;
-    float d1 = sqrt(d2);
+    float d1 = sqrtf(d2);
 
-    float h1 = sqrt(w - 2.0 * c2 + c1 / d1);
-    float h2 = sqrt(w - 2.0 * c2 - c1 / d1);
+    float h1 = sqrtf(w - 2.0 * c2 + c1 / d1);
+    float h2 = sqrtf(w - 2.0 * c2 - c1 / d1);
     float t1 = -d1 - h1 - k3; t1 = (po < 0.0) ? 2.0 / t1 : t1;
     float t2 = -d1 + h1 - k3; t2 = (po < 0.0) ? 2.0 / t2 : t2;
     float t3 =  d1 - h2 - k3; t3 = (po < 0.0) ? 2.0 / t3 : t3;
@@ -302,7 +302,7 @@ float iCapsule(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3 pa, vec3 pb
   float c = baba * oaoa - baoa * baoa - r * r * baba;
   float h = b * b - a * c;
   if (h >= 0.) {
-    float t = (-b - sqrt(h)) / a;
+    float t = (-b - sqrtf(h)) / a;
     float d = MAX_DIST;
 
     float y = baoa + t * bard;
@@ -317,7 +317,7 @@ float iCapsule(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3 pa, vec3 pb
       c = dot(oc, oc) - r * r;
       h = b * b - c;
       if (h > 0.0) {
-        d = -b - sqrt(h);
+        d = -b - sqrtf(h);
       }
     }
     if (d >= distBound.x && d <= distBound.y) {
@@ -373,7 +373,7 @@ float iCone(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3  pa, vec3  pb,
   float h = k1 * k1 - k2 * k0;
   if (h < 0.) return MAX_DIST;
 
-  float t = (-k1 - sqrt(h)) / k2;
+  float t = (-k1 - sqrtf(h)) / k2;
 
   float y = m1 + t * m3;
   if (y > 0. && y < m0 && t >= distBound.x && t <= distBound.y) {
@@ -398,7 +398,7 @@ float iEllipsoid(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3 rad) {
     return MAX_DIST;
   }
 
-  float d = (-b - sqrt(h)) / a;
+  float d = (-b - sqrtf(h)) / a;
 
   if (d < distBound.x || d > distBound.y) {
     return MAX_DIST;
@@ -433,7 +433,7 @@ float iRoundedCone(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3  pa, ve
     return MAX_DIST;
   }
 
-  float t = (-sqrt(h) - k1) / k2;
+  float t = (-sqrtf(h) - k1) / k2;
 
   float y = m1 - ra * rr + t * m2;
   if (y > 0.0 && y < d2) {
@@ -455,11 +455,11 @@ float iRoundedCone(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3  pa, ve
     float r = MAX_DIST;
 
     if (h1 > 0.) {
-      r = -m3 - sqrt(h1);
+      r = -m3 - sqrtf(h1);
       n = (oa + r * rd) / ra;
     }
     if (h2 > 0.) {
-      t = -m6 - sqrt(h2);
+      t = -m6 - sqrtf(h2);
       if (t < r) {
         n = (ob + t * rd) / rb;
         r = t;
@@ -535,12 +535,12 @@ float iSphere4(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, float ra) {
   }
 
   // one real solution, two complex (conjugated)
-  h = sqrt(h);
+  h = sqrtf(h);
 
   float s = sign(q + h) * pow(abs(q + h), 1.0 / 3.0); // cuberoot
   float t = sign(q - h) * pow(abs(q - h), 1.0 / 3.0); // cuberoot
 
-  vec2 v = vec2((s + t) + c0 * 4.0, (s - t) * sqrt(3.0)) * 0.5f;
+  vec2 v = vec2((s + t) + c0 * 4.0, (s - t) * sqrtf(3.0)) * 0.5f;
 
   // -----------------------------
   // the quartic will have two real solutions and two complex solutions.
@@ -548,7 +548,7 @@ float iSphere4(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, float ra) {
   // -----------------------------
 
   float r = length(v);
-  float d = -abs(v.y) / sqrt(r + v.x) - c1 / r - k0;
+  float d = -abs(v.y) / sqrtf(r + v.x) - c1 / r - k0;
 
   if (d >= distBound.x && d <= distBound.y) {
     vec3 pos = ro + rd * d;
@@ -591,7 +591,7 @@ float iGoursat(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, float ra, float 
 
   // 2 intersections
   if (h>0.0) {
-    h = sqrt(h);
+    h = sqrtf(h);
 
     float s = cuberoot(R + h);
     float u = cuberoot(R - h);
@@ -601,9 +601,9 @@ float iGoursat(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, float ra, float 
 
     float k2 = x * x + y * y * 3.0;
 
-    float k = sqrt(k2);
+    float k = sqrtf(k2);
 
-    float d = -0.5 * abs(y) * sqrt(6.0 / (k + x)) - 2.0 * c1 * (k + x) / (k2 + x * k) - k3;
+    float d = -0.5 * abs(y) * sqrtf(6.0 / (k + x)) - 2.0 * c1 * (k + x) / (k2 + x * k) - k3;
 
     if (d >= distBound.x && d <= distBound.y) {
       vec3 pos = ro + rd * d;
@@ -614,25 +614,25 @@ float iGoursat(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, float ra, float 
     }
   } else {
     // 4 intersections
-    float sQ = sqrt(Q);
-    float z = c2 - 2.0 * sQ * cos(acos(-R / (sQ * Q)) / 3.0);
+    float sQ = sqrtf(Q);
+    float z = c2 - 2.0 * sQ * cosf(acosf(-R / (sQ * Q)) / 3.0);
 
     float d1 = z     - 3.0 * c2;
     float d2 = z * z - 3.0 * c0;
 
     if (abs(d1) < 1.0e-4) {
       if (d2 < 0.0) return MAX_DIST;
-      d2 = sqrt(d2);
+      d2 = sqrtf(d2);
     } else {
       if (d1 < 0.0) return MAX_DIST;
-      d1 = sqrt(d1 / 2.0);
+      d1 = sqrtf(d1 / 2.0);
       d2 = c1 / d1;
     }
 
     //----------------------------------
 
-    float h1 = sqrt(d1 * d1 - z + d2);
-    float h2 = sqrt(d1 * d1 - z - d2);
+    float h1 = sqrtf(d1 * d1 - z + d2);
+    float h2 = sqrtf(d1 * d1 - z - d2);
     float t1 = -d1 - h1 - k3;
     float t2 = -d1 + h1 - k3;
     float t3 =  d1 - h2 - k3;
@@ -703,7 +703,7 @@ float iRoundedBox(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3 size, fl
     float b = od.x + od.y + od.z;
     float c = oo.x + oo.y + oo.z - ra2;
     float h = b * b - c;
-    if (h > 0.0) t = -b - sqrt(h);
+    if (h > 0.0) t = -b - sqrtf(h);
   }
 
   // edge X
@@ -713,7 +713,7 @@ float iRoundedBox(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3 size, fl
     float c = oo.y + oo.z - ra2;
     float h = b * b - a * c;
     if (h > 0.0) {
-      h = (-b - sqrt(h)) / a;
+      h = (-b - sqrtf(h)) / a;
       if (h >= distBound.x && h < t && abs(ros.x + rds.x * h) < size.x) t = h;
     }
   }
@@ -724,7 +724,7 @@ float iRoundedBox(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3 size, fl
     float c = oo.z + oo.x - ra2;
     float h = b * b - a * c;
     if (h > 0.0) {
-      h = (-b - sqrt(h)) / a;
+      h = (-b - sqrtf(h)) / a;
       if (h >= distBound.x && h < t && abs(ros.y + rds.y * h) < size.y) t = h;
     }
   }
@@ -735,7 +735,7 @@ float iRoundedBox(vec3 ro, vec3 rd, vec2 distBound, vec3 & normal, vec3 size, fl
     float c = oo.x + oo.y - ra2;
     float h = b * b - a * c;
     if (h > 0.0) {
-      h = (-b - sqrt(h)) / a;
+      h = (-b - sqrtf(h)) / a;
       if (h >= distBound.x && h < t && abs(ros.z + rds.z * h) < size.z) t = h;
     }
   }
@@ -784,17 +784,17 @@ vec2 hash2(float & seed) {
 //
 
 float FresnelSchlickRoughness(float cosTheta, float F0, float roughness) {
-  return F0 + (max((1.0f - roughness), F0) - F0) * pow(abs(1.0f - cosTheta), 5.0f);
+  return F0 + (max((1.0f - roughness), F0) - F0) * powf(abs(1.0f - cosTheta), 5.0f);
 }
 
 vec3 cosWeightedRandomHemisphereDirection(const vec3 n, float & seed) {
   vec2 r = hash2(seed);
   vec3  uu = normalize(cross(n, abs(n.y) > .5 ? vec3(1., 0., 0.) : vec3(0., 1., 0.)));
   vec3  vv = cross(uu, n);
-  float ra = sqrt(r.y);
-  float rx = ra*cos(6.28318530718 * r.x);
-  float ry = ra*sin(6.28318530718 * r.x);
-  float rz = sqrt(1. - r.y);
+  float ra = sqrtf(r.y);
+  float rx = ra*cosf(6.28318530718 * r.x);
+  float ry = ra*sinf(6.28318530718 * r.x);
+  float rz = sqrtf(1. - r.y);
   vec3  rr = vec3(rx * uu + ry * vv + rz * n);
   return normalize(rr);
 }
@@ -807,10 +807,10 @@ vec3 modifyDirectionWithRoughness(const vec3 normal, const vec3 n, const float r
 
   float a = roughness * roughness;
 
-  float rz = sqrt(abs((1.0 - r.y) / clamp(1. + (a - 1.) * r.y, .00001, 1.)));
-  float ra = sqrt(abs(1. - rz * rz));
-  float rx = ra*cos(6.28318530718 * r.x);
-  float ry = ra*sin(6.28318530718 * r.x);
+  float rz = sqrtf(abs((1.0 - r.y) / clamp(1. + (a - 1.) * r.y, .00001, 1.)));
+  float ra = sqrtf(abs(1. - rz * rz));
+  float rx = ra*cosf(6.28318530718 * r.x);
+  float ry = ra*sinf(6.28318530718 * r.x);
   vec3  rr = vec3(rx * uu + ry * vv + rz * n);
 
   vec3 ret = normalize(rr);
@@ -820,8 +820,8 @@ vec3 modifyDirectionWithRoughness(const vec3 normal, const vec3 n, const float r
 vec2 randomInUnitDisk(float & seed) {
   vec2 h = hash2(seed) * vec2(1, 6.28318530718);
   float phi = h.y;
-  float r = sqrt(h.x);
-  return r * vec2(sin(phi), cos(phi));
+  float r = sqrtf(h.x);
+  return r * vec2(sinf(phi), cosf(phi));
 }
 
 // NOTE(Constantine): RENDER PART BEGIN
@@ -831,8 +831,8 @@ vec2 randomInUnitDisk(float & seed) {
 //
 
 vec3 rotateY(const vec3 p, const float t) {
-  float co = cos(t);
-  float si = sin(t);
+  float co = cosf(t);
+  float si = sinf(t);
   vec2 xz = mat2(co, si, -si, co) * p.xz();
   return vec3(xz.x, p.y, xz.y);
 }
@@ -904,7 +904,7 @@ vec3 getSkyColor(vec3 rd) {
   col.b = mix(1.0f, 1.0f, 0.5f + 0.5f * rd.y);
 
   float sun = clamp(dot(normalize(vec3(-0.4f, 0.7f, -0.6f)), rd), 0.0f, 1.0f);
-  col += vec3(1.0f, 0.6f, 0.1f) * (pow(sun, 4.0f) + 10.0f * pow(sun, 32.0f));
+  col += vec3(1.0f, 0.6f, 0.1f) * (powf(sun, 4.0f) + 10.0f * powf(sun, 32.0f));
   return col;
 }
 
@@ -937,7 +937,7 @@ void getMaterialProperties(vec3 pos, float mat, vec3 & albedo, float & type, flo
 //
 
 float schlick(float cosine, float r0) {
-  return r0 + (1. - r0) * pow((1. - cosine), 5.);
+  return r0 + (1. - r0) * powf((1. - cosine), 5.);
 }
 
 vec3 render(vec3 ro, vec3 rd, float & seed) {
@@ -970,7 +970,7 @@ vec3 render(vec3 ro, vec3 rd, float & seed) {
           normalOut = -normal;
           ni_over_nt = 1.4;
           cosine = dot(rd, normal);
-          cosine = sqrt(1. - (1.4 * 1.4) - (1.4 * 1.4) * cosine * cosine);
+          cosine = sqrtf(1. - (1.4 * 1.4) - (1.4 * 1.4) * cosine * cosine);
         } else {
           normalOut = normal;
           ni_over_nt = 1. / 1.4;
@@ -999,7 +999,7 @@ vec3 render(vec3 ro, vec3 rd, float & seed) {
 
 mat3 setCamera(vec3 ro, vec3 ta, float cr) {
   vec3 cw = normalize(ta - ro);
-  vec3 cp = vec3(sin(cr), cos(cr), 0.0);
+  vec3 cp = vec3(sinf(cr), cosf(cr), 0.0);
   vec3 cu = normalize(cross(cw, cp));
   vec3 cv =          (cross(cu, cw));
   return mat3(cu, cv, cw);
@@ -1010,12 +1010,7 @@ mat3 setCamera(vec3 ro, vec3 ta, float cr) {
 #define WINDOW_WIDTH  384
 #define WINDOW_HEIGHT 384
 
-// NOTE(Constantine): Dumb temporary workaround hacks to delete later:
-vec2  iResolution = {WINDOW_WIDTH, WINDOW_HEIGHT};
-vec2  iMouse      = {0, 0};
-float iTime       = 0;
-
-void mainImage(vec4 & fragColor, vec2 fragCoord) {
+void mainImage(vec4 & fragColor, vec2 fragCoord, vec2 iResolution, vec2 iMouse, float iTime) {
   if (0) {
     float screenScale = 1.0f;
     vec2 uv = fragCoord / screenScale;
@@ -1032,7 +1027,7 @@ void mainImage(vec4 & fragColor, vec2 fragCoord) {
     float p = mix(0.0f, 4.0f, r0);
     float f = mix(5.0f, 8.0f, r1);
 
-    float a = 0.5f * (1.0f + cos(iTime * f + p));
+    float a = 0.5f * (1.0f + cosf(iTime * f + p));
 
     float rad_0 = mix(0.1, 0.4, r2);
     float rad_1 = mix(0.2, 0.9, r0);
@@ -1058,15 +1053,15 @@ void mainImage(vec4 & fragColor, vec2 fragCoord) {
   //if (iTime < 0.1) { reset = 1; fragColor.xyz = vec3(0.0, 1.0, 0.0); }
 
   vec2 mo = (iMouse.x == 0 && iMouse.y == 0) ?
-             vec2(0.125f) :
-             vec2(abs(iMouse.x), abs(iMouse.y)) / iResolution.xy() - 0.5f;
+  vec2(0.125f) :
+  vec2(abs(iMouse.x), abs(iMouse.y)) / iResolution.xy() - 0.5f;
 
   //vec4 data = texelFetch(iChannel0, ivec2(0), 0);
   //if (round(mo * iResolution.xy) != round(data.yz) || round(data.w) != round(iResolution.x)) {
   //    reset = true;
   //}
 
-  vec3 ro = vec3(.5 + 2.5 * cos(1.5 + 6. * mo.x), 1. + 2. * mo.y, -.5 + 2.5 * sin(1.5 + 6. * mo.x));
+  vec3 ro = vec3(.5 + 2.5 * cosf(1.5 + 6. * mo.x), 1. + 2. * mo.y, -.5 + 2.5 * sinf(1.5 + 6. * mo.x));
   vec3 ta = vec3(.5, -.4, -.5);
   mat3 ca = setCamera(ro, ta, 0.);
   vec3 normal;
@@ -1077,37 +1072,37 @@ void mainImage(vec4 & fragColor, vec2 fragCoord) {
   //  float nfpd = worldhit(ro, normalize(vec3(.5, 0, -.5) - ro), vec2(0, 100), normal).y;
   //  fragColor = vec4(nfpd, mo * iResolution.xy, iResolution.x);
   //} else {
-    vec2 iResolutionNeg = iResolution;
-    iResolutionNeg.x *= -1.0f;
-    iResolutionNeg.y *= -1.0f;
-    vec2 p = (iResolutionNeg.xy() + 2.0f * fragCoord - 1.0f) / iResolution.y;
-    //p.y *= -1.0f;
-    float seed = float(baseHash(floatBitsToUint(p - iTime))) / float(0xffffffffU);
+  vec2 iResolutionNeg = iResolution;
+  iResolutionNeg.x *= -1.0f;
+  iResolutionNeg.y *= -1.0f;
+  vec2 p = (iResolutionNeg.xy() + 2.0f * fragCoord - 1.0f) / iResolution.y;
+  //p.y *= -1.0f;
+  float seed = float(baseHash(floatBitsToUint(p - iTime))) / float(0xffffffffU);
 
-    // AA
-    p += 2.0f * hash2(seed) / iResolution.y;
-    vec3 rd = ca * normalize(vec3(p.xy(), 1.6f));
+  // AA
+  p += 2.0f * hash2(seed) / iResolution.y;
+  vec3 rd = ca * normalize(vec3(p.xy(), 1.6f));
 
-    // DOF
-    vec3 fp = ro + rd * 2.0f/*fpd*/; // NOTE(Constantine): fpd: Focus Plane Distance.
-    ro = ro + ca * vec3(randomInUnitDisk(seed), 0.0f) * 0.02f;
-    rd = normalize(fp - ro);
+  // DOF
+  vec3 fp = ro + rd * 2.0f/*fpd*/; // NOTE(Constantine): fpd: Focus Plane Distance.
+  ro = ro + ca * vec3(randomInUnitDisk(seed), 0.0f) * 0.02f;
+  rd = normalize(fp - ro);
 
-    vec3 col = render(ro, rd, seed);
+  vec3 col = render(ro, rd, seed);
 
-    // NOTE(Constantine): COLOR CORRECTION BEGIN
+  // NOTE(Constantine): COLOR CORRECTION BEGIN
 
-    // gamma correction
-    col = max(vec3(0), col - 0.004f);
-    col = (col * (6.2f * col + 0.5f)) / (col * (6.2f * col + 1.7f) + 0.06f);
+  // gamma correction
+  col = max(vec3(0), col - 0.004f);
+  col = (col * (6.2f * col + 0.5f)) / (col * (6.2f * col + 1.7f) + 0.06f);
 
-    // NOTE(Constantine): COLOR CORRECTION END
+  // NOTE(Constantine): COLOR CORRECTION END
 
-    //if (reset) {
-      fragColor = vec4(col, 1);
-    //} else {
-    //   fragColor = vec4(col, 1) + texelFetch(iChannel0, ivec2(fragCoord), 0);
-    //}
+  //if (reset) {
+  fragColor = vec4(col, 1);
+  //} else {
+  //   fragColor = vec4(col, 1) + texelFetch(iChannel0, ivec2(fragCoord), 0);
+  //}
   //}
 }
 
@@ -1158,32 +1153,62 @@ int main() {
     0,0,255,255,  0,0,255,255,  0,0,255,255,  0,0,255,255,
   };
   float pixelsSamples[WINDOW_HEIGHT][WINDOW_WIDTH][4] = {};
+
   int sampleCount = 0;
+
+  // Mouse state tracking
+  double lastX = 0.0;
+  double lastY = 0.0;
+  int wasPressed = 0;
+
+  vec2  iResolution = {WINDOW_WIDTH, WINDOW_HEIGHT};
+  vec2  iMouse      = {0, 0};
+  float iTime       = 0;
 
   while (glfwWindowShouldClose(window) == 0) {
     glfwPollEvents();
 
-    {
-      double mouse_x_position = 0.0;
-      double mouse_y_position = 0.0;
-      glfwGetCursorPos(window, &mouse_x_position, &mouse_y_position);
-      if (iMouse.x != mouse_x_position || iMouse.y != mouse_y_position) {
-        sampleCount = 0;
-        #pragma omp parallel for
-        for (int y = 0; y < WINDOW_HEIGHT; y += 1) {
+    // Check if the Left Mouse Button is currently held down
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+      double currentX = 0;
+      double currentY = 0;
+      glfwGetCursorPos(window, &currentX, &currentY);
+
+      if (wasPressed) {
+        // Calculate how far the mouse moved since the last frame
+        double deltaX = currentX - lastX;
+        double deltaY = currentY - lastY;
+
+        // Convert pixel delta into coordinate scaling
+        iMouse.x -= (float)(deltaX);
+        iMouse.y -= (float)(deltaY);
+
+        // Clear previous samples
+        {
+          sampleCount = 0;
           #pragma omp parallel for
-          for (int x = 0; x < WINDOW_WIDTH; x += 1) {
-            pixelsSamples[y][x][0] = 0;
-            pixelsSamples[y][x][1] = 0;
-            pixelsSamples[y][x][2] = 0;
-            pixelsSamples[y][x][3] = 0;
+          for (int y = 0; y < WINDOW_HEIGHT; y += 1) {
+            #pragma omp parallel for
+            for (int x = 0; x < WINDOW_WIDTH; x += 1) {
+              pixelsSamples[y][x][0] = 0;
+              pixelsSamples[y][x][1] = 0;
+              pixelsSamples[y][x][2] = 0;
+              pixelsSamples[y][x][3] = 0;
+            }
           }
         }
       }
-      iMouse.x = mouse_x_position;
-      iMouse.y = mouse_y_position;
+
+      // Save current positions for the next frame's comparison
+      lastX = currentX;
+      lastY = currentY;
+      wasPressed = 1; // Mark that dragging is active
+    } else {
+      wasPressed = 0; // Reset state when button is released
     }
+
     iTime += 0.01f;
+
     // NOTE(Constantine): Enable "Project properties -> C/C++ -> Language -> Open MP Support"
     #pragma omp parallel for
     for (int y = 0; y < WINDOW_HEIGHT; y += 1) {
@@ -1194,7 +1219,8 @@ int main() {
 
         vec4 color;
         vec2 fragCoord = {xf + 0.5f, (WINDOW_HEIGHT-yf) + 0.5f}; // https://registry.khronos.org/OpenGL-Refpages/gl4/html/gl_FragCoord.xhtml
-        mainImage(color, fragCoord);
+
+        mainImage(color, fragCoord, iResolution, iMouse, iTime);
 
         char r = (char)(color.r * 255.0f);
         char g = (char)(color.g * 255.0f);
@@ -1208,18 +1234,19 @@ int main() {
       }
     }
 
+    sampleCount += 1;
+
     #pragma omp parallel for
     for (int y = 0; y < WINDOW_HEIGHT; y += 1) {
       #pragma omp parallel for
       for (int x = 0; x < WINDOW_WIDTH; x += 1) {
         // NOTE(Constantine): BGRA
-        pixels[y][x][2] = (char)((pixelsSamples[y][x][0] / (float)(sampleCount+1)) * 255.0f);
-        pixels[y][x][1] = (char)((pixelsSamples[y][x][1] / (float)(sampleCount+1)) * 255.0f);
-        pixels[y][x][0] = (char)((pixelsSamples[y][x][2] / (float)(sampleCount+1)) * 255.0f);
-        pixels[y][x][3] = (char)((pixelsSamples[y][x][3] / (float)(sampleCount+1)) * 255.0f);
+        pixels[y][x][2] = (char)((pixelsSamples[y][x][0] / (float)(sampleCount)) * 255.0f);
+        pixels[y][x][1] = (char)((pixelsSamples[y][x][1] / (float)(sampleCount)) * 255.0f);
+        pixels[y][x][0] = (char)((pixelsSamples[y][x][2] / (float)(sampleCount)) * 255.0f);
+        pixels[y][x][3] = (char)((pixelsSamples[y][x][3] / (float)(sampleCount)) * 255.0f);
        }
     }
-    sampleCount += 1;
 
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
     vfDrawPixels(ctx, pixels, NULL, 2, gpu_threads, array65536, FF, LL);
