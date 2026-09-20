@@ -1141,19 +1141,21 @@ int main() {
   struct Pixels {
     unsigned char pixels[WINDOW_HEIGHT][WINDOW_WIDTH][4];
   };
+
+  struct PixelsSamples {
+    float pixels[WINDOW_HEIGHT][WINDOW_WIDTH][4];
+  };
+
   VfeReBARMallocShared pixelsHandles = {};
   volatile struct Pixels * pix = (volatile struct Pixels *)vfeReBARMallocShared(ctx, sizeof(struct Pixels), &pixelsHandles);
 
   sycl::property_list sycl_queue_properties{sycl::property::queue::enable_profiling()};
   sycl::queue sycl_queue(sycl::gpu_selector_v, sycl_queue_properties);
 
-  struct PixelsSamples {
-    float pixels[WINDOW_HEIGHT][WINDOW_WIDTH][4];
-  };
-
   // Create an output frame buffer using USM shared allocation
   struct Pixels * pixels = (struct Pixels *)sycl::malloc_shared(sizeof(struct Pixels), sycl_queue);
   struct PixelsSamples * pixelsSamples = (struct PixelsSamples *)sycl::malloc_shared(sizeof(struct PixelsSamples), sycl_queue);
+
   int sampleCount = 0;
 
   // Mouse state tracking
