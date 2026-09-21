@@ -488,7 +488,7 @@ int main() {
 #endif
 
   gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
-  vfWindowFullscreen(ctx, window_handle, "[vkFast] RT 3D Mesh Stanford Bunny CPU Slow BVH Part 2", 700, 700, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
+  vfWindowFullscreen(ctx, window_handle, "[vkFast] RT 3D Mesh Stanford Bunny CPU Slow BVH Part 2", window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
 
   const unsigned array65536[2] = {65536, 65536};
 
