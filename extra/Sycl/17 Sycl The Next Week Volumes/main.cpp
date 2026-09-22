@@ -369,14 +369,20 @@ vec4 iBox(vec3 ro, vec3 rd, vec3 center, vec3 rad, mat4 l2wMatrix, vec2 tm)
 
   if(res.x > tm.x && res.x < tm.y)
   {
-    res.yzw() = normalize((l2wMatrix * vec4(-sign(rdd)*res.yzw(),0.0)).xyz());
+    vec3 tmp = normalize((l2wMatrix * vec4(-sign(rdd)*res.yzw(),0.0)).xyz());
+    res.y = tmp.x;
+    res.z = tmp.y;
+    res.w = tmp.z;
     return res;
   }
 
   res = vec4( t2min,step(t2,vec3(t2min)) );
   if(res.x > tm.x && res.x < tm.y)
   {
-    res.yzw() = normalize((l2wMatrix * vec4(-sign(rdd)*res.yzw(),0.0)).xyz());
+    vec3 tmp = normalize((l2wMatrix * vec4(-sign(rdd)*res.yzw(),0.0)).xyz());
+    res.y = tmp.x;
+    res.z = tmp.y;
+    res.w = tmp.z;
     return res;
   }
   return vec4(1e20);
@@ -406,9 +412,13 @@ void hit_cube(vec3 ro, vec3 rd, cube c, vec3 offset, float rotY, vec2 tm, hit & 
   mat2 rotateMatrix = rotate(a);
   //world->local
   vec3 localRo = ro - offset;
-  localRo.xz() = rotateMatrix*localRo.xz();
+  vec2 tmp1 = rotateMatrix*localRo.xz();
+  localRo.x = tmp1.x;
+  localRo.z = tmp1.y;
   vec3 localRd = rd;
-  localRd.xz() = rotateMatrix*localRd.xz();
+  vec2 tmp2 = rotateMatrix*localRd.xz();
+  localRd.x = tmp2.x;
+  localRd.z = tmp2.y;
 
   quad box[6];
   getQube(c, box);
@@ -424,7 +434,9 @@ void hit_cube(vec3 ro, vec3 rd, cube c, vec3 offset, float rotY, vec2 tm, hit & 
 
       rec.n = localNormal;
       //local->world
-      rec.n.xz() = rotate(-a)*rec.n.xz();
+      vec2 tmp3 = rotate(-a)*rec.n.xz();
+      rec.n.x = tmp3.x;
+      rec.n.z = tmp3.y;
     }
   }
 }
