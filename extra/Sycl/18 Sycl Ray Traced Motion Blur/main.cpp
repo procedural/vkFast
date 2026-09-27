@@ -211,7 +211,7 @@ void mainImage(vec4 & fragColor, vec2 fragCoord, vec2 iResolution, vec2 iMouse, 
     float fj = float(j);
 
     #ifdef MOTIONBLUR
-    time = iTime + fj/(float(SAMPLES)*TARGETFPS);
+    time = iTime + fj/(float(SAMPLES)*TARGETFPS); // time = iTime + hash( 12.34751478347*fj+time+seed )/TARGETFPS;
     #endif
 
     rv2 = hash2( 24.4316544311*fj+time+seed );
