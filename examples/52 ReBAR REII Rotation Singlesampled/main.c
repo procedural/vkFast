@@ -28,18 +28,11 @@ int main() {
       /*visib*/ RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX,
       /*sampl*/ 0,
     },
-    {
-      /*slot*/  1,
-      /*type*/  RED_STRUCT_MEMBER_TYPE_TEXTURE_RO,
-      /*count*/ 1,
-      /*visib*/ RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT,
-      /*sampl*/ 0,
-    },
   };
   ppi                        = &ppiMeshState;
   ppi->struct_members_count  = countof(ppiMeshStateSlots);
   ppi->struct_members        = ppiMeshStateSlots;
-  ppi->variables_slot        = 2;
+  ppi->variables_slot        = 1;
   ppi->variables_bytes_count = sizeof(struct Variables);
 
   int window_w = 700;
@@ -322,7 +315,6 @@ int main() {
     gpu_batch_info_t bindings_info = {0};
     bindings_info.max_new_bindings_sets_count = 1;
     bindings_info.max_storage_binds_count     = 1;
-    bindings_info.max_texture_ro_binds_count  = 1;
     batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
     list->batch_id = batch;
     reiiCommandListReset(ctx, list);
