@@ -1,5 +1,5 @@
-// dxc.exe mesh.hlsl -DVS -T vs_6_0 -Fh mesh.vs.h -spirv
-// dxc.exe mesh.hlsl -DFS -T ps_6_0 -Fh mesh.fs.h -spirv
+// dxc.exe mesh.hlsl -DVS -T vs_6_0 -Fh mesh.vs.h -Vn g_main_vs -spirv
+// dxc.exe mesh.hlsl -DFS -T ps_6_0 -Fh mesh.fs.h -Vn g_main_fs -spirv
 
 #include "shared_data.h"
 
