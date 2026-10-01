@@ -305,22 +305,22 @@ int main() {
     // Vertex UVs
 
     sharedData[0].meshQuadVertexUVs[0].x = 0;
-    sharedData[0].meshQuadVertexUVs[0].y = 0;
+    sharedData[0].meshQuadVertexUVs[0].y = 1;
 
     sharedData[0].meshQuadVertexUVs[1].x = 1;
-    sharedData[0].meshQuadVertexUVs[1].y = 0;
+    sharedData[0].meshQuadVertexUVs[1].y = 1;
 
     sharedData[0].meshQuadVertexUVs[2].x = 1;
-    sharedData[0].meshQuadVertexUVs[2].y = 1;
+    sharedData[0].meshQuadVertexUVs[2].y = 0;
 
     sharedData[0].meshQuadVertexUVs[3].x = 0;
-    sharedData[0].meshQuadVertexUVs[3].y = 0;
+    sharedData[0].meshQuadVertexUVs[3].y = 1;
 
     sharedData[0].meshQuadVertexUVs[4].x = 1;
-    sharedData[0].meshQuadVertexUVs[4].y = 1;
+    sharedData[0].meshQuadVertexUVs[4].y = 0;
 
     sharedData[0].meshQuadVertexUVs[5].x = 0;
-    sharedData[0].meshQuadVertexUVs[5].y = 1;
+    sharedData[0].meshQuadVertexUVs[5].y = 0;
   }
 
   uint64_t batch = 0;
