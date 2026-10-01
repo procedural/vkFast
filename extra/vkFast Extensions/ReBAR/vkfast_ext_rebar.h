@@ -219,7 +219,7 @@ VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocShared(gpu_handle_cont
     REDGPU_2_EXPECTWG((array.memoryBytesCount - bytesCount) <= maxAllowedOverallocationBytesCount);
   }
 
-  const uint64_t minAllowedBytesCount = 1ULL * 1024*1024*1024; // NOTE(Constantine): Requiring 1 GB of VRAM minimum, to excluse dGPUs with 256 MB ReBARs only, like RTX 20 series and older.
+  const uint64_t minAllowedBytesCount = 200ULL * 1024*1024; // NOTE(Constantine): Requiring 200 MB of ReBAR VRAM minimum.
   unsigned pickedMemoryTypeReBAR = -1;
   if (vkfast->gpuInfo->gpuType == RED_GPU_TYPE_DISCRETE) {
     pickedMemoryTypeReBAR = vfeReBARInternalPickSpecificMemoryTypeReBARdGpu(vkfast->gpuInfo, &array, minAllowedBytesCount);

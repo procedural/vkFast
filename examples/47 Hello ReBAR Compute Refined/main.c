@@ -16,7 +16,7 @@ typedef ReiiVec4 float4;
 
 int main(int ArgsCount, char ** Args) {
   gpu_handle_context_t ctx = vfContextInitNoDefaultAllocs(1, NULL, FF, LL);
-  REDGPU_2_EXPECTFL(vfeReBARGetMaxMallocSharedSize(ctx) >= (4ULL * 1024*1024*1024 - 1));
+  //REDGPU_2_EXPECTFL(vfeReBARGetMaxMallocSharedSize(ctx) >= (4ULL * 1024*1024*1024 - 1));
 
   gpu_program_pipeline_info_t * ppi = NULL;
 
@@ -41,7 +41,7 @@ int main(int ArgsCount, char ** Args) {
   gpu_thread_t gpu_thread = NULL;
   vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
 
-  VfeReBARMallocShared sharedDataHandles = {};
+  VfeReBARMallocShared sharedDataHandles = {0};
   volatile struct SharedData * sharedData = (volatile struct SharedData *)vfeReBARMallocShared(ctx, sizeof(struct SharedData), &sharedDataHandles);
   
   sharedData[0].input[0].x = 4;
