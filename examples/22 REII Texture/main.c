@@ -105,17 +105,6 @@ int main() {
     FF, LL
   );
 
-  #include "mesh.vs.h"
-  #include "mesh.fs.h"
-  gpu_program_info_t vp = {0};
-  vp.program_binary_bytes_count = sizeof(g_main_vs);
-  vp.program_binary             = g_main_vs;
-  gpu_program_info_t fp = {0};
-  fp.program_binary_bytes_count = sizeof(g_main_fs);
-  fp.program_binary             = g_main_fs;
-  char * vp_string = NULL;
-  char * fp_string = NULL;
-
   ReiiMeshState mesh_state                                  = {0};
   mesh_state.rasterizationDepthClampEnable                  = 0;
   mesh_state.rasterizationCullMode                          = REII_CULL_MODE_NONE;
@@ -158,11 +147,13 @@ int main() {
   mesh_state.outputColorBlendAlphaFactorSource              = REII_BLEND_FACTOR_ZERO;
   mesh_state.outputColorBlendAlphaFactorTarget              = REII_BLEND_FACTOR_ZERO;
   mesh_state.outputColorBlendAlphaOp                        = REII_BLEND_OP_ADD;
-  mesh_state.codeVertex                                     = vp_string;
-  mesh_state.codeFragment                                   = fp_string;
+  mesh_state.codeVertex                                     = NULL;
+  mesh_state.codeFragment                                   = NULL;
   mesh_state.extension                                      = NULL;
-  mesh_state.programVertex                                  = vp;
-  mesh_state.programFragment                                = fp;
+  mesh_state.programVertex.program_binary_bytes_count       = 0;
+  mesh_state.programVertex.program_binary                   = NULL;
+  mesh_state.programFragment.program_binary_bytes_count     = 0;
+  mesh_state.programFragment.program_binary                 = NULL;
   mesh_state.compileInfo.state_multisample_count            = RED_MULTISAMPLE_COUNT_BITFLAG_4;
   mesh_state.compileInfo.output_depth_stencil_enable        = 0;
   mesh_state.compileInfo.output_depth_stencil_format        = RED_FORMAT_DEPTH_32_FLOAT;
@@ -184,7 +175,24 @@ int main() {
   mesh_state.programPipelineInfo.struct_members        = slots;
   mesh_state.programPipelineInfoSamplersCount          = 1;
 
-  reiiMeshStateCompile(ctx, &mesh_state);
+  mesh_state.compileCommandVS =
+  "/opt/dxc"
+  " \"/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
+  " -DVS -T vs_6_0 -Fo"
+  " \"/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv\""
+  " -spirv";
+
+  mesh_state.compileCommandFS =
+  "/opt/dxc"
+  " \"/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
+  " -DFS -T ps_6_0 -Fo"
+  " \"/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv\""
+  " -spirv";
+
+  mesh_state.compiledSpvFilepathVS = "/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv";
+  mesh_state.compiledSpvFilepathFS = "/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv";
+
+  reiiMeshStateCompileEx(ctx, &mesh_state);
 
   ReiiHandleTextureMemory outputDSTexMemory = {0};
   reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL_MSAA, (288/*mb*/ * 1024 * 1024), &outputDSTexMemory);
@@ -507,50 +515,7 @@ int main() {
     }
 
     if (glfwGetKey(window, GLFW_KEY_R) == 1) {
-      // NOTE(Constantine):
-      // Replace compiler and shader paths below to yours.
-
-      #if 0 // defined(_WIN32)
-      // Recompile mesh states
-      reiiMeshStateRecompileEx(ctx, &mesh_state,
-
-        "C:/Programs/Dxc/dxc.exe"
-        " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
-        " -DVS -T vs_6_0 -Fo"
-        " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv\""
-        " -spirv",
-
-        "C:/Programs/Dxc/dxc.exe"
-        " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
-        " -DFS -T ps_6_0 -Fo"
-        " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv\""
-        " -spirv",
-
-        "C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv",
-        "C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv"
-      );
-      #endif
-
-      #if defined(__linux__) && !defined(__ANDROID__)
-      // Recompile mesh states
-      reiiMeshStateRecompileEx(ctx, &mesh_state,
-
-        "/opt/dxc"
-        " \"/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
-        " -DVS -T vs_6_0 -Fo"
-        " \"/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv\""
-        " -spirv",
-
-        "/opt/dxc"
-        " \"/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
-        " -DFS -T ps_6_0 -Fo"
-        " \"/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv\""
-        " -spirv",
-
-        "/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv",
-        "/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv"
-      );
-      #endif
+      reiiMeshStateCompileEx(ctx, &mesh_state);
     }
 
     gpu_batch_info_t bindings_info = {0};
