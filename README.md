@@ -28,7 +28,7 @@ winget install --id Git.Git -e --source winget
 
 Then run the following command to install Visual Studio Community 2019 and `cl` C/C++ compiler:
 ```sh
-winget install --id Microsoft.VisualStudio.2019.Community --override "--passive --wait --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows11SDK.22000"
+winget install --id Microsoft.VisualStudio.2019.Community --override "--passive --wait --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows11SDK.22000 --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended"
 ```
 
 Re-run the PowerShell terminal for `git` command to work, and clone the following REDGPU SDK repositories like this:
