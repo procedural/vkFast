@@ -140,36 +140,39 @@ int main() {
   mesh_state.compileInfo.output_color_format                = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
   mesh_state.programPipelineInfo                            = ppiMeshState;
   mesh_state.programPipelineInfoSamplersCount               = 1;
+
+  #define MY_VKFAST_PATH "/home/constantine/Desktop/vkfast/"
+
   mesh_state.compileCommandVS =
   "/opt/dxc"
-  " \"/home/constantine/Desktop/vkfast/examples/54 ReBAR REII Suzanne and a quad/mesh.hlsl\""
+  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.hlsl\""
   " -DVS -T vs_6_0 -Fo"
-  " \"/home/constantine/Desktop/vkfast/examples/54 ReBAR REII Suzanne and a quad/mesh.vs.spv\""
+  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.vs.spv\""
   " -spirv";
   mesh_state.compileCommandFS =
   "/opt/dxc"
-  " \"/home/constantine/Desktop/vkfast/examples/54 ReBAR REII Suzanne and a quad/mesh.hlsl\""
+  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.hlsl\""
   " -DFS -T ps_6_0 -Fo"
-  " \"/home/constantine/Desktop/vkfast/examples/54 ReBAR REII Suzanne and a quad/mesh.fs.spv\""
+  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.fs.spv\""
   " -spirv";
-  mesh_state.compiledSpvFilepathVS = "/home/constantine/Desktop/vkfast/examples/54 ReBAR REII Suzanne and a quad/mesh.vs.spv";
-  mesh_state.compiledSpvFilepathFS = "/home/constantine/Desktop/vkfast/examples/54 ReBAR REII Suzanne and a quad/mesh.fs.spv";
+  mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.vs.spv";
+  mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.fs.spv";
 
   ReiiMeshState quad_mesh_state = mesh_state;
   quad_mesh_state.compileCommandVS =
   "/opt/dxc"
-  " \"/home/constantine/Desktop/vkfast/examples/54 ReBAR REII Suzanne and a quad/quad_mesh.hlsl\""
+  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.hlsl\""
   " -DVS -T vs_6_0 -Fo"
-  " \"/home/constantine/Desktop/vkfast/examples/54 ReBAR REII Suzanne and a quad/quad_mesh.vs.spv\""
+  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.vs.spv\""
   " -spirv";
   quad_mesh_state.compileCommandFS =
   "/opt/dxc"
-  " \"/home/constantine/Desktop/vkfast/examples/54 ReBAR REII Suzanne and a quad/quad_mesh.hlsl\""
+  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.hlsl\""
   " -DFS -T ps_6_0 -Fo"
-  " \"/home/constantine/Desktop/vkfast/examples/54 ReBAR REII Suzanne and a quad/quad_mesh.fs.spv\""
+  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.fs.spv\""
   " -spirv";
-  quad_mesh_state.compiledSpvFilepathVS = "/home/constantine/Desktop/vkfast/examples/54 ReBAR REII Suzanne and a quad/quad_mesh.vs.spv";
-  quad_mesh_state.compiledSpvFilepathFS = "/home/constantine/Desktop/vkfast/examples/54 ReBAR REII Suzanne and a quad/quad_mesh.fs.spv";
+  quad_mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.vs.spv";
+  quad_mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.fs.spv";
 
   reiiMeshStateCompileEx(ctx, &mesh_state);
   reiiMeshStateCompileEx(ctx, &quad_mesh_state);
