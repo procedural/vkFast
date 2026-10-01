@@ -43,6 +43,11 @@ Get-ChildItem -Path "redgpu\RedGpuSDK\*" | Copy-Item -Destination "C:\RedGpuSDK\
 Get-ChildItem -Path "redgpu2\RedGpuSDK\*" | Copy-Item -Destination "C:\RedGpuSDK\" -Recurse -Force
 ```
 
+And now you can open and run in Visual Studio Community 2019 the `.vcxproj` files from the `examples` folder, like this:
+```sh
+Start-Process "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe" '"vkfast\examples\02 150 Lines Of Code\vs2019\main.vcxproj"'
+```
+
 Install instructions for Ubuntu
 -------------------------------
 
