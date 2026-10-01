@@ -18,6 +18,14 @@ Tested on real hardware
 
 The examples are tested on Intel i3 12100 CPU and Nvidia RTX 2060 (Turing) GPU, AMD Radeon Pro V520 (RDNA 1.0) GPU, AMD Radeon RX 550 (GCN 4.0, 2gb model) GPU, Intel Arc B580 GPU and Intel UHD Graphics 730 iGPU.
 
+Install instructions for Windows 10+
+------------------------------------
+
+Open a PowerShell terminal window and run the following command to install Git:
+```sh
+winget install --id Git.Git -e --source winget
+```
+
 Install instructions for Ubuntu
 -------------------------------
 
