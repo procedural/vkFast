@@ -583,6 +583,27 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   state->procedure           = procedure;
 }
 
+GPU_API_PRE void GPU_API_POST reiiMeshStateCompileEx(gpu_handle_context_t context, ReiiMeshState * state) {
+  const char * optionalFile = NULL;
+  int optionalLine = 0;
+
+  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
+
+  RedHandleGpu gpu = vkfast->gpu;
+
+  REDGPU_2_EXPECTWG(state->compileCommandVS != NULL);
+  REDGPU_2_EXPECTWG(state->compileCommandFS != NULL);
+  REDGPU_2_EXPECTWG(state->compiledSpvFilepathVS != NULL);
+  REDGPU_2_EXPECTWG(state->compiledSpvFilepathFS != NULL);
+
+  reiiMeshStateRecompileEx(context, state,
+    state->compileCommandVS,
+    state->compileCommandFS,
+    state->compiledSpvFilepathVS,
+    state->compiledSpvFilepathFS
+  );
+}
+
 GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx(gpu_handle_context_t context, ReiiMeshState * state, const char * compileCommandVS, const char * compileCommandFS, const char * compiledSpvFilepathVS, const char * compiledSpvFilepathFS) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
@@ -619,12 +640,12 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx(gpu_handle_context_t cont
   void * vs_fh   = (void *)-1;
   void * vs_fmap = (void *)-1;
   void * vs_spv  = NULL;
-  REDGPU_2_EXPECTWG(0 == red32FileMap((const unsigned short *)compiledSpvFilepathVS, &vs_fh, &vs_fmap, &vs_spv));
+  REDGPU_2_EXPECTWG(0 == red32FileMap((const unsigned short *)compiledSpvFilepathVS, &vs_fh, &vs_fmap, &vs_spv) || !"reiiMeshStateRecompileEx() or reiiMeshStateCompileEx() has failed to compile or load the GPU code with the provided compile or load commands.");
 
   void * fs_fh   = (void *)-1;
   void * fs_fmap = (void *)-1;
   void * fs_spv  = NULL;
-  REDGPU_2_EXPECTWG(0 == red32FileMap((const unsigned short *)compiledSpvFilepathFS, &fs_fh, &fs_fmap, &fs_spv));
+  REDGPU_2_EXPECTWG(0 == red32FileMap((const unsigned short *)compiledSpvFilepathFS, &fs_fh, &fs_fmap, &fs_spv) || !"reiiMeshStateRecompileEx() or reiiMeshStateCompileEx() has failed to compile or load the GPU code with the provided compile or load commands.");
 
   size_t vs_spv_bytes_count = 0;
   size_t fs_spv_bytes_count = 0;

@@ -192,6 +192,11 @@ typedef struct ReiiMeshState {
   gpu_program_pipeline_info_t programPipelineInfo;
   unsigned                    programPipelineInfoSamplersCount; // NOTE(Constantine)(Sep 14, 2026): REII binds all samplers per-command list in the second struct.
   const char *                optionalDebugName;
+  // reiiMeshStateCompileEx()-specific members:
+  const char *                compileCommandVS;      // Compile command
+  const char *                compileCommandFS;      // Compile command
+  const char *                compiledSpvFilepathVS; // Load command's filepath to SPV
+  const char *                compiledSpvFilepathFS; // Load command's filepath to SPV
   // Internal
   RedHandleGpuCode                       gpuCodeVertex;         // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
   RedHandleGpuCode                       gpuCodeFragment;       // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
@@ -350,6 +355,7 @@ GPU_API_PRE void GPU_API_POST reiiDestroyEx                           (gpu_handl
 
 // Misc Ex
 
+GPU_API_PRE void GPU_API_POST reiiMeshStateCompileEx                  (gpu_handle_context_t context, ReiiMeshState * state);
 GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx                (gpu_handle_context_t context, ReiiMeshState * state, const char * compileCommandVS, const char * compileCommandFS, const char * compiledSpvFilepathVS, const char * compiledSpvFilepathFS);
 GPU_API_PRE void GPU_API_POST reiiTextureDefineEx                     (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment);
 GPU_API_PRE void GPU_API_POST reiiBatchImageSetUsableStateEx          (gpu_handle_context_t context, uint64_t batchId, RedHandleImage image, RedImagePartBitflags imageAllParts);
