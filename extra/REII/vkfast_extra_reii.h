@@ -190,7 +190,7 @@ typedef struct ReiiMeshState {
   gpu_program_info_t          programFragment;
   ReiiMeshStateCompileInfo    compileInfo;
   gpu_program_pipeline_info_t programPipelineInfo;
-  unsigned                    programPipelineInfoSamplersCount; // NOTE(Constantine)(Sep 14, 2026): REII binds all samplers globally in the second struct.
+  unsigned                    programPipelineInfoSamplersCount; // NOTE(Constantine)(Sep 14, 2026): REII binds all samplers per-command list in the second struct.
   const char *                optionalDebugName;
   // Internal
   RedHandleGpuCode                       gpuCodeVertex;         // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
