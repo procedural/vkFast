@@ -45,6 +45,19 @@
 #include <windows.h> // GetFileSizeEx
 #endif
 
+#ifdef __linux__
+  // NOTE(Constantine): Macros that mimic various Windows-specific stuff on Linux.
+  #include <sys/stat.h> // For stat struct
+  #define PLARGE_INTEGER size_t *
+  #define _popen(command, mode) popen(command, mode)
+  #define _pclose(stream)       pclose(stream)
+  #define GetFileSizeEx(fd, lpFileSize) { \
+    struct stat GetFileSizeEx_st = {0}; \
+    int GetFileSizeEx_success = fstat((int)(int64_t)(fd), &GetFileSizeEx_st); \
+    *(lpFileSize) = GetFileSizeEx_st.st_size; \
+  }
+#endif
+
 #define REII_INTERNAL_MAX_SAMPLERS_COUNT 4000
 
 typedef struct ReiiVec4 {
@@ -570,8 +583,7 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   state->procedure           = procedure;
 }
 
-#if defined(_WIN32)
-GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx(gpu_handle_context_t context, ReiiMeshState * state, const char * compileCommandVS, const char * compileCommandFS, const wchar_t * compiledSpvFilepathVS, const wchar_t * compiledSpvFilepathFS) {
+GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx(gpu_handle_context_t context, ReiiMeshState * state, const char * compileCommandVS, const char * compileCommandFS, const char * compiledSpvFilepathVS, const char * compiledSpvFilepathFS) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
@@ -607,12 +619,12 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx(gpu_handle_context_t cont
   void * vs_fh   = (void *)-1;
   void * vs_fmap = (void *)-1;
   void * vs_spv  = NULL;
-  REDGPU_2_EXPECTWG(0 == red32FileMap(compiledSpvFilepathVS, &vs_fh, &vs_fmap, &vs_spv));
+  REDGPU_2_EXPECTWG(0 == red32FileMap((const unsigned short *)compiledSpvFilepathVS, &vs_fh, &vs_fmap, &vs_spv));
 
   void * fs_fh   = (void *)-1;
   void * fs_fmap = (void *)-1;
   void * fs_spv  = NULL;
-  REDGPU_2_EXPECTWG(0 == red32FileMap(compiledSpvFilepathFS, &fs_fh, &fs_fmap, &fs_spv));
+  REDGPU_2_EXPECTWG(0 == red32FileMap((const unsigned short *)compiledSpvFilepathFS, &fs_fh, &fs_fmap, &fs_spv));
 
   size_t vs_spv_bytes_count = 0;
   size_t fs_spv_bytes_count = 0;
@@ -631,7 +643,6 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx(gpu_handle_context_t cont
   REDGPU_2_EXPECTWG(0 == red32FileUnmap(vs_fh, vs_fmap, vs_spv));
   REDGPU_2_EXPECTWG(0 == red32FileUnmap(fs_fh, fs_fmap, fs_spv));
 }
-#endif
 
 GPU_API_PRE RedHandleSampler GPU_API_POST reiiCreateSampler(gpu_handle_context_t context, const char * optionalDebugName, ReiiSamplerFiltering magFiltering, ReiiSamplerFiltering minFiltering, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateU, ReiiSamplerBehaviorOutsideTextureCoordinate behaviorOutsideTextureCoordinateV, int maxAnisotropy) {
   const char * optionalFile = NULL;

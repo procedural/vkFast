@@ -510,24 +510,45 @@ int main() {
       // NOTE(Constantine):
       // Replace compiler and shader paths below to yours.
 
-      #if defined(_WIN32)
+      #if 0 // defined(_WIN32)
       // Recompile mesh states
       reiiMeshStateRecompileEx(ctx, &mesh_state,
 
         "C:/Programs/Dxc/dxc.exe"
-          " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
-          " -DVS -T vs_6_0 -Fo"
-          " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv\""
-          " -spirv",
+        " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
+        " -DVS -T vs_6_0 -Fo"
+        " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv\""
+        " -spirv",
 
         "C:/Programs/Dxc/dxc.exe"
-          " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
-          " -DFS -T ps_6_0 -Fo"
-          " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv\""
-          " -spirv",
+        " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
+        " -DFS -T ps_6_0 -Fo"
+        " \"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv\""
+        " -spirv",
 
-        L"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv",
-        L"C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv"
+        "C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv",
+        "C:/Users/Constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv"
+      );
+      #endif
+
+      #if defined(__linux__) && !defined(__ANDROID__)
+      // Recompile mesh states
+      reiiMeshStateRecompileEx(ctx, &mesh_state,
+
+        "/opt/dxc"
+        " \"/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
+        " -DVS -T vs_6_0 -Fo"
+        " \"/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv\""
+        " -spirv",
+
+        "/opt/dxc"
+        " \"/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.hlsl\""
+        " -DFS -T ps_6_0 -Fo"
+        " \"/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv\""
+        " -spirv",
+
+        "/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.vs.spv",
+        "/home/constantine/Desktop/vkfast/examples/22 REII Texture/mesh.fs.spv"
       );
       #endif
     }
