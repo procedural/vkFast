@@ -604,7 +604,11 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompileEx(gpu_handle_context_t contex
   );
 }
 
+#ifdef _WIN32
+GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx(gpu_handle_context_t context, ReiiMeshState * state, const char * compileCommandVS, const char * compileCommandFS, const unsigned short * compiledSpvFilepathVS, const unsigned short * compiledSpvFilepathFS) {
+#else
 GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx(gpu_handle_context_t context, ReiiMeshState * state, const char * compileCommandVS, const char * compileCommandFS, const char * compiledSpvFilepathVS, const char * compiledSpvFilepathFS) {
+#endif
   const char * optionalFile = NULL;
   int optionalLine = 0;
 

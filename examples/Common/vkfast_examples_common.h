@@ -212,8 +212,8 @@ static gpu_handle_context_t vfContextInitExNoDefaultAllocs(int enable_debug_mode
   #if defined(_WIN32)
     #define GLFW_INCLUDE_NONE
     #define GLFW_EXPOSE_NATIVE_WIN32
-    #include "glfw-3.4.bin.WIN64/include/GLFW/glfw3.h" 
-    #include "glfw-3.4.bin.WIN64/include/GLFW/glfw3native.h"
+    #include "../Common/glfw-3.4.bin.WIN64/include/GLFW/glfw3.h" 
+    #include "../Common/glfw-3.4.bin.WIN64/include/GLFW/glfw3native.h"
     #ifndef VKFAST_EXAMPLES_COMMON_DO_NOT_LINK_GLFW3
     #pragma comment(lib, "../../Common/glfw-3.4.bin.WIN64/lib-vc2019/glfw3_mt.lib") // NOTE(Constantine): Path relative to example's vs2019/ folder.
     #endif

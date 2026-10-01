@@ -195,8 +195,13 @@ typedef struct ReiiMeshState {
   // reiiMeshStateCompileEx()-specific members:
   const char *                compileCommandVS;      // Compile command
   const char *                compileCommandFS;      // Compile command
+  #ifdef _WIN32
+  const unsigned short *      compiledSpvFilepathVS; // Load command's filepath to SPV
+  const unsigned short *      compiledSpvFilepathFS; // Load command's filepath to SPV
+  #else
   const char *                compiledSpvFilepathVS; // Load command's filepath to SPV
   const char *                compiledSpvFilepathFS; // Load command's filepath to SPV
+  #endif
   // Internal
   RedHandleGpuCode                       gpuCodeVertex;         // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
   RedHandleGpuCode                       gpuCodeFragment;       // NOTE(Constantine): To destroy. Not set by the user, set by the reiiMeshStateCompile() call.
@@ -356,7 +361,11 @@ GPU_API_PRE void GPU_API_POST reiiDestroyEx                           (gpu_handl
 // Misc Ex
 
 GPU_API_PRE void GPU_API_POST reiiMeshStateCompileEx                  (gpu_handle_context_t context, ReiiMeshState * state);
+#ifdef _WIN32
+GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx                (gpu_handle_context_t context, ReiiMeshState * state, const char * compileCommandVS, const char * compileCommandFS, const unsigned short * compiledSpvFilepathVS, const unsigned short * compiledSpvFilepathFS);
+#else
 GPU_API_PRE void GPU_API_POST reiiMeshStateRecompileEx                (gpu_handle_context_t context, ReiiMeshState * state, const char * compileCommandVS, const char * compileCommandFS, const char * compiledSpvFilepathVS, const char * compiledSpvFilepathFS);
+#endif
 GPU_API_PRE void GPU_API_POST reiiTextureDefineEx                     (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, ReiiTextureTexelFormat bindingTexelFormat, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment);
 GPU_API_PRE void GPU_API_POST reiiBatchImageSetUsableStateEx          (gpu_handle_context_t context, uint64_t batchId, RedHandleImage image, RedImagePartBitflags imageAllParts);
 GPU_API_PRE void GPU_API_POST reiiBatchImageCopyFromCpuEx             (gpu_handle_context_t context, uint64_t batchId, RedHandleImage image, RedImagePartBitflags imageAllParts, int bindingLevel, int bindingLayer, int bindingX, int bindingY, int width, int height, const ReiiCpuScratchBuffer * texels);

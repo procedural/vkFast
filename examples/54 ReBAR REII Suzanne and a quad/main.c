@@ -141,38 +141,55 @@ int main() {
   mesh_state.programPipelineInfo                            = ppiMeshState;
   mesh_state.programPipelineInfoSamplersCount               = 1;
 
-  #define MY_VKFAST_PATH "/home/constantine/Desktop/vkfast/"
+#ifdef _WIN32
+  #define MY_DXC_PATH        "C:/dxc/dxc.exe"
+  #define MY_VKFAST_PATH     "C:/vkfast/"
+  #define MY_VKFAST_PATH_WS L"C:/vkfast/"
+#else
+  #define MY_DXC_PATH        "/opt/dxc"
+  #define MY_VKFAST_PATH     "/home/constantine/Desktop/vkfast/"
+#endif
 
   mesh_state.compileCommandVS =
-  "/opt/dxc"
-  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.hlsl\""
-  " -DVS -T vs_6_0 -Fo"
-  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.vs.spv\""
-  " -spirv";
+    MY_DXC_PATH
+    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.hlsl\""
+    " -DVS -T vs_6_0 -Fo"
+    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.vs.spv\""
+    " -spirv";
   mesh_state.compileCommandFS =
-  "/opt/dxc"
-  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.hlsl\""
-  " -DFS -T ps_6_0 -Fo"
-  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.fs.spv\""
-  " -spirv";
+    MY_DXC_PATH
+    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.hlsl\""
+    " -DFS -T ps_6_0 -Fo"
+    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.fs.spv\""
+    " -spirv";
+#ifdef _WIN32
+  mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH_WS L"examples/54 ReBAR REII Suzanne and a quad/mesh.vs.spv";
+  mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH_WS L"examples/54 ReBAR REII Suzanne and a quad/mesh.fs.spv";
+#else
   mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.vs.spv";
   mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.fs.spv";
+#endif
 
   ReiiMeshState quad_mesh_state = mesh_state;
   quad_mesh_state.compileCommandVS =
-  "/opt/dxc"
-  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.hlsl\""
-  " -DVS -T vs_6_0 -Fo"
-  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.vs.spv\""
-  " -spirv";
+    MY_DXC_PATH
+    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.hlsl\""
+    " -DVS -T vs_6_0 -Fo"
+    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.vs.spv\""
+    " -spirv";
   quad_mesh_state.compileCommandFS =
-  "/opt/dxc"
-  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.hlsl\""
-  " -DFS -T ps_6_0 -Fo"
-  " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.fs.spv\""
-  " -spirv";
+    MY_DXC_PATH
+    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.hlsl\""
+    " -DFS -T ps_6_0 -Fo"
+    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.fs.spv\""
+    " -spirv";
+#ifdef _WIN32
+  quad_mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH_WS L"examples/54 ReBAR REII Suzanne and a quad/quad_mesh.vs.spv";
+  quad_mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH_WS L"examples/54 ReBAR REII Suzanne and a quad/quad_mesh.fs.spv";
+#else
   quad_mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.vs.spv";
   quad_mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.fs.spv";
+#endif
 
   reiiMeshStateCompileEx(ctx, &mesh_state);
   reiiMeshStateCompileEx(ctx, &quad_mesh_state);
@@ -196,7 +213,7 @@ int main() {
   reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputcoltex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
 
   // Create scratch memory for Suzanne texture uploads
-  VfeReBARMallocShared scratchMemoryHandles = {};
+  VfeReBARMallocShared scratchMemoryHandles = {0};
   void * scratchMemory = vfeReBARMallocShared(ctx, 64/*mb*/ * 1024 * 1024, &scratchMemoryHandles);
   ReiiCpuScratchBuffer scratchBuffer = {0};
   scratchBuffer.cpu_scratch_buffer_ptr = scratchMemory;
@@ -248,7 +265,7 @@ int main() {
     #include "../../extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
   };
 
-  VfeReBARMallocShared sharedDataHandles = {};
+  VfeReBARMallocShared sharedDataHandles = {0};
   volatile struct SharedData * sharedData = (volatile struct SharedData *)vfeReBARMallocShared(ctx, sizeof(struct SharedData), &sharedDataHandles);
 
   // Set Suzanne Head mesh data
