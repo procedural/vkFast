@@ -31,6 +31,18 @@ Then run the following command to install Visual Studio Community 2019 and `cl` 
 winget install --id Microsoft.VisualStudio.2019.Community --override "--passive --wait --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows11SDK.22000"
 ```
 
+Re-run the PowerShell terminal for `git` command to work, and clone the following REDGPU SDK repositories like this:
+```sh
+git clone https://github.com/redgpu/redgpu --depth 1
+git clone https://github.com/redgpu/redgpu2 --depth 1
+```
+
+Copy `RedGpuSDK` folders from both `redgpu` and `redgpu2` folders we just cloned to the `C:\` drive:
+```sh
+Get-ChildItem -Path "redgpu\RedGpuSDK\*" | Copy-Item -Destination "C:\RedGpuSDK\" -Recurse -Force
+Get-ChildItem -Path "redgpu2\RedGpuSDK\*" | Copy-Item -Destination "C:\RedGpuSDK\" -Recurse -Force
+```
+
 Install instructions for Ubuntu
 -------------------------------
 
