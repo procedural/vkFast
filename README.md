@@ -26,9 +26,9 @@ Open a PowerShell terminal window and run the following command to install Git:
 winget install --id Git.Git -e --source winget
 ```
 
-Then run the following command to install Visual Studio Community 2019:
+Then run the following command to install Visual Studio Community 2019 and `cl` C/C++ compiler:
 ```sh
-winget install -e --id Microsoft.VisualStudio.2019.Community
+winget install --id Microsoft.VisualStudio.2019.Community --override "--passive --wait --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows11SDK.22000"
 ```
 
 Install instructions for Ubuntu
