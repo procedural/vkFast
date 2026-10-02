@@ -25,7 +25,7 @@
 #endif
 
 IDC_IMGUI_API_PRE void * IDC_IMGUI_API_POST idcImguiInit   (gpu_handle_context_t context, GLFWwindow * glfw_window, gpu_thread_t * gpu_thread, ReiiHandleTexture * output_texture);
-IDC_IMGUI_API_PRE void   IDC_IMGUI_API_POST idcImguiDraw   (void * idcimgui);
+IDC_IMGUI_API_PRE void   IDC_IMGUI_API_POST idcImguiDraw   (void * idcimgui, int draw);
 IDC_IMGUI_API_PRE void   IDC_IMGUI_API_POST idcImguiDeinit (void * idcimgui);
 
 #ifdef IDC_IMGUI_IMPLEMENTATION
@@ -122,10 +122,12 @@ IDC_IMGUI_API_PRE void * IDC_IMGUI_API_POST idcImguiInit(gpu_handle_context_t co
   return idcimgui;
 }
 
-IDC_IMGUI_API_PRE void IDC_IMGUI_API_POST idcImguiDraw(void * idcimgui) {
-  igRender();
-  imguiSetProcessInputsState(1);
-  imguiNewFrame();
+IDC_IMGUI_API_PRE void IDC_IMGUI_API_POST idcImguiDraw(void * idcimgui, int draw) {
+  imguiSetProcessInputsState(draw);
+  if (draw) {
+    igRender();
+    imguiNewFrame();
+  }
 }
 
 IDC_IMGUI_API_PRE void IDC_IMGUI_API_POST idcImguiDeinit(void * idcimgui) {
