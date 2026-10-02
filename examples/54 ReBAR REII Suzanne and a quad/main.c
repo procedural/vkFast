@@ -11,8 +11,12 @@
 #include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../extra/stb_image 2017/stb_image.h"
+
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
+#define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
+#include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../Common/vkfast_examples_common.h"
+#include "../../extra/vkFast Extensions/I dont care/idc_imgui.h"
 
 typedef ReiiVec4 float4;
 
@@ -77,7 +81,7 @@ int main() {
 #endif
 
   // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
-  gpu_handle_context_t ctx = vfContextInitNoDefaultAllocs(1, NULL, FF, LL);
+  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
   vfWindowFullscreen(ctx, window_handle, "[vkFast] ReBAR REII Suzanne and a quad", window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
 
   const unsigned array65536[2] = {65536, 65536};
@@ -211,6 +215,8 @@ int main() {
   reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputcoltex, 0);
   reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputcoltex, 1);
   reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputcoltex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
+
+  void * idcimgui = idcImguiInit(ctx, window, &gpu_thread, outputcoltex);
 
   // Create scratch memory for Suzanne texture uploads
   VfeReBARMallocShared scratchMemoryHandles = {0};
@@ -487,6 +493,9 @@ int main() {
       vec3Add(&variables.cameraPos.x, &variables.cameraPos.x, move_vec_normalized);
     }
 
+    static bool showTestWindow = 1;
+    igShowTestWindow(&showTestWindow);
+
     gpu_batch_info_t bindings_info = {0};
     bindings_info.max_new_bindings_sets_count = 1;
     bindings_info.max_storage_binds_count     = 1;
@@ -523,6 +532,8 @@ int main() {
     uint64_t wait = vfAsyncBatchExecuteRaw(ctx, 1, &batchRaw, 1, &gpu_thread, array65536, FF, LL);
     vfAsyncWaitToFinish(ctx, wait, FF, LL);
 
+    idcImguiDraw(idcimgui, camera_is_enabled == 0);
+
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
     vfAsyncDrawImageRaw(ctx, outputcoltex->image.handle, NULL, 2, gpu_threads, array65536, FF, LL);
 
@@ -534,6 +545,7 @@ int main() {
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
   vfAllQueuesWaitIdle(ctx, FF, LL);
 
+  idcImguiDeinit(idcimgui);
   vfGpuThreadDestroy(ctx, gpu_thread);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_SAMPLER, sampler);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, textureHandle);
