@@ -46,8 +46,9 @@ typedef struct VfeReBARMallocShared {
 } VfeReBARMallocShared;
 
 #ifndef VFE_REBAR_API_NON_STATIC
-  #define VFE_REBAR_API_PRE  static
-  #define VFE_REBAR_API_POST
+#define VFE_REBAR_API_PRE  static
+#define VFE_REBAR_API_POST
+#define VFE_REBAR_IMPLEMENTATION
 #endif
 
 VFE_REBAR_API_PRE void     VFE_REBAR_API_POST vfeReBARGetMemoryBudget        (gpu_handle_context_t context, RedMemoryBudget * outMemoryBudget);
@@ -55,9 +56,6 @@ VFE_REBAR_API_PRE uint64_t VFE_REBAR_API_POST vfeReBARGetMaxMallocSharedSize (gp
 VFE_REBAR_API_PRE void *   VFE_REBAR_API_POST vfeReBARMallocShared           (gpu_handle_context_t context, uint64_t bytesCount, VfeReBARMallocShared * outArray);
 VFE_REBAR_API_PRE void     VFE_REBAR_API_POST vfeReBARFreeShared             (gpu_handle_context_t context, VfeReBARMallocShared * array);
 
-#ifndef VFE_REBAR_API_NON_STATIC
-  #define VFE_REBAR_IMPLEMENTATION
-#endif
 #ifdef VFE_REBAR_IMPLEMENTATION
 
 static void vfeReBARInternalFillMemoryTypeIsSupportedArray(unsigned resourceMemoryTypesSupported, unsigned char * outMemoryTypeIsSupportedArrayOf32) {
