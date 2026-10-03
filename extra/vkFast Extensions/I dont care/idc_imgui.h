@@ -1,22 +1,11 @@
 #pragma once
 
-#if 0
-#define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
-#define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
-#include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
-#include "../Common/vkfast_examples_common.h"
-#include "../../extra/vkFast Extensions/I dont care/idc_imgui.h"
-#endif
-
-// g++ -O2 -shared -fPIC -fvisibility=hidden  "../../extra/Dear ImGui 2016/imgui_megafile.cpp" -o libimgui.so
-// ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c libimgui.so
-// LD_LIBRARY_PATH=. XDG_SESSION_TYPE=x11 ./a.out
-
 #include "../../../vkfast.h"
 #include "../../../vkfast_ex.h"
 #include "../../../vkfast_ids.h"
 
 #include "../../../extra/Dear ImGui 2016/imgui_reii.h"
+#include "../../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 
 #ifndef IDC_IMGUI_API_NON_STATIC
 #define IDC_IMGUI_API_PRE  static

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../vkfast.h"
+
 #include <stdio.h>  // For printf
 #include <math.h>   // For sin, cos
 #include <time.h>   // For time
@@ -121,6 +123,10 @@ static void quatRotateVec3Fast(float * out, const float * v, const float * q) {
 }
 
 #ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
+
+#include "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.h"
+#include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
+
 static ReiiCpuScratchBuffer OffsetAllocateCpuScratchBuffer(uint64_t bytesCountToAllocate, gpu_storage_t * storage_cpu, uint64_t * storage_cpu_offset, const char * optionalFile, int optionalLine) {
   gpu_extra_banzai_pointer_t cpu_pointer = {0};
   vfeBanzaiGetPointer(storage_cpu, storage_cpu_offset[0], &cpu_pointer, optionalFile, optionalLine);
