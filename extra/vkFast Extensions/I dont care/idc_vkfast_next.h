@@ -13,7 +13,7 @@ static inline void vfBatchComputeLaunchThreads(gpu_handle_context_t context, uin
   unsigned workgroupsCountX = (threadsCountX / threadGroupsCountX) + (threadsCountX % threadGroupsCountX == 0 ? 0 : 1);
   unsigned workgroupsCountY = (threadsCountY / threadGroupsCountY) + (threadsCountY % threadGroupsCountY == 0 ? 0 : 1);
   unsigned workgroupsCountZ = (threadsCountZ / threadGroupsCountZ) + (threadsCountZ % threadGroupsCountZ == 0 ? 0 : 1);
-  vfBatchCompute(context, batchId, workgroupsCountX, workgroupsCountY, workgroupsCountZ, optionalFile, optionalLine);
+  vfBatchCompute(context, batchId, workgroupsCountX == 0 ? 1 : workgroupsCountX, workgroupsCountY == 0 ? 1 : workgroupsCountY, workgroupsCountZ == 0 ? 1 : workgroupsCountZ, optionalFile, optionalLine);
 }
 
 static inline void vfBatchComputeLaunchThreadsExact(gpu_handle_context_t context, uint64_t batchId, unsigned threadsCountX, unsigned threadsCountY, unsigned threadsCountZ, unsigned threadGroupsCountX, unsigned threadGroupsCountY, unsigned threadGroupsCountZ, const char * optionalFile, int optionalLine) {
