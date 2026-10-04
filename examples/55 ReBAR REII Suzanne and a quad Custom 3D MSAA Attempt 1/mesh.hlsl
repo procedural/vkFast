@@ -19,6 +19,16 @@ float4 quatNeg(float4 q) {
   return float4(-q.xyz, q.w);
 }
 
+uint packBgra8(float4 v) { // packUnorm4x8
+  // 1. Clamp to [0.0, 1.0] to ensure validity
+  // 2. Scale by 255
+  // 3. Round to nearest unsigned integer
+  uint4 packed = uint4(round(clamp(v, 0.0, 1.0) * 255.0));
+
+  // 4. Pack into 32-bit unsigned integer
+  return (packed.w << 24) | (packed.x << 16) | (packed.y << 8) | packed.z; // ARGB
+}
+
 #ifdef VS
 interpolated main(uint vid: SV_VertexID, uint iid: SV_InstanceID) {
   float4 pos = sharedData[0].meshSuzanneHeadVertexPos[vid];
@@ -39,13 +49,27 @@ interpolated main(uint vid: SV_VertexID, uint iid: SV_InstanceID) {
 #endif
 
 #ifdef FS
+
+[[vk::ext_extension("SPV_EXT_fragment_shader_interlock")]]
+
+[[vk::ext_instruction(/* OpBeginInvocationInterlockEXT */ 5364)]]
+void beginInvocationInterlockEXT();
+[[vk::ext_instruction(/* OpEndInvocationInterlockEXT */ 5365)]]
+void endInvocationInterlockEXT();
+
 void main(interpolated input) {
+  [[vk::ext_capability(/*FragmentShaderPixelInterlockEXT*/ 5378)]]
+  [[vk::ext_extension("SPV_EXT_fragment_shader_interlock")]]
+  vk::ext_execution_mode(/*PixelInterlockOrderedEXT*/ 5366);
+
   float4 c = texture.Sample(tsampler, input.uv);
   c *= c; // Gamma correcting texture colors loaded from disk.
 
   int x = input.position.x;
   int y = input.position.y;
 
-  sharedData[0].renderTargetFloat4[y][x] += c;
+  beginInvocationInterlockEXT();
+  sharedData[0].msaaRenderTargets[variables.msaaCurrentRenderTargetIndex][y][x] = packBgra8(c);
+  endInvocationInterlockEXT();
 }
 #endif
