@@ -462,7 +462,6 @@ int main() {
   variables.cameraRotQuaternion.w = 1;
 
   variables.msaaSamplesCount = msaaSamplesCount; // NOTE(Constantine): Passing MSAA samples count to the custom MSAA resolve compute shader.
-  variables.msaaCurrentRenderTargetIndex = 0;
 
   ReiiBool32 camera_is_enabled = 1;
   if (camera_is_enabled == 1) {
@@ -616,13 +615,13 @@ int main() {
     // Clear the accumulation buffer on each new frame here.
     // TODO(Constantine): Move this code to compute shader.
     #pragma omp parallel for
-    for (int i = 0; i < 16; i += 1) { // NOTE(Constantine): 16 is the max number of MSAA samples.
+    for (int y = 0; y < 700; y += 1) { // NOTE(Constantine): Resolution is hardcoded.
       #pragma omp parallel for
-      for (int y = 0; y < 700; y += 1) { // NOTE(Constantine): Resolution is hardcoded.
-        #pragma omp parallel for
-        for (int x = 0; x < 700; x += 1) { // NOTE(Constantine): Resolution is hardcoded.
-          sharedData[0].msaaRenderTargets[i][y][x] = 0;
-        }
+      for (int x = 0; x < 700; x += 1) { // NOTE(Constantine): Resolution is hardcoded.
+        sharedData[0].renderTargetFloat4[y][x].x = 0;
+        sharedData[0].renderTargetFloat4[y][x].y = 0;
+        sharedData[0].renderTargetFloat4[y][x].z = 0;
+        sharedData[0].renderTargetFloat4[y][x].w = 0;
       }
     }
 
@@ -658,7 +657,6 @@ int main() {
       v.cameraPos.x += msaa_camera_offset_xyz[i][0];
       v.cameraPos.y += msaa_camera_offset_xyz[i][1];
       v.cameraPos.z += msaa_camera_offset_xyz[i][2];
-      v.msaaCurrentRenderTargetIndex = i;
       reiiCommandBindVariablesCopy(ctx, list, 0, sizeof(v), &v);
 
       reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
@@ -667,8 +665,9 @@ int main() {
       reiiCommandMeshLaunchThreads(ctx, list, 0, 6, 0, 1);
 
       reiiCommandRenderTargetEnd(ctx, list);
+
+      vfBatchBarrierMemory(ctx, batch, FF, LL);
     }
-    vfBatchBarrierMemory(ctx, batch, FF, LL);
 
     vfBatchBindProgramPipelineCompute(ctx, batch, custom_msaa_resolve_pp, FF, LL);
     vfBatchBindNewBindingsSet(ctx, batch, ppiCustomMsaaResolve.struct_members_count, ppiCustomMsaaResolve.struct_members, FF, LL);
