@@ -81,9 +81,14 @@ int main() {
   int window_w = 700; // NOTE(Constantine): For this example, the texture sizes, including the one in shared_data.h, are hardcoded to this initial window size of 700x700.
   int window_h = 700;
 
+  #define APP_AND_FOLDER_NAME     "55 ReBAR REII Suzanne and a quad Custom 3D MSAA Attempt 1"
+  #ifdef _WIN32
+  #define APP_AND_FOLDER_NAME_WS L"55 ReBAR REII Suzanne and a quad Custom 3D MSAA Attempt 1"
+  #endif
+
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  GLFWwindow * window = glfwCreateWindow(window_w, window_h, "[vkFast] ReBAR REII Suzanne and a quad Custom 3D MSAA Attempt 1", 0, 0);
+  GLFWwindow * window = glfwCreateWindow(window_w, window_h, "[vkFast] " APP_AND_FOLDER_NAME, 0, 0);
 #if defined(_WIN32)
   void * window_handle = (void *)glfwGetWin32Window(window);
 #elif defined(__linux__) && !defined(__ANDROID__)
@@ -104,7 +109,7 @@ int main() {
 
   // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
   gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
-  vfWindowFullscreen(ctx, window_handle, "[vkFast] ReBAR REII Suzanne and a quad Custom 3D MSAA Attempt 1", window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
+  vfWindowFullscreen(ctx, window_handle, "[vkFast] " APP_AND_FOLDER_NAME, window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
 
   const unsigned array65536[2] = {65536, 65536};
 
@@ -178,43 +183,43 @@ int main() {
 
   mesh_state.compileCommandVS =
     MY_DXC_PATH
-    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.hlsl\""
+    " \"" MY_VKFAST_PATH "examples/" APP_AND_FOLDER_NAME "/mesh.hlsl\""
     " -DVS -T vs_6_0 -Fo"
-    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.vs.spv\""
+    " \"" MY_VKFAST_PATH "examples/" APP_AND_FOLDER_NAME "/mesh.vs.spv\""
     " -spirv";
   mesh_state.compileCommandFS =
     MY_DXC_PATH
-    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.hlsl\""
+    " \"" MY_VKFAST_PATH "examples/" APP_AND_FOLDER_NAME "/mesh.hlsl\""
     " -DFS -T ps_6_0 -Fo"
-    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.fs.spv\""
+    " \"" MY_VKFAST_PATH "examples/" APP_AND_FOLDER_NAME "/mesh.fs.spv\""
     " -spirv";
 #ifdef _WIN32
-  mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH_WS L"examples/54 ReBAR REII Suzanne and a quad/mesh.vs.spv";
-  mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH_WS L"examples/54 ReBAR REII Suzanne and a quad/mesh.fs.spv";
+  mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH_WS L"examples/" APP_AND_FOLDER_NAME_WS "/mesh.vs.spv";
+  mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH_WS L"examples/" APP_AND_FOLDER_NAME_WS "/mesh.fs.spv";
 #else
-  mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.vs.spv";
-  mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/mesh.fs.spv";
+  mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH "examples/" APP_AND_FOLDER_NAME "/mesh.vs.spv";
+  mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH "examples/" APP_AND_FOLDER_NAME "/mesh.fs.spv";
 #endif
 
   ReiiMeshState quad_mesh_state = mesh_state;
   quad_mesh_state.compileCommandVS =
     MY_DXC_PATH
-    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.hlsl\""
+    " \"" MY_VKFAST_PATH "examples/" APP_AND_FOLDER_NAME "/quad_mesh.hlsl\""
     " -DVS -T vs_6_0 -Fo"
-    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.vs.spv\""
+    " \"" MY_VKFAST_PATH "examples/" APP_AND_FOLDER_NAME "/quad_mesh.vs.spv\""
     " -spirv";
   quad_mesh_state.compileCommandFS =
     MY_DXC_PATH
-    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.hlsl\""
+    " \"" MY_VKFAST_PATH "examples/" APP_AND_FOLDER_NAME "/quad_mesh.hlsl\""
     " -DFS -T ps_6_0 -Fo"
-    " \"" MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.fs.spv\""
+    " \"" MY_VKFAST_PATH "examples/" APP_AND_FOLDER_NAME "/quad_mesh.fs.spv\""
     " -spirv";
 #ifdef _WIN32
-  quad_mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH_WS L"examples/54 ReBAR REII Suzanne and a quad/quad_mesh.vs.spv";
-  quad_mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH_WS L"examples/54 ReBAR REII Suzanne and a quad/quad_mesh.fs.spv";
+  quad_mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH_WS L"examples/" APP_AND_FOLDER_NAME_WS "/quad_mesh.vs.spv";
+  quad_mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH_WS L"examples/" APP_AND_FOLDER_NAME_WS "/quad_mesh.fs.spv";
 #else
-  quad_mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.vs.spv";
-  quad_mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH "examples/54 ReBAR REII Suzanne and a quad/quad_mesh.fs.spv";
+  quad_mesh_state.compiledSpvFilepathVS = MY_VKFAST_PATH "examples/" APP_AND_FOLDER_NAME "/quad_mesh.vs.spv";
+  quad_mesh_state.compiledSpvFilepathFS = MY_VKFAST_PATH "examples/" APP_AND_FOLDER_NAME "/quad_mesh.fs.spv";
 #endif
 
   reiiMeshStateCompileEx(ctx, &mesh_state);
