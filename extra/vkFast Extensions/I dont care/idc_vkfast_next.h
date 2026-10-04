@@ -8,8 +8,19 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../../extra/stb_image 2017/stb_image.h"
 
-static inline void vfBatchComputeLaunchThreadGroups(gpu_handle_context_t context, uint64_t batch_id, unsigned workgroups_count_x, unsigned workgroups_count_y, unsigned workgroups_count_z, const char * optional_file, int optional_line) {
-  vfBatchCompute(context, batch_id, workgroups_count_x, workgroups_count_y, workgroups_count_z, optional_file, optional_line);
+static inline void vfBatchComputeLaunchThreads(gpu_handle_context_t context, uint64_t batchId, unsigned threadsCountX, unsigned threadsCountY, unsigned threadsCountZ, unsigned threadGroupsCountX, unsigned threadGroupsCountY, unsigned threadGroupsCountZ, const char * optionalFile, int optionalLine) {
+  // https://www.reddit.com/r/vulkan/comments/1wx1a7m/
+  unsigned workgroupsCountX = (threadsCountX / threadGroupsCountX) + (threadsCountX % threadGroupsCountX == 0 ? 0 : 1);
+  unsigned workgroupsCountY = (threadsCountY / threadGroupsCountY) + (threadsCountY % threadGroupsCountY == 0 ? 0 : 1);
+  unsigned workgroupsCountZ = (threadsCountZ / threadGroupsCountZ) + (threadsCountZ % threadGroupsCountZ == 0 ? 0 : 1);
+  vfBatchCompute(context, batchId, workgroupsCountX, workgroupsCountY, workgroupsCountZ, optionalFile, optionalLine);
+}
+
+static inline void vfBatchComputeLaunchThreadsExact(gpu_handle_context_t context, uint64_t batchId, unsigned threadsCountX, unsigned threadsCountY, unsigned threadsCountZ, unsigned threadGroupsCountX, unsigned threadGroupsCountY, unsigned threadGroupsCountZ, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(threadsCountX % threadGroupsCountX == 0);
+  REDGPU_2_EXPECT(threadsCountY % threadGroupsCountY == 0);
+  REDGPU_2_EXPECT(threadsCountZ % threadGroupsCountZ == 0);
+  vfBatchComputeLaunchThreads(context, batchId, threadsCountX, threadsCountY, threadsCountZ, threadGroupsCountX, threadGroupsCountY, threadGroupsCountZ, optionalFile, optionalLine);
 }
 
 static inline void reiiCommandMeshLaunchThreads(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned vertexFirst, unsigned vertexCount, unsigned instanceFirst, unsigned instanceCount) {
