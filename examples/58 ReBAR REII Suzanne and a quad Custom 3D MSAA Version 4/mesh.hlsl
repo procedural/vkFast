@@ -40,7 +40,7 @@ interpolated main(uint vid: SV_VertexID, uint iid: SV_InstanceID) {
     float3 msaa_camera_offset_xyz;
     msaa_camera_offset_xyz.x = sharedData[0].msaaSamplesOffsetTableX[msaaCurrentSample] * msaaCameraOffsetMultiplier * length(vertexTranslated);
     msaa_camera_offset_xyz.y = sharedData[0].msaaSamplesOffsetTableY[msaaCurrentSample] * msaaCameraOffsetMultiplier * length(vertexTranslated);
-    msaa_camera_offset_xyz.z = sharedData[0].msaaSamplesOffsetTableZ[msaaCurrentSample] * msaaCameraOffsetMultiplier * length(vertexTranslated);
+    msaa_camera_offset_xyz.z = 0;
 
     msaa_camera_offset_xyz = quatRotateVec3Fast(msaa_camera_offset_xyz, cameraRotQuaternion);
 

@@ -378,59 +378,44 @@ int main() {
   // https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm#19.2.4%20Specification%20of%20Sample%20Positions
   float msaa_offsets_table_x1_x[1] = {0};
   float msaa_offsets_table_x1_y[1] = {0};
-  float msaa_offsets_table_x1_z[1] = {0};
   float msaa_offsets_table_x2_x[2] = { 4, -4};
   float msaa_offsets_table_x2_y[2] = { 4, -4};
-  float msaa_offsets_table_x2_z[2] = {-4,  4};
   float msaa_offsets_table_x4_x[4] = {-2,  6, -6,  2};
   float msaa_offsets_table_x4_y[4] = {-6, -2,  2,  6};
-  float msaa_offsets_table_x4_z[4] = { 2, -6,  6, -2};
   float msaa_offsets_table_x8_x[8] = { 1, -1,  5, -3, -5, -7,  3,  7};
   float msaa_offsets_table_x8_y[8] = {-3,  3,  1, -5,  5, -1,  7, -7};
-  float msaa_offsets_table_x8_z[8] = { 5, -5, -3,  1,  7,  3, -7, -1};
   float msaa_offsets_table_x16_x[16] = { 1, -1, -3,  4, -5,  2,  5,  3, -2,  0, -4, -6, -8,  7,  6, -7};
   float msaa_offsets_table_x16_y[16] = { 1, -3,  2, -1, -2,  5,  3, -5,  6, -7, -6,  4,  0, -4,  7, -8};
-  float msaa_offsets_table_x16_z[16] = {-5,  4,  1, -3,  6, -2, -7,  2,  0,  5,  7, -4, -8,  3, -6, -1};
   // Converting to a -0.5 to 0.5 range:
   for (int i = 0; i < 2;  i += 1) { msaa_offsets_table_x2_x[i]  /= 16.f; }
   for (int i = 0; i < 2;  i += 1) { msaa_offsets_table_x2_y[i]  /= 16.f; }
-  for (int i = 0; i < 2;  i += 1) { msaa_offsets_table_x2_z[i]  /= 16.f; }
   for (int i = 0; i < 4;  i += 1) { msaa_offsets_table_x4_x[i]  /= 16.f; }
   for (int i = 0; i < 4;  i += 1) { msaa_offsets_table_x4_y[i]  /= 16.f; }
-  for (int i = 0; i < 4;  i += 1) { msaa_offsets_table_x4_z[i]  /= 16.f; }
   for (int i = 0; i < 8;  i += 1) { msaa_offsets_table_x8_x[i]  /= 16.f; }
   for (int i = 0; i < 8;  i += 1) { msaa_offsets_table_x8_y[i]  /= 16.f; }
-  for (int i = 0; i < 8;  i += 1) { msaa_offsets_table_x8_z[i]  /= 16.f; }
   for (int i = 0; i < 16; i += 1) { msaa_offsets_table_x16_x[i] /= 16.f; }
   for (int i = 0; i < 16; i += 1) { msaa_offsets_table_x16_y[i] /= 16.f; }
-  for (int i = 0; i < 16; i += 1) { msaa_offsets_table_x16_z[i] /= 16.f; }
 
   int msaaSamplesCount = 16;
 
   float * msaa_samples_offset_table_x = NULL;
   float * msaa_samples_offset_table_y = NULL;
-  float * msaa_samples_offset_table_z = NULL;
 
   if (msaaSamplesCount == 1) {
     msaa_samples_offset_table_x = &msaa_offsets_table_x1_x[0];
     msaa_samples_offset_table_y = &msaa_offsets_table_x1_y[0];
-    msaa_samples_offset_table_z = &msaa_offsets_table_x1_z[0];
   } else if (msaaSamplesCount == 2) {
     msaa_samples_offset_table_x = &msaa_offsets_table_x2_x[0];
     msaa_samples_offset_table_y = &msaa_offsets_table_x2_y[0];
-    msaa_samples_offset_table_z = &msaa_offsets_table_x2_z[0];
   } else if (msaaSamplesCount == 4) {
     msaa_samples_offset_table_x = &msaa_offsets_table_x4_x[0];
     msaa_samples_offset_table_y = &msaa_offsets_table_x4_y[0];
-    msaa_samples_offset_table_z = &msaa_offsets_table_x4_z[0];
   } else if (msaaSamplesCount == 8) {
     msaa_samples_offset_table_x = &msaa_offsets_table_x8_x[0];
     msaa_samples_offset_table_y = &msaa_offsets_table_x8_y[0];
-    msaa_samples_offset_table_z = &msaa_offsets_table_x8_z[0];
   } else if (msaaSamplesCount == 16) {
     msaa_samples_offset_table_x = &msaa_offsets_table_x16_x[0];
     msaa_samples_offset_table_y = &msaa_offsets_table_x16_y[0];
-    msaa_samples_offset_table_z = &msaa_offsets_table_x16_z[0];
   } else {
     REDGPU_2_EXPECTFL(!"Error: unsupported msaaSamplesCount value (the only supported values are 1, 2, 4, 8 and 16).");
   }
@@ -438,7 +423,6 @@ int main() {
   for (int i = 0; i < msaaSamplesCount; i += 1) {
     sharedData[0].msaaSamplesOffsetTableX[i] = msaa_samples_offset_table_x[i];
     sharedData[0].msaaSamplesOffsetTableY[i] = msaa_samples_offset_table_y[i];
-    sharedData[0].msaaSamplesOffsetTableZ[i] = msaa_samples_offset_table_z[i];
   }
 
   #include "custom_msaa_resolve.cs.h"
@@ -614,23 +598,18 @@ int main() {
       if (msaaSamplesCount == 1) {
         msaa_samples_offset_table_x = &msaa_offsets_table_x1_x[0];
         msaa_samples_offset_table_y = &msaa_offsets_table_x1_y[0];
-        msaa_samples_offset_table_z = &msaa_offsets_table_x1_z[0];
       } else if (msaaSamplesCount == 2) {
         msaa_samples_offset_table_x = &msaa_offsets_table_x2_x[0];
         msaa_samples_offset_table_y = &msaa_offsets_table_x2_y[0];
-        msaa_samples_offset_table_z = &msaa_offsets_table_x2_z[0];
       } else if (msaaSamplesCount == 4) {
         msaa_samples_offset_table_x = &msaa_offsets_table_x4_x[0];
         msaa_samples_offset_table_y = &msaa_offsets_table_x4_y[0];
-        msaa_samples_offset_table_z = &msaa_offsets_table_x4_z[0];
       } else if (msaaSamplesCount == 8) {
         msaa_samples_offset_table_x = &msaa_offsets_table_x8_x[0];
         msaa_samples_offset_table_y = &msaa_offsets_table_x8_y[0];
-        msaa_samples_offset_table_z = &msaa_offsets_table_x8_z[0];
       } else if (msaaSamplesCount == 16) {
         msaa_samples_offset_table_x = &msaa_offsets_table_x16_x[0];
         msaa_samples_offset_table_y = &msaa_offsets_table_x16_y[0];
-        msaa_samples_offset_table_z = &msaa_offsets_table_x16_z[0];
       } else {
         REDGPU_2_EXPECTFL(!"Error: unsupported msaaSamplesCount value (the only supported values are 1, 2, 4, 8 and 16).");
       }
@@ -638,7 +617,6 @@ int main() {
       for (int i = 0; i < msaaSamplesCount; i += 1) {
         sharedData[0].msaaSamplesOffsetTableX[i] = msaa_samples_offset_table_x[i];
         sharedData[0].msaaSamplesOffsetTableY[i] = msaa_samples_offset_table_y[i];
-        sharedData[0].msaaSamplesOffsetTableZ[i] = msaa_samples_offset_table_z[i];
       }
     }
 

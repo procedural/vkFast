@@ -5,7 +5,6 @@ struct SharedData {
   float2 meshQuadVertexUVs[6];
   float  msaaSamplesOffsetTableX[16];
   float  msaaSamplesOffsetTableY[16];
-  float  msaaSamplesOffsetTableZ[16];
   float4 renderTargetFloat4[700][700]; // NOTE(Constantine): Hardcoded resolution for now, see the related comment in main.c.
 };
 
