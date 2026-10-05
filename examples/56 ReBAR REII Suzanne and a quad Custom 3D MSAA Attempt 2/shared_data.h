@@ -11,5 +11,5 @@ struct Variables {
   float4 cameraRotQuaternion;
   int    msaaSamplesCount;
   int    msaaResolve;
-  float  _[3];
+  float  _[2];
 };
