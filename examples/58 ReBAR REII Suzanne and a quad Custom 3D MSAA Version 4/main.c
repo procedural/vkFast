@@ -405,7 +405,7 @@ int main() {
   for (int i = 0; i < 16; i += 1) { msaa_offsets_table_x16_y[i] /= 16.f; }
   for (int i = 0; i < 16; i += 1) { msaa_offsets_table_x16_z[i] /= 16.f; }
 
-  const int msaaSamplesCount = 16;
+  int msaaSamplesCount = 16;
 
   float * msaa_samples_offset_table_x = NULL;
   float * msaa_samples_offset_table_y = NULL;
@@ -598,6 +598,48 @@ int main() {
       vec3Mulf(move_vec_normalized, move_vec_normalized, camera_move_speed);
 
       vec3Add(&variables.cameraPos.x, &variables.cameraPos.x, move_vec_normalized);
+    }
+
+    if (igSliderInt("msaa_samples_count", &msaaSamplesCount, 1, 16, NULL)) {
+      if (msaaSamplesCount == 3) {
+        msaaSamplesCount = 4;
+      } else if (msaaSamplesCount == 5 || msaaSamplesCount == 6 || msaaSamplesCount == 7) {
+        msaaSamplesCount = 8;
+      } else if (msaaSamplesCount > 8) {
+        msaaSamplesCount = 16;
+      }
+
+      variables.msaaSamplesCount = msaaSamplesCount;
+
+      if (msaaSamplesCount == 1) {
+        msaa_samples_offset_table_x = &msaa_offsets_table_x1_x[0];
+        msaa_samples_offset_table_y = &msaa_offsets_table_x1_y[0];
+        msaa_samples_offset_table_z = &msaa_offsets_table_x1_z[0];
+      } else if (msaaSamplesCount == 2) {
+        msaa_samples_offset_table_x = &msaa_offsets_table_x2_x[0];
+        msaa_samples_offset_table_y = &msaa_offsets_table_x2_y[0];
+        msaa_samples_offset_table_z = &msaa_offsets_table_x2_z[0];
+      } else if (msaaSamplesCount == 4) {
+        msaa_samples_offset_table_x = &msaa_offsets_table_x4_x[0];
+        msaa_samples_offset_table_y = &msaa_offsets_table_x4_y[0];
+        msaa_samples_offset_table_z = &msaa_offsets_table_x4_z[0];
+      } else if (msaaSamplesCount == 8) {
+        msaa_samples_offset_table_x = &msaa_offsets_table_x8_x[0];
+        msaa_samples_offset_table_y = &msaa_offsets_table_x8_y[0];
+        msaa_samples_offset_table_z = &msaa_offsets_table_x8_z[0];
+      } else if (msaaSamplesCount == 16) {
+        msaa_samples_offset_table_x = &msaa_offsets_table_x16_x[0];
+        msaa_samples_offset_table_y = &msaa_offsets_table_x16_y[0];
+        msaa_samples_offset_table_z = &msaa_offsets_table_x16_z[0];
+      } else {
+        REDGPU_2_EXPECTFL(!"Error: unsupported msaaSamplesCount value (the only supported values are 1, 2, 4, 8 and 16).");
+      }
+
+      for (int i = 0; i < msaaSamplesCount; i += 1) {
+        sharedData[0].msaaSamplesOffsetTableX[i] = msaa_samples_offset_table_x[i];
+        sharedData[0].msaaSamplesOffsetTableY[i] = msaa_samples_offset_table_y[i];
+        sharedData[0].msaaSamplesOffsetTableZ[i] = msaa_samples_offset_table_z[i];
+      }
     }
 
     static float msaa_camera_offset_multiplier = 0.003f;

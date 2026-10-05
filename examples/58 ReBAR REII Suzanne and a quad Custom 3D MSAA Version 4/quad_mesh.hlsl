@@ -32,16 +32,16 @@ interpolated main(uint vid: SV_VertexID, uint iid: SV_InstanceID) {
   float4 cameraRotQuaternion = variables.cameraRotQuaternion;
 
   // Custom 3D MSAA
-  float cameraOffsetMultiplier = variables.msaaCameraOffsetMultiplier;
-  {
-    int msaaCurrentSample = variables.msaaCurrentSample;
+  if (variables.msaaSamplesCount > 1) {
+    int   msaaCurrentSample          = variables.msaaCurrentSample;
+    float msaaCameraOffsetMultiplier = variables.msaaCameraOffsetMultiplier;
 
     float3 vertexTranslated = pos.xyz - cameraPos;
 
     float3 msaa_camera_offset_xyz;
-    msaa_camera_offset_xyz.x = sharedData[0].msaaSamplesOffsetTableX[msaaCurrentSample] * cameraOffsetMultiplier * length(vertexTranslated);
-    msaa_camera_offset_xyz.y = sharedData[0].msaaSamplesOffsetTableY[msaaCurrentSample] * cameraOffsetMultiplier * length(vertexTranslated);
-    msaa_camera_offset_xyz.z = sharedData[0].msaaSamplesOffsetTableZ[msaaCurrentSample] * cameraOffsetMultiplier * length(vertexTranslated);
+    msaa_camera_offset_xyz.x = sharedData[0].msaaSamplesOffsetTableX[msaaCurrentSample] * msaaCameraOffsetMultiplier * length(vertexTranslated);
+    msaa_camera_offset_xyz.y = sharedData[0].msaaSamplesOffsetTableY[msaaCurrentSample] * msaaCameraOffsetMultiplier * length(vertexTranslated);
+    msaa_camera_offset_xyz.z = sharedData[0].msaaSamplesOffsetTableZ[msaaCurrentSample] * msaaCameraOffsetMultiplier * length(vertexTranslated);
 
     msaa_camera_offset_xyz = quatRotateVec3Fast(msaa_camera_offset_xyz, cameraRotQuaternion);
 
