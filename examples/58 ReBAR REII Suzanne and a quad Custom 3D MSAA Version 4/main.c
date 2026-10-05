@@ -528,8 +528,46 @@ int main() {
       camera_is_enabled = !camera_is_enabled;
       glfwSetInputMode(window, GLFW_CURSOR, camera_is_enabled == 1 ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     } else if (camera_is_enabled == 1) {
+
+      // Smooth camera begin
+
+      #define MOUSE_HISTORY_SIZE 15
+
+      // 1. Calculate raw delta movement
       float mouse_move_x = (float)(mouse_x - mouse_x_prev) * mouse_move_sensitivity;
       float mouse_move_y = (float)(mouse_y - mouse_y_prev) * mouse_move_sensitivity;
+
+      // 2. Maintain a history ring-buffer of recent inputs
+      static float history_x[MOUSE_HISTORY_SIZE] = {0};
+      static float history_y[MOUSE_HISTORY_SIZE] = {0};
+      static int write_index = 0;
+
+      // Insert new raw data into the buffer
+      history_x[write_index] = mouse_move_x;
+      history_y[write_index] = mouse_move_y;
+      write_index = (write_index + 1) % MOUSE_HISTORY_SIZE;
+
+      // 3. Calculate the weighted average (Newer frames matter more)
+      float smooth_mouse_move_x = 0.0f;
+      float smooth_mouse_move_y = 0.0f;
+      float total_weight = 0.0f;
+
+      for (int i = 0; i < MOUSE_HISTORY_SIZE; ++i) {
+        // Determine age: 0 is oldest, (SIZE - 1) is newest frame in buffer
+        int age = (write_index - 1 - i + MOUSE_HISTORY_SIZE) % MOUSE_HISTORY_SIZE;
+
+        // Linear weight: newest frames get the highest weight multiplier
+        float weight = (float)(MOUSE_HISTORY_SIZE - age);
+
+        smooth_mouse_move_x += history_x[i] * weight;
+        smooth_mouse_move_y += history_y[i] * weight;
+        total_weight += weight;
+      }
+
+      smooth_mouse_move_x /= total_weight;
+      smooth_mouse_move_y /= total_weight;
+
+      // Smooth camera end
 
       float key_f = glfwGetKey(window, GLFW_KEY_W);
       float key_b = glfwGetKey(window, GLFW_KEY_S);
@@ -545,8 +583,8 @@ int main() {
   
       float axis_x[3] = {1, 0, 0};
       float axis_y[3] = {0, 1, 0};
-      quatFromAxisAngle(rot_y, axis_y, mouse_move_x);
-      quatFromAxisAngle(rot_x, axis_x, mouse_move_y);
+      quatFromAxisAngle(rot_y, axis_y, smooth_mouse_move_x);
+      quatFromAxisAngle(rot_x, axis_x, smooth_mouse_move_y);
   
       quatMul(&variables.cameraRotQuaternion.x, &variables.cameraRotQuaternion.x, rot_x);
       quatMul(&variables.cameraRotQuaternion.x, rot_y, &variables.cameraRotQuaternion.x);
