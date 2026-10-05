@@ -600,7 +600,7 @@ int main() {
       vec3Add(&variables.cameraPos.x, &variables.cameraPos.x, move_vec_normalized);
     }
 
-    static float msaa_camera_offset_multiplier = 0.004f;
+    static float msaa_camera_offset_multiplier = 0.003f;
     igSliderFloat("msaa_camera_offset_multiplier", &msaa_camera_offset_multiplier, 0.0f, 1.0f, NULL, 1);
 
     float msaaCameraOffsetMultiplier = msaa_camera_offset_multiplier;
