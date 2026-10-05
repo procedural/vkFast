@@ -445,7 +445,7 @@ int main() {
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
   ReiiHandleCommandList * list = &hlist;
-  Red2Output mutable_outputs_array[17] = {0};
+  Red2Output mutable_outputs_array[32] = {0};
   list->mutable_outputs_array.items    = mutable_outputs_array;
   list->mutable_outputs_array.capacity = countof(mutable_outputs_array);
 
