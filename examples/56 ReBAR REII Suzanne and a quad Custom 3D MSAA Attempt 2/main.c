@@ -637,11 +637,6 @@ int main() {
     reiiCommandListReset(ctx, list);
     reiiCommandSetViewportEx(ctx, list, 0, 0, window_w, window_h, 0, 1);
     reiiCommandSetScissor(ctx, list, 0, 0, window_w, window_h);
-    float clearR = sqrt(0.f);
-    float clearG = sqrt(0.f);
-    float clearB = sqrt(0.05f);
-    float clearA = 1.f;
-    reiiCommandClearTexture(ctx, list, outputdstex, outputcoltex, outputcoltex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, clearB,clearG,clearR,clearA);
 
     reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
     reiiCommandBindSamplers(ctx, list, 1, &sampler);
@@ -665,6 +660,11 @@ int main() {
     vfBatchBindVariablesCopy(ctx, batch, 0, sizeof(variables), &variables, FF, LL);
 
     for (int i = 0; i < msaaSamplesCount; i += 1) {
+      float clearR = sqrt(0.f);
+      float clearG = sqrt(0.f);
+      float clearB = sqrt(0.05f);
+      float clearA = 1.f;
+      reiiCommandClearTexture(ctx, list, outputdstex, outputcoltex, outputcoltex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, clearB,clearG,clearR,clearA);
       reiiCommandRenderTargetSet(ctx, list, outputdstex, outputcoltex, outputcoltex->texture);
 
       struct Variables v = variables;
