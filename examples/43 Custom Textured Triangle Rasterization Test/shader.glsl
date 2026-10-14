@@ -59,7 +59,30 @@ void mainImage(uvec3 id, vec2 fragCoord) {
     vec4 outputColor = vec4(0, 0, 0, 1);
 
     if (t > 0.0f && u >= 0.0f && v >= 0.0f && w >= 0.0f) {
-        vec4 sampleColor = texelFetch(iChannel0, ivec2(fract(u * uvA + v * uvB + w * uvC) * vec2(SWIZ(iChannelResolution[0].xy))), 0);
+        vec2 res = vec2(SWIZ(iChannelResolution[0].xy));
+        ivec2 iRes = ivec2(res);
+
+        vec2 UV = u * uvA + v * uvB + w * uvC;
+
+        vec2 texCoord = UV * res - 0.5f;
+        ivec2 base = ivec2(floor(texCoord));
+        vec2 f = fract(texCoord);
+
+        ivec2 c00 = /*imod*/(base + ivec2(0,0)) % iRes;
+        ivec2 c10 = /*imod*/(base + ivec2(1,0)) % iRes;
+        ivec2 c01 = /*imod*/(base + ivec2(0,1)) % iRes;
+        ivec2 c11 = /*imod*/(base + ivec2(1,1)) % iRes;
+
+        vec4 p00 = texelFetch(iChannel0, c00, 0);
+        vec4 p10 = texelFetch(iChannel0, c10, 0);
+        vec4 p01 = texelFetch(iChannel0, c01, 0);
+        vec4 p11 = texelFetch(iChannel0, c11, 0);
+
+        // Bilinear filtering:
+        vec4 sampleColor = mix(mix(p00, p10, f.x), mix(p01, p11, f.x), f.y);
+
+        // Nearest filtering:
+        //vec4 sampleColor = texelFetch(iChannel0, ivec2(fract(u * uvA + v * uvB + w * uvC) * vec2(SWIZ(iChannelResolution[0].xy))), 0);
 
         outputColor = sampleColor;
     } else {
