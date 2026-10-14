@@ -10,11 +10,11 @@ typedef unsigned uint;
 #define WINDOW_WIDTH  1920
 #define WINDOW_HEIGHT 1080
 
-#define TEXTURE0_SIZE_WIDTH  512
-#define TEXTURE0_SIZE_HEIGHT 512
+#define TEXTURE0_SIZE_WIDTH  1024
+#define TEXTURE0_SIZE_HEIGHT 1024
 
 unsigned char screen[WINDOW_HEIGHT][WINDOW_WIDTH][4] = {};
-float texture0[TEXTURE0_SIZE_WIDTH][TEXTURE0_SIZE_HEIGHT][4] = {};
+float texture0[TEXTURE0_SIZE_HEIGHT][TEXTURE0_SIZE_WIDTH][4] = {};
 
 float iTime = 0.0f;
 
@@ -40,6 +40,13 @@ vec4 texelFetch(void * _, ivec2 coord, int __) {
 #define SWIZ(X) X()
 
 #include "shader.glsl"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "../../extra/stb_image 2017/stb_image.h"
+
+#ifdef __linux__
+#define fopen_s(pFile, filename, mode) (*(pFile) = fopen((filename), (mode)))
+#endif
 
 int main() {
 #if defined(__MINGW32__)
@@ -71,6 +78,43 @@ int main() {
       texture0[y][x][1] = g;
       texture0[y][x][2] = b;
       texture0[y][x][3] = 1.0f;
+    }
+  }
+
+  // Load a texture file to texture0
+  if (1) {
+    FILE * image_file_fd = NULL;
+    fopen_s(&image_file_fd, "texture.png",  "rb");
+    REDGPU_2_EXPECTFL(image_file_fd != NULL || !"You need to have a 'texture.png' file with an alpha channel in this example's folder.");
+    int image_w = 0;
+    int image_h = 0;
+    int image_channels_count = 0;
+    void * image = stbi_load_from_file(image_file_fd, &image_w, &image_h, &image_channels_count, STBI_rgb_alpha);
+    REDGPU_2_EXPECTFL(image != NULL);
+    REDGPU_2_EXPECTFL(image_channels_count == 4);
+
+    struct ImageRgba {
+      unsigned char pixels[TEXTURE0_SIZE_HEIGHT][TEXTURE0_SIZE_WIDTH][4];
+    };
+
+    struct ImageRgba * image_rgba = (struct ImageRgba *)image;
+
+    for (int y = 0; y < TEXTURE0_SIZE_HEIGHT; y++) {
+      for (int x = 0; x < TEXTURE0_SIZE_WIDTH; x++) {
+        float r = (float)image_rgba->pixels[y][x][0] / 255.f;
+        float g = (float)image_rgba->pixels[y][x][1] / 255.f;
+        float b = (float)image_rgba->pixels[y][x][2] / 255.f;
+
+        // Gamma correction
+        r *= r;
+        g *= g;
+        b *= b;
+
+        texture0[y][x][0] = r;
+        texture0[y][x][1] = g;
+        texture0[y][x][2] = b;
+        texture0[y][x][3] = 1.0f;
+      }
     }
   }
 
