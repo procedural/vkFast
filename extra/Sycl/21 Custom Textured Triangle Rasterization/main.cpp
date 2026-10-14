@@ -148,7 +148,7 @@ int main() {
     iTime  += 0.01f;
     iFrame += 1;
 
-    sycl_queue.submit([&](sycl::handler& sycl_cgh) {
+    auto syclQueueSubmitEvent = sycl_queue.submit([&](sycl::handler& sycl_cgh) {
       sycl_cgh.parallel_for(sycl::range<2>(WINDOW_HEIGHT, WINDOW_WIDTH), [=](sycl::id<2> sycl_id) {
         int y = sycl_id[0];
         int x = sycl_id[1];
@@ -164,6 +164,13 @@ int main() {
     sycl_queue.wait();
 
     clock_gettime(CLOCK_MONOTONIC, &end);
+
+    if (1) {
+      auto end   = syclQueueSubmitEvent.get_profiling_info<sycl::info::event_profiling::command_end>();
+      auto start = syclQueueSubmitEvent.get_profiling_info<sycl::info::event_profiling::command_start>();
+
+      std::cout << "Sycl queue submit elapsed time: " << (end - start) << " nanoseconds.\n";
+    }
 
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
     vfDrawPixels(ctx, screen, NULL, 2, gpu_threads, array65536, FF, LL);
