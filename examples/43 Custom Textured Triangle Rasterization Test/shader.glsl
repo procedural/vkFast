@@ -65,6 +65,7 @@ void mainImage(uvec3 id, vec2 fragCoord) {
         vec2 UV = u * uvA + v * uvB + w * uvC;
 
         vec2 texCoord = UV * res - 0.5f;
+        texCoord = clamp(texCoord, vec2(0.0f), res - 1.0f); // Clamp texCoord between 0 and the maximum resolution index
         ivec2 base = ivec2(floor(texCoord));
         vec2 f = fract(texCoord);
 
