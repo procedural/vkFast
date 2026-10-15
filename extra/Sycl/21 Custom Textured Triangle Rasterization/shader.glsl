@@ -3,11 +3,14 @@ vec3 hash3(float n) {
     return normalize(vec3(fract(sin(n)*43758.54f), fract(sin(n+1.f)*43758.54f), fract(sin(n+2.f)*43758.54f)) * 2.0f - 1.0f);
 }
 
-void mainImage(uvec3 id, struct Pixels * screen, struct Texture * iChannel0, vec2 fragCoord, vec2 iResolution, vec2 iMouse, float iTime, float iFrame) {
+// 2D Edge Function (Pineda edge function algorithm) - Returns positive if p is to the right of edge v0->v1
+float edgeFunction(vec2 v0, vec2 v1, vec2 p) {
+    return (p.x - v0.x) * (v1.y - v0.y) - (p.y - v0.y) * (v1.x - v0.x);
+}
 
+void mainImage(uvec3 id, struct Pixels * screen, struct Texture * iChannel0, vec2 fragCoord, vec2 iResolution, vec2 iMouse, float iTime, float iFrame) {
+    // Normalized device coordinates configuration
     vec2 p = (fragCoord - SWIZ(vec2(iResolution).xy) * 0.5f) / vec2(iResolution).y;
-    vec3 d = normalize(vec3(p, 1));
-    vec3 o = vec3(0, 0, -2);
 
     // 1. Create an animated quaternion from a random axis and time-based angle
     float seed = 42.0;
@@ -34,6 +37,7 @@ void mainImage(uvec3 id, struct Pixels * screen, struct Texture * iChannel0, vec
     b += offset;
     c += offset;
 
+    // UV coordinates
     vec2 uvA = vec2(0, 0);
     vec2 uvB = vec2(1, 0);
     vec2 uvC = vec2(0.5f, 1);
@@ -41,27 +45,47 @@ void mainImage(uvec3 id, struct Pixels * screen, struct Texture * iChannel0, vec
     //vec2 uvB = vec2(4,0);
     //vec2 uvC = vec2(2,4); // High tiling factor
 
-    // Ray-Triangle Plane Intersection
-    vec3 e1 = b - a;
-    vec3 e2 = c - a;
-    vec3 n = cross(e1, e2);
-    float t = dot(a - o, n) / dot(d, n);
-    vec3 q_pos = o + d * t;
+    // Project 3D points onto the 2D ray plane (z-homogenous coordinate division)
+    vec2 pA = SWIZ(a.xy) / a.z;
+    vec2 pB = SWIZ(b.xy) / b.z;
+    vec2 pC = SWIZ(c.xy) / c.z;
 
-    // Barycentric Coordinates
-    float area = dot(n, n);
-    float u = dot(cross(c - b, q_pos - b), n) / area;
-    float v = dot(cross(a - c, q_pos - c), n) / area;
-    float w = 1.0 - u - v;
+    // Compute sub-triangle areas for barycentric interpolation
+    float area = edgeFunction(pA, pB, pC);
 
-    vec4 outputColor = vec4(0, 0, 0, 1);
+    // Evaluate edge equations for the current pixel coordinate 'p'
+    float w0 = edgeFunction(pB, pC, p);
+    float w1 = edgeFunction(pC, pA, p);
+    float w2 = edgeFunction(pA, pB, p);
 
-    if (t > 0.0f && u >= 0.0f && v >= 0.0f && w >= 0.0f) {
+    vec4 outputColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+    // Check if the pixel resides within the triangle boundaries (handling backface/clockwise orientation)
+    if ((area >= 0.0f && w0 >= 0.0f && w1 >= 0.0f && w2 >= 0.0f) ||
+        (area <  0.0f && w0 <= 0.0f && w1 <= 0.0f && w2 <= 0.0f)) {
+
+        // Calculate true 2D Barycentric coordinates
+        float invArea = 1.0f / area;
+        float u = w0 * invArea;
+        float v = w1 * invArea;
+        float w = w2 * invArea;
+
+        // Perspective-correct interpolation weights
+        float invZ = u / a.z + v / b.z + w / c.z;
+        u = (u / a.z) / invZ;
+        v = (v / b.z) / invZ;
+        w = (w / c.z) / invZ;
+
+        // Interpolate UVs
         vec2 res = vec2(TEXTURE0_SIZE_WIDTH, TEXTURE0_SIZE_HEIGHT);
         ivec2 iRes = ivec2(res);
 
         vec2 UV = u * uvA + v * uvB + w * uvC;
 
+        // UV tiling
+        UV = fract(UV);
+
+        // Bilinear texture filtering setup
         vec2 texCoord = UV * res - 0.5f;
         texCoord = clamp(texCoord, vec2(0.0f), res - 1.0f); // Clamp texCoord between 0 and the maximum resolution index
         ivec2 base = ivec2(floor(texCoord));
@@ -77,16 +101,10 @@ void mainImage(uvec3 id, struct Pixels * screen, struct Texture * iChannel0, vec
         vec4 p01 = texelFetch(iChannel0, c01, 0);
         vec4 p11 = texelFetch(iChannel0, c11, 0);
 
-        // Bilinear filtering:
-        vec4 sampleColor = mix(mix(p00, p10, f.x), mix(p01, p11, f.x), f.y);
+        outputColor = mix(mix(p00, p10, f.x), mix(p01, p11, f.x), f.y);
 
-        // Nearest filtering:
-        //vec4 sampleColor = texelFetch(iChannel0, ivec2(fract(u * uvA + v * uvB + w * uvC) * vec2(TEXTURE0_SIZE_WIDTH, TEXTURE0_SIZE_HEIGHT)), 0);
-
-        outputColor = sampleColor;
-    } else {
-        // Background sample color
-        outputColor = vec4(0, 0, 0, 1);
+        // Nearest texture filtering
+        //outputColor = texelFetch(iChannel0, ivec2(fract(u * uvA + v * uvB + w * uvC) * vec2(TEXTURE0_SIZE_WIDTH, TEXTURE0_SIZE_HEIGHT)), 0);
     }
 
     // Final color store
