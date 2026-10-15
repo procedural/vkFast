@@ -76,37 +76,35 @@ void mainImage(uvec3 id, struct Pixels * screen, struct Texture * iChannel0, vec
         v = (v / b.z) / invZ;
         w = (w / c.z) / invZ;
 
-        if (u >= 0.0f && v >= 0.0f && w >= 0.0f) {
-            // Interpolate UVs
-            vec2 res = vec2(TEXTURE0_SIZE_WIDTH, TEXTURE0_SIZE_HEIGHT);
-            ivec2 iRes = ivec2(res);
+        // Interpolate UVs
+        vec2 res = vec2(TEXTURE0_SIZE_WIDTH, TEXTURE0_SIZE_HEIGHT);
+        ivec2 iRes = ivec2(res);
 
-            vec2 UV = u * uvA + v * uvB + w * uvC;
+        vec2 UV = u * uvA + v * uvB + w * uvC;
 
-            // UV tiling
-            UV = fract(UV);
+        // UV tiling
+        UV = fract(UV);
 
-            // Bilinear texture filtering setup
-            vec2 texCoord = UV * res - 0.5f;
-            texCoord = clamp(texCoord, vec2(0.0f), res - 1.0f); // Clamp texCoord between 0 and the maximum resolution index
-            ivec2 base = ivec2(floor(texCoord));
-            vec2 f = fract(texCoord);
+        // Bilinear texture filtering setup
+        vec2 texCoord = UV * res - 0.5f;
+        texCoord = clamp(texCoord, vec2(0.0f), res - 1.0f); // Clamp texCoord between 0 and the maximum resolution index
+        ivec2 base = ivec2(floor(texCoord));
+        vec2 f = fract(texCoord);
 
-            ivec2 c00 = /*imod*/(base + ivec2(0,0)) % iRes;
-            ivec2 c10 = /*imod*/(base + ivec2(1,0)) % iRes;
-            ivec2 c01 = /*imod*/(base + ivec2(0,1)) % iRes;
-            ivec2 c11 = /*imod*/(base + ivec2(1,1)) % iRes;
+        ivec2 c00 = /*imod*/(base + ivec2(0,0)) % iRes;
+        ivec2 c10 = /*imod*/(base + ivec2(1,0)) % iRes;
+        ivec2 c01 = /*imod*/(base + ivec2(0,1)) % iRes;
+        ivec2 c11 = /*imod*/(base + ivec2(1,1)) % iRes;
 
-            vec4 p00 = texelFetch(iChannel0, c00, 0);
-            vec4 p10 = texelFetch(iChannel0, c10, 0);
-            vec4 p01 = texelFetch(iChannel0, c01, 0);
-            vec4 p11 = texelFetch(iChannel0, c11, 0);
+        vec4 p00 = texelFetch(iChannel0, c00, 0);
+        vec4 p10 = texelFetch(iChannel0, c10, 0);
+        vec4 p01 = texelFetch(iChannel0, c01, 0);
+        vec4 p11 = texelFetch(iChannel0, c11, 0);
 
-            outputColor = mix(mix(p00, p10, f.x), mix(p01, p11, f.x), f.y);
+        outputColor = mix(mix(p00, p10, f.x), mix(p01, p11, f.x), f.y);
 
-            // Nearest texture filtering
-            //outputColor = texelFetch(iChannel0, ivec2(fract(u * uvA + v * uvB + w * uvC) * vec2(TEXTURE0_SIZE_WIDTH, TEXTURE0_SIZE_HEIGHT)), 0);
-        }
+        // Nearest texture filtering
+        //outputColor = texelFetch(iChannel0, ivec2(fract(u * uvA + v * uvB + w * uvC) * vec2(TEXTURE0_SIZE_WIDTH, TEXTURE0_SIZE_HEIGHT)), 0);
     }
 
     // Final color store
