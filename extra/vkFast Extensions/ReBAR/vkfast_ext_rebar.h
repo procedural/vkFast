@@ -45,7 +45,7 @@ typedef struct VfeReBARMallocShared {
   RedStructMemberArray storageRaw;
 } VfeReBARMallocShared;
 
-#ifndef VFE_REBAR_API_NON_STATIC
+#if !defined(VFE_REBAR_API_NON_STATIC) && !defined(ALL_API_NON_STATIC)
 #define VFE_REBAR_API_PRE  static
 #define VFE_REBAR_API_POST
 #define VFE_REBAR_IMPLEMENTATION
