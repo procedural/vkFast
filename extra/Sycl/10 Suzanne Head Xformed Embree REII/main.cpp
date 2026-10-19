@@ -178,7 +178,6 @@ int main() {
   // Create a world instance of all instances
   RTCGeometry worldGeometry = rtcNewGeometry(rtm_rtc_device, RTC_GEOMETRY_TYPE_INSTANCE);
   rtcSetGeometryInstancedScene(worldGeometry, instanceScene);
-  //...
   rtcSetGeometryTransform(worldGeometry, 0, RTC_FORMAT_FLOAT3X4_COLUMN_MAJOR, m3x4);
   rtcCommitGeometry(worldGeometry);
 

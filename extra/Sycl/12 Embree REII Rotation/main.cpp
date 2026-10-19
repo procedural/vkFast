@@ -219,7 +219,6 @@ int main() {
   // Create a world xform 1 instance of all mesh xform 0 instances
   RTCGeometry worldXform1Geom = rtcNewGeometry(rtm_rtc_device, RTC_GEOMETRY_TYPE_INSTANCE);
   rtcSetGeometryInstancedScene(worldXform1Geom, suzanneInstanceScene);
-  //...
   rtcSetGeometryTransform(worldXform1Geom, 0, RTC_FORMAT_FLOAT3X4_COLUMN_MAJOR, m3x4);
   rtcCommitGeometry(worldXform1Geom);
 

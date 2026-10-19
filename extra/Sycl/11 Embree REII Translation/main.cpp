@@ -187,7 +187,6 @@ int main() {
   // Create a world instance of all instances
   RTCGeometry worldGeom = rtcNewGeometry(rtm_rtc_device, RTC_GEOMETRY_TYPE_INSTANCE);
   rtcSetGeometryInstancedScene(worldGeom, suzanneInstanceScene);
-  //...
   rtcSetGeometryTransform(worldGeom, 0, RTC_FORMAT_FLOAT3X4_COLUMN_MAJOR, m3x4);
   rtcCommitGeometry(worldGeom);
 
