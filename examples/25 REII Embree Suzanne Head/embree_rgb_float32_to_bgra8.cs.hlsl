@@ -1,4 +1,7 @@
-// C:\VulkanSDK\1.4.341.1\Bin\dxc.exe embree_rgb_float32_to_bgra8.cs.hlsl -T cs_6_0 -Fh embree_rgb_float32_to_bgra8.cs.h -spirv
+#if 0
+/opt/dxc embree_rgb_float32_to_bgra8.cs.hlsl -T cs_6_0 -Fh embree_rgb_float32_to_bgra8.cs.h -spirv
+exit
+#endif
 
 [[vk::binding(0, 0)]] RWStructuredBuffer<float4> array0;
 [[vk::binding(1, 0)]] RWStructuredBuffer<uint>   array1;

@@ -1,3 +1,9 @@
+#if 0
+gcc -c ../../vkfast.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/
+g++ main.cpp *.o -I"../../extra/REII Embree 1.1.0/include/renderer/" /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm "../../extra/REII Embree 1.1.0/embree/build/librenderer.a" "../../extra/REII Embree 1.1.0/embree/build/librtcore.a" "../../extra/REII Embree 1.1.0/embree/build/libsys.a" "../../extra/REII Embree 1.1.0/embree/build/libimage.a"
+exit
+#endif
+
 #define M_PI 3.14159265358979323846
 
 #include "../../vkfast.h"
@@ -8778,8 +8784,10 @@ int main() {
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
+  #if defined(_WIN32)
   LARGE_INTEGER frequency = {0};
   REDGPU_2_EXPECTFL(QueryPerformanceFrequency(&frequency) == TRUE); // Query the frequency (ticks per second)
+  #endif
 
   int window_w = 700;
   int window_h = 700;
@@ -9109,8 +9117,10 @@ int main() {
       continue;
     }
 
+    #if defined(_WIN32)
     LARGE_INTEGER t_start = {0};
     QueryPerformanceCounter(&t_start);
+    #endif
 
     {
       vfWindowGetSize(ctx, &window_w, &window_h);
@@ -9338,15 +9348,19 @@ int main() {
     mouse_y_prev = mouse_y;
     mouse_right_mouse_button_state_prev = mouse_right_mouse_button_state;
 
+    #if defined(_WIN32)
     LARGE_INTEGER t_end = {0};
     QueryPerformanceCounter(&t_end);
+    #endif
 
+    #if defined(_WIN32)
     {
       LONGLONG elapsedTicks = t_end.QuadPart - t_start.QuadPart;
       LONGLONG nanoseconds = (elapsedTicks * 1000000000LL) / frequency.QuadPart;
       double milliseconds_fp = (double)(nanoseconds) / 1000000.0;
       //printf("Elapsed milliseconds: %f\n", milliseconds_fp);
     }
+    #endif
   }
 
   vfAllQueuesWaitIdle(ctx, FF, LL);
