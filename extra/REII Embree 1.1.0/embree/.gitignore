@@ -1,6 +1,8 @@
 .vs/*
 *.vcxproj.user
 
+build/*
+
 common/x64/*
 renderer/x64/*
 rtcore/x64/*

@@ -25,4 +25,4 @@ ADD_EXECUTABLE(embree
   regression.cpp
 )
 
-TARGET_LINK_LIBRARIES(embree sys lexers loaders image renderer ${OPENGL_LIBRARY} ${GLUT_LIBRARY})
+TARGET_LINK_LIBRARIES(embree sys lexers loaders image renderer ${OPENGL_LIBRARY} ${GLUT_LIBRARY} ${GLUT_LIBRARIES})
