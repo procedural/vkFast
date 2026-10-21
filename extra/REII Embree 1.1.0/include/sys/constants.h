@@ -23,20 +23,23 @@
 
 #include <limits>
 
+#undef True
+#undef False
+
 namespace embree
 {
-  static struct NullTy {
-  } null MAYBE_UNUSED;
+  struct NullTy {
+  } null;
 
-  static struct TrueTy {
+  struct TrueTy {
     __forceinline operator bool( ) const { return true; }
-  } True MAYBE_UNUSED;
+  } True;
 
-  static struct FalseTy {
+  struct FalseTy {
     __forceinline operator bool( ) const { return false; }
-  } False MAYBE_UNUSED;
+  } False;
 
-  static struct ZeroTy
+  struct ZeroTy
   {
     __forceinline operator          double   ( ) const { return 0; }
     __forceinline operator          float    ( ) const { return 0; }
@@ -50,9 +53,9 @@ namespace embree
     __forceinline operator unsigned short    ( ) const { return 0; }
     __forceinline operator          char     ( ) const { return 0; }
     __forceinline operator unsigned char     ( ) const { return 0; }
-  } zero MAYBE_UNUSED;
+  } zero;
 
-  static struct OneTy
+  struct OneTy
   {
     __forceinline operator          double   ( ) const { return 1; }
     __forceinline operator          float    ( ) const { return 1; }
@@ -66,9 +69,9 @@ namespace embree
     __forceinline operator unsigned short    ( ) const { return 1; }
     __forceinline operator          char     ( ) const { return 1; }
     __forceinline operator unsigned char     ( ) const { return 1; }
-  } one MAYBE_UNUSED;
+  } one;
 
-  static struct NegInfTy
+  struct NegInfTy
   {
     __forceinline operator          double   ( ) const { return -std::numeric_limits<double>::infinity(); }
     __forceinline operator          float    ( ) const { return -std::numeric_limits<float>::infinity(); }
@@ -83,9 +86,9 @@ namespace embree
     __forceinline operator          char     ( ) const { return std::numeric_limits<char>::min(); }
     __forceinline operator unsigned char     ( ) const { return std::numeric_limits<unsigned char>::min(); }
 
-  } neg_inf MAYBE_UNUSED;
+  } neg_inf;
 
-  static struct PosInfTy
+  struct PosInfTy
   {
     __forceinline operator          double   ( ) const { return std::numeric_limits<double>::infinity(); }
     __forceinline operator          float    ( ) const { return std::numeric_limits<float>::infinity(); }
@@ -99,64 +102,64 @@ namespace embree
     __forceinline operator unsigned short    ( ) const { return std::numeric_limits<unsigned short>::max(); }
     __forceinline operator          char     ( ) const { return std::numeric_limits<char>::max(); }
     __forceinline operator unsigned char     ( ) const { return std::numeric_limits<unsigned char>::max(); }
-  } inf MAYBE_UNUSED, pos_inf MAYBE_UNUSED;
+  } inf MAYBE_UNUSED, pos_inf;
 
-  static struct NaNTy
+  struct NaNTy
   {
     __forceinline operator double( ) const { return std::numeric_limits<double>::quiet_NaN(); }
     __forceinline operator float ( ) const { return std::numeric_limits<float>::quiet_NaN(); }
-  } nan MAYBE_UNUSED;
+  } nan;
 
-  static struct UlpTy
+  struct UlpTy
   {
     __forceinline operator double( ) const { return std::numeric_limits<double>::epsilon(); }
     __forceinline operator float ( ) const { return std::numeric_limits<float>::epsilon(); }
-  } ulp MAYBE_UNUSED;
+  } ulp;
 
-  static struct PiTy
+  struct PiTy
   {
     __forceinline operator double( ) const { return 3.14159265358979323846; }
     __forceinline operator float ( ) const { return 3.14159265358979323846f; }
-  } pi MAYBE_UNUSED;
+  } pi;
 
-  static struct OneOverPiTy
+  struct OneOverPiTy
   {
     __forceinline operator double( ) const { return 0.31830988618379069122; }
     __forceinline operator float ( ) const { return 0.31830988618379069122f; }
-  } one_over_pi MAYBE_UNUSED;
+  } one_over_pi;
 
-  static struct TwoPiTy
+  struct TwoPiTy
   {
     __forceinline operator double( ) const { return 6.283185307179586232; }
     __forceinline operator float ( ) const { return 6.283185307179586232f; }
-  } two_pi MAYBE_UNUSED;
+  } two_pi;
 
-  static struct OneOverTwoPiTy
+  struct OneOverTwoPiTy
   {
     __forceinline operator double( ) const { return 0.15915494309189534561; }
     __forceinline operator float ( ) const { return 0.15915494309189534561f; }
-  } one_over_two_pi MAYBE_UNUSED;
+  } one_over_two_pi;
 
-  static struct FourPiTy
+  struct FourPiTy
   {
     __forceinline operator double( ) const { return 12.566370614359172464; } 
     __forceinline operator float ( ) const { return 12.566370614359172464f; }
-  } four_pi MAYBE_UNUSED;
+  } four_pi;
 
-  static struct OneOverFourPiTy
+  struct OneOverFourPiTy
   {
     __forceinline operator double( ) const { return 0.079577471545947672804; }
     __forceinline operator float ( ) const { return 0.079577471545947672804f; }
-  } one_over_four_pi MAYBE_UNUSED;
+  } one_over_four_pi;
 
-  static struct StepTy {
-  } step MAYBE_UNUSED;
+  struct StepTy {
+  } step;
 
-  static struct EmptyTy {
-  } empty MAYBE_UNUSED;
+  struct EmptyTy {
+  } empty;
 
-  static struct FullTy {
-  } full MAYBE_UNUSED;
+  struct FullTy {
+  } full;
 }
 
 #endif
