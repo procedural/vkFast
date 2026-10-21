@@ -116,9 +116,11 @@ __forceinline int32 atomic_cmpxchg(volatile int32* p, const int32 v, const int32
 
 #else
 
+#if !__has_builtin(__cpuid)
 __forceinline void __cpuid(int out[4], int op) {
   asm volatile ("cpuid" : "=a"(out[0]), "=b"(out[1]), "=c"(out[2]), "=d"(out[3]) : "a"(op)); 
 }
+#endif
 
 //__forceinline uint64 __rdtsc()  {
 //  uint32 high,low;
