@@ -9333,7 +9333,7 @@ int main() {
       vfBatchBindStorageRaw(ctx, batch, 1, 1, &pixels.gpu, FF, LL);
       vfBatchBindNewBindingsEnd(ctx, batch, FF, LL);
       float window_wh[2] = {(float)window_w, (float)window_h};
-      reiiCommandBindVariablesCopy(ctx, list, 0, sizeof(window_wh), window_wh);
+      vfBatchBindVariablesCopy(ctx, batch, 0, sizeof(window_wh), window_wh, FF, LL);
       vfBatchCompute(ctx, batch, ((window_w * window_h) / 32) + 1, 1, 1, FF, LL);
       vfBatchEnd(ctx, batch, FF, LL);
       RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
