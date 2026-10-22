@@ -399,8 +399,8 @@ int main() {
     #endif
     RTM_TBB_SYCL_PARALLEL_FOR_XY_BEGIN(WIDTH, HEIGHT, rtm_sycl_queue) {
       // Normalize coordinates to [-1, 1] range
-      float u = (x + 0.5f) / WIDTH * 2.0f - 1.0f;
-      float v = 1.0f - (y + 0.5f) / HEIGHT * 2.0f; // Flip Y for typical image coordinates
+      float u =        (x + 0.5f) / WIDTH  * 2.0f - 1.0f;
+      float v = 1.0f - (y + 0.5f) / HEIGHT * 2.0f;        // Flip Y for typical image coordinates
       float aspect = (float)WIDTH / (float)HEIGHT;
       u *= aspect;
 
