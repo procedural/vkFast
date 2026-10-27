@@ -5,7 +5,7 @@
 #include "../../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #include "../../../extra/vkFast Extensions/I dont care/idc_imgui.h"
 
-#define STB_IMAGE_IMPLEMENTATION
+//#define STB_IMAGE_IMPLEMENTATION // NOTE(Constantine): Define STB_IMAGE_IMPLEMENTATION when you include idc_vkfast_next.h in your main.c/.cpp file.
 #include "../../../extra/stb_image 2017/stb_image.h"
 
 static inline void vfBatchComputeLaunchThreads(gpu_handle_context_t context, uint64_t batchId, unsigned threadsCountX, unsigned threadsCountY, unsigned threadsCountZ, unsigned threadGroupsCountX, unsigned threadGroupsCountY, unsigned threadGroupsCountZ, const char * optionalFile, int optionalLine) {

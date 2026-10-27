@@ -15,6 +15,7 @@
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
 #include "../Common/vkfast_examples_common.h"
 
+#define STB_IMAGE_IMPLEMENTATION
 #include "../../extra/vkFast Extensions/I dont care/idc_vkfast_next.h"
 
 typedef ReiiVec4 float4;
