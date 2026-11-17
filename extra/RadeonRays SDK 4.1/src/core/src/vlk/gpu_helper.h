@@ -315,8 +315,8 @@ struct GpuHelper
     }
 
     void EncodeBindDescriptorSets(vk::DescriptorSet const* desc_sets,
-                                  std::uint32_t            num_desc_sets,
-                                  std::uint32_t            first_set,
+                                  uint32_t                 num_desc_sets,
+                                  uint32_t                 first_set,
                                   vk::PipelineLayout       layout,
                                   vk::CommandBuffer&       command_buffer) const
     {

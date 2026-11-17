@@ -1,4 +1,4 @@
-sudo dnf install spdlog-devel
+sudo apt install libspdlog-dev
 cd build/
-cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTING=OFF -DENABLE_VULKAN=ON -DEMBEDDED_KERNELS=ON
+VULKAN_SDK=~/VulkanSDK/1.4.350.0/x86_64/ cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTING=OFF -DENABLE_VULKAN=ON -DEMBEDDED_KERNELS=ON
 make
