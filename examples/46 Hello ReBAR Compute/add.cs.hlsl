@@ -1,4 +1,7 @@
-// dxc.exe add.cs.hlsl -T cs_6_0 -Fh add.cs.h -spirv
+#if 0
+/opt/dxc add.cs.hlsl -T cs_6_0 -Fh add.cs.h -spirv
+exit
+#endif
 
 #include "shared_data.h"
 

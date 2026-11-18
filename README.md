@@ -1,7 +1,7 @@
 vkFast
 ------
 
-vkFast is a **fully open source** Vulkan 1.0-based GPU API inspired by OpenGL 1.4 display lists and Mantle API.
+vkFast is a **fully open source** Vulkan 1.0-based GPU API inspired by Mantle API.
 
 <img width="716" height="477" alt="thumb" src="https://github.com/user-attachments/assets/d3780970-0d82-4949-8b84-2cbb03c9ba04" />
 
@@ -13,10 +13,15 @@ Another video tutorial on how to printf in GPU compute shaders in vkFast on Linu
 
 https://www.youtube.com/watch?v=mlU35k1CufY
 
+Supported hardware
+------------------
+
+Since November 15, 2026, vkFast supports all iGPUs and only ReBAR-enabled dGPUs such as AMD Radeon RX 5000+ series, Nvidia RTX 3000+ series, and Intel Arc GPUs.
+
 Tested on real hardware
 -----------------------
 
-The examples are tested on Intel i3 12100 CPU and Nvidia RTX 2060 (Turing) GPU, AMD Radeon Pro V520 (RDNA 1.0) GPU, AMD Radeon RX 550 (GCN 4.0, 2gb model) GPU, Intel Arc B580 GPU and Intel UHD Graphics 730 iGPU.
+The examples are tested on Intel i3 12100 CPU and Intel Arc B580 GPU, Intel UHD Graphics 730 iGPU and AMD Radeon Pro V520 (RDNA 1.0) GPU.
 
 Install instructions for Windows 10+
 ------------------------------------

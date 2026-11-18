@@ -1,48 +1,25 @@
 #include "../../vkfast_ex.h"
 #include "../../vkfast_ids.h"
 
-#ifdef _WIN32
 #undef GPU_API_PRE
 #undef GPU_API_POST
-#define GPU_API_PRE __declspec(dllexport)
-#define GPU_API_POST
-#endif
 
-#include "vkfast_extra_reii.h"
-#include <math.h> // For log2
-
-#ifndef __cplusplus
-#define REDGPU_DISABLE_NAMED_PARAMETERS
-#endif
 #if defined(_WIN32)
-  #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
-    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np.h"
-    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu.h"
-    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu_2.h"
-    #include "/data/data/com.termux/files/home/RedGpuSDK/misc/np/np_redgpu_wsi.h"
-  #elif defined(VKFAST_INCLUDE_LINUX_PATHS)
-    #include "/home/linuxbrew/RedGpuSDK/misc/np/np.h"
-    #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu.h"
-    #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_2.h"
-    #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_wsi.h"
-  #else
-    #include "C:/RedGpuSDK/misc/np/np.h"
-    #include "C:/RedGpuSDK/misc/np/np_redgpu.h"
-    #include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
-    #include "C:/RedGpuSDK/misc/np/np_redgpu_wsi.h"
-  #endif
-#elif defined(__linux__) && !defined(__ANDROID__)
-  #include "/home/linuxbrew/RedGpuSDK/misc/np/np.h"
-  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu.h"
-  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_2.h"
-  #include "/home/linuxbrew/RedGpuSDK/misc/np/np_redgpu_wsi.h"
+  #define GPU_API_PRE  __declspec(dllexport)
+  #define GPU_API_POST
+#elif defined(__linux__)
+  #define GPU_API_PRE  __attribute__((visibility("default")))
+  #define GPU_API_POST
 #else
   #error Unsupported OS for now
 #endif
 
-#include <stdio.h>   // For _popen, _pclose
+#include "vkfast_extra_reii.h"
+
+#include <stdio.h> // For _popen, _pclose
+#include <math.h>  // For log2
 #if defined(_WIN32)
-#include <windows.h> // GetFileSizeEx
+  #include <windows.h> // GetFileSizeEx
 #endif
 
 #ifdef __linux__

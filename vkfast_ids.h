@@ -35,78 +35,46 @@ extern "C" {
 #endif
 
 typedef struct vf_handle_context_t {
-  int                doNotDestroyRawContext;
-  int                doNotFreeHandle;
+  int                 doNotDestroyRawContext;
+  int                 doNotFreeHandle;
 
-  int                isDebugMode;
+  int                 isDebugMode;
   
-  RedContext         context;
-  const RedGpuInfo * gpuInfo;
+  RedContext          context;
+  const RedGpuInfo *  gpuInfo;
 
-  unsigned           gpuIndex;
-  RedHandleGpu       gpu;
-  unsigned           mainQueueIndex;
-  unsigned           mainQueueFamilyIndex;
-  RedHandleQueue     mainQueue;
-
-  unsigned           specificMemoryTypesGpuVram;
-  unsigned           specificMemoryTypesCpuUpload;
-  unsigned           specificMemoryTypesCpuReadback;
-
-  uint64_t           memoryAllocationSizeGpuVram;
-  uint64_t           memoryAllocationSizeCpuUpload;
-  uint64_t           memoryAllocationSizeCpuReadback;
-  uint64_t           memoryAllocationSizeCpuUploadPresentPixels;
-
-  // Memory
-
-  RedArray           memoryGpuVramForArrays_array;
-  RedHandleMemory    memoryGpuVramForArrays_memory;
-  uint64_t           memoryGpuVramForArrays_memory_suballocations_offset;
-
-  RedArray           memoryCpuUpload_array;
-  RedHandleMemory    memoryCpuUpload_memory;
-  void *             memoryCpuUpload_mapped_void_ptr_original;
-  void *             memoryCpuUpload_mapped_void_ptr_offset;
-  uint64_t           memoryCpuUpload_memory_suballocations_offset;
-
-  RedArray           memoryCpuReadback_array;
-  RedHandleMemory    memoryCpuReadback_memory;
-  void *             memoryCpuReadback_mapped_void_ptr_original;
-  void *             memoryCpuReadback_mapped_void_ptr_offset;
-  uint64_t           memoryCpuReadback_memory_suballocations_offset;
+  unsigned            gpuIndex;
+  RedHandleGpu        gpu;
+  unsigned            mainQueueIndex;
+  unsigned            mainQueueFamilyIndex;
+  RedHandleQueue      mainQueue;
 
   // WSI
 
-  void *             windowHandle;
-  int                windowHandleDoDestroy;
-  int                screenWidth;
-  int                screenHeight;
+  void *              windowHandle;
+  int                 windowHandleDoDestroy;
+  int                 screenWidth;
+  int                 screenHeight;
 
-  unsigned           presentQueueIndex;
-  RedHandleSurface   surface;
-  RedHandlePresent   present;
-  RedHandleImage     presentImages[3];
-  RedHandleCpuSignal presentCpuSignal;
-  RedHandleGpuSignal presentGpuSignalAcquire;
-  RedHandleGpuSignal presentGpuSignalSubmit;
-  RedCalls           presentCopyCalls;
-  uint64_t           presentPixelsCpuUpload_memory_allocation_size;
-  RedHandleMemory    presentPixelsCpuUpload_memory;
-  RedArray           presentPixelsCpuUpload_array;
-  void *             presentPixelsCpuUpload_void_ptr_original;
+  unsigned            presentQueueIndex;
+  RedHandleSurface    surface;
+  RedHandlePresent    present;
+  RedHandleImage      presentImages[3];
+  RedHandleCpuSignal  presentCpuSignal;
+  RedHandleGpuSignal  presentGpuSignalAcquire;
+  RedHandleGpuSignal  presentGpuSignalSubmit;
+  RedCalls            presentCopyCalls;
+  uint64_t            presentPixelsCpuUpload_memory_allocation_size;
+  RedHandleMemory     presentPixelsCpuUpload_memory;
+  RedArray            presentPixelsCpuUpload_array;
+  void *              presentPixelsCpuUpload_void_ptr_original;
 
   RedPresentVsyncMode presentVsyncMode;
   int                 presentImagesCount;
 
-  int                featureArrayTimestampEnabled;
+  int                 featureArrayTimestampEnabled;
   const RedGpuInfoOptionalInfoArrayTimestamp * featureArrayTimestampInfo;
 } vf_handle_context_t;
-
-typedef struct vf_handle_storage_t {
-  gpu_storage_info_t   info;           // NOTE(Constantine): Optional debug name is a stale pointer, do not use.
-  RedStructMemberArray arrayRangeInfo; // NOTE(Constantine): Kept for GPU copy calls.
-} vf_handle_storage_t;
 
 typedef enum vf_gpu_code_type_t {
   VF_GPU_CODE_TYPE_INVALID = 0,
@@ -143,17 +111,15 @@ typedef struct vf_handle_batch_t {
 
 typedef enum vf_handle_id_t {
   VF_HANDLE_ID_INVALID   = 0,
-  VF_HANDLE_ID_STORAGE   = 1,
-  VF_HANDLE_ID_GPU_CODE  = 2,
-  VF_HANDLE_ID_PROCEDURE = 3,
-  VF_HANDLE_ID_BATCH     = 4,
+  VF_HANDLE_ID_GPU_CODE  = 1,
+  VF_HANDLE_ID_PROCEDURE = 2,
+  VF_HANDLE_ID_BATCH     = 3,
 } vf_handle_id_t;
 
 typedef struct vf_handle_t {
   vf_handle_context_t * vkfast;
   vf_handle_id_t        handle_id;
   union {
-    vf_handle_storage_t   storage;
     vf_handle_gpu_code_t  gpuCode;
     vf_handle_procedure_t procedure;
     vf_handle_batch_t     batch;

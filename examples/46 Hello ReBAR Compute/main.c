@@ -15,7 +15,7 @@ typedef ReiiVec4 float4;
 #include "shared_data.h"
 
 int main() {
-  gpu_handle_context_t ctx = vfContextInitNoDefaultAllocs(1, NULL, FF, LL);
+  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
   REDGPU_2_EXPECTFL(vfeReBARGetMaxMallocSharedSize(ctx) >= (4ULL * 1024*1024*1024 - 1));
 
   const unsigned array65536[2] = {65536, 65536};
