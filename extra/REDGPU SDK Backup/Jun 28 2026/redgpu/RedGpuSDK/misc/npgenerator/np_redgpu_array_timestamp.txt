@@ -1,4 +1,0 @@
-void redCreateArrayTimestamp(RedContext context, RedHandleGpu gpu, char* handleName, unsigned count, RedHandleArrayTimestamp* outArrayTimestamp, RedStatuses* outStatuses, char* optionalFile, int optionalLine, void* optionalUserData)
-void redDestroyArrayTimestamp(RedContext context, RedHandleGpu gpu, RedHandleArrayTimestamp arrayTimestamp, char* optionalFile, int optionalLine, void* optionalUserData)
-void redCallArrayTimestampWrite(RedHandleCalls calls, RedContext context, RedHandleArrayTimestamp arrayTimestamp, unsigned index)
-void redArrayTimestampRead(RedContext context, RedHandleGpu gpu, RedHandleArrayTimestamp arrayTimestamp, unsigned rangeFirst, unsigned rangeCount, void* out64BitTicksCounts, RedStatuses* outStatuses, char* optionalFile, int optionalLine, void* optionalUserData)

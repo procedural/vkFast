@@ -1,6 +1,0 @@
-RRError rrGetDevicePtrFromVkBuffer(RRContext context, RedHandleArray resource, size_t offset, RRDevicePtr* device_ptr)
-RRError rrCreateContextVk(uint32_t api_version, RedHandleGpu device, RedHandleGpuDevice physical_device, RedHandleQueue command_queue, uint32_t queue_family_index, RRContext* context)
-RRError rrGetCommandStreamFromVkCommandBuffer(RRContext context, RedHandleCalls command_buffer, RRCommandStream* command_stream)
-RRError rrAllocateDeviceBuffer(RRContext context, size_t size, RRDevicePtr* device_ptr)
-RRError rrMapDevicePtr(RRContext context, RRDevicePtr device_ptr, void** mapping_ptr)
-RRError rrUnmapDevicePtr(RRContext context, RRDevicePtr device_ptr, void** mapping_ptr)

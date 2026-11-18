@@ -1,0 +1,7 @@
+redgpu/RedGpuSDK/misc/examples/sponza_rasterization/sponza_meshes.7z
+redgpu/RedGpuSDK/misc/examples/sponza_rasterization/sponza_textures/*
+redgpu/RedGpuSDK/misc/examples/sponza_rasterization/stb_image.c
+redgpu/RedGpuSDK/misc/examples/sponza_rasterization/stb_image.h
+redgpu/RedGpuSDK/misc/examples/sponza_ray_tracing/*
+redgpu/RedGpuSDK/radeonrays.dll
+redgpu/RedGpuSDK/radeonrays.dll.lib
