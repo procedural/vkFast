@@ -168,6 +168,9 @@ static char * vfInternalStringJoin(const char ** strings, size_t stringsCount) {
 
   // Sum the lengths of all strings
   for (size_t i = 0; i < stringsCount; i += 1) {
+    if (strings[i] == NULL) {
+      continue;
+    }
     totalLength += strlen(strings[i]);
   }
 
@@ -180,6 +183,9 @@ static char * vfInternalStringJoin(const char ** strings, size_t stringsCount) {
   // Copy each string directly into the buffer
   char * cursor = result;
   for (size_t i = 0; i < stringsCount; i += 1) {
+    if (strings[i] == NULL) {
+      continue;
+    }
     size_t len = strlen(strings[i]);
     red32MemoryCopy(cursor, strings[i], len);
     cursor += len;
