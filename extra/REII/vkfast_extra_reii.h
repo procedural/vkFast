@@ -1,15 +1,12 @@
 #pragma once
 
 #include "../../vkfast.h"
-#include "../CPU GPU Array/vkfast_extra_cpu_gpu_array.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef unsigned ReiiBool32;
-
-#define REII_TEXCOORDS_MAX_COUNT 8
 
 typedef enum ReiiTextureBinding {
   REII_TEXTURE_BINDING_2D              = 0x0DE1,
@@ -250,35 +247,10 @@ typedef struct ReiiHandleTexture {
 typedef struct ReiiHandleCommandList {
   uint64_t                      batch_id;
   Red2CallsMutableOutputsArray  mutable_outputs_array;
-  gpu_extra_cpu_gpu_array       dynamic_mesh_position;
-  gpu_extra_cpu_gpu_array       dynamic_mesh_color;
-  gpu_extra_cpu_gpu_array       dynamic_mesh_normal; // NOTE(Constantine): Treated as vec4, unlike in GL1.4-based REII that treats them as vec3.
-  gpu_extra_cpu_gpu_array       dynamic_mesh_texcoord[REII_TEXCOORDS_MAX_COUNT];
   // Internal
-  uint64_t                      dynamicMeshPositionVec4Offset;
-  uint64_t                      dynamicMeshColorVec4Offset;
-  uint64_t                      dynamicMeshNormalVec4Offset;
-  uint64_t                      dynamicMeshTexcoordVec4Offset[REII_TEXCOORDS_MAX_COUNT];
-  uint64_t                      dynamicMeshPositionVec4CurrentStart;
-  uint64_t                      dynamicMeshColorVec4CurrentStart;
-  uint64_t                      dynamicMeshNormalVec4CurrentStart;
-  uint64_t                      dynamicMeshTexcoordVec4CurrentStart[REII_TEXCOORDS_MAX_COUNT];
   RedHandleProcedureParameters  currentProcedureParametersDraw;
   RedCallProceduresAndAddresses callProceduresAndAddresses;
 } ReiiHandleCommandList;
-
-typedef struct ReiiHandleUnorderedArray {
-  gpu_extra_cpu_gpu_array position;
-  gpu_extra_cpu_gpu_array color;
-  gpu_extra_cpu_gpu_array normal; // NOTE(Constantine): Treated as vec4, unlike in GL1.4-based REII that treats them as vec3.
-  gpu_extra_cpu_gpu_array texcoord[REII_TEXCOORDS_MAX_COUNT];
-  // Internal
-  uint64_t                batchId;
-  uint64_t                positionVec4Count;
-  uint64_t                colorVec4Count;
-  uint64_t                normalVec4Count;
-  uint64_t                texcoordVec4Count[REII_TEXCOORDS_MAX_COUNT];
-} ReiiHandleUnorderedArray;
 
 typedef struct ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState {
   uint64_t programCompute;
@@ -293,6 +265,11 @@ typedef enum gpu_extra_reii_destroy_type_e {
   GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST   = 4,
   GPU_EXTRA_REII_DESTROY_TYPE_SAMPLER        = 5,
 } gpu_extra_reii_destroy_type_e;
+
+typedef struct ReiiCpuScratchBuffer {
+  void *               cpu_scratch_buffer_ptr;
+  RedStructMemberArray cpu_scratch_buffer;
+} ReiiCpuScratchBuffer;
 
 // Pipeline
 
@@ -330,29 +307,10 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsEnd          (gpu_handle
 GPU_API_PRE void GPU_API_POST reiiCommandBindVariablesCopy           (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned variablesBytesOffset, unsigned dataBytesCount, const void * data);
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSet             (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetEnd             (gpu_handle_context_t context, ReiiHandleCommandList * list);
-GPU_API_PRE void GPU_API_POST reiiCommandMeshSet                     (gpu_handle_context_t context, ReiiHandleCommandList * list);
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExact                (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndWithTale64BytesAlign (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle);
-GPU_API_PRE void GPU_API_POST reiiCommandMeshTexcoord                (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned index, float x, float y, float z, float w);
-GPU_API_PRE void GPU_API_POST reiiCommandMeshColor                   (gpu_handle_context_t context, ReiiHandleCommandList * list, float r, float g, float b, float a);
-GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal                  (gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z);
-GPU_API_PRE void GPU_API_POST reiiCommandMeshPosition                (gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z, float w);
 GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTexture     (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * sourceMsaaColorTexture, ReiiHandleTexture * targetColorTexture);
 GPU_API_PRE void GPU_API_POST reiiCommandGammaCorrectColorTextureToTheInversePowerOf2 (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * colorTexture, int doDoubleGammaCorrection, int doSwapRedAndBlue, ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState * state);
 GPU_API_PRE void GPU_API_POST reiiCommandCopyFromColorTextureToStorageRaw (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * texture, RedStructMemberArray * storageRaw);
-GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDraw               (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleUnorderedArray * unorderedArray);
-GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstanced      (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleUnorderedArray * unorderedArray, unsigned instanceCount);
-GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstancedEx    (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned vertexFirst, unsigned vertexCount, unsigned instanceFirst, unsigned instanceCount);
-
-// Unordered array
-
-GPU_API_PRE void GPU_API_POST reiiCreateUnorderedArray                (gpu_handle_context_t context, ReiiHandleUnorderedArray * outUnorderedArray);
-GPU_API_PRE void GPU_API_POST reiiUnorderedArraySet                   (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray);
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayEnd                   (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values);
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayTexcoord              (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned index, float x, float y, float z, float w);
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayColor                 (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, float r, float g, float b, float a);
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayNormal                (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, float x, float y, float z);
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayPosition              (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, float x, float y, float z, float w);
+GPU_API_PRE void GPU_API_POST reiiCommandMeshLaunchThreads           (gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned vertexFirst, unsigned vertexCount, unsigned instanceFirst, unsigned instanceCount);
 
 // Destroy
 
@@ -374,12 +332,7 @@ GPU_API_PRE uint64_t GPU_API_POST reiiTextureDefineAndCopyFromCpuBatchEx(gpu_han
 GPU_API_PRE void GPU_API_POST reiiTextureCopyFromCpuEx                (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, RedHandleQueue queueToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values);
 GPU_API_PRE uint64_t GPU_API_POST reiiTextureCopyFromCpuBatchEx       (gpu_handle_context_t context, ReiiTextureBinding binding, ReiiHandleTexture * bindingTexture, int bindingLevel, int bindingX, int bindingY, int width, int height, ReiiTextureTexelFormat texelsFormat, ReiiTextureTexelType texelsType, int texelsBytesAlignment, const ReiiCpuScratchBuffer * texels, unsigned queueFamilyIndexToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values);
 GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSetEx            (gpu_handle_context_t context, ReiiHandleCommandList * list, RedHandleTexture depthStencilTexture, unsigned depthStencilWidth, unsigned depthStencilHeight, RedFormat depthStencilFormat, RedMultisampleCountBitflag depthStencilMultisampleCount, RedHandleTexture colorTexture, unsigned colorWidth, unsigned colorHeight, RedFormat colorFormat, RedMultisampleCountBitflag colorMultisampleCount);
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExactEx               (gpu_handle_context_t context, ReiiHandleCommandList * list, RedHandleTexture depthStencilTexture, unsigned depthStencilWidth, unsigned depthStencilHeight, RedFormat depthStencilFormat, RedMultisampleCountBitflag depthStencilMultisampleCount, RedHandleTexture colorTexture, unsigned colorWidth, unsigned colorHeight, RedFormat colorFormat, RedMultisampleCountBitflag colorMultisampleCount);
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndWithTale64BytesAlignEx(gpu_handle_context_t context, ReiiHandleCommandList * list, RedHandleTexture depthStencilTexture, unsigned depthStencilWidth, unsigned depthStencilHeight, RedFormat depthStencilFormat, RedMultisampleCountBitflag depthStencilMultisampleCount, RedHandleTexture colorTexture, unsigned colorWidth, unsigned colorHeight, RedFormat colorFormat, RedMultisampleCountBitflag colorMultisampleCount);
 GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTextureEx    (gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * sourceMsaaColorTexture, RedHandleTexture targetColorTexture);
-GPU_API_PRE void GPU_API_POST reiiUnorderedArraySetEx                 (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned queueFamilyIndexToSubmitCopyCommands);
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayEndEx                 (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, RedHandleQueue queueToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values);
-GPU_API_PRE uint64_t GPU_API_POST reiiUnorderedArrayEndBatchEx        (gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values);
 
 #ifdef __cplusplus
 }

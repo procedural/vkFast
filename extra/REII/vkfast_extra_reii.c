@@ -271,32 +271,32 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   // To destroy
   RedHandleGpuCode gpuCodeVertex = NULL;
   np(redCreateGpuCode,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "handleName", state->programVertex.optional_debug_name,
-    "irBytesCount", state->programVertex.program_binary_bytes_count,
-    "ir", (const void *)state->programVertex.program_binary,
-    "outGpuCode", &gpuCodeVertex,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    handleName, state->programVertex.optional_debug_name,
+    irBytesCount, state->programVertex.program_binary_bytes_count,
+    ir, (const void *)state->programVertex.program_binary,
+    outGpuCode, &gpuCodeVertex,
+    outStatuses, NULL,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
   REDGPU_2_EXPECTWG(gpuCodeVertex != NULL);
 
   // To destroy
   RedHandleGpuCode gpuCodeFragment = NULL;
   np(redCreateGpuCode,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "handleName", state->programFragment.optional_debug_name,
-    "irBytesCount", state->programFragment.program_binary_bytes_count,
-    "ir", (const void *)state->programFragment.program_binary,
-    "outGpuCode", &gpuCodeFragment,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    handleName, state->programFragment.optional_debug_name,
+    irBytesCount, state->programFragment.program_binary_bytes_count,
+    ir, (const void *)state->programFragment.program_binary,
+    outGpuCode, &gpuCodeFragment,
+    outStatuses, NULL,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
   REDGPU_2_EXPECTWG(gpuCodeFragment != NULL);
 
@@ -332,15 +332,15 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   // To destroy
   Red2ProcedureParametersAndDeclarations procedureParameters = {0};
   np(red2CreateProcedureParameters,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "handleName", state->optionalDebugName,
-    "procedureParametersDeclaration", &parameters,
-    "outProcedureParametersAndDeclarations", &procedureParameters,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    handleName, state->optionalDebugName,
+    procedureParametersDeclaration, &parameters,
+    outProcedureParametersAndDeclarations, &procedureParameters,
+    outStatuses, NULL,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
   REDGPU_2_EXPECTWG(procedureParameters.procedureParameters != NULL);
 
@@ -528,28 +528,28 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   // To destroy
   RedHandleProcedure procedure = NULL;
   np(red2CreateProcedure,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "handleName", state->optionalDebugName,
-    "procedureCache", NULL,
-    "outputDeclarationMembers", &outputs,
-    "outputDeclarationMembersResolveSources", NULL,
-    "dependencyByRegion", 0,
-    "dependencyByRegionAllowUsageAliasOrderBarriers", 0,
-    "procedureParameters", procedureParameters.procedureParameters,
-    "gpuCodeVertexMainProcedureName", "main",
-    "gpuCodeVertex", gpuCodeVertex,
-    "gpuCodeFragmentMainProcedureName", "main",
-    "gpuCodeFragment", gpuCodeFragment,
-    "state", &procstate,
-    "stateExtension", procstateex,
-    "deriveBase", 0,
-    "deriveFrom", NULL,
-    "outProcedure", &procedure,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    handleName, state->optionalDebugName,
+    procedureCache, NULL,
+    outputDeclarationMembers, &outputs,
+    outputDeclarationMembersResolveSources, NULL,
+    dependencyByRegion, 0,
+    dependencyByRegionAllowUsageAliasOrderBarriers, 0,
+    procedureParameters, procedureParameters.procedureParameters,
+    gpuCodeVertexMainProcedureName, "main",
+    gpuCodeVertex, gpuCodeVertex,
+    gpuCodeFragmentMainProcedureName, "main",
+    gpuCodeFragment, gpuCodeFragment,
+    state, &procstate,
+    stateExtension, procstateex,
+    deriveBase, 0,
+    deriveFrom, NULL,
+    outProcedure, &procedure,
+    outStatuses, NULL,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
   REDGPU_2_EXPECTWG(procedure != NULL);
 
@@ -668,27 +668,27 @@ GPU_API_PRE RedHandleSampler GPU_API_POST reiiCreateSampler(gpu_handle_context_t
   RedHandleSampler sampler = NULL;
   // To destroy
   np(redCreateSampler,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "handleName", optionalDebugName,
-    "filteringMag", filteringMag,
-    "filteringMin", filteringMin,
-    "filteringMip", filteringMip,
-    "behaviorOutsideTextureCoordinateU", ReiiSamplerBehaviorOutsideTextureCoordinateToRed(behaviorOutsideTextureCoordinateU),
-    "behaviorOutsideTextureCoordinateV", ReiiSamplerBehaviorOutsideTextureCoordinateToRed(behaviorOutsideTextureCoordinateV),
-    "behaviorOutsideTextureCoordinateW", RED_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, // NOTE(Constantine): We don't use these samplers on 3D textures, so whatever.
-    "mipLodBias", 0.f,
-    "enableAnisotropy", maxAnisotropy > 1,
-    "maxAnisotropy", maxAnisotropy,
-    "enableCompare", 0,
-    "compareOp", RED_COMPARE_OP_NEVER,
-    "minLod",-1000.f,
-    "maxLod", 1000.f,
-    "outSampler", &sampler,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    handleName, optionalDebugName,
+    filteringMag, filteringMag,
+    filteringMin, filteringMin,
+    filteringMip, filteringMip,
+    behaviorOutsideTextureCoordinateU, ReiiSamplerBehaviorOutsideTextureCoordinateToRed(behaviorOutsideTextureCoordinateU),
+    behaviorOutsideTextureCoordinateV, ReiiSamplerBehaviorOutsideTextureCoordinateToRed(behaviorOutsideTextureCoordinateV),
+    behaviorOutsideTextureCoordinateW, RED_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, // NOTE(Constantine): We don't use these samplers on 3D textures, so whatever.
+    mipLodBias, 0.f,
+    enableAnisotropy, maxAnisotropy > 1,
+    maxAnisotropy, maxAnisotropy,
+    enableCompare, 0,
+    compareOp, RED_COMPARE_OP_NEVER,
+    minLod,-1000.f,
+    maxLod, 1000.f,
+    outSampler, &sampler,
+    outStatuses, NULL,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
   REDGPU_2_EXPECTWG(sampler != NULL);
 
@@ -716,19 +716,19 @@ GPU_API_PRE void GPU_API_POST reiiCreateTextureMemory(gpu_handle_context_t conte
     REDGPU_2_EXPECTWG(firstPickedMemoryTypeGpuVram != -1 || !"reiiCreateTextureMemory(): no VRAM memory types found.");
     // To destroy
     np(redMemoryAllocate,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleName", optional_debug_name,
-      "bytesCount", bytesCount,
-      "memoryTypeIndex", firstPickedMemoryTypeGpuVram, // NOTE(Constantine): Assuming that the first picked VRAM memory type is right for general texture allocations.
-      "dedicateToArray", NULL,
-      "dedicateToImage", NULL,
-      "memoryBitflags", 0,
-      "outMemory", &memory,
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleName, optional_debug_name,
+      bytesCount, bytesCount,
+      memoryTypeIndex, firstPickedMemoryTypeGpuVram, // NOTE(Constantine): Assuming that the first picked VRAM memory type is right for general texture allocations.
+      dedicateToArray, NULL,
+      dedicateToImage, NULL,
+      memoryBitflags, 0,
+      outMemory, &memory,
+      outStatuses, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
     REDGPU_2_EXPECT(memory != NULL);
     texturesUseTheirOwnDedicatedMemory = 0;
@@ -921,25 +921,25 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
   if (image.handle == NULL) {
     // To destroy
     np(redCreateImage,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleName", bindingTexture->optional_debug_name,
-      "dimensions", binding == REII_TEXTURE_BINDING_2D ? RED_IMAGE_DIMENSIONS_2D : RED_IMAGE_DIMENSIONS_2D_WITH_TEXTURE_DIMENSIONS_CUBE_AND_CUBE_LAYERED,
-      "format", format,
-      "width", width,
-      "height", height,
-      "depth", 1,
-      "levelsCount", bindingTexture->mipLevelsCount,
-      "layersCount", binding == REII_TEXTURE_BINDING_2D ? 1 : 6,
-      "multisampleCount", bindingTexture->msaaCount,
-      "restrictToAccess", 0,
-      "initialQueueFamilyIndex", vkfast->gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
-      "dedicate", bindingTexture->textureMemory->texturesUseTheirOwnDedicatedMemory,
-      "outImage", &image,
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleName, bindingTexture->optional_debug_name,
+      dimensions, binding == REII_TEXTURE_BINDING_2D ? RED_IMAGE_DIMENSIONS_2D : RED_IMAGE_DIMENSIONS_2D_WITH_TEXTURE_DIMENSIONS_CUBE_AND_CUBE_LAYERED,
+      format, format,
+      width, width,
+      height, height,
+      depth, 1,
+      levelsCount, bindingTexture->mipLevelsCount,
+      layersCount, binding == REII_TEXTURE_BINDING_2D ? 1 : 6,
+      multisampleCount, bindingTexture->msaaCount,
+      restrictToAccess, 0,
+      initialQueueFamilyIndex, vkfast->gpuInfo->queuesFamilyIndex[vkfast->mainQueueFamilyIndex],
+      dedicate, bindingTexture->textureMemory->texturesUseTheirOwnDedicatedMemory,
+      outImage, &image,
+      outStatuses, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
     REDGPU_2_EXPECTWG(image.handle != NULL);
 
@@ -951,19 +951,19 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
     if (bindingTexture->textureMemory->texturesUseTheirOwnDedicatedMemory == 1) {
       // To destroy
       np(redMemoryAllocate,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "handleName", bindingTexture->optional_debug_name,
-        "bytesCount", image.memoryBytesCount,
-        "memoryTypeIndex", pickedMemoryTypeGpuVram,
-        "dedicateToArray", NULL,
-        "dedicateToImage", image.handle,
-        "memoryBitflags", 0,
-        "outMemory", &imageDedicatedMemory,
-        "outStatuses", NULL,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
+        context, vkfast->context,
+        gpu, vkfast->gpu,
+        handleName, bindingTexture->optional_debug_name,
+        bytesCount, image.memoryBytesCount,
+        memoryTypeIndex, pickedMemoryTypeGpuVram,
+        dedicateToArray, NULL,
+        dedicateToImage, image.handle,
+        memoryBitflags, 0,
+        outMemory, &imageDedicatedMemory,
+        outStatuses, NULL,
+        optionalFile, optionalFile,
+        optionalLine, optionalLine,
+        optionalUserData, NULL
       );
       REDGPU_2_EXPECTWG(imageDedicatedMemory != NULL);
 
@@ -974,16 +974,16 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
       memoryImage.memory           = imageDedicatedMemory;
       memoryImage.memoryBytesFirst = 0;
       np(redMemorySet,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "memoryArraysCount", 0,
-        "memoryArrays", NULL,
-        "memoryImagesCount", 1,
-        "memoryImages", &memoryImage,
-        "outStatuses", NULL,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
+        context, vkfast->context,
+        gpu, vkfast->gpu,
+        memoryArraysCount, 0,
+        memoryArrays, NULL,
+        memoryImagesCount, 1,
+        memoryImages, &memoryImage,
+        outStatuses, NULL,
+        optionalFile, optionalFile,
+        optionalLine, optionalLine,
+        optionalUserData, NULL
       );
       bindingTexture->textureMemory->bytesOffset += image.memoryBytesCount;
     } else {
@@ -995,16 +995,16 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
       memoryImage.memory           = bindingTexture->textureMemory->memory;
       memoryImage.memoryBytesFirst = bindingTexture->textureMemory->bytesOffset;
       np(redMemorySet,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "memoryArraysCount", 0,
-        "memoryArrays", NULL,
-        "memoryImagesCount", 1,
-        "memoryImages", &memoryImage,
-        "outStatuses", NULL,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
+        context, vkfast->context,
+        gpu, vkfast->gpu,
+        memoryArraysCount, 0,
+        memoryArrays, NULL,
+        memoryImagesCount, 1,
+        memoryImages, &memoryImage,
+        outStatuses, NULL,
+        optionalFile, optionalFile,
+        optionalLine, optionalLine,
+        optionalUserData, NULL
       );
       bindingTexture->textureMemory->bytesOffset += image.memoryBytesCount;
     }
@@ -1026,45 +1026,45 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
     {
       // To destroy
       np(redCreateTexture,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "handleName", bindingTexture->optional_debug_name,
-        "image", image.handle,
-        "parts", imageParts,
-        "dimensions", RED_TEXTURE_DIMENSIONS_2D,
-        "format", format,
-        "levelsFirst", 0,
-        "levelsCount", bindingTexture->mipLevelsCount,
-        "layersFirst", 0,
-        "layersCount", 1,
-        "restrictToAccess", 0,
-        "outTexture", &texture,
-        "outStatuses", NULL,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
+        context, vkfast->context,
+        gpu, vkfast->gpu,
+        handleName, bindingTexture->optional_debug_name,
+        image, image.handle,
+        parts, imageParts,
+        dimensions, RED_TEXTURE_DIMENSIONS_2D,
+        format, format,
+        levelsFirst, 0,
+        levelsCount, bindingTexture->mipLevelsCount,
+        layersFirst, 0,
+        layersCount, 1,
+        restrictToAccess, 0,
+        outTexture, &texture,
+        outStatuses, NULL,
+        optionalFile, optionalFile,
+        optionalLine, optionalLine,
+        optionalUserData, NULL
       );
       REDGPU_2_EXPECTWG(texture != NULL);
     } else {
       // To destroy
       np(redCreateTexture,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "handleName", bindingTexture->optional_debug_name,
-        "image", image.handle,
-        "parts", imageParts,
-        "dimensions", binding == REII_TEXTURE_BINDING_2D ? RED_TEXTURE_DIMENSIONS_2D : RED_TEXTURE_DIMENSIONS_CUBE,
-        "format", format,
-        "levelsFirst", 0,
-        "levelsCount", bindingTexture->mipLevelsCount,
-        "layersFirst", 0,
-        "layersCount", binding == REII_TEXTURE_BINDING_2D ? 1 : 6,
-        "restrictToAccess", 0,
-        "outTexture", &texture,
-        "outStatuses", NULL,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
+        context, vkfast->context,
+        gpu, vkfast->gpu,
+        handleName, bindingTexture->optional_debug_name,
+        image, image.handle,
+        parts, imageParts,
+        dimensions, binding == REII_TEXTURE_BINDING_2D ? RED_TEXTURE_DIMENSIONS_2D : RED_TEXTURE_DIMENSIONS_CUBE,
+        format, format,
+        levelsFirst, 0,
+        levelsCount, bindingTexture->mipLevelsCount,
+        layersFirst, 0,
+        layersCount, binding == REII_TEXTURE_BINDING_2D ? 1 : 6,
+        restrictToAccess, 0,
+        outTexture, &texture,
+        outStatuses, NULL,
+        optionalFile, optionalFile,
+        optionalLine, optionalLine,
+        optionalUserData, NULL
       );
       REDGPU_2_EXPECTWG(texture != NULL);
     }
@@ -1076,45 +1076,45 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
     {
       // To destroy
       np(redCreateTexture,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "handleName", bindingTexture->optional_debug_name,
-        "image", image.handle,
-        "parts", RED_IMAGE_PART_BITFLAG_DEPTH,
-        "dimensions", RED_TEXTURE_DIMENSIONS_2D,
-        "format", format,
-        "levelsFirst", 0,
-        "levelsCount", bindingTexture->mipLevelsCount,
-        "layersFirst", 0,
-        "layersCount", 1,
-        "restrictToAccess", 0,
-        "outTexture", &textureDepthOnly,
-        "outStatuses", NULL,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
+        context, vkfast->context,
+        gpu, vkfast->gpu,
+        handleName, bindingTexture->optional_debug_name,
+        image, image.handle,
+        parts, RED_IMAGE_PART_BITFLAG_DEPTH,
+        dimensions, RED_TEXTURE_DIMENSIONS_2D,
+        format, format,
+        levelsFirst, 0,
+        levelsCount, bindingTexture->mipLevelsCount,
+        layersFirst, 0,
+        layersCount, 1,
+        restrictToAccess, 0,
+        outTexture, &textureDepthOnly,
+        outStatuses, NULL,
+        optionalFile, optionalFile,
+        optionalLine, optionalLine,
+        optionalUserData, NULL
       );
       REDGPU_2_EXPECTWG(textureDepthOnly != NULL);
       if (formatHasStencil == 1) {
         // To destroy
         np(redCreateTexture,
-          "context", vkfast->context,
-          "gpu", vkfast->gpu,
-          "handleName", bindingTexture->optional_debug_name,
-          "image", image.handle,
-          "parts", RED_IMAGE_PART_BITFLAG_STENCIL,
-          "dimensions", RED_TEXTURE_DIMENSIONS_2D,
-          "format", format,
-          "levelsFirst", 0,
-          "levelsCount", bindingTexture->mipLevelsCount,
-          "layersFirst", 0,
-          "layersCount", 1,
-          "restrictToAccess", 0,
-          "outTexture", &textureStencilOnly,
-          "outStatuses", NULL,
-          "optionalFile", optionalFile,
-          "optionalLine", optionalLine,
-          "optionalUserData", NULL
+          context, vkfast->context,
+          gpu, vkfast->gpu,
+          handleName, bindingTexture->optional_debug_name,
+          image, image.handle,
+          parts, RED_IMAGE_PART_BITFLAG_STENCIL,
+          dimensions, RED_TEXTURE_DIMENSIONS_2D,
+          format, format,
+          levelsFirst, 0,
+          levelsCount, bindingTexture->mipLevelsCount,
+          layersFirst, 0,
+          layersCount, 1,
+          restrictToAccess, 0,
+          outTexture, &textureStencilOnly,
+          outStatuses, NULL,
+          optionalFile, optionalFile,
+          optionalLine, optionalLine,
+          optionalUserData, NULL
         );
         REDGPU_2_EXPECTWG(textureStencilOnly != NULL);
       }
@@ -1132,23 +1132,23 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
       for (int i = 0; i < 6; i += 1) {
         // To destroy
         np(redCreateTexture,
-          "context", vkfast->context,
-          "gpu", vkfast->gpu,
-          "handleName", bindingTexture->optional_debug_name,
-          "image", image.handle,
-          "parts", RED_IMAGE_PART_BITFLAG_COLOR,
-          "dimensions", RED_TEXTURE_DIMENSIONS_2D,
-          "format", format,
-          "levelsFirst", 0,
-          "levelsCount", bindingTexture->mipLevelsCount,
-          "layersFirst", i,
-          "layersCount", 1,
-          "restrictToAccess", 0,
-          "outTexture", &textureCubeFace[i],
-          "outStatuses", NULL,
-          "optionalFile", optionalFile,
-          "optionalLine", optionalLine,
-          "optionalUserData", NULL
+          context, vkfast->context,
+          gpu, vkfast->gpu,
+          handleName, bindingTexture->optional_debug_name,
+          image, image.handle,
+          parts, RED_IMAGE_PART_BITFLAG_COLOR,
+          dimensions, RED_TEXTURE_DIMENSIONS_2D,
+          format, format,
+          levelsFirst, 0,
+          levelsCount, bindingTexture->mipLevelsCount,
+          layersFirst, i,
+          layersCount, 1,
+          restrictToAccess, 0,
+          outTexture, &textureCubeFace[i],
+          outStatuses, NULL,
+          optionalFile, optionalFile,
+          optionalLine, optionalLine,
+          optionalUserData, NULL
         );
         REDGPU_2_EXPECTWG(textureCubeFace[i] != NULL);
       }
@@ -1196,25 +1196,25 @@ GPU_API_PRE void GPU_API_POST reiiBatchImageSetUsableStateEx(gpu_handle_context_
   imageUsage.imageLayersCount       = -1;
   Red2UsageImageTempCallStruct imageUsageTempStruct = {0};
   np(red2CallUsageAliasOrderBarrier,
-    "address", batch->batch.addresses.redCallUsageAliasOrderBarrier,
-    "calls", batch->batch.calls.handle,
-    "context", vkfast->context,
-    "arrayUsagesCount", 0,
-    "arrayUsages", NULL,
-    "arrayTempCallStructs", NULL,
-    "imageUsagesCount", 1,
-    "imageUsages", &imageUsage,
-    "imageTempCallStructs", &imageUsageTempStruct,
-    "aliasesCount", 0,
-    "aliases", NULL,
-    "ordersCount", 0,
-    "orders", NULL,
-    "dependencyByRegion", 0
+    address, batch->batch.addresses.redCallUsageAliasOrderBarrier,
+    calls, batch->batch.calls.handle,
+    context, vkfast->context,
+    arrayUsagesCount, 0,
+    arrayUsages, NULL,
+    arrayTempCallStructs, NULL,
+    imageUsagesCount, 1,
+    imageUsages, &imageUsage,
+    imageTempCallStructs, &imageUsageTempStruct,
+    aliasesCount, 0,
+    aliases, NULL,
+    ordersCount, 0,
+    orders, NULL,
+    dependencyByRegion, 0
   );
 
   np(red2CallGlobalOrderBarrier,
-    "address", batch->batch.addresses.redCallUsageAliasOrderBarrier,
-    "calls", batch->batch.calls.handle
+    address, batch->batch.addresses.redCallUsageAliasOrderBarrier,
+    calls, batch->batch.calls.handle
   );
 }
 
@@ -1244,12 +1244,12 @@ GPU_API_PRE void GPU_API_POST reiiBatchImageCopyFromCpuEx(gpu_handle_context_t c
   copy.imageExtent.texelsCountHeight = height;
   copy.imageExtent.texelsCountDepth  = 1;
   npfp(redCallCopyArrayToImage, batch->batch.addresses.redCallCopyArrayToImage,
-    "calls", batch->batch.calls.handle,
-    "arrayR", texels->cpu_scratch_buffer.array,
-    "imageW", image,
-    "setTo1", 1,
-    "rangesCount", 1,
-    "ranges", &copy
+    calls, batch->batch.calls.handle,
+    arrayR, texels->cpu_scratch_buffer.array,
+    imageW, image,
+    setTo1, 1,
+    rangesCount, 1,
+    ranges, &copy
   );
 }
 
@@ -1394,30 +1394,18 @@ GPU_API_PRE void GPU_API_POST reiiCommandListReset(gpu_handle_context_t context,
   }
 
   {
-    list->dynamicMeshPositionVec4Offset = 0;
-    list->dynamicMeshColorVec4Offset    = 0;
-    list->dynamicMeshNormalVec4Offset   = 0;
-    for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
-      list->dynamicMeshTexcoordVec4Offset[i] = 0;
-    }
-    list->dynamicMeshPositionVec4CurrentStart = 0;
-    list->dynamicMeshColorVec4CurrentStart    = 0;
-    list->dynamicMeshNormalVec4CurrentStart   = 0;
-    for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
-      list->dynamicMeshTexcoordVec4CurrentStart[i] = 0;
-    }
     list->currentProcedureParametersDraw = NULL;
   }
 
   {
     np(redGetCallProceduresAndAddresses,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "outCallProceduresAndAddresses", &list->callProceduresAndAddresses,
-      "outStatuses", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      outCallProceduresAndAddresses, &list->callProceduresAndAddresses,
+      outStatuses, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
   }
 
@@ -1431,7 +1419,7 @@ GPU_API_PRE void GPU_API_POST reiiCommandListReset(gpu_handle_context_t context,
     }
     for (unsigned i = 0; i < outputsCount; i += 1) {
       // Filling
-      Red2Output;
+      // Red2Output;
       list->mutable_outputs_array.items[i].handle = NULL;
       list->mutable_outputs_array.items[i].handleDeclaration = NULL;
     }
@@ -1446,14 +1434,14 @@ GPU_API_PRE void GPU_API_POST reiiCommandSetViewportEx(gpu_handle_context_t cont
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
 
   np(redCallSetDynamicViewport,
-    "address", list->callProceduresAndAddresses.redCallSetDynamicViewport,
-    "calls", batch->batch.calls.handle,
-    "x", x,
-    "y", y,
-    "width", width,
-    "height", height,
-    "depthMin", depthMin,
-    "depthMax", depthMax
+    address, list->callProceduresAndAddresses.redCallSetDynamicViewport,
+    calls, batch->batch.calls.handle,
+    x, x,
+    y, y,
+    width, width,
+    height, height,
+    depthMin, depthMin,
+    depthMax, depthMax
   );
 }
 
@@ -1464,12 +1452,12 @@ GPU_API_PRE void GPU_API_POST reiiCommandSetScissor(gpu_handle_context_t context
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
 
   np(redCallSetDynamicScissor,
-    "address", list->callProceduresAndAddresses.redCallSetDynamicScissor,
-    "calls", batch->batch.calls.handle,
-    "x", x,
-    "y", y,
-    "width", width,
-    "height", height
+    address, list->callProceduresAndAddresses.redCallSetDynamicScissor,
+    calls, batch->batch.calls.handle,
+    x, x,
+    y, y,
+    width, width,
+    height, height
   );
 }
 
@@ -1590,33 +1578,33 @@ GPU_API_PRE void GPU_API_POST reiiCommandClearTexture(gpu_handle_context_t conte
   colorsClearValuesFloat.a[0] = colorA;
 
   np(red2CallSetProcedureOutput,
-    "address", list->callProceduresAndAddresses.redCallSetProcedureOutput,
-    "calls", batch->batch.calls.handle,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "mutableOutputsArray", &list->mutable_outputs_array,
-    "outputDeclarationMembers", &outputDeclarationMembers,
-    "outputDeclarationMembersResolveSources", NULL,
-    "dependencyByRegion", 0,
-    "dependencyByRegionAllowUsageAliasOrderBarriers", 0,
-    "outputMembers", &outputMembers,
-    "outputMembersResolveTargets", NULL,
-    "width", width,
-    "height", height,
-    "depthClearValue", depthValue,
-    "stencilClearValue", stencilValue,
-    "colorsClearValuesFloat", &colorsClearValuesFloat,
-    "colorsClearValuesSint", NULL,
-    "colorsClearValuesUint", NULL,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    address, list->callProceduresAndAddresses.redCallSetProcedureOutput,
+    calls, batch->batch.calls.handle,
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    mutableOutputsArray, &list->mutable_outputs_array,
+    outputDeclarationMembers, &outputDeclarationMembers,
+    outputDeclarationMembersResolveSources, NULL,
+    dependencyByRegion, 0,
+    dependencyByRegionAllowUsageAliasOrderBarriers, 0,
+    outputMembers, &outputMembers,
+    outputMembersResolveTargets, NULL,
+    width, width,
+    height, height,
+    depthClearValue, depthValue,
+    stencilClearValue, stencilValue,
+    colorsClearValuesFloat, &colorsClearValuesFloat,
+    colorsClearValuesSint, NULL,
+    colorsClearValuesUint, NULL,
+    outStatuses, NULL,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
 
   np(redCallEndProcedureOutput,
-    "address", list->callProceduresAndAddresses.redCallEndProcedureOutput,
-    "calls", batch->batch.calls.handle
+    address, list->callProceduresAndAddresses.redCallEndProcedureOutput,
+    calls, batch->batch.calls.handle
   );
 }
 
@@ -1627,9 +1615,9 @@ GPU_API_PRE void GPU_API_POST reiiCommandMeshSetState(gpu_handle_context_t conte
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
 
   npfp(redCallSetProcedure, list->callProceduresAndAddresses.redCallSetProcedure,
-    "calls", batch->batch.calls.handle,
-    "procedureType", RED_PROCEDURE_TYPE_DRAW,
-    "procedure", state->procedure
+    calls, batch->batch.calls.handle,
+    procedureType, RED_PROCEDURE_TYPE_DRAW,
+    procedure, state->procedure
   );
 
   list->currentProcedureParametersDraw = state->procedureParameters.procedureParameters;
@@ -1670,24 +1658,24 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindSamplers(gpu_handle_context_t conte
     members[i].setTo00   = 0;
   }
   np(redStructsSet,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "structsMembersCount", samplersCount,
-    "structsMembers", members,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    structsMembersCount, samplersCount,
+    structsMembers, members,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
 
   npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
-    "calls", batch->batch.calls.handle,
-    "procedureType", RED_PROCEDURE_TYPE_DRAW,
-    "procedureParameters", list->currentProcedureParametersDraw,
-    "procedureParametersDeclarationStructsDeclarationsFirst", 1,
-    "structsCount", 1,
-    "structs", &batch->batch.currentStructSamplers.handle,
-    "setTo0", 0,
-    "setTo00", 0
+    calls, batch->batch.calls.handle,
+    procedureType, RED_PROCEDURE_TYPE_DRAW,
+    procedureParameters, list->currentProcedureParametersDraw,
+    procedureParametersDeclarationStructsDeclarationsFirst, 1,
+    structsCount, 1,
+    structs, &batch->batch.currentStructSamplers.handle,
+    setTo0, 0,
+    setTo00, 0
   );
 }
 
@@ -1706,29 +1694,29 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsSet(gpu_handle_context_t
 
   Red2Struct structure = {0};
   np(red2StructsMemorySuballocateStruct,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "handleName", NULL,
-    "structsMemory", batch->batch.structsMemory,
-    "structDeclarationMembersCount", slotsCount,
-    "structDeclarationMembers", slots,
-    "structDeclarationMembersArrayROCount", 0,
-    "structDeclarationMembersArrayRO", NULL,
-    "outStruct", &structure,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    handleName, NULL,
+    structsMemory, batch->batch.structsMemory,
+    structDeclarationMembersCount, slotsCount,
+    structDeclarationMembers, slots,
+    structDeclarationMembersArrayROCount, 0,
+    structDeclarationMembersArrayRO, NULL,
+    outStruct, &structure,
+    outStatuses, NULL,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
   REDGPU_2_EXPECTWG(structure.handleDeclaration != NULL);
   REDGPU_2_EXPECTWG(structure.handle != NULL || !"red2StructsMemorySuballocateStruct() call returned NULL. Ran out of vfBatchBegin()::batch_bindings_info::max_new_bindings_sets_count and all the other vfBatchBegin()::batch_bindings_info::max_* memory to allocate?");
   batch->batch.currentStruct = structure;
 
   np(redCallSetProcedureParameters,
-    "address", batch->batch.addresses.redCallSetProcedureParameters,
-    "calls", batch->batch.calls.handle,
-    "procedureType", RED_PROCEDURE_TYPE_DRAW,
-    "procedureParameters", list->currentProcedureParametersDraw
+    address, batch->batch.addresses.redCallSetProcedureParameters,
+    calls, batch->batch.calls.handle,
+    procedureType, RED_PROCEDURE_TYPE_DRAW,
+    procedureParameters, list->currentProcedureParametersDraw
   );
 }
 
@@ -1758,13 +1746,13 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindStorageRaw(gpu_handle_context_t con
   member.arrays    = storageRaw;
   member.setTo00   = 0;
   np(redStructsSet,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "structsMembersCount", 1,
-    "structsMembers", &member,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    structsMembersCount, 1,
+    structsMembers, &member,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
 }
 
@@ -1790,13 +1778,13 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindTextureRW(gpu_handle_context_t cont
   member.arrays    = NULL;
   member.setTo00   = 0;
   np(redStructsSet,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "structsMembersCount", 1,
-    "structsMembers", &member,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    structsMembersCount, 1,
+    structsMembers, &member,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
 }
 
@@ -1822,13 +1810,13 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindTextureRO(gpu_handle_context_t cont
   member.arrays    = NULL;
   member.setTo00   = 0;
   np(redStructsSet,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "structsMembersCount", 1,
-    "structsMembers", &member,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    structsMembersCount, 1,
+    structsMembers, &member,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
 }
 
@@ -1841,25 +1829,25 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindNewBindingsEnd(gpu_handle_context_t
   RedHandleGpu gpu = vkfast->gpu;
 
   npfp(redCallSetProcedureParametersStructs, batch->batch.addresses.redCallSetProcedureParametersStructs,
-    "calls", batch->batch.calls.handle,
-    "procedureType", RED_PROCEDURE_TYPE_DRAW,
-    "procedureParameters", list->currentProcedureParametersDraw,
-    "procedureParametersDeclarationStructsDeclarationsFirst", 0,
-    "structsCount", 1,
-    "structs", &batch->batch.currentStruct.handle,
-    "setTo0", 0,
-    "setTo00", 0
+    calls, batch->batch.calls.handle,
+    procedureType, RED_PROCEDURE_TYPE_DRAW,
+    procedureParameters, list->currentProcedureParametersDraw,
+    procedureParametersDeclarationStructsDeclarationsFirst, 0,
+    structsCount, 1,
+    structs, &batch->batch.currentStruct.handle,
+    setTo0, 0,
+    setTo00, 0
   );
 
   np(red2DestroyHandle,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "handleType", RED_HANDLE_TYPE_STRUCT_DECLARATION,
-    "handle", batch->batch.currentStruct.handleDeclaration,
-    "optionalHandle2", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    handleType, RED_HANDLE_TYPE_STRUCT_DECLARATION,
+    handle, batch->batch.currentStruct.handleDeclaration,
+    optionalHandle2, NULL,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
   batch->batch.currentStruct.handleDeclaration = NULL;
   batch->batch.currentStruct.handle = NULL;
@@ -1876,12 +1864,12 @@ GPU_API_PRE void GPU_API_POST reiiCommandBindVariablesCopy(gpu_handle_context_t 
   REDGPU_2_EXPECTWG(list->currentProcedureParametersDraw != NULL || !"Was reiiCommandMeshSetState() ever called previously?");
 
   npfp(redCallSetProcedureParametersVariables, batch->batch.addresses.redCallSetProcedureParametersVariables,
-    "calls", batch->batch.calls.handle,
-    "procedureParameters", list->currentProcedureParametersDraw,
-    "visibleToStages", RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX | RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT,
-    "variablesBytesFirst", variablesBytesOffset,
-    "dataBytesCount", dataBytesCount,
-    "data", data
+    calls, batch->batch.calls.handle,
+    procedureParameters, list->currentProcedureParametersDraw,
+    visibleToStages, RED_VISIBLE_TO_STAGE_BITFLAG_VERTEX | RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT,
+    variablesBytesFirst, variablesBytesOffset,
+    dataBytesCount, dataBytesCount,
+    data, data
   );
 }
 
@@ -1933,28 +1921,28 @@ GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetSetEx(gpu_handle_context_t 
   unsigned height = depthStencilHeight != 0 ? depthStencilHeight : colorHeight;
 
   np(red2CallSetProcedureOutput,
-    "address", list->callProceduresAndAddresses.redCallSetProcedureOutput,
-    "calls", batch->batch.calls.handle,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "mutableOutputsArray", &list->mutable_outputs_array,
-    "outputDeclarationMembers", &outputDeclarationMembers,
-    "outputDeclarationMembersResolveSources", NULL,
-    "dependencyByRegion", 0,
-    "dependencyByRegionAllowUsageAliasOrderBarriers", 0,
-    "outputMembers", &outputMembers,
-    "outputMembersResolveTargets", NULL,
-    "width", width,
-    "height", height,
-    "depthClearValue", 0,
-    "stencilClearValue", 0,
-    "colorsClearValuesFloat", NULL,
-    "colorsClearValuesSint", NULL,
-    "colorsClearValuesUint", NULL,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    address, list->callProceduresAndAddresses.redCallSetProcedureOutput,
+    calls, batch->batch.calls.handle,
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    mutableOutputsArray, &list->mutable_outputs_array,
+    outputDeclarationMembers, &outputDeclarationMembers,
+    outputDeclarationMembersResolveSources, NULL,
+    dependencyByRegion, 0,
+    dependencyByRegionAllowUsageAliasOrderBarriers, 0,
+    outputMembers, &outputMembers,
+    outputMembersResolveTargets, NULL,
+    width, width,
+    height, height,
+    depthClearValue, 0,
+    stencilClearValue, 0,
+    colorsClearValuesFloat, NULL,
+    colorsClearValuesSint, NULL,
+    colorsClearValuesUint, NULL,
+    outStatuses, NULL,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
   REDGPU_2_EXPECTWG(list->mutable_outputs_array.items[list->mutable_outputs_array.count-1].handle != NULL);
   REDGPU_2_EXPECTWG(list->mutable_outputs_array.items[list->mutable_outputs_array.count-1].handleDeclaration != NULL);
@@ -1993,283 +1981,9 @@ GPU_API_PRE void GPU_API_POST reiiCommandRenderTargetEnd(gpu_handle_context_t co
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
 
   np(redCallEndProcedureOutput,
-    "address", list->callProceduresAndAddresses.redCallEndProcedureOutput,
-    "calls", batch->batch.calls.handle
+    address, list->callProceduresAndAddresses.redCallEndProcedureOutput,
+    calls, batch->batch.calls.handle
   );
-}
-
-GPU_API_PRE void GPU_API_POST reiiCommandMeshSet(gpu_handle_context_t context, ReiiHandleCommandList * list) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-  list->dynamicMeshPositionVec4CurrentStart = list->dynamicMeshPositionVec4Offset;
-  list->dynamicMeshColorVec4CurrentStart    = list->dynamicMeshColorVec4Offset;
-  list->dynamicMeshNormalVec4CurrentStart   = list->dynamicMeshNormalVec4Offset;
-  for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
-    list->dynamicMeshTexcoordVec4CurrentStart[i] = list->dynamicMeshTexcoordVec4Offset[i];
-  }
-}
-
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExactEx(gpu_handle_context_t context, ReiiHandleCommandList * list, RedHandleTexture depthStencilTexture, unsigned depthStencilWidth, unsigned depthStencilHeight, RedFormat depthStencilFormat, RedMultisampleCountBitflag depthStencilMultisampleCount, RedHandleTexture colorTexture, unsigned colorWidth, unsigned colorHeight, RedFormat colorFormat, RedMultisampleCountBitflag colorMultisampleCount) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
-  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-  RedHandleGpu gpu = vkfast->gpu;
-
-  uint64_t dynamicMeshPositionCopyVec4Count = list->dynamicMeshPositionVec4Offset - list->dynamicMeshPositionVec4CurrentStart;
-  uint64_t dynamicMeshColorCopyVec4Count    = list->dynamicMeshColorVec4Offset    - list->dynamicMeshColorVec4CurrentStart;
-  uint64_t dynamicMeshNormalCopyVec4Count   = list->dynamicMeshNormalVec4Offset   - list->dynamicMeshNormalVec4CurrentStart;
-  uint64_t dynamicMeshTexcoordCopyVec4Count[REII_TEXCOORDS_MAX_COUNT] = {0};
-  for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
-    dynamicMeshTexcoordCopyVec4Count[i] = list->dynamicMeshTexcoordVec4Offset[i] - list->dynamicMeshTexcoordVec4CurrentStart[i];
-  }
-
-  if (dynamicMeshPositionCopyVec4Count == 0) {
-    return;
-  }
-
-  REDGPU_2_EXPECTWG(dynamicMeshPositionCopyVec4Count % 3 == 0);
-
-  vfeCpuGpuArrayBatchCopyFromCpuToGpu(
-    context,
-    list->batch_id,
-    &list->dynamic_mesh_position,
-    list->dynamicMeshPositionVec4CurrentStart * sizeof(ReiiVec4),
-    dynamicMeshPositionCopyVec4Count * sizeof(ReiiVec4),
-    optionalFile,
-    optionalLine
-  );
-  if (dynamicMeshColorCopyVec4Count > 0) {
-    vfeCpuGpuArrayBatchCopyFromCpuToGpu(
-      context,
-      list->batch_id,
-      &list->dynamic_mesh_color,
-      list->dynamicMeshColorVec4CurrentStart * sizeof(ReiiVec4),
-      dynamicMeshColorCopyVec4Count * sizeof(ReiiVec4),
-      optionalFile,
-      optionalLine
-    );
-  }
-  if (dynamicMeshNormalCopyVec4Count > 0) {
-    vfeCpuGpuArrayBatchCopyFromCpuToGpu(
-      context,
-      list->batch_id,
-      &list->dynamic_mesh_normal,
-      list->dynamicMeshNormalVec4CurrentStart * sizeof(ReiiVec4),
-      dynamicMeshNormalCopyVec4Count * sizeof(ReiiVec4),
-      optionalFile,
-      optionalLine
-    );
-  }
-  for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
-    if (dynamicMeshTexcoordCopyVec4Count[i] > 0) {
-      vfeCpuGpuArrayBatchCopyFromCpuToGpu(
-        context,
-        list->batch_id,
-        &list->dynamic_mesh_texcoord[i],
-        list->dynamicMeshTexcoordVec4CurrentStart[i] * sizeof(ReiiVec4),
-        dynamicMeshTexcoordCopyVec4Count[i] * sizeof(ReiiVec4),
-        optionalFile,
-        optionalLine
-      );
-    }
-  }
-
-  // NOTE(Constantine)(Mar 15, 2026): Should I insert a GPU barrier here, to wait for copies to finish?
-  // NOTE(Constantine)(Mar 19, 2026): Yes, I should: AMD RX 550 needs this barrier to wait for copies to finish.
-  vfBatchBarrierMemory(context, list->batch_id, optionalFile, optionalLine);
-
-  reiiCommandRenderTargetSetEx(context, list, depthStencilTexture, depthStencilWidth, depthStencilHeight, depthStencilFormat, depthStencilMultisampleCount, colorTexture, colorWidth, colorHeight, colorFormat, colorMultisampleCount);
-  npfp(redCallProcedure, list->callProceduresAndAddresses.redCallProcedure,
-    "calls", batch->batch.calls.handle,
-    "vertexCount", dynamicMeshPositionCopyVec4Count,
-    "instanceCount", 1,
-    "vertexFirst", 0,
-    "instanceFirst", 0
-  );
-  reiiCommandRenderTargetEnd(context, list);
-}
-
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndExact(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
-  RedHandleTexture           depthStencilTextureHandle    = NULL;
-  unsigned                   depthStencilWidth            = 0;
-  unsigned                   depthStencilHeight           = 0;
-  RedFormat                  depthStencilFormat           = RED_FORMAT_UNDEFINED;
-  RedMultisampleCountBitflag depthStencilMultisampleCount = (RedMultisampleCountBitflag)0;
-  unsigned                   colorWidth                   = 0;
-  unsigned                   colorHeight                  = 0;
-  RedFormat                  colorFormat                  = RED_FORMAT_UNDEFINED;
-  RedMultisampleCountBitflag colorMultisampleCount        = (RedMultisampleCountBitflag)0;
-  if (depthStencilTexture != NULL) {
-    depthStencilTextureHandle    = depthStencilTexture->texture;
-    depthStencilWidth            = depthStencilTexture->width;
-    depthStencilHeight           = depthStencilTexture->height;
-    depthStencilFormat           = depthStencilTexture->format;
-    depthStencilMultisampleCount = depthStencilTexture->msaaCount;
-  }
-  if (colorTexture != NULL) {
-    colorWidth            = colorTexture->width;
-    colorHeight           = colorTexture->height;
-    colorFormat           = colorTexture->format;
-    colorMultisampleCount = colorTexture->msaaCount;
-  }
-  reiiCommandMeshEndExactEx(context, list, depthStencilTextureHandle, depthStencilWidth, depthStencilHeight, depthStencilFormat, depthStencilMultisampleCount, colorTextureHandle, colorWidth, colorHeight, colorFormat, colorMultisampleCount);
-}
-
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndWithTale64BytesAlignEx(gpu_handle_context_t context, ReiiHandleCommandList * list, RedHandleTexture depthStencilTexture, unsigned depthStencilWidth, unsigned depthStencilHeight, RedFormat depthStencilFormat, RedMultisampleCountBitflag depthStencilMultisampleCount, RedHandleTexture colorTexture, unsigned colorWidth, unsigned colorHeight, RedFormat colorFormat, RedMultisampleCountBitflag colorMultisampleCount) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-  reiiCommandMeshEndExactEx(context, list, depthStencilTexture, depthStencilWidth, depthStencilHeight, depthStencilFormat, depthStencilMultisampleCount, colorTexture, colorWidth, colorHeight, colorFormat, colorMultisampleCount);
-
-  while (REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(list->dynamicMeshPositionVec4Offset * sizeof(ReiiVec4), 64) > 0) {
-    if ((list->dynamicMeshPositionVec4Offset * sizeof(ReiiVec4)) >= list->dynamic_mesh_position.cpu.arrayRangeBytesCount) {
-      break;
-    }
-    list->dynamicMeshPositionVec4Offset += 1;
-  }
-  while (REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(list->dynamicMeshColorVec4Offset * sizeof(ReiiVec4), 64) > 0) {
-    if ((list->dynamicMeshColorVec4Offset * sizeof(ReiiVec4)) >= list->dynamic_mesh_color.cpu.arrayRangeBytesCount) {
-      break;
-    }
-    list->dynamicMeshColorVec4Offset += 1;
-  }
-  while (REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(list->dynamicMeshNormalVec4Offset * sizeof(ReiiVec4), 64) > 0) {
-    if ((list->dynamicMeshNormalVec4Offset * sizeof(ReiiVec4)) >= list->dynamic_mesh_normal.cpu.arrayRangeBytesCount) {
-      break;
-    }
-    list->dynamicMeshNormalVec4Offset += 1;
-  }
-  for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
-    while (REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(list->dynamicMeshTexcoordVec4Offset[i] * sizeof(ReiiVec4), 64) > 0) {
-      if ((list->dynamicMeshTexcoordVec4Offset[i] * sizeof(ReiiVec4)) >= list->dynamic_mesh_texcoord[i].cpu.arrayRangeBytesCount) {
-        break;
-      }
-      list->dynamicMeshTexcoordVec4Offset[i] += 1;
-    }
-  }
-}
-
-GPU_API_PRE void GPU_API_POST reiiCommandMeshEndWithTale64BytesAlign(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * depthStencilTexture, ReiiHandleTexture * colorTexture, RedHandleTexture colorTextureHandle) {
-  RedHandleTexture           depthStencilTextureHandle    = NULL;
-  unsigned                   depthStencilWidth            = 0;
-  unsigned                   depthStencilHeight           = 0;
-  RedFormat                  depthStencilFormat           = RED_FORMAT_UNDEFINED;
-  RedMultisampleCountBitflag depthStencilMultisampleCount = (RedMultisampleCountBitflag)0;
-  unsigned                   colorWidth                   = 0;
-  unsigned                   colorHeight                  = 0;
-  RedFormat                  colorFormat                  = RED_FORMAT_UNDEFINED;
-  RedMultisampleCountBitflag colorMultisampleCount        = (RedMultisampleCountBitflag)0;
-  if (depthStencilTexture != NULL) {
-    depthStencilTextureHandle    = depthStencilTexture->texture;
-    depthStencilWidth            = depthStencilTexture->width;
-    depthStencilHeight           = depthStencilTexture->height;
-    depthStencilFormat           = depthStencilTexture->format;
-    depthStencilMultisampleCount = depthStencilTexture->msaaCount;
-  }
-  if (colorTexture != NULL) {
-    colorWidth            = colorTexture->width;
-    colorHeight           = colorTexture->height;
-    colorFormat           = colorTexture->format;
-    colorMultisampleCount = colorTexture->msaaCount;
-  }
-  reiiCommandMeshEndWithTale64BytesAlignEx(context, list, depthStencilTextureHandle, depthStencilWidth, depthStencilHeight, depthStencilFormat, depthStencilMultisampleCount, colorTextureHandle, colorWidth, colorHeight, colorFormat, colorMultisampleCount);
-}
-
-GPU_API_PRE void GPU_API_POST reiiCommandMeshTexcoord(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned index, float x, float y, float z, float w) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-  REDGPU_2_EXPECT(index < REII_TEXCOORDS_MAX_COUNT);
-
-#ifndef NDEBUG
-  {
-    const uint64_t bytesNeeded = (list->dynamicMeshTexcoordVec4Offset[index] + 1) * sizeof(ReiiVec4);
-    const uint64_t bytesTotal  = list->dynamic_mesh_texcoord[index].cpu.arrayRangeBytesCount;
-    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(list->dynamicMeshTexcoordVec4Offset + 1) * sizeof(ReiiVec4) <= list->dynamic_mesh_texcoord[index].cpu.arrayRangeBytesCount");
-  }
-#endif
-
-  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)list->dynamic_mesh_texcoord[index].cpu_ptr;
-  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshTexcoordVec4Offset[index]];
-
-  cpu_as_vec4[0].x = x;
-  cpu_as_vec4[0].y = y;
-  cpu_as_vec4[0].z = z;
-  cpu_as_vec4[0].w = w;
-
-  list->dynamicMeshTexcoordVec4Offset[index] += 1;
-}
-
-GPU_API_PRE void GPU_API_POST reiiCommandMeshColor(gpu_handle_context_t context, ReiiHandleCommandList * list, float r, float g, float b, float a) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-#ifndef NDEBUG
-  {
-    const uint64_t bytesNeeded = (list->dynamicMeshColorVec4Offset + 1) * sizeof(ReiiVec4);
-    const uint64_t bytesTotal  = list->dynamic_mesh_color.cpu.arrayRangeBytesCount;
-    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(list->dynamicMeshColorVec4Offset + 1) * sizeof(ReiiVec4) <= list->dynamic_mesh_color.cpu.arrayRangeBytesCount");
-  }
-#endif
-
-  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)list->dynamic_mesh_color.cpu_ptr;
-  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshColorVec4Offset];
-
-  cpu_as_vec4[0].x = r;
-  cpu_as_vec4[0].y = g;
-  cpu_as_vec4[0].z = b;
-  cpu_as_vec4[0].w = a;
-
-  list->dynamicMeshColorVec4Offset += 1;
-}
-
-GPU_API_PRE void GPU_API_POST reiiCommandMeshNormal(gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-#ifndef NDEBUG
-  {
-    const uint64_t bytesNeeded = (list->dynamicMeshNormalVec4Offset + 1) * sizeof(ReiiVec4);
-    const uint64_t bytesTotal  = list->dynamic_mesh_normal.cpu.arrayRangeBytesCount;
-    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(list->dynamicMeshNormalVec4Offset + 1) * sizeof(ReiiVec4) <= list->dynamic_mesh_normal.cpu.arrayRangeBytesCount");
-  }
-#endif
-
-  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)list->dynamic_mesh_normal.cpu_ptr;
-  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshNormalVec4Offset];
-
-  cpu_as_vec4[0].x = x;
-  cpu_as_vec4[0].y = y;
-  cpu_as_vec4[0].z = z;
-  cpu_as_vec4[0].w = 1; // NOTE(Constantine): Hmm... I guess?
-
-  list->dynamicMeshNormalVec4Offset += 1;
-}
-
-GPU_API_PRE void GPU_API_POST reiiCommandMeshPosition(gpu_handle_context_t context, ReiiHandleCommandList * list, float x, float y, float z, float w) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-#ifndef NDEBUG
-  {
-    const uint64_t bytesNeeded = (list->dynamicMeshPositionVec4Offset + 1) * sizeof(ReiiVec4);
-    const uint64_t bytesTotal  = list->dynamic_mesh_position.cpu.arrayRangeBytesCount;
-    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(list->dynamicMeshPositionVec4Offset + 1) * sizeof(ReiiVec4) <= list->dynamic_mesh_position.cpu.arrayRangeBytesCount");
-  }
-#endif
-
-  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)list->dynamic_mesh_position.cpu_ptr;
-  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[list->dynamicMeshPositionVec4Offset];
-
-  cpu_as_vec4[0].x = x;
-  cpu_as_vec4[0].y = y;
-  cpu_as_vec4[0].z = z;
-  cpu_as_vec4[0].w = w;
-
-  list->dynamicMeshPositionVec4Offset += 1;
 }
 
 GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTextureEx(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleTexture * sourceMsaaColorTexture, RedHandleTexture targetColorTexture) {
@@ -2310,33 +2024,33 @@ GPU_API_PRE void GPU_API_POST reiiCommandResolveMsaaColorTextureEx(gpu_handle_co
   outputMembersResolveTargets.colors[0] = targetColorTexture;
 
   np(red2CallSetProcedureOutput,
-    "address", list->callProceduresAndAddresses.redCallSetProcedureOutput,
-    "calls", batch->batch.calls.handle,
-    "context", vkfast->context,
-    "gpu", vkfast->gpu,
-    "mutableOutputsArray", &list->mutable_outputs_array,
-    "outputDeclarationMembers", &outputDeclarationMembers,
-    "outputDeclarationMembersResolveSources", &outputDeclarationMembersResolveSources,
-    "dependencyByRegion", 0,
-    "dependencyByRegionAllowUsageAliasOrderBarriers", 0,
-    "outputMembers", &outputMembers,
-    "outputMembersResolveTargets", &outputMembersResolveTargets,
-    "width", sourceMsaaColorTexture->width,
-    "height", sourceMsaaColorTexture->height,
-    "depthClearValue", 0,
-    "stencilClearValue", 0,
-    "colorsClearValuesFloat", NULL,
-    "colorsClearValuesSint", NULL,
-    "colorsClearValuesUint", NULL,
-    "outStatuses", NULL,
-    "optionalFile", optionalFile,
-    "optionalLine", optionalLine,
-    "optionalUserData", NULL
+    address, list->callProceduresAndAddresses.redCallSetProcedureOutput,
+    calls, batch->batch.calls.handle,
+    context, vkfast->context,
+    gpu, vkfast->gpu,
+    mutableOutputsArray, &list->mutable_outputs_array,
+    outputDeclarationMembers, &outputDeclarationMembers,
+    outputDeclarationMembersResolveSources, &outputDeclarationMembersResolveSources,
+    dependencyByRegion, 0,
+    dependencyByRegionAllowUsageAliasOrderBarriers, 0,
+    outputMembers, &outputMembers,
+    outputMembersResolveTargets, &outputMembersResolveTargets,
+    width, sourceMsaaColorTexture->width,
+    height, sourceMsaaColorTexture->height,
+    depthClearValue, 0,
+    stencilClearValue, 0,
+    colorsClearValuesFloat, NULL,
+    colorsClearValuesSint, NULL,
+    colorsClearValuesUint, NULL,
+    outStatuses, NULL,
+    optionalFile, optionalFile,
+    optionalLine, optionalLine,
+    optionalUserData, NULL
   );
 
   np(redCallEndProcedureOutput,
-    "address", list->callProceduresAndAddresses.redCallEndProcedureOutput,
-    "calls", batch->batch.calls.handle
+    address, list->callProceduresAndAddresses.redCallEndProcedureOutput,
+    calls, batch->batch.calls.handle
   );
 }
 
@@ -2547,252 +2261,28 @@ GPU_API_PRE void GPU_API_POST reiiCommandCopyFromColorTextureToStorageRaw(gpu_ha
   copy.imageExtent.texelsCountHeight = texture->height;
   copy.imageExtent.texelsCountDepth  = 1;
   npfp(redCallCopyImageToArray, batch->batch.addresses.redCallCopyImageToArray,
-    "calls", batch->batch.calls.handle,
-    "imageR", texture->image.handle,
-    "setTo1", 1,
-    "arrayW", storageRaw->array,
-    "rangesCount", 1,
-    "ranges", &copy
+    calls, batch->batch.calls.handle,
+    imageR, texture->image.handle,
+    setTo1, 1,
+    arrayW, storageRaw->array,
+    rangesCount, 1,
+    ranges, &copy
   );
 }
 
-GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDraw(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleUnorderedArray * unorderedArray) {
+GPU_API_PRE void GPU_API_POST reiiCommandMeshLaunchThreads(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned vertexFirst, unsigned vertexCount, unsigned instanceFirst, unsigned instanceCount) {
   const char * optionalFile = NULL;
   int optionalLine = 0;
 
   vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
 
   npfp(redCallProcedure, list->callProceduresAndAddresses.redCallProcedure,
-    "calls", batch->batch.calls.handle,
-    "vertexCount", unorderedArray->positionVec4Count,
-    "instanceCount", 1,
-    "vertexFirst", 0,
-    "instanceFirst", 0
+    calls, batch->batch.calls.handle,
+    vertexCount, vertexCount,
+    instanceCount, instanceCount,
+    vertexFirst, vertexFirst,
+    instanceFirst, instanceFirst
   );
-}
-
-GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstanced(gpu_handle_context_t context, ReiiHandleCommandList * list, ReiiHandleUnorderedArray * unorderedArray, unsigned instanceCount) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
-
-  npfp(redCallProcedure, list->callProceduresAndAddresses.redCallProcedure,
-    "calls", batch->batch.calls.handle,
-    "vertexCount", unorderedArray->positionVec4Count,
-    "instanceCount", instanceCount,
-    "vertexFirst", 0,
-    "instanceFirst", 0
-  );
-}
-
-GPU_API_PRE void GPU_API_POST reiiCommandUnorderedArrayDrawInstancedEx(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned vertexFirst, unsigned vertexCount, unsigned instanceFirst, unsigned instanceCount) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-  vf_handle_t * batch = (vf_handle_t *)(void *)list->batch_id;
-
-  npfp(redCallProcedure, list->callProceduresAndAddresses.redCallProcedure,
-    "calls", batch->batch.calls.handle,
-    "vertexCount", vertexCount,
-    "instanceCount", instanceCount,
-    "vertexFirst", vertexFirst,
-    "instanceFirst", instanceFirst
-  );
-}
-
-GPU_API_PRE void GPU_API_POST reiiCreateUnorderedArray(gpu_handle_context_t context, ReiiHandleUnorderedArray * outUnorderedArray) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-  RedHandleGpu gpu = vkfast->gpu;
-}
-
-GPU_API_PRE void GPU_API_POST reiiUnorderedArraySetEx(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned queueFamilyIndexToSubmitCopyCommands) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-  gpu_batch_info_t bindings_info = {0};
-  unorderedArray->batchId = vfBatchBeginEx(context, 0, &bindings_info, queueFamilyIndexToSubmitCopyCommands, NULL, optionalFile, optionalLine);
-}
-
-GPU_API_PRE void GPU_API_POST reiiUnorderedArraySet(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray) {
-  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-
-  reiiUnorderedArraySetEx(context, unorderedArray, vkfast->mainQueueFamilyIndex);
-}
-
-GPU_API_PRE uint64_t GPU_API_POST reiiUnorderedArrayEndBatchEx(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-  RedHandleGpu gpu = vkfast->gpu;
-
-  if (unorderedArray->positionVec4Count > 0) {
-    vfeCpuGpuArrayBatchCopyFromCpuToGpu(
-      context,
-      unorderedArray->batchId,
-      &unorderedArray->position,
-      0,
-      unorderedArray->positionVec4Count * sizeof(ReiiVec4),
-      optionalFile,
-      optionalLine
-    );
-  }
-  if (unorderedArray->colorVec4Count > 0) {
-    vfeCpuGpuArrayBatchCopyFromCpuToGpu(
-      context,
-      unorderedArray->batchId,
-      &unorderedArray->color,
-      0,
-      unorderedArray->colorVec4Count * sizeof(ReiiVec4),
-      optionalFile,
-      optionalLine
-    );
-  }
-  if (unorderedArray->normalVec4Count > 0) {
-    vfeCpuGpuArrayBatchCopyFromCpuToGpu(
-      context,
-      unorderedArray->batchId,
-      &unorderedArray->normal,
-      0,
-      unorderedArray->normalVec4Count * sizeof(ReiiVec4),
-      optionalFile,
-      optionalLine
-    );
-  }
-  for (int i = 0; i < REII_TEXCOORDS_MAX_COUNT; i += 1) {
-    if (unorderedArray->texcoordVec4Count[i] > 0) {
-      vfeCpuGpuArrayBatchCopyFromCpuToGpu(
-        context,
-        unorderedArray->batchId,
-        &unorderedArray->texcoord[i],
-        0,
-        unorderedArray->texcoordVec4Count[i] * sizeof(ReiiVec4),
-        optionalFile,
-        optionalLine
-      );
-    }
-  }
-  vfBatchEnd(context, unorderedArray->batchId, optionalFile, optionalLine);
-
-  uint64_t batch = unorderedArray->batchId;
-  unorderedArray->batchId = 0;
-
-  return batch;
-}
-
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayEndEx(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, RedHandleQueue queueToSubmitCopyCommands, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-  uint64_t batch = reiiUnorderedArrayEndBatchEx(context, unorderedArray, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values);
-
-  RedHandleCalls batchRaw = vfBatchGetRawHandle(context, batch, optionalFile, optionalLine);
-  uint64_t wait = vfAsyncBatchExecuteRawEx(context, queueToSubmitCopyCommands, 1, &batchRaw, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values, optionalFile, optionalLine);
-  vfAsyncWaitToFinish(context, wait, optionalFile, optionalLine);
-  vfIdDestroy(1, &batch, optionalFile, optionalLine);
-}
-
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayEnd(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values) {
-  vf_handle_context_t * vkfast = (vf_handle_context_t *)(void *)context;
-  reiiUnorderedArrayEndEx(context, unorderedArray, vkfast->mainQueue, gpu_threads_count, gpu_threads, gpu_threads_array_of_65536_int_values);
-}
-
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayTexcoord(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, unsigned index, float x, float y, float z, float w) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-  REDGPU_2_EXPECT(index < REII_TEXCOORDS_MAX_COUNT);
-
-#ifndef NDEBUG
-  {
-    const uint64_t bytesNeeded = (unorderedArray->texcoordVec4Count[index] + 1) * sizeof(ReiiVec4);
-    const uint64_t bytesTotal  = unorderedArray->texcoord[index].cpu.arrayRangeBytesCount;
-    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(unorderedArray->texcoordVec4Count + 1) * sizeof(ReiiVec4) <= unorderedArray->texcoord[index].cpu.arrayRangeBytesCount");
-  }
-#endif
-
-  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)unorderedArray->texcoord[index].cpu_ptr;
-  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[unorderedArray->texcoordVec4Count[index]];
-
-  cpu_as_vec4[0].x = x;
-  cpu_as_vec4[0].y = y;
-  cpu_as_vec4[0].z = z;
-  cpu_as_vec4[0].w = w;
-
-  unorderedArray->texcoordVec4Count[index] += 1;
-}
-
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayColor(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, float r, float g, float b, float a) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-#ifndef NDEBUG
-  {
-    const uint64_t bytesNeeded = (unorderedArray->colorVec4Count + 1) * sizeof(ReiiVec4);
-    const uint64_t bytesTotal  = unorderedArray->color.cpu.arrayRangeBytesCount;
-    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(unorderedArray->colorVec4Count + 1) * sizeof(ReiiVec4) <= unorderedArray->color.cpu.arrayRangeBytesCount");
-  }
-#endif
-
-  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)unorderedArray->color.cpu_ptr;
-  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[unorderedArray->colorVec4Count];
-
-  cpu_as_vec4[0].x = r;
-  cpu_as_vec4[0].y = g;
-  cpu_as_vec4[0].z = b;
-  cpu_as_vec4[0].w = a;
-
-  unorderedArray->colorVec4Count += 1;
-}
-
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayNormal(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, float x, float y, float z) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-#ifndef NDEBUG
-  {
-    const uint64_t bytesNeeded = (unorderedArray->normalVec4Count + 1) * sizeof(ReiiVec4);
-    const uint64_t bytesTotal  = unorderedArray->normal.cpu.arrayRangeBytesCount;
-    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(unorderedArray->normalVec4Count + 1) * sizeof(ReiiVec4) <= unorderedArray->normal.cpu.arrayRangeBytesCount");
-  }
-#endif
-
-  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)unorderedArray->normal.cpu_ptr;
-  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[unorderedArray->normalVec4Count];
-
-  cpu_as_vec4[0].x = x;
-  cpu_as_vec4[0].y = y;
-  cpu_as_vec4[0].z = z;
-  cpu_as_vec4[0].w = 1; // NOTE(Constantine): Hmm... I guess?
-
-  unorderedArray->normalVec4Count += 1;
-}
-
-GPU_API_PRE void GPU_API_POST reiiUnorderedArrayPosition(gpu_handle_context_t context, ReiiHandleUnorderedArray * unorderedArray, float x, float y, float z, float w) {
-  const char * optionalFile = NULL;
-  int optionalLine = 0;
-
-#ifndef NDEBUG
-  {
-    const uint64_t bytesNeeded = (unorderedArray->positionVec4Count + 1) * sizeof(ReiiVec4);
-    const uint64_t bytesTotal  = unorderedArray->position.cpu.arrayRangeBytesCount;
-    REDGPU_2_EXPECT(bytesNeeded <= bytesTotal || !"(unorderedArray->positionVec4Count + 1) * sizeof(ReiiVec4) <= unorderedArray->position.cpu.arrayRangeBytesCount");
-  }
-#endif
-
-  volatile ReiiVec4 * cpu_as_vec4_start = (volatile ReiiVec4 *)unorderedArray->position.cpu_ptr;
-  volatile ReiiVec4 * cpu_as_vec4       = &cpu_as_vec4_start[unorderedArray->positionVec4Count];
-
-  cpu_as_vec4[0].x = x;
-  cpu_as_vec4[0].y = y;
-  cpu_as_vec4[0].z = z;
-  cpu_as_vec4[0].w = w;
-
-  unorderedArray->positionVec4Count += 1;
 }
 
 GPU_API_PRE void GPU_API_POST reiiDestroyEx(gpu_handle_context_t context, gpu_extra_reii_destroy_type_e destroyHandleType, void * destroyHandle) {
@@ -2813,149 +2303,149 @@ GPU_API_PRE void GPU_API_POST reiiDestroyEx(gpu_handle_context_t context, gpu_ex
     RedHandleProcedure                     procedure           = handle->procedure;
 
     np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_GPU_CODE,
-      "handle", gpuCodeVertex,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleType, RED_HANDLE_TYPE_GPU_CODE,
+      handle, gpuCodeVertex,
+      optionalHandle2, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
 
     np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_GPU_CODE,
-      "handle", gpuCodeFragment,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleType, RED_HANDLE_TYPE_GPU_CODE,
+      handle, gpuCodeFragment,
+      optionalHandle2, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
 
     np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_PROCEDURE_PARAMETERS,
-      "handle", procedureParameters.procedureParameters,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleType, RED_HANDLE_TYPE_PROCEDURE_PARAMETERS,
+      handle, procedureParameters.procedureParameters,
+      optionalHandle2, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
 
     for (int i = 0; i < 7; i += 1) {
       np(red2DestroyHandle,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "handleType", RED_HANDLE_TYPE_STRUCT_DECLARATION,
-        "handle", procedureParameters.structsDeclarations[i],
-        "optionalHandle2", NULL,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
+        context, vkfast->context,
+        gpu, vkfast->gpu,
+        handleType, RED_HANDLE_TYPE_STRUCT_DECLARATION,
+        handle, procedureParameters.structsDeclarations[i],
+        optionalHandle2, NULL,
+        optionalFile, optionalFile,
+        optionalLine, optionalLine,
+        optionalUserData, NULL
       );
     }
 
     np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_STRUCT_DECLARATION,
-      "handle", procedureParameters.handlesDeclaration,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleType, RED_HANDLE_TYPE_STRUCT_DECLARATION,
+      handle, procedureParameters.handlesDeclaration,
+      optionalHandle2, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
 
     np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_PROCEDURE,
-      "handle", procedure,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleType, RED_HANDLE_TYPE_PROCEDURE,
+      handle, procedure,
+      optionalHandle2, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
   } else if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE) {
     ReiiHandleTexture * handle = (ReiiHandleTexture *)destroyHandle;
 
     np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_TEXTURE,
-      "handle", handle->texture,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleType, RED_HANDLE_TYPE_TEXTURE,
+      handle, handle->texture,
+      optionalHandle2, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
     np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_TEXTURE,
-      "handle", handle->textureDepthOnly,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleType, RED_HANDLE_TYPE_TEXTURE,
+      handle, handle->textureDepthOnly,
+      optionalHandle2, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
     np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_TEXTURE,
-      "handle", handle->textureStencilOnly,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleType, RED_HANDLE_TYPE_TEXTURE,
+      handle, handle->textureStencilOnly,
+      optionalHandle2, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
     for (int i = 0; i < 6; i += 1) {
       np(red2DestroyHandle,
-        "context", vkfast->context,
-        "gpu", vkfast->gpu,
-        "handleType", RED_HANDLE_TYPE_TEXTURE,
-        "handle", handle->textureCubeFace[i],
-        "optionalHandle2", NULL,
-        "optionalFile", optionalFile,
-        "optionalLine", optionalLine,
-        "optionalUserData", NULL
+        context, vkfast->context,
+        gpu, vkfast->gpu,
+        handleType, RED_HANDLE_TYPE_TEXTURE,
+        handle, handle->textureCubeFace[i],
+        optionalHandle2, NULL,
+        optionalFile, optionalFile,
+        optionalLine, optionalLine,
+        optionalUserData, NULL
       );
     }
     np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_IMAGE,
-      "handle", handle->image.handle,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleType, RED_HANDLE_TYPE_IMAGE,
+      handle, handle->image.handle,
+      optionalHandle2, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
     np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_MEMORY,
-      "handle", handle->imageDedicatedMemory,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleType, RED_HANDLE_TYPE_MEMORY,
+      handle, handle->imageDedicatedMemory,
+      optionalHandle2, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
   } else if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY) {
     ReiiHandleTextureMemory * handle = (ReiiHandleTextureMemory *)destroyHandle;
 
     np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_MEMORY,
-      "handle", handle->memory,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleType, RED_HANDLE_TYPE_MEMORY,
+      handle, handle->memory,
+      optionalHandle2, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
   } else if (destroyHandleType == GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST) {
     ReiiHandleCommandList * handle = (ReiiHandleCommandList *)destroyHandle;
@@ -2973,14 +2463,14 @@ GPU_API_PRE void GPU_API_POST reiiDestroyEx(gpu_handle_context_t context, gpu_ex
     RedHandleSampler handle = (RedHandleSampler)destroyHandle;
 
     np(red2DestroyHandle,
-      "context", vkfast->context,
-      "gpu", vkfast->gpu,
-      "handleType", RED_HANDLE_TYPE_SAMPLER,
-      "handle", handle,
-      "optionalHandle2", NULL,
-      "optionalFile", optionalFile,
-      "optionalLine", optionalLine,
-      "optionalUserData", NULL
+      context, vkfast->context,
+      gpu, vkfast->gpu,
+      handleType, RED_HANDLE_TYPE_SAMPLER,
+      handle, handle,
+      optionalHandle2, NULL,
+      optionalFile, optionalFile,
+      optionalLine, optionalLine,
+      optionalUserData, NULL
     );
   } else {
     REDGPU_2_EXPECT(0 || !"Invalid enum value");

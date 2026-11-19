@@ -22,7 +22,3 @@ static inline void vfBatchComputeLaunchThreadsExact(gpu_handle_context_t context
   REDGPU_2_EXPECT(threadsCountZ % threadGroupsCountZ == 0);
   vfBatchComputeLaunchThreads(context, batchId, threadsCountX, threadsCountY, threadsCountZ, threadGroupsCountX, threadGroupsCountY, threadGroupsCountZ, optionalFile, optionalLine);
 }
-
-static inline void reiiCommandMeshLaunchThreads(gpu_handle_context_t context, ReiiHandleCommandList * list, unsigned vertexFirst, unsigned vertexCount, unsigned instanceFirst, unsigned instanceCount) {
-  reiiCommandUnorderedArrayDrawInstancedEx(context, list, vertexFirst, vertexCount, instanceFirst, instanceCount);
-}
