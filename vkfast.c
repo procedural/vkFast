@@ -3056,6 +3056,21 @@ GPU_API_PRE void GPU_API_POST vfBatchCompute(gpu_handle_context_t context, uint6
   );
 }
 
+GPU_API_PRE void GPU_API_POST vfBatchComputeLaunchThreadsEx(gpu_handle_context_t context, uint64_t batchId, unsigned threadsCountX, unsigned threadsCountY, unsigned threadsCountZ, unsigned threadGroupsCountX, unsigned threadGroupsCountY, unsigned threadGroupsCountZ, const char * optionalFile, int optionalLine) {
+  // https://www.reddit.com/r/vulkan/comments/1wx1a7m/
+  unsigned workgroupsCountX = (threadsCountX / threadGroupsCountX) + (threadsCountX % threadGroupsCountX == 0 ? 0 : 1);
+  unsigned workgroupsCountY = (threadsCountY / threadGroupsCountY) + (threadsCountY % threadGroupsCountY == 0 ? 0 : 1);
+  unsigned workgroupsCountZ = (threadsCountZ / threadGroupsCountZ) + (threadsCountZ % threadGroupsCountZ == 0 ? 0 : 1);
+  vfBatchCompute(context, batchId, workgroupsCountX == 0 ? 1 : workgroupsCountX, workgroupsCountY == 0 ? 1 : workgroupsCountY, workgroupsCountZ == 0 ? 1 : workgroupsCountZ, optionalFile, optionalLine);
+}
+
+GPU_API_PRE void GPU_API_POST vfBatchComputeLaunchThreadsExactEx(gpu_handle_context_t context, uint64_t batchId, unsigned threadsCountX, unsigned threadsCountY, unsigned threadsCountZ, unsigned threadGroupsCountX, unsigned threadGroupsCountY, unsigned threadGroupsCountZ, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(threadsCountX % threadGroupsCountX == 0);
+  REDGPU_2_EXPECT(threadsCountY % threadGroupsCountY == 0);
+  REDGPU_2_EXPECT(threadsCountZ % threadGroupsCountZ == 0);
+  vfBatchComputeLaunchThreadsEx(context, batchId, threadsCountX, threadsCountY, threadsCountZ, threadGroupsCountX, threadGroupsCountY, threadGroupsCountZ, optionalFile, optionalLine);
+}
+
 GPU_API_PRE void GPU_API_POST vfBatchBarrierMemory(gpu_handle_context_t context, uint64_t batch_id, const char * optionalFile, int optionalLine) {
   vf_handle_t * batch = (vf_handle_t *)(void *)batch_id;
   vf_handle_context_t * vkfast = batch->vkfast;
