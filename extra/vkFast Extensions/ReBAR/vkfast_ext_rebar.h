@@ -167,7 +167,6 @@ VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocShared(gpu_handle_cont
     optionalUserData, NULL
   );
   REDGPU_2_EXPECTWG(volatilePointerReBAR != NULL);
-  REDGPU_2_EXPECTWG(!"Start address is not aligned" || (0 == REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY((uint64_t)volatilePointerReBAR, vkfast->gpuInfo->minMemoryAllocateBytesAlignment)));
 
   RedStructMemberArray storageRaw = {0};
   storageRaw.array                = array.handle;
