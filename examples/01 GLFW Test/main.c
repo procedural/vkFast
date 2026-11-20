@@ -19,6 +19,11 @@ gcc $@ $ARC_SDL3_DEF main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /h
 exit
 #endif
 
+// NOTE(Constantine):
+// Useful Termux links:
+// https://github.com/brunodev85/winlator
+// https://github.com/The412Banner/AIO-Graphics-Test
+
 #include "../../vkfast.h"
 #include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #if !defined(VKFAST_EXAMPLE_01_ENABLE_GLFW3_TO_SDL3)
@@ -250,4 +255,7 @@ int main() {
   glfwTerminateWindow(window);
   #endif
   glfwTerminate();
+  #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
+  system("pause");
+  #endif
 }

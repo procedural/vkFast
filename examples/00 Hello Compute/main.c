@@ -187,5 +187,8 @@ int main() {
   };
   vfIdDestroy(countof(ids), ids, FF, LL);
   vfContextDeinit(ctx, FF, LL);
+  #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
+  system("pause");
+  #endif
   vfExit(0);
 }

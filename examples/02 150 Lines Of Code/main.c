@@ -1,29 +1,13 @@
-//\\rc rawbuild begin gcc-linux-64-bit
-//\\rc rawbuild require-config debug,release,release-fast
-//\\rc rawbuild `gcc`
-//\\rc rawbuild debug ` -g -O0`
-//\\rc rawbuild release,release-fast ` -O2`
-//\\rc rawbuild ` main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm`
-//\\rc rawbuild end
+#if 0
+set -x
 
-//\\rc rawbuild begin clang-windows-64-bit
-//\\rc rawbuild require-config debug,release,release-fast
-//\\rc rawbuild `clang`
-//\\rc rawbuild debug ` -g -O0`
-//\\rc rawbuild release,release-fast ` -O2`
-//\\rc rawbuild ` main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c`
-//\\rc rawbuild end
+gcc $@ main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
 
-//\\rc rawbuild begin mingw-clang-termux-64-bit
-//\\rc rawbuild `x86_64-w64-mingw32-clang -DVKFAST_INCLUDE_TERMUX_PATHS main.c ../../vkfast.c /data/data/com.termux/files/home/RedGpuSDK/redgpu.c /data/data/com.termux/files/home/RedGpuSDK/redgpu_2.c /data/data/com.termux/files/home/RedGpuSDK/redgpu_32.c`
-//\\rc rawbuild end
-
-// NOTE(Constantine):
-// Useful Termux links:
-// https://github.com/brunodev85/winlator
-// https://github.com/The412Banner/AIO-Graphics-Test
+exit
+#endif
 
 #include "../../vkfast.h"
+#include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #include "../Common/vkfast_examples_common.h"
 
 int main() {
@@ -38,40 +22,25 @@ int main() {
   gpu_thread_t gpu_thread = NULL;
   vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
 
-  gpu_storage_info_t storage_info = {0};
-  storage_info.storage_type = GPU_STORAGE_TYPE_CPU_UPLOAD;
-  storage_info.bytes_count  = 2 * 4*sizeof(float);
-  gpu_storage_t storage_input_cpu = {0};
-  vfStorageCreate(ctx, &storage_info, &storage_input_cpu, FF, LL);
-  storage_info.storage_type = GPU_STORAGE_TYPE_GPU_ONLY;
-  gpu_storage_t storage_input_gpu = {0};
-  vfStorageCreate(ctx, &storage_info, &storage_input_gpu, FF, LL);
-  
-  storage_input_cpu.as_vec4[0].x = 4;
-  storage_input_cpu.as_vec4[0].y = 8;
-  storage_input_cpu.as_vec4[0].z = 15;
-  storage_input_cpu.as_vec4[0].w = 16;
-  
-  storage_input_cpu.as_vec4[1].x = 16;
-  storage_input_cpu.as_vec4[1].y = 23;
-  storage_input_cpu.as_vec4[1].z = 42;
-  storage_input_cpu.as_vec4[1].w = 108;
-    
-  uint64_t copy = vfBatchBegin(ctx, 0, NULL, NULL, FF, LL);
-  vfBatchStorageCopyFromCpuToGpu(ctx, copy, storage_input_cpu.id, storage_input_gpu.id, FF, LL);
-  vfBatchEnd(ctx, copy, FF, LL);
-  RedHandleCalls copyRaw = vfBatchGetRawHandle(ctx, copy, FF, LL);
-  uint64_t async = vfAsyncBatchExecuteRaw(ctx, 1, &copyRaw, 1, &gpu_thread, array65536, FF, LL);
-  vfAsyncWaitToFinish(ctx, async, FF, LL);
+  struct float4 {
+    float x, y, z, w;
+  };
 
-  gpu_storage_info_t storage_output_info = {0};
-  storage_output_info.storage_type = GPU_STORAGE_TYPE_CPU_READBACK;
-  storage_output_info.bytes_count  = 1 * 4*sizeof(float);
-  gpu_storage_t storage_output_cpu = {0};
-  vfStorageCreate(ctx, &storage_output_info, &storage_output_cpu, FF, LL);
-  storage_output_info.storage_type = GPU_STORAGE_TYPE_GPU_ONLY;
-  gpu_storage_t storage_output_gpu = {0};
-  vfStorageCreate(ctx, &storage_output_info, &storage_output_gpu, FF, LL);
+  VfeReBARMallocShared storageInputSharedDataHandles = {0};
+  struct float4 * storage_input = (struct float4 *)vfeReBARMallocShared(ctx, 2 * sizeof(struct float4), &storageInputSharedDataHandles);
+
+  storage_input[0].x = 4;
+  storage_input[0].y = 8;
+  storage_input[0].z = 15;
+  storage_input[0].w = 16;
+
+  storage_input[1].x = 16;
+  storage_input[1].y = 23;
+  storage_input[1].z = 42;
+  storage_input[1].w = 108;
+
+  VfeReBARMallocShared storageOutputSharedDataHandles = {0};
+  struct float4 * storage_output = (struct float4 *)vfeReBARMallocShared(ctx, 1 * sizeof(struct float4), &storageOutputSharedDataHandles);
 
   #include "add.cs.h"
   gpu_program_info_t cs_info = {0};
@@ -95,7 +64,7 @@ int main() {
   pp_info.struct_members_count  = countof(slots);
   pp_info.struct_members        = slots;
   uint64_t pp = vfProgramPipelineCreateCompute(ctx, cs, &pp_info, NULL, FF, LL);
-  
+
   uint64_t batch = 0;
 
   {
@@ -105,8 +74,8 @@ int main() {
     batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
     vfBatchBindProgramPipelineCompute(ctx, batch, pp, FF, LL);
     vfBatchBindNewBindingsSet(ctx, batch, countof(slots), slots, FF, LL);
-    vfBatchBindStorageSingle(ctx, batch, 0, storage_input_gpu.id, FF, LL);
-    vfBatchBindStorageSingle(ctx, batch, 1, storage_output_gpu.id, FF, LL);
+    vfBatchBindStorageRaw(ctx, batch, 0, 1, &storageInputSharedDataHandles.storageRaw, FF, LL);
+    vfBatchBindStorageRaw(ctx, batch, 1, 1, &storageOutputSharedDataHandles.storageRaw, FF, LL);
     vfBatchBindNewBindingsEnd(ctx, batch, FF, LL);
     float salt[4] = {0};
     salt[0] = 0;
@@ -115,8 +84,6 @@ int main() {
     salt[3] = 6;
     vfBatchBindVariablesCopy(ctx, batch, 0, sizeof(salt), salt, FF, LL);
     vfBatchCompute(ctx, batch, 1, 1, 1, FF, LL);
-    vfBatchBarrierMemory(ctx, batch, FF, LL);
-    vfBatchStorageCopyFromGpuToCpu(ctx, batch, storage_output_gpu.id, storage_output_cpu.id, FF, LL);
     vfBatchBarrierCpuReadback(ctx, batch, FF, LL);
     vfBatchEnd(ctx, batch, FF, LL);
 
@@ -126,26 +93,23 @@ int main() {
 
     // NOTE(Constantine): Expected result: 20 30 50 130 (20 31 57 124 + salt)"
     printf("Result: %f %f %f %f\n",
-      storage_output_cpu.as_vec4[0].x,
-      storage_output_cpu.as_vec4[0].y,
-      storage_output_cpu.as_vec4[0].z,
-      storage_output_cpu.as_vec4[0].w
+      storage_output[0].x,
+      storage_output[0].y,
+      storage_output[0].z,
+      storage_output[0].w
     );
-    REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].x == 20);
-    REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].y == 30);
-    REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].z == 50);
-    REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].w == 130);
+    REDGPU_2_EXPECTFL(storage_output[0].x == 20);
+    REDGPU_2_EXPECTFL(storage_output[0].y == 30);
+    REDGPU_2_EXPECTFL(storage_output[0].z == 50);
+    REDGPU_2_EXPECTFL(storage_output[0].w == 130);
   }
   
   vfAllQueuesWaitIdle(ctx, FF, LL);
 
   vfGpuThreadDestroy(ctx, gpu_thread);
+  vfeReBARFreeShared(ctx, &storageOutputSharedDataHandles);
+  vfeReBARFreeShared(ctx, &storageInputSharedDataHandles);
   uint64_t ids[] = {
-    storage_input_cpu.id,
-    storage_input_gpu.id,
-    copy,
-    storage_output_cpu.id,
-    storage_output_gpu.id,
     cs,
     pp,
     batch,
