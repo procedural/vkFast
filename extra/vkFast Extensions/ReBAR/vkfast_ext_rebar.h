@@ -30,10 +30,10 @@ typedef struct VfeReBARMallocShared {
 #define VFE_REBAR_IMPLEMENTATION
 #endif
 
-VFE_REBAR_API_PRE void     VFE_REBAR_API_POST vfeReBARGetMemoryBudget        (gpu_handle_context_t context, RedMemoryBudget * outMemoryBudget);
-VFE_REBAR_API_PRE uint64_t VFE_REBAR_API_POST vfeReBARGetMaxMallocSharedSize (gpu_handle_context_t context);
-VFE_REBAR_API_PRE void *   VFE_REBAR_API_POST vfeReBARMallocShared           (gpu_handle_context_t context, uint64_t bytesCount, VfeReBARMallocShared * outArray);
-VFE_REBAR_API_PRE void     VFE_REBAR_API_POST vfeReBARFreeShared             (gpu_handle_context_t context, VfeReBARMallocShared * array);
+npf(VFE_REBAR_API_PRE void     VFE_REBAR_API_POST, vfeReBARGetMemoryBudget,        gpu_handle_context_t,context, RedMemoryBudget *,outMemoryBudget);
+npf(VFE_REBAR_API_PRE uint64_t VFE_REBAR_API_POST, vfeReBARGetMaxMallocSharedSize, gpu_handle_context_t,context);
+npf(VFE_REBAR_API_PRE void *   VFE_REBAR_API_POST, vfeReBARMallocShared,           gpu_handle_context_t,context, uint64_t,bytesCount, VfeReBARMallocShared *,outArray);
+npf(VFE_REBAR_API_PRE void     VFE_REBAR_API_POST, vfeReBARFreeShared,             gpu_handle_context_t,context, VfeReBARMallocShared *,array);
 
 #ifdef VFE_REBAR_IMPLEMENTATION
 

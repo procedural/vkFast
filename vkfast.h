@@ -2,10 +2,10 @@
 
 #if defined(_WIN32)
   #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
-    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu.h"
-    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_wsi.h"
-    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_2.h"
-    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_32.h"
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_2.h"   // Source: https://github.com/redgpu/redgpu2
+    #include "/data/data/com.termux/files/home/RedGpuSDK/redgpu_32.h"  // Source: https://github.com/redgpu/redgpu2
   #elif defined(VKFAST_INCLUDE_LINUX_PATHS)
     #include "/home/linuxbrew/RedGpuSDK/redgpu.h"     // Source: https://github.com/redgpu/redgpu
     #include "/home/linuxbrew/RedGpuSDK/redgpu_wsi.h" // Source: https://github.com/redgpu/redgpu
@@ -67,39 +67,39 @@ typedef RedHandleGpuSignal gpu_thread_t;
 #define GPU_API_POST
 #endif
 
-GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInit(int enable_debug_mode, const gpu_context_optional_parameters_t * optional_parameters, const char * optional_file, int optional_line);
-GPU_API_PRE gpu_handle_context_t GPU_API_POST vfContextInitEx(int enable_debug_mode, unsigned gpu_index, const gpu_context_optional_parameters_t * optional_parameters, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfContextDeinit(gpu_handle_context_t context, const char * optional_file, int optional_line);
-GPU_API_PRE RedContext GPU_API_POST vfContextGetRaw(gpu_handle_context_t context, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfIdDestroy(uint64_t ids_count, const uint64_t * ids, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfGetMainMonitorAreaRectangle(int * out4ints, const char * optional_file, int optional_line);
-GPU_API_PRE int  GPU_API_POST vfWindowFullscreen(gpu_handle_context_t context, void * optional_external_window_handle, const char * window_title, int screen_width, int screen_height, unsigned draw_queue_index, RedPresentVsyncMode present_vsync_mode, const char * optional_file, int optional_line);
-GPU_API_PRE int  GPU_API_POST vfWindowLoop(gpu_handle_context_t context);
-GPU_API_PRE int  GPU_API_POST vfWindowIsMinimized(gpu_handle_context_t context);
-GPU_API_PRE void GPU_API_POST vfWindowGetSize(gpu_handle_context_t context, int * out_window_width, int * out_window_height);
-GPU_API_PRE void GPU_API_POST vfExit(int exit_code);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramCreateFromBinaryCompute(gpu_handle_context_t context, const gpu_program_info_t * program_info, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfProgramPipelineCreateCompute(gpu_handle_context_t context, uint64_t compute_program, const gpu_program_pipeline_info_t * program_pipeline_info,  const char * optional_debug_name, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfBatchBegin(gpu_handle_context_t context, uint64_t existing_batch_id, const gpu_batch_info_t * batch_info, const char * optional_debug_name, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchStorageCopyRaw(gpu_handle_context_t context, uint64_t batch_id, RedHandleArray from_storage_raw, RedHandleArray to_storage_raw, const RedCopyArrayRange * range, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchBindProgramPipelineCompute(gpu_handle_context_t context, uint64_t batch_id, uint64_t program_pipeline_compute_id, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsSet(gpu_handle_context_t context, uint64_t batch_id, int slots_count, const RedStructDeclarationMember * slots, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchBindStorageRaw(gpu_handle_context_t context, uint64_t batch_id, int slot, int storage_raw_count, const RedStructMemberArray * storage_raw, const char * optional_file, int optional_line); // HLSL: RWByteAddressBuffer
-GPU_API_PRE void GPU_API_POST vfBatchBindNewBindingsEnd(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchBindVariablesCopy(gpu_handle_context_t context, uint64_t batch_id, unsigned variables_bytes_offset, unsigned data_bytes_count, const void * data, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchCompute(gpu_handle_context_t context, uint64_t batch_id, unsigned workgroups_count_x, unsigned workgroups_count_y, unsigned workgroups_count_z, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchBarrierMemory(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchBarrierCpuReadback(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfBatchEnd(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfGpuThreadCreate(gpu_handle_context_t context, unsigned gpu_threads_count, gpu_thread_t * out_gpu_threads, const char ** optional_gpu_threads_debug_name, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfGpuThreadDestroy(gpu_handle_context_t context, gpu_thread_t gpu_thread);
-GPU_API_PRE RedHandleCalls GPU_API_POST vfBatchGetRawHandle(gpu_handle_context_t context, uint64_t batch_id, const char * optional_file, int optional_line);
-GPU_API_PRE uint64_t GPU_API_POST vfAsyncBatchExecuteRaw(gpu_handle_context_t context, uint64_t batch_raw_count, const RedHandleCalls * batch_raw, unsigned gpu_threads_count, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optional_file, int optional_line);
-GPU_API_PRE void GPU_API_POST vfAsyncWaitToFinish(gpu_handle_context_t context, uint64_t async_id, const char * optional_file, int optional_line);
-GPU_API_PRE int  GPU_API_POST vfAsyncDrawPixelsRaw(gpu_handle_context_t context, const RedStructMemberArray * pixels_storage_raw, int * out_optional_internal_present_image_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optional_file, int optional_line);
-GPU_API_PRE int  GPU_API_POST vfAsyncDrawImageRaw(gpu_handle_context_t context, RedHandleImage image_raw, int * out_optional_is_image_copy_finished_cpu_signal_index, unsigned gpu_threads_count_plus_one_empty, gpu_thread_t * gpu_threads, const unsigned * gpu_threads_array_of_65536_int_values, const char * optional_file, int optional_line);
-GPU_API_PRE RedHandleCpuSignal GPU_API_POST vfAsyncDrawGetCpuSignal(gpu_handle_context_t context);
-GPU_API_PRE void GPU_API_POST vfAllQueuesWaitIdle(gpu_handle_context_t context, const char * optional_file, int optional_line);
+npf(GPU_API_PRE gpu_handle_context_t GPU_API_POST, vfContextInit, int,enable_debug_mode, const gpu_context_optional_parameters_t *,optional_parameters, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE gpu_handle_context_t GPU_API_POST, vfContextInitEx, int,enable_debug_mode, unsigned,gpu_index, const gpu_context_optional_parameters_t *,optional_parameters, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfContextDeinit, gpu_handle_context_t,context, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE RedContext GPU_API_POST, vfContextGetRaw, gpu_handle_context_t,context, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfIdDestroy, uint64_t,ids_count, const uint64_t *,ids, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfGetMainMonitorAreaRectangle, int *,out4ints, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE int  GPU_API_POST, vfWindowFullscreen, gpu_handle_context_t,context, void *,optional_external_window_handle, const char *,window_title, int,screen_width, int,screen_height, unsigned,draw_queue_index, RedPresentVsyncMode,present_vsync_mode, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE int  GPU_API_POST, vfWindowLoop, gpu_handle_context_t,context);
+npf(GPU_API_PRE int  GPU_API_POST, vfWindowIsMinimized, gpu_handle_context_t,context);
+npf(GPU_API_PRE void GPU_API_POST, vfWindowGetSize, gpu_handle_context_t,context, int *,out_window_width, int *,out_window_height);
+npf(GPU_API_PRE void GPU_API_POST, vfExit, int,exit_code);
+npf(GPU_API_PRE uint64_t GPU_API_POST, vfProgramCreateFromBinaryCompute, gpu_handle_context_t,context, const gpu_program_info_t *,program_info, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE uint64_t GPU_API_POST, vfProgramPipelineCreateCompute, gpu_handle_context_t,context, uint64_t,compute_program, const gpu_program_pipeline_info_t *,program_pipeline_info,  const char *,optional_debug_name, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE uint64_t GPU_API_POST, vfBatchBegin, gpu_handle_context_t,context, uint64_t,existing_batch_id, const gpu_batch_info_t *,batch_info, const char *,optional_debug_name, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfBatchStorageCopyRaw, gpu_handle_context_t,context, uint64_t,batch_id, RedHandleArray,from_storage_raw, RedHandleArray,to_storage_raw, const RedCopyArrayRange *,range, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfBatchBindProgramPipelineCompute, gpu_handle_context_t,context, uint64_t,batch_id, uint64_t,program_pipeline_compute_id, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfBatchBindNewBindingsSet, gpu_handle_context_t,context, uint64_t,batch_id, int,slots_count, const RedStructDeclarationMember *,slots, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfBatchBindStorageRaw, gpu_handle_context_t,context, uint64_t,batch_id, int,slot, int,storage_raw_count, const RedStructMemberArray *,storage_raw, const char *,optional_file, int,optional_line); // HLSL: RWByteAddressBuffer
+npf(GPU_API_PRE void GPU_API_POST, vfBatchBindNewBindingsEnd, gpu_handle_context_t,context, uint64_t,batch_id, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfBatchBindVariablesCopy, gpu_handle_context_t,context, uint64_t,batch_id, unsigned,variables_bytes_offset, unsigned,data_bytes_count, const void *,data, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfBatchCompute, gpu_handle_context_t,context, uint64_t,batch_id, unsigned,workgroups_count_x, unsigned,workgroups_count_y, unsigned,workgroups_count_z, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfBatchBarrierMemory, gpu_handle_context_t,context, uint64_t,batch_id, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfBatchBarrierCpuReadback, gpu_handle_context_t,context, uint64_t,batch_id, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfBatchEnd, gpu_handle_context_t,context, uint64_t,batch_id, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfGpuThreadCreate, gpu_handle_context_t,context, unsigned,gpu_threads_count, gpu_thread_t *,out_gpu_threads, const char **,optional_gpu_threads_debug_name, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfGpuThreadDestroy, gpu_handle_context_t,context, gpu_thread_t,gpu_thread);
+npf(GPU_API_PRE RedHandleCalls GPU_API_POST, vfBatchGetRawHandle, gpu_handle_context_t,context, uint64_t,batch_id, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE uint64_t GPU_API_POST, vfAsyncBatchExecuteRaw, gpu_handle_context_t,context, uint64_t,batch_raw_count, const RedHandleCalls *,batch_raw, unsigned,gpu_threads_count, gpu_thread_t *,gpu_threads, const unsigned *,gpu_threads_array_of_65536_int_values, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE void GPU_API_POST, vfAsyncWaitToFinish, gpu_handle_context_t,context, uint64_t,async_id, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE int  GPU_API_POST, vfAsyncDrawPixelsRaw, gpu_handle_context_t,context, const RedStructMemberArray *,pixels_storage_raw, int *,out_optional_internal_present_image_index, unsigned,gpu_threads_count_plus_one_empty, gpu_thread_t *,gpu_threads, const unsigned *,gpu_threads_array_of_65536_int_values, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE int  GPU_API_POST, vfAsyncDrawImageRaw, gpu_handle_context_t,context, RedHandleImage,image_raw, int *,out_optional_is_image_copy_finished_cpu_signal_index, unsigned,gpu_threads_count_plus_one_empty, gpu_thread_t *,gpu_threads, const unsigned *,gpu_threads_array_of_65536_int_values, const char *,optional_file, int,optional_line);
+npf(GPU_API_PRE RedHandleCpuSignal GPU_API_POST, vfAsyncDrawGetCpuSignal, gpu_handle_context_t,context);
+npf(GPU_API_PRE void GPU_API_POST, vfAllQueuesWaitIdle, gpu_handle_context_t,context, const char *,optional_file, int,optional_line);
 
 #ifdef __cplusplus
 }
