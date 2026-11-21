@@ -1,4 +1,7 @@
-// dxc.exe add.cs.hlsl -T cs_6_0 -Fh add.cs.h -spirv
+#if 0
+/opt/dxc add.cs.hlsl -T cs_6_0 -Fh add.cs.h -spirv
+exit
+#endif
 
 [[vk::binding(0, 0)]] RWStructuredBuffer<float4> array0;
 [[vk::binding(1, 0)]] RWStructuredBuffer<float4> array1;
