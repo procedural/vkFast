@@ -1,0 +1,12 @@
+#!/bin/bash
+
+cd ..
+
+for dir in */; do
+  (
+    cd "$dir" || exit
+    pwd
+    ./main.c
+    ./main.cpp
+  )
+done
