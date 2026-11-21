@@ -1,32 +1,33 @@
-//\\rc rawbuild begin gcc-linux-64-bit
-//\\rc rawbuild require-config debug,release,release-fast
-//\\rc rawbuild require-config glfw3,sdl3
-//\\rc rawbuild `gcc`
-//\\rc rawbuild debug ` -g -O0`
-//\\rc rawbuild release,release-fast ` -O2`
-//\\rc rawbuild sdl3 ` -DVKFAST_EXAMPLE_04_ENABLE_GLFW3_TO_SDL3`
-//\\rc rawbuild ` main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/`
-//\\rc rawbuild glfw3 ` /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a`
-//\\rc rawbuild sdl3 ` /home/linuxbrew/.linuxbrew/lib/libSDL3.so`
-//\\rc rawbuild ` /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm`
-//\\rc rawbuild end
+#if 0
+set -x
 
-//\\rc rawbuild begin clang-windows-64-bit
-//\\rc rawbuild require-config debug,release,release-fast
-//\\rc rawbuild `clang`
-//\\rc rawbuild debug ` -g -O0`
-//\\rc rawbuild release,release-fast ` -O2`
-//\\rc rawbuild ` main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c ../Common/glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3.a -lgdi32`
-//\\rc rawbuild end
+if [[ "$ARC_GLFW3" == "" ]] && [[ "$ARC_SDL3" == "" ]]; then
+  ARC_GLFW3='1'
+fi
+
+if [[ "$ARC_GLFW3" == "1" ]]; then
+  ARC_GLFW3_LIB='/home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a'
+fi
+
+if [[ "$ARC_SDL3" == "1" ]]; then
+  ARC_SDL3_DEF='-DVKFAST_EXAMPLE_04_ENABLE_GLFW3_TO_SDL3'
+  ARC_SDL3_LIB='/home/linuxbrew/.linuxbrew/lib/libSDL3.so'
+fi
+
+gcc $@ $ARC_SDL3_DEF main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ $ARC_GLFW3_LIB $ARC_SDL3_LIB /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
+
+exit
+#endif
 
 #include "../../vkfast.h"
 #include "../../vkfast_ids.h"
-#ifndef VKFAST_EXAMPLE_04_ENABLE_GLFW3_TO_SDL3
-#define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
+#include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
+#if !defined(VKFAST_EXAMPLE_04_ENABLE_GLFW3_TO_SDL3)
+  #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #endif
 #include "../Common/vkfast_examples_common.h"
-#ifdef VKFAST_EXAMPLE_04_ENABLE_GLFW3_TO_SDL3
-#include "../../extra/GLFW3 to SDL3/vkfast_extra_glfw3_to_sdl3.h"
+#if defined(VKFAST_EXAMPLE_04_ENABLE_GLFW3_TO_SDL3)
+  #include "../../extra/GLFW3 to SDL3/vkfast_extra_glfw3_to_sdl3.h"
 #endif
 
 int main() {
@@ -84,13 +85,7 @@ int main() {
   vfctx2.doNotFreeHandle        = 1; // Since we created vfctx2 on the stack.
   vfctx2.context                = vfContextGetRaw(ctx1, FF, LL);
   // Custom initialization of ctx2.
-  gpu_internal_memory_allocation_sizes_t ctx2allocsizes = {0};
-  ctx2allocsizes.bytes_count_for_memory_storages_type_gpu_only         = 0;
-  ctx2allocsizes.bytes_count_for_memory_storages_type_cpu_upload       = 0;
-  ctx2allocsizes.bytes_count_for_memory_storages_type_cpu_readback     = 0;
-  ctx2allocsizes.bytes_count_for_memory_present_pixels_type_cpu_upload = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_PIXELS_CPU_UPLOAD_288MB;
   gpu_context_optional_parameters_t ctx2params = {0};
-  ctx2params.internal_memory_allocation_sizes             = &ctx2allocsizes;
   ctx2params.optional_pointer_to_custom_vf_handle_context = (void *)&vfctx2;
   gpu_handle_context_t ctx2 = vfContextInit(0, &ctx2params, FF, LL);
 
@@ -132,7 +127,8 @@ int main() {
       vfWindowGetSize(ctx, &window_w, &window_h);
 
       // To free
-      unsigned char * pixels = (unsigned char *)red32MemoryCalloc(4 * window_h * window_w);
+      VfeReBARMallocShared pixelsHandles = {0};
+      unsigned char * pixels = (unsigned char *)vfeReBARMallocShared(ctx, 4 * window_h * window_w, &pixelsHandles);
       REDGPU_2_EXPECTFL(pixels != NULL);
 
       double mouse_x = 0;
@@ -176,10 +172,11 @@ int main() {
       }
 
       gpu_thread_t gpu_threads[2] = {i == 0 ? gpu_thread_ctx1 : gpu_thread_ctx2, 0};
-      vfDrawPixels(ctx, pixels, NULL, 2, gpu_threads, array65536, FF, LL);
+      vfAsyncDrawPixelsRaw(ctx, &pixelsHandles.storageRaw, NULL, 2, gpu_threads, array65536, FF, LL);
 
-      red32MemoryFree(pixels);
+      vfeReBARFreeShared(ctx, &pixelsHandles);
       pixels = NULL;
+      pixelsHandles = (VfeReBARMallocShared){0};
     }
   }
 

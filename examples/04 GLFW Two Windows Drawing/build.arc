@@ -1,0 +1,20 @@
+//\\rc rawbuild begin gcc-linux-64-bit
+//\\rc rawbuild require-config debug,release,release-fast
+//\\rc rawbuild require-config glfw3,sdl3
+//\\rc rawbuild `gcc`
+//\\rc rawbuild debug ` -g -O0`
+//\\rc rawbuild release,release-fast ` -O2`
+//\\rc rawbuild sdl3 ` -DVKFAST_EXAMPLE_04_ENABLE_GLFW3_TO_SDL3`
+//\\rc rawbuild ` main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/`
+//\\rc rawbuild glfw3 ` /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a`
+//\\rc rawbuild sdl3 ` /home/linuxbrew/.linuxbrew/lib/libSDL3.so`
+//\\rc rawbuild ` /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm`
+//\\rc rawbuild end
+
+//\\rc rawbuild begin clang-windows-64-bit
+//\\rc rawbuild require-config debug,release,release-fast
+//\\rc rawbuild `clang`
+//\\rc rawbuild debug ` -g -O0`
+//\\rc rawbuild release,release-fast ` -O2`
+//\\rc rawbuild ` main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c ../Common/glfw-3.4.bin.WIN64/lib-mingw-w64/libglfw3.a -lgdi32`
+//\\rc rawbuild end

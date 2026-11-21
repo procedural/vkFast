@@ -124,7 +124,6 @@ int main() {
   uint64_t pp = vfProgramPipelineCreateCompute(ctx, cs, &pp_info, NULL, FF, LL);
 
   uint64_t batch = 0;
-  VfeReBARMallocShared pixelsHandles = {0};
 
   while (glfwWindowShouldClose(window) == 0) {
     #ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
@@ -183,6 +182,7 @@ int main() {
     vfWindowGetSize(ctx, &window_w, &window_h);
 
     // To free
+    VfeReBARMallocShared pixelsHandles = {0};
     unsigned char * pixels = (unsigned char *)vfeReBARMallocShared(ctx, 4 * window_h * window_w, &pixelsHandles);
     REDGPU_2_EXPECTFL(pixels != NULL);
 
