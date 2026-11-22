@@ -1,24 +1,13 @@
-//\\rc rawbuild begin gcc-linux-64-bit
-//\\rc rawbuild require-config debug,release,release-fast
-//\\rc rawbuild `gcc`
-//\\rc rawbuild debug ` -g -O0`
-//\\rc rawbuild release,release-fast ` -O2`
-//\\rc rawbuild ` main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm`
-//\\rc rawbuild end
+#if 0
+set -x
 
-//\\rc rawbuild begin clang-windows-64-bit
-//\\rc rawbuild require-config debug,release,release-fast
-//\\rc rawbuild `clang`
-//\\rc rawbuild debug ` -g -O0`
-//\\rc rawbuild release,release-fast ` -O2`
-//\\rc rawbuild ` main.c ../../vkfast.c C:/RedGpuSDK/redgpu.c C:/RedGpuSDK/redgpu_2.c C:/RedGpuSDK/redgpu_32.c`
-//\\rc rawbuild end
+gcc $@ main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
 
-//\\rc rawbuild begin mingw-clang-termux-64-bit
-//\\rc rawbuild `x86_64-w64-mingw32-clang -DVKFAST_INCLUDE_TERMUX_PATHS main.c ../../vkfast.c /data/data/com.termux/files/home/RedGpuSDK/redgpu.c /data/data/com.termux/files/home/RedGpuSDK/redgpu_2.c /data/data/com.termux/files/home/RedGpuSDK/redgpu_32.c`
-//\\rc rawbuild end
+exit
+#endif
 
 #include "../../vkfast.h"
+#include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #include "../Common/vkfast_examples_common.h"
 
 int main() {
@@ -52,11 +41,12 @@ int main() {
     unsigned char pixels[window_h][window_w][4];
   };
   // To free
-  struct Pixels * pix = (struct Pixels *)red32MemoryCalloc(sizeof(struct Pixels));
+  VfeReBARMallocShared pixelsHandles = {0};
+  volatile struct Pixels * pix = (volatile struct Pixels *)vfeReBARMallocShared(ctx, sizeof(struct Pixels), &pixelsHandles);
   REDGPU_2_EXPECTFL(pix != NULL);
 
   while (vfWindowLoop(ctx)) {
-    unsigned char * pixels = &pix->pixels[0][0][0];
+    volatile unsigned char * pixels = &pix->pixels[0][0][0];
     // Clear pixels:
     for (int y = 0; y < window_h; y += 1) {
       for (int x = 0; x < window_w; x += 1) {
@@ -99,15 +89,14 @@ int main() {
       }
     }
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
-    vfDrawPixels(ctx, pix->pixels, NULL, 2, gpu_threads, array65536, FF, LL);
+    vfAsyncDrawPixelsRaw(ctx, &pixelsHandles.storageRaw, NULL, 2, gpu_threads, array65536, FF, LL);
   }
   
   vfAllQueuesWaitIdle(ctx, FF, LL);
 
   vfGpuThreadDestroy(ctx, gpu_thread);
 
-  red32MemoryFree(pix);
-  pix = NULL;
+  vfeReBARFreeShared(ctx, &pixelsHandles);
 
   vfContextDeinit(ctx, FF, LL);
   vfExit(0);
