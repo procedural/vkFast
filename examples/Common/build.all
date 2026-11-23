@@ -18,6 +18,7 @@ for dir in */; do
       printf "\e[97;42m Success \e[0m \n"
     else
       printf "\e[97;41m Fail \e[0m \n"
+      exit 1
     fi
-  )
+  ) || exit 1
 done
