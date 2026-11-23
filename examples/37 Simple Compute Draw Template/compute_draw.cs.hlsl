@@ -1,4 +1,7 @@
-// dxc.exe compute_draw.cs.hlsl -T cs_6_0 -Fh compute_draw.cs.h -spirv
+#if 0
+/opt/dxc compute_draw.cs.hlsl -T cs_6_0 -Fh compute_draw.cs.h -spirv
+exit
+#endif
 
 [[vk::binding(0, 0)]] RWStructuredBuffer<uint> pixels;
 

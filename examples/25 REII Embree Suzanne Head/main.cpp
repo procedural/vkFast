@@ -1,6 +1,7 @@
 #if 0
-gcc -c ../../vkfast.c ../../extra/Banzai/vkfast_extra_banzai.c ../../extra/Banzai/vkfast_extra_banzai_pointer.c "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c" ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/
-g++ main.cpp *.o -I"../../extra/REII Embree 1.1.0/include/renderer/" /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm "../../extra/REII Embree 1.1.0/embree/build/librenderer.a" "../../extra/REII Embree 1.1.0/embree/build/librtcore.a" "../../extra/REII Embree 1.1.0/embree/build/libsys.a" "../../extra/REII Embree 1.1.0/embree/build/libimage.a"
+set -x
+gcc -c $@ ../../vkfast.c ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/
+g++ $@ main.cpp *.o -I"../../extra/REII Embree 1.1.0/include/renderer/" /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm "../../extra/REII Embree 1.1.0/embree/build/librenderer.a" "../../extra/REII Embree 1.1.0/embree/build/librtcore.a" "../../extra/REII Embree 1.1.0/embree/build/libsys.a" "../../extra/REII Embree 1.1.0/embree/build/libimage.a"
 exit
 #endif
 

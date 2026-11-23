@@ -1,5 +1,8 @@
-// dxc.exe mesh_text_non3d.hlsl -DVS -T vs_6_0 -Fh mesh_text_non3d.vs.h -spirv
-// dxc.exe mesh_text_non3d.hlsl -DFS -T ps_6_0 -Fh mesh_text_non3d.fs.h -spirv
+#if 0
+/opt/dxc mesh_text_non3d.hlsl -DVS -T vs_6_0 -Fh mesh_text_non3d.vs.h -spirv
+/opt/dxc mesh_text_non3d.hlsl -DFS -T ps_6_0 -Fh mesh_text_non3d.fs.h -spirv
+exit
+#endif
 
 [[vk::binding(0, 0)]] StructuredBuffer<float4> vertex_positions;
 

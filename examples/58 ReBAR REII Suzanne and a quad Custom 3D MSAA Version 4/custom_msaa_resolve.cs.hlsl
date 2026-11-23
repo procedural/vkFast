@@ -1,4 +1,7 @@
-// /opt/dxc custom_msaa_resolve.cs.hlsl -T cs_6_0 -Fh custom_msaa_resolve.cs.h -Vn custom_msaa_resolve_cs_code -spirv
+#if 0
+/opt/dxc custom_msaa_resolve.cs.hlsl -T cs_6_0 -Fh custom_msaa_resolve.cs.h -Vn custom_msaa_resolve_cs_code -spirv
+exit
+#endif
 
 #include "shared_data.h"
 

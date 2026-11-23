@@ -1,5 +1,8 @@
-// dxc.exe mesh_capsule.hlsl -DVS -T vs_6_0 -Fh mesh_capsule.vs.h -spirv
-// dxc.exe mesh_capsule.hlsl -DFS -T ps_6_0 -Fh mesh_capsule.fs.h -spirv
+#if 0
+/opt/dxc mesh_capsule.hlsl -DVS -T vs_6_0 -Fh mesh_capsule.vs.h -spirv
+/opt/dxc mesh_capsule.hlsl -DFS -T ps_6_0 -Fh mesh_capsule.fs.h -spirv
+exit
+#endif
 
 [[vk::binding(0, 0)]] StructuredBuffer<float4> positions;
 

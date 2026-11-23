@@ -1,5 +1,8 @@
-// dxc.exe mesh.hlsl -DVS -T vs_6_0 -Fh mesh.vs.h -spirv
-// dxc.exe mesh.hlsl -DFS -T ps_6_0 -Fh mesh.fs.h -spirv
+#if 0
+/opt/dxc mesh.hlsl -DVS -T vs_6_0 -Fh mesh.vs.h -spirv
+/opt/dxc mesh.hlsl -DFS -T ps_6_0 -Fh mesh.fs.h -spirv
+exit
+#endif
 
 [[vk::binding(0, 0)]] StructuredBuffer<float4> mesh_vertex_positions;
 [[vk::binding(1, 0)]] StructuredBuffer<float4> instance_colors;

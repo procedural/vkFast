@@ -1,4 +1,7 @@
-// C:\VulkanSDK\1.4.341.1\Bin\dxc.exe ray_copy_pixels.cs.hlsl -T cs_6_0 -Fh ray_copy_pixels.cs.h -spirv
+#if 0
+/opt/dxc ray_copy_pixels.cs.hlsl -T cs_6_0 -Fh ray_copy_pixels.cs.h -spirv
+exit
+#endif
 
 [[vk::binding(0, 0)]] RWTexture2D<float4> image;
 [[vk::binding(1, 0)]] RWStructuredBuffer<uint> array1;
