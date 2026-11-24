@@ -1,3 +1,12 @@
+#if 0
+set -x
+
+gcc -c $@ ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/
+g++ $@ main.cpp *.o -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
+
+exit
+#endif
+
 #include "../../vkfast.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLM
 #include "../Common/vkfast_examples_common.h"
@@ -118,7 +127,8 @@ int main() {
     unsigned char pixels[window_h][window_w][4];
   };
   // To free
-  struct Pixels * pix = (struct Pixels *)red32MemoryCalloc(sizeof(struct Pixels));
+  VfeReBARMallocShared pixelsHandles = {0};
+  volatile struct Pixels * pix = (volatile struct Pixels *)vfeReBARMallocShared(ctx, sizeof(struct Pixels), &pixelsHandles);
   REDGPU_2_EXPECTFL(pix != NULL);
 
   void * texture_fd = NULL;
@@ -174,7 +184,7 @@ int main() {
     time += 0.2f; // NOTE(Constantine): Speeded up.
 
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
-    vfDrawPixels(ctx, pix->pixels, NULL, 2, gpu_threads, array65536, FF, LL);
+    vfAsyncDrawPixelsRaw(ctx, &pixelsHandles.storageRaw, NULL, 2, gpu_threads, array65536, FF, LL);
   }
   
   vfAllQueuesWaitIdle(ctx, FF, LL);
@@ -186,8 +196,7 @@ int main() {
   texture_mh = NULL;
   texture_data = NULL;
 
-  red32MemoryFree(pix);
-  pix = NULL;
+  vfeReBARFreeShared(ctx, &pixelsHandles);
 
   vfContextDeinit(ctx, FF, LL);
   vfExit(0);
