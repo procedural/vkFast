@@ -8,6 +8,7 @@ exit
 #endif
 
 #include "../../vkfast.h"
+#include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLM
 #include "../Common/vkfast_examples_common.h"
 using namespace glm;
@@ -145,7 +146,7 @@ int main() {
   some_texture += 61; // NOTE(Constantine): Hardcoded, skipping .ppm's header part.
 
   while (vfWindowLoop(ctx)) {
-    unsigned char * pixels = &pix->pixels[0][0][0];
+    volatile unsigned char * pixels = &pix->pixels[0][0][0];
     // Clear pixels:
     for (int y = 0; y < window_h; y += 1) {
       for (int x = 0; x < window_w; x += 1) {
