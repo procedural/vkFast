@@ -7,9 +7,6 @@ add_executable(${PROJECT_NAME}
   /home/linuxbrew/RedGpuSDK/redgpu.c
   /home/linuxbrew/RedGpuSDK/redgpu_2.c
   /home/linuxbrew/RedGpuSDK/redgpu_32.c
-  ${CMAKE_SOURCE_DIR}/../../../extra/Banzai/vkfast_extra_banzai.c
-  ${CMAKE_SOURCE_DIR}/../../../extra/Banzai/vkfast_extra_banzai_pointer.c
-  "${CMAKE_SOURCE_DIR}/../../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c"
   ${CMAKE_SOURCE_DIR}/../../../extra/REII/vkfast_extra_reii.c
   ${CMAKE_SOURCE_DIR}/../../Common/font_droid_sans_mono.c
 )

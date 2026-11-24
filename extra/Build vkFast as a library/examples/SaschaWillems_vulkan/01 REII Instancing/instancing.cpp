@@ -1,17 +1,11 @@
 #if defined(_WIN32)
   #include "C:/Users/Constantine/Desktop/vkfast/vkfast_ex.h"
-  #include "C:/Users/Constantine/Desktop/vkfast/extra/Banzai/vkfast_extra_banzai_pointer.h"
-  #include "C:/Users/Constantine/Desktop/vkfast/extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.h"
   #include "C:/Users/Constantine/Desktop/vkfast/extra/REII/vkfast_extra_reii.h"
-  #define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
   #include "C:/Users/Constantine/Desktop/vkfast/examples/Common/vkfast_examples_common.h"
   #pragma comment(lib, "C:/Users/Constantine/Desktop/vkfast/extra/Build vkFast as a library/vkFast.lib")
 #elif defined(__linux__) && !defined(__ANDROID__)
   #include "/home/constantine/Desktop/vkfast/vkfast_ex.h"
-  #include "/home/constantine/Desktop/vkfast/extra/Banzai/vkfast_extra_banzai_pointer.h"
-  #include "/home/constantine/Desktop/vkfast/extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.h"
   #include "/home/constantine/Desktop/vkfast/extra/REII/vkfast_extra_reii.h"
-  #define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
   #include "/home/constantine/Desktop/vkfast/examples/Common/vkfast_examples_common.h"
 #endif
 

@@ -9,10 +9,8 @@ exit
 #define _USE_MATH_DEFINES // For M_PI
 
 #include "../../vkfast.h"
-#include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
-#define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
 #include "../Common/vkfast_examples_common.h"
 
 struct int3   { int   x, y, z; };

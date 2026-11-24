@@ -5,7 +5,6 @@
 #include "../../../vkfast_ids.h"
 
 #include "../../../extra/Dear ImGui 2016/imgui_reii.h"
-#include "../../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 
 #if !defined(IDC_IMGUI_API_NON_STATIC) && !defined(ALL_API_NON_STATIC)
 #define IDC_IMGUI_API_PRE  static

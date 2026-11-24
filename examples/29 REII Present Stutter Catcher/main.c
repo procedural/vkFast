@@ -1,11 +1,9 @@
 #include "../../vkfast_ex.h"
 #include "../../vkfast_ids.h"
-#include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
 #ifndef VKFAST_EXAMPLE_29_ENABLE_GLFW3_TO_SDL3
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #endif
-#define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
 #include "../Common/vkfast_examples_common.h"
 #ifdef VKFAST_EXAMPLE_29_ENABLE_GLFW3_TO_SDL3
 #include "../../extra/GLFW3 to SDL3/vkfast_extra_glfw3_to_sdl3.h"

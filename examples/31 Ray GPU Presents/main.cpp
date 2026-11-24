@@ -1,17 +1,10 @@
 #include "../../vkfast.h"
 #include "../../vkfast_ex.h"
 #include "../../vkfast_ids.h"
-#include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
-#include "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.h"
-#define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #define VKFAST_EXAMPLES_COMMON_DO_NOT_LINK_GLFW3
 #include "../Common/vkfast_examples_common.h"
 #pragma comment(lib, "../../../Common/glfw-3.4.bin.WIN64/lib-vc2019/glfw3_mt.lib") // NOTE(Constantine): Path relative to example's cmake/build/ folder.
-
-#include "C:/RedGpuSDK/misc/np/np.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu.h"
-#include "C:/RedGpuSDK/misc/np/np_redgpu_2.h"
 
 #include "../../extra/Ray/Ray.h"
 

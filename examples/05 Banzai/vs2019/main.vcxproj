@@ -12,8 +12,6 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
-    <ClCompile Include="..\..\..\extra\Banzai\vkfast_extra_banzai.c" />
-    <ClCompile Include="..\..\..\extra\Banzai\vkfast_extra_banzai_pointer.c" />
     <ClCompile Include="C:\RedGpuSDK\redgpu.c" />
     <ClCompile Include="C:\RedGpuSDK\redgpu_2.c" />
     <ClCompile Include="C:\RedGpuSDK\redgpu_32.c" />

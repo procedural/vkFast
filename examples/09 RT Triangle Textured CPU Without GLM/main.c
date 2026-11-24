@@ -1,4 +1,5 @@
 #include "../../vkfast.h"
+#include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #include "../Common/vkfast_examples_common.h"
 
 int some_texture_channels_count = 3; // NOTE(Constantine): Hardcoded.

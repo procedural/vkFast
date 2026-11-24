@@ -10,9 +10,6 @@ add_subdirectory(../../../extra/Ray ${CMAKE_CURRENT_BINARY_DIR}/Ray)
 add_executable(${PROJECT_NAME}
   ../main.cpp
   ../../../vkfast.c
-  ../../../extra/Banzai/vkfast_extra_banzai.c
-  ../../../extra/Banzai/vkfast_extra_banzai_pointer.c
-  "../../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.c"
   C:/RedGpuSDK/redgpu.c
   C:/RedGpuSDK/redgpu_2.c
   C:/RedGpuSDK/redgpu_32.c

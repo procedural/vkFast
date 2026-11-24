@@ -1,5 +1,4 @@
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
-#define VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
 #include "../Common/vkfast_examples_common.h"
 
 #define STB_IMAGE_IMPLEMENTATION

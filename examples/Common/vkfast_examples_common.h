@@ -122,55 +122,6 @@ static void quatRotateVec3Fast(float * out, const float * v, const float * q) {
   vec3Add(out, out, vc);
 }
 
-#ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
-
-#include "../../extra/CPU GPU Array/vkfast_extra_cpu_gpu_array.h"
-#include "../../extra/Banzai/vkfast_extra_banzai_pointer.h"
-
-static ReiiCpuScratchBuffer OffsetAllocateCpuScratchBuffer(uint64_t bytesCountToAllocate, gpu_storage_t * storage_cpu, uint64_t * storage_cpu_offset, const char * optionalFile, int optionalLine) {
-  gpu_extra_banzai_pointer_t cpu_pointer = {0};
-  vfeBanzaiGetPointer(storage_cpu, storage_cpu_offset[0], &cpu_pointer, optionalFile, optionalLine);
-  storage_cpu_offset[0] += bytesCountToAllocate;
-
-  RedStructMemberArray cpu_array = {0};
-  vfeBanzaiPointerGetRawLimited(&cpu_pointer, bytesCountToAllocate, &cpu_array, optionalFile, optionalLine);
-  ReiiCpuScratchBuffer cpu_scratch_buffer = {0};
-  cpu_scratch_buffer.cpu_scratch_buffer_ptr = cpu_pointer.mapped_void_ptr;
-  cpu_scratch_buffer.cpu_scratch_buffer     = cpu_array;
-
-  return cpu_scratch_buffer;
-}
-
-static gpu_extra_cpu_gpu_array OffsetAllocateCpuGpuArrayExact(uint64_t bytesCountToAllocate, gpu_storage_t * storage_cpu, uint64_t * storage_cpu_offset, gpu_storage_t * storage_gpu, uint64_t * storage_gpu_offset, const char * optionalFile, int optionalLine) {
-  gpu_extra_banzai_pointer_t cpu_pointer = {0};
-  gpu_extra_banzai_pointer_t gpu_pointer = {0};
-  vfeBanzaiGetPointer(storage_cpu, storage_cpu_offset[0], &cpu_pointer, optionalFile, optionalLine);
-  vfeBanzaiGetPointer(storage_gpu, storage_gpu_offset[0], &gpu_pointer, optionalFile, optionalLine);
-  storage_cpu_offset[0] += bytesCountToAllocate;
-  storage_gpu_offset[0] += bytesCountToAllocate;
-
-  RedStructMemberArray cpu_array = {0};
-  RedStructMemberArray gpu_array = {0};
-  vfeBanzaiPointerGetRawLimited(&cpu_pointer, bytesCountToAllocate, &cpu_array, optionalFile, optionalLine);
-  vfeBanzaiPointerGetRawLimited(&gpu_pointer, bytesCountToAllocate, &gpu_array, optionalFile, optionalLine);
-  gpu_extra_cpu_gpu_array cpu_gpu_array = {0};
-  cpu_gpu_array.cpu_ptr = cpu_pointer.mapped_void_ptr;
-  cpu_gpu_array.cpu     = cpu_array;
-  cpu_gpu_array.gpu     = gpu_array;
-
-  return cpu_gpu_array;
-}
-
-static gpu_extra_cpu_gpu_array OffsetAllocateCpuGpuArrayWithTale64BytesAlign(uint64_t bytesCountToAllocate, gpu_storage_t * storage_cpu, uint64_t * storage_cpu_offset, gpu_storage_t * storage_gpu, uint64_t * storage_gpu_offset, const char * optionalFile, int optionalLine) {
-  gpu_extra_cpu_gpu_array out = OffsetAllocateCpuGpuArrayExact(bytesCountToAllocate, storage_cpu, storage_cpu_offset, storage_gpu, storage_gpu_offset, optionalFile, optionalLine);
-  uint64_t storage_cpu_offset_tale = REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_cpu_offset[0], 64);
-  uint64_t storage_gpu_offset_tale = REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(storage_gpu_offset[0], 64);
-  storage_cpu_offset[0] += storage_cpu_offset_tale;
-  storage_gpu_offset[0] += storage_gpu_offset_tale;
-  return out;
-}
-#endif // #ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_EXTRA_BANZAI
-
 #ifdef VKFAST_EXAMPLES_COMMON_INCLUDE_GLM // https://github.com/g-truc/glm/releases/tag/0.9.9.6
   #define GLM_FORCE_SWIZZLE
   #include "glm-0.9.9.6/glm/glm.hpp"
