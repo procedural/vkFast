@@ -1,67 +1,50 @@
+#if 0
+set -x
+
+gcc $@ main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
+
+exit
+#endif
+
 #include "../../vkfast.h"
+#include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #include "../Common/vkfast_examples_common.h"
 
 int main() {
+  // NOTE(Constantine)(Nov 25, 2026):
+  // This example used to be about (now deprecated) vkFast extra feature called Banzai.
+  // Now it demonstrates extra memory allocations using ReBAR memory.
+
 #if defined(_MSC_VER) && defined(_DEBUG)
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-  gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = 0;
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_upload       = 0;
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_readback     = 0;
-  memory_allocation_sizes.bytes_count_for_memory_present_pixels_type_cpu_upload = VKFAST_DEFAULT_MEMORY_ALLOCATION_SIZE_PRESENT_PIXELS_CPU_UPLOAD_288MB;
-  gpu_context_optional_parameters_t optional_parameters = {0};
-  optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
-  
-  gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
+  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
 
   const unsigned array65536[2] = {65536, 65536};
 
   gpu_thread_t gpu_thread = NULL;
   vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
 
-  gpu_storage_t storage_gpu_only     = {0};
-  gpu_storage_t storage_cpu_upload   = {0};
-  gpu_storage_t storage_cpu_readback = {0};
+  struct float4 {
+    float x, y, z, w;
+  };
 
-  gpu_internal_memory_allocation_sizes_t allocate_extra_memory = {0};
-  allocate_extra_memory.bytes_count_for_memory_storages_type_gpu_only         = (64 * 1024 * 1024);
-  allocate_extra_memory.bytes_count_for_memory_storages_type_cpu_upload       = (64 * 1024 * 1024);
-  allocate_extra_memory.bytes_count_for_memory_storages_type_cpu_readback     = (64 * 1024 * 1024);
-  allocate_extra_memory.bytes_count_for_memory_present_pixels_type_cpu_upload = 0;
-  gpu_handle_context_t ctx2 = vfeBanzaiAllocateExtraMemory(ctx, &allocate_extra_memory, FF, LL);
-  vfeBanzaiStoragesCreate(ctx2, &storage_gpu_only, &storage_cpu_upload, &storage_cpu_readback, FF, LL);
-  // NOTE(Constantine):
-  // We don't need to use ctx2 anywhere now since allocations were
-  // derived from the original ctx and the storages are created from ctx2.
+  VfeReBARMallocShared storageSharedDataHandles = {0};
+  struct float4 * storage = (struct float4 *)vfeReBARMallocShared(ctx, 3 * sizeof(struct float4), &storageSharedDataHandles);
 
-  gpu_extra_banzai_pointer_t storage_input_cpu = {0};
-  gpu_extra_banzai_pointer_t storage_input_gpu = {0};
-  vfeBanzaiGetPointer(&storage_cpu_upload, 0, &storage_input_cpu, FF, LL);
-  vfeBanzaiGetPointer(&storage_gpu_only,   0, &storage_input_gpu, FF, LL);
+  struct float4 * storage_input  = &storage[0];
+  struct float4 * storage_output = &storage[2];
 
-  gpu_extra_banzai_pointer_t storage_output_cpu = {0};
-  gpu_extra_banzai_pointer_t storage_output_gpu = {0};
-  vfeBanzaiGetPointer(&storage_cpu_readback, 0,                   &storage_output_cpu, FF, LL);
-  vfeBanzaiGetPointer(&storage_gpu_only,     2 * 4*sizeof(float), &storage_output_gpu, FF, LL);
-
-  storage_input_cpu.as_vec4[0].x = 4;
-  storage_input_cpu.as_vec4[0].y = 8;
-  storage_input_cpu.as_vec4[0].z = 15;
-  storage_input_cpu.as_vec4[0].w = 16;
+  storage_input[0].x = 4;
+  storage_input[0].y = 8;
+  storage_input[0].z = 15;
+  storage_input[0].w = 16;
   
-  storage_input_cpu.as_vec4[1].x = 16;
-  storage_input_cpu.as_vec4[1].y = 23;
-  storage_input_cpu.as_vec4[1].z = 42;
-  storage_input_cpu.as_vec4[1].w = 108;
-    
-  uint64_t copy = vfBatchBegin(ctx, 0, NULL, NULL, FF, LL);
-  vfeBanzaiBatchPointerCopyFromCpuToGpu(ctx, copy, &storage_input_cpu, &storage_input_gpu, 2 * 4*sizeof(float), FF, LL);
-  vfBatchEnd(ctx, copy, FF, LL);
-  RedHandleCalls copyRaw = vfBatchGetRawHandle(ctx, copy, FF, LL);
-  uint64_t async = vfAsyncBatchExecuteRaw(ctx, 1, &copyRaw, 1, &gpu_thread, array65536, FF, LL);
-  vfAsyncWaitToFinish(ctx, async, FF, LL);
+  storage_input[1].x = 16;
+  storage_input[1].y = 23;
+  storage_input[1].z = 42;
+  storage_input[1].w = 108;
 
   #include "add.cs.h"
   gpu_program_info_t cs_info = {0};
@@ -101,19 +84,17 @@ int main() {
     batch = vfBatchBegin(ctx, batch, &bindings_info, NULL, FF, LL);
     vfBatchBindProgramPipelineCompute(ctx, batch, pp, FF, LL);
     vfBatchBindNewBindingsSet(ctx, batch, countof(slots), slots, FF, LL);
-    vfBatchBindStorageSingle(ctx, batch, 0, storage_gpu_only.id, FF, LL);
+    vfBatchBindStorageRaw(ctx, batch, 0, 1, &storageSharedDataHandles.storageRaw, FF, LL);
     vfBatchBindNewBindingsEnd(ctx, batch, FF, LL);
     struct Variables variables = {0};
-    variables.ptr_offset_storage_input_gpu  = (unsigned)(uint64_t)storage_input_gpu.bytes_first;
-    variables.ptr_offset_storage_output_gpu = (unsigned)(uint64_t)storage_output_gpu.bytes_first;
+    variables.ptr_offset_storage_input_gpu  = (unsigned)(uint64_t)((char *)storage_input  - (char *)storage);
+    variables.ptr_offset_storage_output_gpu = (unsigned)(uint64_t)((char *)storage_output - (char *)storage);
     variables.salt_x = 0;
     variables.salt_y = -1;
     variables.salt_z = -7;
     variables.salt_w = 6;
     vfBatchBindVariablesCopy(ctx, batch, 0, sizeof(variables), &variables, FF, LL);
     vfBatchCompute(ctx, batch, 1, 1, 1, FF, LL);
-    vfBatchBarrierMemory(ctx, batch, FF, LL);
-    vfeBanzaiBatchPointerCopyFromGpuToCpu(ctx, batch, &storage_output_gpu, &storage_output_cpu, 1 * 4*sizeof(float), FF, LL);
     vfBatchBarrierCpuReadback(ctx, batch, FF, LL);
     vfBatchEnd(ctx, batch, FF, LL);
 
@@ -123,32 +104,27 @@ int main() {
 
     // NOTE(Constantine): Expected result: 20 30 50 130 (20 31 57 124 + salt)"
     printf("Result: %f %f %f %f\n",
-      storage_output_cpu.as_vec4[0].x,
-      storage_output_cpu.as_vec4[0].y,
-      storage_output_cpu.as_vec4[0].z,
-      storage_output_cpu.as_vec4[0].w
+      storage_output[0].x,
+      storage_output[0].y,
+      storage_output[0].z,
+      storage_output[0].w
     );
-    REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].x == 20);
-    REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].y == 30);
-    REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].z == 50);
-    REDGPU_2_EXPECTFL(storage_output_cpu.as_vec4[0].w == 130);
+    REDGPU_2_EXPECTFL(storage_output[0].x == 20);
+    REDGPU_2_EXPECTFL(storage_output[0].y == 30);
+    REDGPU_2_EXPECTFL(storage_output[0].z == 50);
+    REDGPU_2_EXPECTFL(storage_output[0].w == 130);
   }
 
   vfAllQueuesWaitIdle(ctx, FF, LL);
 
   vfGpuThreadDestroy(ctx, gpu_thread);
-
+  vfeReBARFreeShared(ctx, &storageSharedDataHandles);
   uint64_t ids[] = {
-    storage_gpu_only.id,
-    storage_cpu_upload.id,
-    storage_cpu_readback.id,
-    copy,
     cs,
     pp,
     batch,
   };
   vfIdDestroy(countof(ids), ids, FF, LL);
-  vfContextDeinit(ctx2, FF, LL); // NOTE(Constantine): Derived from ctx contexts must be deinited first.
   vfContextDeinit(ctx, FF, LL);
 
   #if defined(VKFAST_INCLUDE_TERMUX_PATHS)
