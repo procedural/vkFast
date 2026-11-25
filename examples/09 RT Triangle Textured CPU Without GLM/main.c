@@ -1,3 +1,11 @@
+#if 0
+set -x
+
+gcc $@ main.c ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
+
+exit
+#endif
+
 #include "../../vkfast.h"
 #include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #include "../Common/vkfast_examples_common.h"
@@ -294,7 +302,8 @@ int main() {
     unsigned char pixels[window_h][window_w][4];
   };
   // To free
-  struct Pixels * pix = (struct Pixels *)red32MemoryCalloc(sizeof(struct Pixels));
+  VfeReBARMallocShared pixelsHandles = {0};
+  volatile struct Pixels * pix = (volatile struct Pixels *)vfeReBARMallocShared(ctx, sizeof(struct Pixels), &pixelsHandles);
   REDGPU_2_EXPECTFL(pix != NULL);
 
   void * texture_fd = NULL;
@@ -311,7 +320,7 @@ int main() {
   some_texture += 61; // NOTE(Constantine): Hardcoded, skipping .ppm's header part.
 
   while (vfWindowLoop(ctx)) {
-    unsigned char * pixels = &pix->pixels[0][0][0];
+    volatile unsigned char * pixels = &pix->pixels[0][0][0];
     // Clear pixels:
     for (int y = 0; y < window_h; y += 1) {
       for (int x = 0; x < window_w; x += 1) {
@@ -373,7 +382,7 @@ int main() {
     time += 0.2f; // NOTE(Constantine): Speeded up.
 
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
-    vfDrawPixels(ctx, pix->pixels, NULL, 2, gpu_threads, array65536, FF, LL);
+    vfAsyncDrawPixelsRaw(ctx, &pixelsHandles.storageRaw, NULL, 2, gpu_threads, array65536, FF, LL);
   }
 
   vfAllQueuesWaitIdle(ctx, FF, LL);
@@ -385,8 +394,7 @@ int main() {
   texture_mh = NULL;
   texture_data = NULL;
 
-  red32MemoryFree(pix);
-  pix = NULL;
+  vfeReBARFreeShared(ctx, &pixelsHandles);
 
   vfContextDeinit(ctx, FF, LL);
   vfExit(0);
