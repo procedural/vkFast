@@ -22,6 +22,7 @@ typedef struct VfeReBARMallocShared {
   RedArray             array;
   RedHandleMemory      memory;
   RedStructMemberArray storageRaw;
+  uint64_t             bytesCount;
 } VfeReBARMallocShared;
 
 #if !defined(VFE_REBAR_API_NON_STATIC) && !defined(ALL_API_NON_STATIC)
@@ -76,12 +77,14 @@ VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocShared(gpu_handle_cont
 
   REDGPU_2_EXPECTWG(!"vfeReBARMallocShared() expects input bytesCount > 0" || bytesCount > 0);
 
+  uint64_t originalBytesCount = bytesCount;
+
   uint64_t alignedBytesCount = bytesCount + REDGPU_2_BYTES_TO_NEXT_ALIGNMENT_BOUNDARY(bytesCount, 64); // NOTE(Constantine)(Sep 13, 2026): Intel GPUs prefer 64-byte aligned memory allocations.
   bytesCount = alignedBytesCount;
 
   RedArray array = {0};
   {
-    uint64_t maxAllowedOverallocationBytesCount = 0;
+    const uint64_t maxAllowedOverallocationBytesCount = 0;
 
     np(redCreateArray,
       context, vkfast->context,
@@ -159,7 +162,7 @@ VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocShared(gpu_handle_cont
     gpu, vkfast->gpu,
     mappableMemory, memory,
     mappableMemoryBytesFirst, 0,
-    mappableMemoryBytesCount, bytesCount,
+    mappableMemoryBytesCount, originalBytesCount,
     outVolatilePointer, &volatilePointerReBAR,
     outStatuses, NULL,
     optionalFile, optionalFile,
@@ -179,6 +182,7 @@ VFE_REBAR_API_PRE void * VFE_REBAR_API_POST vfeReBARMallocShared(gpu_handle_cont
   outArray->array      = array;
   outArray->memory     = memory;
   outArray->storageRaw = storageRaw;
+  outArray->bytesCount = originalBytesCount;
 
   return volatilePointerReBAR;
 }

@@ -1948,7 +1948,7 @@ static gpu_handle_context_t vfInternalContextInit(int enable_debug_mode, unsigne
   );
   REDGPU_2_EXPECTWG(presentCopyCalls.handle != NULL);
 
-  REDGPU_2_EXPECTWG(gpuInfo->minArrayRORWStructMemberRangeBytesAlignment <= 64);
+  REDGPU_2_EXPECTWG(gpuInfo->minArrayRORWStructMemberRangeBytesAlignment <= 64); // NOTE(Constantine): Intel GPUs prefer 64-byte aligned memory allocations.
 
   // Filling
   // vf_handle_context_t;
