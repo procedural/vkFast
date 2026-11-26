@@ -44,9 +44,9 @@
 #else
     #include <string.h>
 
-    #ifndef nullptr
-        #define nullptr NULL
-    #endif
+    //#ifndef nullptr
+    //    #define nullptr NULL
+    //#endif
 #endif
 
 #ifdef _WIN32
