@@ -1,5 +1,17 @@
+#if 0
+set -x
+
+gcc -c $@ -march=native ../../vkfast.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c
+g++ -c $@ -march=native -DRR_STATIC_LIBRARY -I"../../extra/Modified Vulkan/include/" ../../extra/Modified\ RadeonRays\ 2.0/*.cpp
+g++ $@ -march=native -DRR_STATIC_LIBRARY main.cpp *.o -I"../../extra/Modified Vulkan/include/" -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
+
+exit
+*/ lol
+#endif
+
 #include "../../vkfast.h"
 #include "../../vkfast_ids.h"
+#include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #include "../Common/vkfast_examples_common.h"
 
@@ -28,8 +40,10 @@ int main() {
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
+#if defined(_WIN32)
   LARGE_INTEGER frequency = {0};
   REDGPU_2_EXPECTFL(QueryPerformanceFrequency(&frequency) == TRUE); // Query the frequency (ticks per second)
+#endif
 
   #define window_w 800 // NOTE(Constantine): Hardcoded.
   #define window_h 450 // NOTE(Constantine): Hardcoded.
@@ -70,12 +84,10 @@ int main() {
   RedCallProceduresAndAddresses addrs = {0};
   redGetCallProceduresAndAddresses(vfctx->context, vfctx->gpu, &addrs, NULL, FF, LL, NULL);
 
-  struct Pixels {
-    unsigned char pixels[window_h][window_w][4];
-  };
   // To free
-  struct Pixels * pix = (struct Pixels *)red32MemoryCalloc(sizeof(struct Pixels));
-  REDGPU_2_EXPECTFL(pix != NULL);
+  VfeReBARMallocShared pixelsHandles = {0};
+  unsigned char * pixels = (unsigned char *)vfeReBARMallocShared(ctx, 4 * window_h * window_w, &pixelsHandles);
+  REDGPU_2_EXPECTFL(pixels != NULL);
 
   float suzanne[] = {
     #include "../../extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
@@ -486,10 +498,10 @@ int main() {
 
         float color_average = color_sum / (float)msaaSamplesCount;
 
-        pix->pixels[y][x][0] = color_average;
-        pix->pixels[y][x][1] = color_average;
-        pix->pixels[y][x][2] = color_average;
-        pix->pixels[y][x][3] = 255;
+        pixels[(y * window_w + x) * 4 + 0] = (unsigned char)color_average;
+        pixels[(y * window_w + x) * 4 + 1] = (unsigned char)color_average;
+        pixels[(y * window_w + x) * 4 + 2] = (unsigned char)color_average;
+        pixels[(y * window_w + x) * 4 + 3] = 255;
       }
     }
     profileEnd("pixels array color average and write");
@@ -501,10 +513,10 @@ int main() {
       hits_readback = NULL;
     }
 
-    profileBegin("vfDrawPixels();");
+    profileBegin("vfAsyncDrawPixelsRaw();");
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
-    vfDrawPixels(ctx, pix->pixels, NULL, 2, gpu_threads, array65536, FF, LL);
-    profileEnd("vfDrawPixels();");
+    vfAsyncDrawPixelsRaw(ctx, &pixelsHandles.storageRaw, NULL, 2, gpu_threads, array65536, FF, LL);
+    profileEnd("vfAsyncDrawPixelsRaw();");
 
     mouse_x_prev = mouse_x;
     mouse_y_prev = mouse_y;
@@ -521,8 +533,8 @@ int main() {
   RadeonRays::IntersectionApi::Delete(api);
   api = NULL;
 
-  red32MemoryFree(pix);
-  pix = NULL;
+  vfeReBARFreeShared(ctx, &pixelsHandles);
+  pixels = NULL;
 
   red32MemoryFree(indexes_per_triangle_count);
   indexes_per_triangle_count = NULL;
