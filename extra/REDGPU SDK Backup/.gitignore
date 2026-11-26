@@ -5,3 +5,16 @@ RedGpuSDK/misc/examples/sponza_rasterization/stb_image.h
 RedGpuSDK/misc/examples/sponza_ray_tracing/*
 RedGpuSDK/radeonrays.dll
 RedGpuSDK/radeonrays.dll.lib
+RedGpuSDK/libradeonrays.so
+RedGpuSDK/misc/examples/draw_fullscreen_texture/a.out
+RedGpuSDK/misc/examples/draw_fullscreen_texture/fullscreen_triangle_fs.ir
+RedGpuSDK/misc/examples/draw_fullscreen_texture/fullscreen_triangle_vs.ir
+RedGpuSDK/misc/examples/helloworld/a.out
+RedGpuSDK/misc/examples/helloworld/redgpu.o
+RedGpuSDK/misc/examples/sponza_rasterization/a.out
+RedGpuSDK/misc/examples/sponza_rasterization/geometry_fs.ir
+RedGpuSDK/misc/examples/sponza_rasterization/geometry_vs.ir
+RedGpuSDK/misc/examples/sponza_rasterization/redgpu.o
+RedGpuSDK/misc/examples/sponza_rasterization/sponza_meshes.c
+RedGpuSDK/misc/examples/sponza_rasterization/sponza_meshes.o
+RedGpuSDK/misc/examples/sponza_rasterization/stb_image.o
