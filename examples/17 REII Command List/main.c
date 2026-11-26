@@ -8,6 +8,7 @@ exit
 
 #include "../../vkfast.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
+#include "../../extra/ct_universal_stack/ct_universal_stack.h"
 #include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #include "../Common/vkfast_examples_common.h"
 
@@ -155,16 +156,28 @@ int main() {
   VfeReBARMallocShared colHandles = {0};
   volatile ReiiVec4 * col_array = (volatile ReiiVec4 *)vfeReBARMallocShared(ctx, sizeof(ReiiVec4) * mesh_vertices_count, &colHandles);
 
-  for (int i = 0; i < mesh_vertices_count; i += 1) {
-    float scale = 0.5f;
-    pos_array[i].x = mesh_vertices[i * 3 + 0] * scale;
-    pos_array[i].y = mesh_vertices[i * 3 + 1] * scale;
-    pos_array[i].z = mesh_vertices[i * 3 + 2] * scale;
-    pos_array[i].w = 1;
-    col_array[i].x = i * 0.00025f;
-    col_array[i].y = 0;
-    col_array[i].z = 0.1f;
-    col_array[i].w = 1;
+  {
+    CtUniStack pos_stack = {0};
+    pos_stack.base = (void *)pos_array;
+    pos_stack.bytesCountMax = posHandles.bytesCount;
+
+    CtUniStack col_stack = {0};
+    col_stack.base = (void *)col_array;
+    col_stack.bytesCountMax = colHandles.bytesCount;
+
+    for (int i = 0; i < mesh_vertices_count; i += 1) {
+      ReiiVec4 * pos = ctUniStackPushFL(&pos_stack, sizeof(ReiiVec4), FF, LL);
+      ReiiVec4 * col = ctUniStackPushFL(&col_stack, sizeof(ReiiVec4), FF, LL);
+      float scale = 0.5f;
+      pos->x = mesh_vertices[i * 3 + 0] * scale;
+      pos->y = mesh_vertices[i * 3 + 1] * scale;
+      pos->z = mesh_vertices[i * 3 + 2] * scale;
+      pos->w = 1;
+      col->x = i * 0.00025f;
+      col->y = 0;
+      col->z = 0.1f;
+      col->w = 1;
+    }
   }
 
   uint64_t batch = 0;
@@ -245,4 +258,9 @@ int main() {
   vfeReBARFreeShared(ctx, &colHandles);
   vfContextDeinit(ctx, FF, LL);
   vfExit(0);
+}
+
+void ctUniStackCallbackError(CtUniStack * stack, const char * error, const char * functionName, const char * file, int line) {
+  printf("[ctUniStackCallbackError] Error: %s [%s:%d][%s]\n", error, file, line, functionName);
+  red2Crash(error, functionName, NULL, file, line);
 }
