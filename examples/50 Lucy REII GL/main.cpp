@@ -2,9 +2,9 @@
 gcc -shared -fPIC -o bypass_free.so bypass_free.c -ldl
 gcc -c ../../extra/REII\ Backport/reii.c
 g++ -O2 -march=native main.cpp *.o /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so -lm
-DRI_PRIME=0 XDG_SESSION_TYPE=x11 LD_PRELOAD=./bypass_free.so ./a.out
 exit
 #endif
+// DRI_PRIME=0 XDG_SESSION_TYPE=x11 LD_PRELOAD=./bypass_free.so ./a.out
 // GALLIUM_HUD=help ./a.out
 // GALLIUM_HUD="fps;primitives-generated+samples-passed" ./a.out
 

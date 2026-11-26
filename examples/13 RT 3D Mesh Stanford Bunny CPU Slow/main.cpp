@@ -1,4 +1,5 @@
 #include "../../vkfast.h"
+#include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #include "../Common/vkfast_examples_common.h"
 
@@ -101,8 +102,9 @@ int main() {
   struct Pixels {
     unsigned char pixels[window_h][window_w][4];
   };
+  VfeReBARMallocShared pixelsHandles = {0};
   // To free
-  struct Pixels * pix = (struct Pixels *)red32MemoryCalloc(sizeof(struct Pixels));
+  volatile struct Pixels * pix = (volatile struct Pixels *)vfeReBARMallocShared(ctx, sizeof(struct Pixels), &pixelsHandles);
   REDGPU_2_EXPECTFL(pix != NULL);
 
   float bunny[] = {
@@ -322,7 +324,7 @@ int main() {
     }
 
     gpu_thread_t gpu_threads[2] = {gpu_thread, 0};
-    vfDrawPixels(ctx, pix->pixels, NULL, 2, gpu_threads, array65536, FF, LL);
+    vfAsyncDrawPixelsRaw(ctx, &pixelsHandles.storageRaw, NULL, 2, gpu_threads, array65536, FF, LL);
 
     mouse_x_prev = mouse_x;
     mouse_y_prev = mouse_y;
@@ -332,7 +334,7 @@ int main() {
 
   vfGpuThreadDestroy(ctx, gpu_thread);
 
-  red32MemoryFree(pix);
+  vfeReBARFreeShared(ctx, &pixelsHandles);
   pix = NULL;
 
   red32MemoryFree(vertex);
