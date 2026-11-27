@@ -2476,3 +2476,20 @@ GPU_API_PRE void GPU_API_POST reiiDestroyEx(gpu_handle_context_t context, gpu_ex
     REDGPU_2_EXPECT(0 || !"Invalid enum value");
   }
 }
+
+GPU_API_PRE void GPU_API_POST reiiGetStorageRawFromCtUniStackEx(CtUniStack * stack, RedHandleArray arrayOrigin, void * arrayOriginPointer, RedStructMemberArray * outStorageRaw) {
+  // Filling
+  // RedStructMemberArray;
+  outStorageRaw->array                = arrayOrigin;
+  outStorageRaw->arrayRangeBytesFirst = (char *)stack->base - (char *)arrayOriginPointer;
+  outStorageRaw->arrayRangeBytesCount = stack->bytesCountMax;
+}
+
+GPU_API_PRE void GPU_API_POST reiiUniStackViewAndAdvanceExFL(ReiiUniStack * stack, uint64_t viewBytesCount, ReiiUniStack * outView, const char * optionalFile, int optionalLine) {
+  REDGPU_2_EXPECT(stack->arrayHandle  != NULL);
+  REDGPU_2_EXPECT(stack->arrayPointer != NULL);
+  outView->arrayHandle  = stack->arrayHandle;
+  outView->arrayPointer = stack->arrayPointer;
+  ctUniStackViewAndAdvanceFL(&stack->stack, viewBytesCount, &outView->stack, optionalFile, optionalLine);
+  reiiGetStorageRawFromCtUniStackEx(&outView->stack, outView->arrayHandle, outView->arrayPointer, &outView->storageRaw);
+}

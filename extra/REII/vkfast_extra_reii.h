@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../vkfast.h"
+#include "../../extra/ct_universal_stack/ct_universal_stack.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -266,6 +267,13 @@ typedef enum gpu_extra_reii_destroy_type_e {
   GPU_EXTRA_REII_DESTROY_TYPE_SAMPLER        = 5,
 } gpu_extra_reii_destroy_type_e;
 
+typedef struct ReiiUniStack {
+  RedHandleArray       arrayHandle;  // Set by the user at first
+  void *               arrayPointer; // Set by the user at first
+  CtUniStack           stack;
+  RedStructMemberArray storageRaw;   // Set by the reiiUniStackView*()
+} ReiiUniStack;
+
 // Pipeline
 
 npf(GPU_API_PRE void GPU_API_POST, reiiMeshStateCompile                      ,gpu_handle_context_t,context, ReiiMeshState *,state);
@@ -328,6 +336,8 @@ npf(GPU_API_PRE void GPU_API_POST, reiiTextureCopyFromCpuEx                  ,gp
 npf(GPU_API_PRE uint64_t GPU_API_POST, reiiTextureCopyFromCpuBatchEx         ,gpu_handle_context_t,context, ReiiTextureBinding,binding, ReiiHandleTexture *,bindingTexture, int,bindingLevel, int,bindingX, int,bindingY, int,width, int,height, ReiiTextureTexelFormat,texelsFormat, ReiiTextureTexelType,texelsType, int,texelsBytesAlignment, const RedStructMemberArray *,texels, unsigned,queueFamilyIndexToSubmitCopyCommands, unsigned,gpu_threads_count, gpu_thread_t *,gpu_threads, const unsigned *,gpu_threads_array_of_65536_int_values);
 npf(GPU_API_PRE void GPU_API_POST, reiiCommandRenderTargetSetEx              ,gpu_handle_context_t,context, ReiiHandleCommandList *,list, RedHandleTexture,depthStencilTexture, unsigned,depthStencilWidth, unsigned,depthStencilHeight, RedFormat,depthStencilFormat, RedMultisampleCountBitflag,depthStencilMultisampleCount, RedHandleTexture,colorTexture, unsigned,colorWidth, unsigned,colorHeight, RedFormat,colorFormat, RedMultisampleCountBitflag,colorMultisampleCount);
 npf(GPU_API_PRE void GPU_API_POST, reiiCommandResolveMsaaColorTextureEx      ,gpu_handle_context_t,context, ReiiHandleCommandList *,list, ReiiHandleTexture *,sourceMsaaColorTexture, RedHandleTexture,targetColorTexture);
+npf(GPU_API_PRE void GPU_API_POST, reiiGetStorageRawFromCtUniStackEx         ,CtUniStack *,stack, RedHandleArray,arrayOrigin, void *,arrayOriginPointer, RedStructMemberArray *,outStorageRaw);
+npf(GPU_API_PRE void GPU_API_POST, reiiUniStackViewAndAdvanceExFL            ,ReiiUniStack *,stack, uint64_t,viewBytesCount, ReiiUniStack *,outView, const char *,optionalFile, int,optionalLine);
 
 #ifdef __cplusplus
 }
