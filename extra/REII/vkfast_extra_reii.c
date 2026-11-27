@@ -244,6 +244,10 @@ static unsigned ReiiPickSpecificMemoryTypeGpuVram(const RedGpuInfo * gpuInfo, un
   return -1;
 }
 
+GPU_API_PRE void GPU_API_POST ctUniStackCallbackError(CtUniStack * stack, const char * error, const char * functionName, const char * optionalFile, int optionalLine) {
+  red2Crash(error, functionName, NULL, optionalFile, optionalLine);
+}
+
 GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context, ReiiMeshState * state) {
   const char * optionalFile = NULL;
   int optionalLine = 0;

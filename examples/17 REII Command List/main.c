@@ -259,8 +259,3 @@ int main() {
   vfContextDeinit(ctx, FF, LL);
   vfExit(0);
 }
-
-void ctUniStackCallbackError(CtUniStack * stack, const char * error, const char * functionName, const char * file, int line) {
-  printf("[ctUniStackCallbackError] Error: %s [%s:%d][%s]\n", error, file, line, functionName);
-  red2Crash(error, functionName, NULL, file, line);
-}
