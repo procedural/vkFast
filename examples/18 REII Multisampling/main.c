@@ -1,5 +1,14 @@
+#if 0
+set -x
+
+gcc $@ main.c ../../vkfast.c ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
+
+exit
+#endif
+
 #include "../../vkfast.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
+#include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #include "../Common/vkfast_examples_common.h"
 
 int main() {
@@ -26,17 +35,9 @@ int main() {
   REDGPU_2_EXPECTFL(windowMonitorArea[2] == window_w);
   REDGPU_2_EXPECTFL(windowMonitorArea[3] == window_h);
 
-  gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = (1024/*mb*/ * 1024 * 1024) - 64; // NOTE(Constantine)(Mar 20, 2026): '- 64' added for Intel iGPUs which can allocate not 1073741824, but 1073741820 max, lol.
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_upload       = (512/*mb*/ * 1024 * 1024);
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_readback     = (512/*mb*/ * 1024 * 1024);
-  memory_allocation_sizes.bytes_count_for_memory_present_pixels_type_cpu_upload = 0;
-  gpu_context_optional_parameters_t optional_parameters = {0};
-  optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
-
   const int doDoubleGammaCorrection = 0;
   // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
-  gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
+  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
   vfWindowFullscreen(ctx, NULL, "[vkFast] REII Multisampling", window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
 
   const unsigned array65536[2] = {65536, 65536};
@@ -44,27 +45,25 @@ int main() {
   gpu_thread_t gpu_thread = NULL;
   vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
 
-  gpu_storage_t storage_gpu_only     = {0};
-  gpu_storage_t storage_cpu_upload   = {0};
-  gpu_storage_t storage_cpu_readback = {0};
-  vfeBanzaiStoragesCreate(ctx, &storage_gpu_only, &storage_cpu_upload, &storage_cpu_readback, FF, LL);
+  float mesh_vertices[] = {
+    #include "../../extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
+  };
 
-  uint64_t storage_gpu_only_mem_offset = 0;
-  uint64_t storage_cpu_upload_mem_offset = 0;
-  uint64_t storage_cpu_readback_mem_offset = 0;
+  const int mesh_vertices_count = countof(mesh_vertices) / 3;
 
-  gpu_extra_cpu_gpu_array pos_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
-    64/*mb*/ * 1024 * 1024,
-    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
-    &storage_gpu_only,   &storage_gpu_only_mem_offset,
-    FF, LL
-  );
-  gpu_extra_cpu_gpu_array col_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
-    64/*mb*/ * 1024 * 1024,
-    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
-    &storage_gpu_only,   &storage_gpu_only_mem_offset,
-    FF, LL
-  );
+  VfeReBARMallocShared vertexDataHandles = {0};
+  volatile ReiiVec4 * vertexData = (volatile ReiiVec4 *)vfeReBARMallocShared(ctx, (sizeof(ReiiVec4) * mesh_vertices_count) * 2, &vertexDataHandles);
+
+  ReiiUniStack vertexDataStack = {0};
+  vertexDataStack.arrayHandle         = vertexDataHandles.array.handle;
+  vertexDataStack.arrayPointer        = (void *)vertexData;
+  vertexDataStack.stack.base          = (void *)vertexData;
+  vertexDataStack.stack.bytesCountMax = vertexDataHandles.bytesCount;
+
+  ReiiUniStack pos_stack = {0};
+  ReiiUniStack col_stack = {0};
+  reiiUniStackViewAndAdvanceExFL(&vertexDataStack, sizeof(ReiiVec4) * mesh_vertices_count, &pos_stack, FF, LL);
+  reiiUniStackViewAndAdvanceExFL(&vertexDataStack, sizeof(ReiiVec4) * mesh_vertices_count, &col_stack, FF, LL);
 
   #include "mesh.vs.h"
   #include "mesh.fs.h"
@@ -176,18 +175,12 @@ int main() {
   reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
   reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
 
-  float mesh_vertices[] = {
-    #include "../../extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
-  };
-
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
   ReiiHandleCommandList * list = &hlist;
   Red2Output mutable_outputs_array[3]  = {0};
   list->mutable_outputs_array.items    = mutable_outputs_array;
   list->mutable_outputs_array.capacity = countof(mutable_outputs_array);
-  list->dynamic_mesh_position          = pos_array;
-  list->dynamic_mesh_color             = col_array;
 
   ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState gammaCorrectionStaticState = {0};
 
@@ -209,21 +202,27 @@ int main() {
     reiiCommandClearTexture(ctx, list, outputdstex, outputmstex, outputmstex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
     reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
     reiiCommandBindNewBindingsSet(ctx, list, countof(slots), slots);
-    reiiCommandBindStorageRaw(ctx, list, 0, 1, &pos_array.gpu);
-    reiiCommandBindStorageRaw(ctx, list, 1, 1, &col_array.gpu);
+    reiiCommandBindStorageRaw(ctx, list, 0, 1, &pos_stack.storageRaw);
+    reiiCommandBindStorageRaw(ctx, list, 1, 1, &col_stack.storageRaw);
     reiiCommandBindNewBindingsEnd(ctx, list);
-    reiiCommandMeshSet(ctx, list);
-    for (int i = 0, mesh_vertices_count = countof(mesh_vertices) / 3; i < mesh_vertices_count; i += 1) {
-      float scale = 0.5f;
-      reiiCommandMeshColor(ctx, list, i * 0.00025f, 0, 0.1f, 1);
-      reiiCommandMeshPosition(ctx, list,
-        mesh_vertices[i * 3 + 0] * scale,
-        mesh_vertices[i * 3 + 1] * scale,
-        mesh_vertices[i * 3 + 2] * scale,
-        1
-      );
+    {
+      for (int i = 0; i < mesh_vertices_count; i += 1) {
+        ReiiVec4 * col = ctUniStackPushFL(&col_stack.stack, sizeof(ReiiVec4), FF, LL);
+        ReiiVec4 * pos = ctUniStackPushFL(&pos_stack.stack, sizeof(ReiiVec4), FF, LL);
+
+        float scale = 0.5f;
+        col[0] = (ReiiVec4){i * 0.00025f, 0, 0.1f, 1};
+        pos->x = mesh_vertices[i * 3 + 0] * scale;
+        pos->y = mesh_vertices[i * 3 + 1] * scale;
+        pos->z = mesh_vertices[i * 3 + 2] * scale;
+        pos->w = 1;
+      }
+      ctUniStackResetFL(&pos_stack.stack, FF, LL);
+      ctUniStackResetFL(&col_stack.stack, FF, LL);
     }
-    reiiCommandMeshEndWithTale64BytesAlign(ctx, list, NULL, outputmstex, outputmstex->texture);
+    reiiCommandRenderTargetSet(ctx, list, NULL, outputmstex, outputmstex->texture);
+    reiiCommandMeshLaunchThreads(ctx, list, 0, mesh_vertices_count, 0, 1);
+    reiiCommandRenderTargetEnd(ctx, list);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     vfBatchBarrierMemory(ctx, batch, FF, LL);
     reiiCommandGammaCorrectColorTextureToTheInversePowerOf2(ctx, list, outputtex, doDoubleGammaCorrection, 1, &gammaCorrectionStaticState);
@@ -266,11 +265,14 @@ int main() {
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE, &mesh_state);
   uint64_t ids[] = {
     batch,
-    storage_gpu_only.id,
-    storage_cpu_upload.id,
-    storage_cpu_readback.id,
   };
   vfIdDestroy(countof(ids), ids, FF, LL);
+  vfeReBARFreeShared(ctx, &vertexDataHandles);
   vfContextDeinit(ctx, FF, LL);
   vfExit(0);
+}
+
+void ctUniStackCallbackError(CtUniStack * stack, const char * error, const char * functionName, const char * file, int line) {
+  printf("[ctUniStackCallbackError] Error: %s [%s:%d][%s]\n", error, file, line, functionName);
+  red2Crash(error, functionName, NULL, file, line);
 }
