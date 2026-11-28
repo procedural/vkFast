@@ -1,5 +1,8 @@
-// dxc.exe imgui_shader.hlsl -DVS -T vs_6_0 -Fh imgui_shader.vs.h -spirv
-// dxc.exe imgui_shader.hlsl -DFS -T ps_6_0 -Fh imgui_shader.fs.h -spirv
+#if 0
+/opt/dxc imgui_shader.hlsl -DVS -T vs_6_0 -Fh imgui_shader.vs.h -Vn g_main_vs -spirv
+/opt/dxc imgui_shader.hlsl -DFS -T ps_6_0 -Fh imgui_shader.fs.h -Vn g_main_fs -spirv
+exit
+#endif
 
 [[vk::binding(0, 0)]] StructuredBuffer<float4> positions;
 [[vk::binding(1, 0)]] StructuredBuffer<float4> colors;
@@ -34,6 +37,8 @@ render main(interpolated input) {
   render output;
   float4 image = texture.Sample(tsampler, input.uv);
   output.color = input.color * image;
+
+  output.color.rgb = output.color.bgr;
   return output;
 }
 #endif

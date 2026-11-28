@@ -351,10 +351,10 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
           ImVec4 color = imguiUnpackUnorm4x8(pointerVertices[index].color);
 
           volatile ReiiVec4 * meshCol = ctUniStackPushFL(&meshColStack, sizeof(ReiiVec4), __FILE__, __LINE__);
-          meshCol->x = color.x;
-          meshCol->y = color.y;
-          meshCol->z = color.z;
-          meshCol->w = color.w;
+          meshCol->r = color.x;
+          meshCol->g = color.y;
+          meshCol->b = color.z;
+          meshCol->a = color.w;
           meshColPtrOffset += 1 * sizeof(ReiiVec4);
         }
         reiiCommandMeshLaunchThreads(globalImguiState->gpuContext, list, 0, command->elementsCount, 0, 1);
@@ -518,7 +518,7 @@ static void imguiCreateDeviceObjects() {
   globalImguiState->gpuMeshState.compileInfo.state_multisample_count            = RED_MULTISAMPLE_COUNT_BITFLAG_1;
   globalImguiState->gpuMeshState.compileInfo.output_depth_stencil_enable        = 0;
   globalImguiState->gpuMeshState.compileInfo.output_depth_stencil_format        = RED_FORMAT_DEPTH_32_FLOAT;
-  globalImguiState->gpuMeshState.compileInfo.output_color_format                = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
+  globalImguiState->gpuMeshState.compileInfo.output_color_format                = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED;
 
   RedStructDeclarationMember slots[3] = {0};
   slots[0].slot            = 0;
@@ -753,4 +753,14 @@ static void imguiEasyTheming(ImVec3 colorText, ImVec3 colorHead, ImVec3 colorAre
   style->colors[IMGUI_COLOR_TEXT_SELECTED_BACKGROUND]   = REDGPU_32_STRUCT(ImVec4, colorHead.x, colorHead.y, colorHead.z, 0.43f);
   style->colors[IMGUI_COLOR_POPUP_BACKGROUND]           = REDGPU_32_STRUCT(ImVec4, colorPops.x, colorPops.y, colorPops.z, 0.92f);
   style->colors[IMGUI_COLOR_MODAL_WINDOW_DARKENING]     = REDGPU_32_STRUCT(ImVec4, colorArea.x, colorArea.y, colorArea.z, 0.73f);
+}
+
+static void imguiThemeGammaCorrectColors() {
+  ImguiStyle * style = (ImguiStyle *)igGetStyle();
+
+  for (int i = 0; i < IMGUI_COLOR_COUNT; i += 1) {
+    style->colors[i].x *= style->colors[i].x;
+    style->colors[i].y *= style->colors[i].y;
+    style->colors[i].z *= style->colors[i].z;
+  }
 }
