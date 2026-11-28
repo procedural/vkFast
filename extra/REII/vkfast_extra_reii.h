@@ -253,11 +253,6 @@ typedef struct ReiiHandleCommandList {
   RedCallProceduresAndAddresses callProceduresAndAddresses;
 } ReiiHandleCommandList;
 
-typedef struct ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState {
-  uint64_t programCompute;
-  uint64_t programPipeline;
-} ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState;
-
 typedef enum gpu_extra_reii_destroy_type_e {
   GPU_EXTRA_REII_DESTROY_TYPE_UNDEFINED      = 0,
   GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE     = 1,
@@ -311,7 +306,6 @@ npf(GPU_API_PRE void GPU_API_POST, reiiCommandBindVariablesCopy              ,gp
 npf(GPU_API_PRE void GPU_API_POST, reiiCommandRenderTargetSet                ,gpu_handle_context_t,context, ReiiHandleCommandList *,list, ReiiHandleTexture *,depthStencilTexture, ReiiHandleTexture *,colorTexture, RedHandleTexture,colorTextureHandle);
 npf(GPU_API_PRE void GPU_API_POST, reiiCommandRenderTargetEnd                ,gpu_handle_context_t,context, ReiiHandleCommandList *,list);
 npf(GPU_API_PRE void GPU_API_POST, reiiCommandResolveMsaaColorTexture        ,gpu_handle_context_t,context, ReiiHandleCommandList *,list, ReiiHandleTexture *,sourceMsaaColorTexture, ReiiHandleTexture *,targetColorTexture);
-npf(GPU_API_PRE void GPU_API_POST, reiiCommandGammaCorrectColorTextureToTheInversePowerOf2 ,gpu_handle_context_t,context, ReiiHandleCommandList *,list, ReiiHandleTexture *,colorTexture, int,doDoubleGammaCorrection, int,doSwapRedAndBlue, ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState *,state);
 npf(GPU_API_PRE void GPU_API_POST, reiiCommandCopyFromColorTextureToStorageRaw ,gpu_handle_context_t,context, ReiiHandleCommandList *,list, ReiiHandleTexture *,texture, RedStructMemberArray *,storageRaw);
 npf(GPU_API_PRE void GPU_API_POST, reiiCommandMeshLaunchThreads              ,gpu_handle_context_t,context, ReiiHandleCommandList *,list, unsigned,vertexFirst, unsigned,vertexCount, unsigned,instanceFirst, unsigned,instanceCount);
 
