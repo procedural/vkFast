@@ -232,7 +232,7 @@ typedef struct ImguiState {
 ImguiState   globalImguiStateData = {0};
 ImguiState * globalImguiState     = &globalImguiStateData;
 
-ImVec4 imguiUnpackUnorm4x8(unsigned p) {
+static ImVec4 imguiUnpackUnorm4x8(unsigned p) {
   ImVec4 color;
   color.x = ((p & 0x000000FF)      ) / 255.f;
   color.y = ((p & 0x0000FF00) >> 8 ) / 255.f;
