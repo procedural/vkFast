@@ -1,6 +1,6 @@
 #if 0
-/opt/dxc mesh.hlsl -DVS -T vs_6_0 -Fh mesh.vs.h -spirv
-/opt/dxc mesh.hlsl -DFS -T ps_6_0 -Fh mesh.fs.h -spirv
+/opt/dxc mesh.hlsl -DVS -T vs_6_0 -Fh mesh.vs.h -Vn g_main_vs -spirv
+/opt/dxc mesh.hlsl -DFS -T ps_6_0 -Fh mesh.fs.h -Vn g_main_fs -spirv
 exit
 #endif
 
@@ -51,7 +51,9 @@ interpolated main(uint vid: SV_VertexID, uint iid: SV_InstanceID) {
 #ifdef FS
 render main(interpolated input) {
   render output;
-  output.color = texture.Sample(tsampler, input.uv);
+  output.color = texture.Sample(tsampler, input.uv); // NOTE(Constantine): No need to gamma-correct since we typed texture values in .c file directly, rather than loading a texture made by programs that save gamma-modified values.
+
+  output.color.rgb = output.color.bgr;
   return output;
 }
 #endif
