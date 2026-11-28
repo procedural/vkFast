@@ -145,7 +145,7 @@ int main() {
   mesh_state.compileInfo.state_multisample_count            = RED_MULTISAMPLE_COUNT_BITFLAG_4;
   mesh_state.compileInfo.output_depth_stencil_enable        = 0;
   mesh_state.compileInfo.output_depth_stencil_format        = RED_FORMAT_DEPTH_32_FLOAT;
-  mesh_state.compileInfo.output_color_format                = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
+  mesh_state.compileInfo.output_color_format                = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED;
 
   RedStructDeclarationMember slots[2] = {0};
   slots[0].slot            = 0;
@@ -182,7 +182,7 @@ int main() {
   reiiCreateTextureFromTextureMemory(ctx, &outputTexMemory, REII_TEXTURE_BINDING_2D, &houtputtex);
   reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0);
   reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputtex, 1);
-  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
+  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
 
   ReiiHandleTextureMemory outputMSTexMemory = {0};
   reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_COLOR_MSAA, (288/*mb*/ * 1024 * 1024), &outputMSTexMemory);
@@ -192,7 +192,7 @@ int main() {
   reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 4);
   reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0);
   reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
-  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
+  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
 
   RedHandleSampler sampler = reiiCreateSampler(ctx, NULL, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_FILTERING_LINEAR, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, REII_SAMPLER_BEHAVIOR_OUTSIDE_TEXTURE_COORDINATE_REPEAT, 1);
 
@@ -306,13 +306,13 @@ int main() {
         reiiCreateTextureFromTextureMemory(ctx, &outputTexMemory, REII_TEXTURE_BINDING_2D, &houtputtex);
         reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0);
         reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputtex, 1);
-        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
+        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
 
         reiiCreateTextureFromTextureMemory(ctx, &outputMSTexMemory, REII_TEXTURE_BINDING_2D, &houtputmstex);
         reiiTextureSetStateMsaa(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 4);
         reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0);
         reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 1);
-        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
+        reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputmstex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
       }
 
       previous_window_w = window_w;
@@ -398,7 +398,7 @@ int main() {
     reiiCommandListReset(ctx, list);
     reiiCommandSetViewportEx(ctx, list, 0, 0, window_w, window_h, 0, 1);
     reiiCommandSetScissor(ctx, list, 0, 0, window_w, window_h);
-    ReiiVec4 clearColor = (ReiiVec4){0.f, 0.f, 0.45f, 1.f};
+    ReiiVec4 clearColor = (ReiiVec4){0.f, 0.f, 0.25f, 1.f};
     clearColor.r *= clearColor.r;
     clearColor.g *= clearColor.g;
     clearColor.b *= clearColor.b;

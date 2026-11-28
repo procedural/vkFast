@@ -52,6 +52,8 @@ interpolated main(uint vid: SV_VertexID, uint iid: SV_InstanceID) {
 render main(interpolated input) {
   render output;
   float4 c = texture.Sample(tsampler, input.uv);
+  //c.rgb *= c.rgb; // NOTE(Constantine): Gamma correct texture sample, somehow looks too dark compared to pow 1.8.
+  c.rgb = pow(c.rgb, 1.8);
   output.color = c;
 
   output.color = output.color.bgra;
