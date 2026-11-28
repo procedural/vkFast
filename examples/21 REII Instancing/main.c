@@ -1,5 +1,14 @@
+#if 0
+set -x
+
+gcc $@ main.c ../../vkfast.c ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so -lm
+
+exit
+#endif
+
 #include "../../vkfast.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
+#include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #include "../Common/vkfast_examples_common.h"
 
@@ -43,51 +52,15 @@ int main() {
   void * window_handle = &windowData;
 #endif
 
-  gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = (1024/*mb*/ * 1024 * 1024) - 64; // NOTE(Constantine)(Mar 20, 2026): '- 64' added for Intel iGPUs which can allocate not 1073741824, but 1073741820 max, lol.
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_upload       = (512/*mb*/ * 1024 * 1024);
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_readback     = (512/*mb*/ * 1024 * 1024);
-  memory_allocation_sizes.bytes_count_for_memory_present_pixels_type_cpu_upload = 0;
-  gpu_context_optional_parameters_t optional_parameters = {0};
-  optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
-
   const int doDoubleGammaCorrection = 0;
   // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
-  gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
+  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
   vfWindowFullscreen(ctx, window_handle, "[vkFast] REII Instancing", window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
 
   const unsigned array65536[2] = {65536, 65536};
 
   gpu_thread_t gpu_thread = NULL;
   vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
-
-  gpu_storage_t storage_gpu_only     = {0};
-  gpu_storage_t storage_cpu_upload   = {0};
-  gpu_storage_t storage_cpu_readback = {0};
-  vfeBanzaiStoragesCreate(ctx, &storage_gpu_only, &storage_cpu_upload, &storage_cpu_readback, FF, LL);
-
-  uint64_t storage_gpu_only_mem_offset = 0;
-  uint64_t storage_cpu_upload_mem_offset = 0;
-  uint64_t storage_cpu_readback_mem_offset = 0;
-
-  gpu_extra_cpu_gpu_array mesh_vertex_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
-    64/*mb*/ * 1024 * 1024,
-    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
-    &storage_gpu_only,   &storage_gpu_only_mem_offset,
-    FF, LL
-  );
-  gpu_extra_cpu_gpu_array instance_color_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
-    64/*mb*/ * 1024 * 1024,
-    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
-    &storage_gpu_only,   &storage_gpu_only_mem_offset,
-    FF, LL
-  );
-  gpu_extra_cpu_gpu_array instance_position_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
-    64/*mb*/ * 1024 * 1024,
-    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
-    &storage_gpu_only,   &storage_gpu_only_mem_offset,
-    FF, LL
-  );
 
   #include "mesh.vs.h"
   #include "mesh.fs.h"
@@ -207,48 +180,48 @@ int main() {
     #include "../../extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
   };
 
-  ReiiHandleUnorderedArray hmesh = {0};
-  ReiiHandleUnorderedArray * mesh = &hmesh;
-  mesh->position = mesh_vertex_array;
-  reiiCreateUnorderedArray(ctx, mesh);
-  reiiUnorderedArraySet(ctx, mesh);
-  for (int i = 0, mesh_vertices_count = countof(mesh_vertices) / 3; i < mesh_vertices_count; i += 1) {
-    reiiUnorderedArrayPosition(ctx, mesh, mesh_vertices[i * 3 + 0], mesh_vertices[i * 3 + 1], mesh_vertices[i * 3 + 2], 1);
+  const int mesh_vertices_count = countof(mesh_vertices) / 3;
+
+  VfeReBARMallocShared meshVertexPositionsHandles = {0};
+  volatile ReiiVec4 * meshVertexPositions = (volatile ReiiVec4 *)vfeReBARMallocShared(ctx, sizeof(ReiiVec4) * mesh_vertices_count, &meshVertexPositionsHandles);
+  for (int i = 0; i < mesh_vertices_count; i += 1) {
+    meshVertexPositions[i].x = mesh_vertices[i * 3 + 0];
+    meshVertexPositions[i].y = mesh_vertices[i * 3 + 1];
+    meshVertexPositions[i].z = mesh_vertices[i * 3 + 2];
+    meshVertexPositions[i].w = 1;
   }
-  reiiUnorderedArrayEnd(ctx, mesh, 1, &gpu_thread, array65536);
 
   const int instanceCountX = 25;
   const int instanceCountY = 25;
   const int instanceCountZ = 25;
+  const int instanceCountTotal = instanceCountX * instanceCountY * instanceCountZ;
   RandomInit();
 
-  ReiiHandleUnorderedArray hinstanceColors = {0};
-  ReiiHandleUnorderedArray * instanceColors = &hinstanceColors;
-  instanceColors->texcoord[0] = instance_color_array;
-  reiiCreateUnorderedArray(ctx, instanceColors);
-  reiiUnorderedArraySet(ctx, instanceColors);
-  for (int k = 0; k < instanceCountZ; k += 1) {
-    for (int j = 0; j < instanceCountY; j += 1) {
-      for (int i = 0; i < instanceCountX; i += 1) {
-        reiiUnorderedArrayTexcoord(ctx, instanceColors, 0, RandomRange(0.15f, 0.45f), RandomRange(0.15f, 0.45f), RandomRange(0.25f, 1.f), 1);
-      }
-    }
-  }
-  reiiUnorderedArrayEnd(ctx, instanceColors, 1, &gpu_thread, array65536);
+  VfeReBARMallocShared instanceColorsHandles = {0};
+  volatile ReiiVec4 * instanceColors = (volatile ReiiVec4 *)vfeReBARMallocShared(ctx, sizeof(ReiiVec4) * instanceCountTotal, &instanceColorsHandles);
+  VfeReBARMallocShared instancePositionsHandles = {0};
+  volatile ReiiVec4 * instancePositions = (volatile ReiiVec4 *)vfeReBARMallocShared(ctx, sizeof(ReiiVec4) * instanceCountTotal, &instancePositionsHandles);
 
-  ReiiHandleUnorderedArray hinstancePositions = {0};
-  ReiiHandleUnorderedArray * instancePositions = &hinstancePositions;
-  instancePositions->texcoord[0] = instance_position_array;
-  reiiCreateUnorderedArray(ctx, instancePositions);
-  reiiUnorderedArraySet(ctx, instancePositions);
-  for (int k = 0; k < instanceCountZ; k += 1) {
-    for (int j = 0; j < instanceCountY; j += 1) {
-      for (int i = 0; i < instanceCountX; i += 1) {
-        reiiUnorderedArrayTexcoord(ctx, instancePositions, 0, i * 3.f, j * 3.f, k * 3.f, RandomRange(0.05f, 0.45f));
+  {
+    int instanceIndex = 0;
+    for (int k = 0; k < instanceCountZ; k += 1) {
+      for (int j = 0; j < instanceCountY; j += 1) {
+        for (int i = 0; i < instanceCountX; i += 1) {
+          instanceColors[instanceIndex].x = RandomRange(0.15f, 0.45f);
+          instanceColors[instanceIndex].y = RandomRange(0.15f, 0.45f);
+          instanceColors[instanceIndex].z = RandomRange(0.25f, 1.f);
+          instanceColors[instanceIndex].w = 1;
+
+          instancePositions[instanceIndex].x = i * 3.f;
+          instancePositions[instanceIndex].y = j * 3.f;
+          instancePositions[instanceIndex].z = k * 3.f;
+          instancePositions[instanceIndex].w = RandomRange(0.05f, 0.45f);
+
+          instanceIndex += 1;
+        }
       }
     }
   }
-  reiiUnorderedArrayEnd(ctx, instancePositions, 1, &gpu_thread, array65536);
 
   uint64_t batch = 0;
   ReiiHandleCommandList hlist = {0};
@@ -443,14 +416,14 @@ int main() {
     reiiCommandClearTexture(ctx, list, outputdstex, outputmstex, outputmstex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
     reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
     reiiCommandBindNewBindingsSet(ctx, list, countof(slots), slots);
-    reiiCommandBindStorageRaw(ctx, list, 0, 1, &mesh->position.gpu);
-    reiiCommandBindStorageRaw(ctx, list, 1, 1, &instanceColors->texcoord[0].gpu);
-    reiiCommandBindStorageRaw(ctx, list, 2, 1, &instancePositions->texcoord[0].gpu);
+    reiiCommandBindStorageRaw(ctx, list, 0, 1, &meshVertexPositionsHandles.storageRaw);
+    reiiCommandBindStorageRaw(ctx, list, 1, 1, &instanceColorsHandles.storageRaw);
+    reiiCommandBindStorageRaw(ctx, list, 2, 1, &instancePositionsHandles.storageRaw);
     reiiCommandBindNewBindingsEnd(ctx, list);
     reiiCommandBindVariablesCopy(ctx, list, 0 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_pos);
     reiiCommandBindVariablesCopy(ctx, list, 1 * sizeof(ReiiVec4), 1 * sizeof(ReiiVec4), &camera_quat);
     reiiCommandRenderTargetSet(ctx, list, outputdstex, outputmstex, outputmstex->texture);
-    reiiCommandUnorderedArrayDrawInstanced(ctx, list, mesh, instanceCountX * instanceCountY * instanceCountZ);
+    reiiCommandMeshLaunchThreads(ctx, list, 0, mesh_vertices_count, 0, instanceCountTotal);
     reiiCommandRenderTargetEnd(ctx, list);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     vfBatchBarrierMemory(ctx, batch, FF, LL);
@@ -498,11 +471,11 @@ int main() {
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE, &mesh_state);
   uint64_t ids[] = {
     batch,
-    storage_gpu_only.id,
-    storage_cpu_upload.id,
-    storage_cpu_readback.id,
   };
   vfIdDestroy(countof(ids), ids, FF, LL);
+  vfeReBARFreeShared(ctx, &meshVertexPositionsHandles);
+  vfeReBARFreeShared(ctx, &instanceColorsHandles);
+  vfeReBARFreeShared(ctx, &instancePositionsHandles);
   vfContextDeinit(ctx, FF, LL);
   glfwTerminate();
 }
