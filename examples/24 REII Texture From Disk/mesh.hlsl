@@ -1,6 +1,6 @@
 #if 0
-/opt/dxc mesh.hlsl -DVS -T vs_6_0 -Fh mesh.vs.h -spirv
-/opt/dxc mesh.hlsl -DFS -T ps_6_0 -Fh mesh.fs.h -spirv
+/opt/dxc mesh.hlsl -DVS -T vs_6_0 -Fh mesh.vs.h -Vn g_main_vs -spirv
+/opt/dxc mesh.hlsl -DFS -T ps_6_0 -Fh mesh.fs.h -Vn g_main_fs -spirv
 exit
 #endif
 
@@ -52,8 +52,9 @@ interpolated main(uint vid: SV_VertexID, uint iid: SV_InstanceID) {
 render main(interpolated input) {
   render output;
   float4 c = texture.Sample(tsampler, input.uv);
-  c *= c; // Gamma correcting texture colors loaded from disk.
   output.color = c;
+
+  output.color = output.color.bgra;
   return output;
 }
 #endif
