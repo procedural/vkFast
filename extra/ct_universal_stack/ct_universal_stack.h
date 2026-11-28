@@ -96,6 +96,10 @@ CT_UNISTACK_API_PRE void CT_UNISTACK_API_POST ctUniStackViewFL(CtUniStack * stac
     ctUniStackCallbackError(stack, "stack == NULL", __FUNCTION__, file, line);
   }
 
+  if (viewBytesCount == 0) {
+    ctUniStackCallbackError(stack, "viewBytesCount == 0", __FUNCTION__, file, line);
+  }
+
   if ((stackOffsetBytesCount + viewBytesCount) > stack->bytesCountMax) {
     ctUniStackCallbackError(stack, "(stackOffsetBytesCount + viewBytesCount) > stack->bytesCountMax", __FUNCTION__, file, line);
   }
