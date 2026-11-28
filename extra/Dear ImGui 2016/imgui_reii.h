@@ -658,10 +658,10 @@ npf(static void, imguiInit,
   globalImguiState->gpuFontAtlasScratchBufferPtr              = fontAtlasScratchBufferPtr;
   globalImguiState->gpuFontAtlasScratchBufferPtrMaxBytesCount = fontAtlasScratchBufferPtrMaxBytesCount;
   globalImguiState->gpuMaxNewBindingsSetsCount                = maxNewBindingsSetsCount;
-  globalImguiState->gpuDynamicMeshPositionStorageRaw          = dynamicMeshPositionStorageRaw;
-  globalImguiState->gpuDynamicMeshPositionStack               = dynamicMeshPositionStack;   // NOTE(Constantine): A copy of the stack struct, stack resets are local to imgui.
-  globalImguiState->gpuDynamicMeshColorStorageRaw             = dynamicMeshColorStorageRaw;
-  globalImguiState->gpuDynamicMeshColorStack                  = dynamicMeshColorStack;      // NOTE(Constantine): A copy of the stack struct, stack resets are local to imgui.
+  globalImguiState->gpuDynamicMeshPositionStorageRaw          = dynamicMeshPositionStorageRaw; // NOTE(Constantine): A copy of the raw storage struct.
+  globalImguiState->gpuDynamicMeshPositionStack               = dynamicMeshPositionStack;      // NOTE(Constantine): A copy of the stack struct, stack resets are local to imgui.
+  globalImguiState->gpuDynamicMeshColorStorageRaw             = dynamicMeshColorStorageRaw;    // NOTE(Constantine): A copy of the raw storage struct.
+  globalImguiState->gpuDynamicMeshColorStack                  = dynamicMeshColorStack;         // NOTE(Constantine): A copy of the stack struct, stack resets are local to imgui.
   globalImguiState->gpuMutableOutputsArray                    = mutableOutputsArray;
   globalImguiState->gpuOutputTexture                          = outputTexture;
   globalImguiState->gpuThread                                 = gpuThread;
