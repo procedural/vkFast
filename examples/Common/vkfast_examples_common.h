@@ -31,7 +31,10 @@ typedef struct ReiiRgba8 {
 } ReiiRgba8;
 
 typedef struct ReiiVec4 {
-  float x, y, z, w;
+  union {
+    struct { float x, y, z, w; };
+    struct { float r, g, b, a; };
+  };
 } ReiiVec4;
 
 static void RandomInit() {
