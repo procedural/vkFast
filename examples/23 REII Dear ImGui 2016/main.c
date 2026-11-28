@@ -333,30 +333,37 @@ int main() {
   );
 
   // Dear ImGui 2016
-  ReiiHandleTextureMemory imgui_fontAtlasMemory = {0};
-  reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL, (64/*mb*/ * 1024 * 1024), &imgui_fontAtlasMemory);
+  ReiiHandleTextureMemory imgui_fontAtlasTextureMemory = {0};
+  reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL, 32/*mb*/ * 1024 * 1024, &imgui_fontAtlasTextureMemory);
 
   VfeReBARMallocShared imgui_fontAtlasUploadScratchHandles = {0};
-  void * imgui_fontAtlasUploadScratchPtr = vfeReBARMallocShared(ctx, 128/*mb*/ * 1024 * 1024, &imgui_fontAtlasUploadScratchHandles);
+  void * imgui_fontAtlasUploadScratchPtr = vfeReBARMallocShared(ctx, 32/*mb*/ * 1024 * 1024, &imgui_fontAtlasUploadScratchHandles);
 
   VfeReBARMallocShared imgui_dynamicMeshPositionHandles = {0};
   volatile ReiiVec4 * imgui_dynamicMeshPositionPtr = (volatile ReiiVec4 *)vfeReBARMallocShared(ctx, 32/*mb*/ * 1024 * 1024, &imgui_dynamicMeshPositionHandles);
+  CtUniStack imgui_dynamicMeshPositionStack = {0};
+  imgui_dynamicMeshPositionStack.base          = (void *)imgui_dynamicMeshPositionPtr;
+  imgui_dynamicMeshPositionStack.bytesCountMax = imgui_dynamicMeshPositionHandles.bytesCount;
 
   VfeReBARMallocShared imgui_dynamicMeshColorHandles = {0};
   volatile ReiiVec4 * imgui_dynamicMeshColorPtr = (volatile ReiiVec4 *)vfeReBARMallocShared(ctx, 32/*mb*/ * 1024 * 1024, &imgui_dynamicMeshColorHandles);
+  CtUniStack imgui_dynamicMeshColorStack = {0};
+  imgui_dynamicMeshColorStack.base          = (void *)imgui_dynamicMeshColorPtr;
+  imgui_dynamicMeshColorStack.bytesCountMax = imgui_dynamicMeshColorHandles.bytesCount;
 
   Red2Output imgui_mutableOutputsArray[100] = {0}; // NOTE(Constantine): Maybe need more?
   np(imguiInit,
     window, window,
     context, ctx,
-    fontAtlasMemory, imgui_fontAtlasMemory,
+    fontAtlasTextureMemory, imgui_fontAtlasTextureMemory,
     fontAtlasScratchBufferStorageRaw, imgui_fontAtlasUploadScratchHandles.storageRaw,
     fontAtlasScratchBufferPtr, imgui_fontAtlasUploadScratchPtr,
+    fontAtlasScratchBufferPtrMaxBytesCount, imgui_fontAtlasUploadScratchHandles.bytesCount,
     maxNewBindingsSetsCount, 100,
     dynamicMeshPositionStorageRaw, imgui_dynamicMeshPositionHandles.storageRaw,
-    dynamicMeshPositionPtr, imgui_dynamicMeshPositionPtr,
+    dynamicMeshPositionStack, imgui_dynamicMeshPositionStack,
     dynamicMeshColorStorageRaw, imgui_dynamicMeshColorHandles.storageRaw,
-    dynamicMeshColorPtr, imgui_dynamicMeshColorPtr,
+    dynamicMeshColorStack, imgui_dynamicMeshColorStack,
     mutableOutputsArrayMaxCapacity, 100,
     mutableOutputsArray, imgui_mutableOutputsArray,
     outputTexture, outputtex,
@@ -690,7 +697,7 @@ int main() {
   vfGpuThreadDestroy(ctx, gpu_thread);
 
   imguiDeinit();
-  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &imgui_fontAtlasMemory);
+  reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE_MEMORY, &imgui_fontAtlasTextureMemory);
 
   vfIdDestroy(1, &gammaCorrectionStaticState.programPipeline, FF, LL);
   vfIdDestroy(1, &gammaCorrectionStaticState.programCompute, FF, LL);
