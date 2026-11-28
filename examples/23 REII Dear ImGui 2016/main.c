@@ -1,5 +1,20 @@
+#if 0
+set -x
+
+g++ $@ -shared -fPIC -fvisibility=hidden "../../extra/Dear ImGui 2016/imgui_megafile.cpp" -o libimgui.so
+gcc $@ main.c ../../vkfast.c ../../extra/REII/vkfast_extra_reii.c /home/linuxbrew/RedGpuSDK/redgpu.c /home/linuxbrew/RedGpuSDK/redgpu_2.c /home/linuxbrew/RedGpuSDK/redgpu_32.c -I/home/linuxbrew/.linuxbrew/include/ -I/home/linuxbrew/.linuxbrew/Cellar/xorgproto/2025.1/include/ -I/var/home/linuxbrew/.linuxbrew/Cellar/libxcb/1.17.0/include/ /home/linuxbrew/.linuxbrew/Cellar/glfw/3.5.1/lib/libglfw3.a /home/linuxbrew/.linuxbrew/lib/libX11.so /home/linuxbrew/.linuxbrew/lib/libvulkan.so ./libimgui.so -lm
+
+exit
+#endif
+
+#if 0
+cp ../../extra/Dear\ ImGui\ 2016/NotoSans.ttf .
+LD_LIBRARY_PATH=. XDG_SESSION_TYPE=x11 ./a.out
+#endif
+
 #include "../../vkfast_ex.h"
 #include "../../extra/REII/vkfast_extra_reii.h"
+#include "../../extra/vkFast Extensions/ReBAR/vkfast_ext_rebar.h"
 #define VKFAST_EXAMPLES_COMMON_INCLUDE_GLFW3
 #include "../Common/vkfast_examples_common.h"
 // NOTE(Constantine): Dear ImGui 2016 needs GLFW.
@@ -45,17 +60,9 @@ int main() {
   void * window_handle = &windowData;
 #endif
 
-  gpu_internal_memory_allocation_sizes_t memory_allocation_sizes = {0};
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_gpu_only         = (1024/*mb*/ * 1024 * 1024) - 64; // NOTE(Constantine)(Mar 20, 2026): '- 64' added for Intel iGPUs which can allocate not 1073741824, but 1073741820 max, lol.
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_upload       = (512/*mb*/ * 1024 * 1024);
-  memory_allocation_sizes.bytes_count_for_memory_storages_type_cpu_readback     = (512/*mb*/ * 1024 * 1024);
-  memory_allocation_sizes.bytes_count_for_memory_present_pixels_type_cpu_upload = 0;
-  gpu_context_optional_parameters_t optional_parameters = {0};
-  optional_parameters.internal_memory_allocation_sizes = &memory_allocation_sizes;
-
   const int doDoubleGammaCorrection = 0;
   // NOTE(Constantine): You can also define REDGPU_COMPILE_SWITCH_DEBUG to see extra errors.
-  gpu_handle_context_t ctx = vfContextInit(1, &optional_parameters, FF, LL);
+  gpu_handle_context_t ctx = vfContextInit(1, NULL, FF, LL);
   vfWindowFullscreen(ctx, window_handle, "[vkFast] REII Dear ImGui 2016", window_w, window_h, 0, RED_PRESENT_VSYNC_MODE_ON, FF, LL);
 
   const unsigned array65536[2] = {65536, 65536};
@@ -63,27 +70,22 @@ int main() {
   gpu_thread_t gpu_thread = NULL;
   vfGpuThreadCreate(ctx, 1, &gpu_thread, NULL, FF, LL);
 
-  gpu_storage_t storage_gpu_only     = {0};
-  gpu_storage_t storage_cpu_upload   = {0};
-  gpu_storage_t storage_cpu_readback = {0};
-  vfeBanzaiStoragesCreate(ctx, &storage_gpu_only, &storage_cpu_upload, &storage_cpu_readback, FF, LL);
+  VfeReBARMallocShared meshVertexHandles = {0};
+  volatile ReiiVec4 * mesh_vertex_positions = (volatile ReiiVec4 *)vfeReBARMallocShared(ctx, sizeof(ReiiVec4) * 6, &meshVertexHandles);
+  const ReiiVec4 quad_vertices[6] = {
+    {-1,  1, 0, 1},
+    {-1, -1, 0, 1},
+    { 1, -1, 0, 1},
+    {-1,  1, 0, 1},
+    { 1, -1, 0, 1},
+    { 1,  1, 0, 1},
+  };
+  for (int i = 0; i < 6; i += 1) {
+    mesh_vertex_positions[i] = quad_vertices[i];
+  }
 
-  uint64_t storage_gpu_only_mem_offset = 0;
-  uint64_t storage_cpu_upload_mem_offset = 0;
-  uint64_t storage_cpu_readback_mem_offset = 0;
-
-  gpu_extra_cpu_gpu_array mesh_vertex_array = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
-    64/*mb*/ * 1024 * 1024,
-    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
-    &storage_gpu_only,   &storage_gpu_only_mem_offset,
-    FF, LL
-  );
-
-  ReiiCpuScratchBuffer texture_upload_scratch_buffer = OffsetAllocateCpuScratchBuffer(
-    256/*mb*/ * 1024 * 1024,
-    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
-    FF, LL
-  );
+  VfeReBARMallocShared textureUploadScratchHandles = {0};
+  void * texture_upload_scratch_buffer_ptr = vfeReBARMallocShared(ctx, 256/*mb*/ * 1024 * 1024, &textureUploadScratchHandles);
 
   #include "mesh.vs.h"
   #include "mesh.fs.h"
@@ -299,7 +301,7 @@ int main() {
   reiiCreateTextureFromTextureMemory(ctx, &texturesMemory, REII_TEXTURE_BINDING_2D, &htexture1Handle);
   reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, texture1Handle, 0);
   reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, texture1Handle, 1);
-  memcpy(texture_upload_scratch_buffer.cpu_scratch_buffer_ptr, texture1, sizeof(texture1));
+  memcpy(texture_upload_scratch_buffer_ptr, texture1, sizeof(texture1));
   reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, texture1Handle,
     0,
     REII_TEXTURE_TEXEL_FORMAT_RGBA,
@@ -308,7 +310,7 @@ int main() {
     REII_TEXTURE_TEXEL_FORMAT_RGBA,
     REII_TEXTURE_TEXEL_TYPE_U8,
     4,
-    &texture_upload_scratch_buffer,
+    &textureUploadScratchHandles.storageRaw,
     1, &gpu_thread, array65536
   );
 
@@ -317,7 +319,7 @@ int main() {
   reiiCreateTextureFromTextureMemory(ctx, &texturesMemory, REII_TEXTURE_BINDING_2D, &htexture2Handle);
   reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, texture2Handle, 0);
   reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, texture2Handle, 1);
-  memcpy(texture_upload_scratch_buffer.cpu_scratch_buffer_ptr, texture2, sizeof(texture2));
+  memcpy(texture_upload_scratch_buffer_ptr, texture2, sizeof(texture2));
   reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, texture2Handle,
     0,
     REII_TEXTURE_TEXEL_FORMAT_RGBA,
@@ -326,7 +328,7 @@ int main() {
     REII_TEXTURE_TEXEL_FORMAT_RGBA,
     REII_TEXTURE_TEXEL_TYPE_U8,
     4,
-    &texture_upload_scratch_buffer,
+    &textureUploadScratchHandles.storageRaw,
     1, &gpu_thread, array65536
   );
 
@@ -334,41 +336,33 @@ int main() {
   ReiiHandleTextureMemory imgui_fontAtlasMemory = {0};
   reiiCreateTextureMemory(ctx, GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL, (64/*mb*/ * 1024 * 1024), &imgui_fontAtlasMemory);
 
-  ReiiCpuScratchBuffer imgui_fontAtlas_upload_scratch_buffer = OffsetAllocateCpuScratchBuffer(
-    128/*mb*/ * 1024 * 1024,
-    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
-    FF, LL
-  );
+  VfeReBARMallocShared imgui_fontAtlasUploadScratchHandles = {0};
+  void * imgui_fontAtlasUploadScratchPtr = vfeReBARMallocShared(ctx, 128/*mb*/ * 1024 * 1024, &imgui_fontAtlasUploadScratchHandles);
 
-  gpu_extra_cpu_gpu_array imgui_dynamicMeshPosition = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
-    32/*mb*/ * 1024 * 1024,
-    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
-    &storage_gpu_only,   &storage_gpu_only_mem_offset,
-    FF, LL
-  );
+  VfeReBARMallocShared imgui_dynamicMeshPositionHandles = {0};
+  volatile ReiiVec4 * imgui_dynamicMeshPositionPtr = (volatile ReiiVec4 *)vfeReBARMallocShared(ctx, 32/*mb*/ * 1024 * 1024, &imgui_dynamicMeshPositionHandles);
 
-  gpu_extra_cpu_gpu_array imgui_dynamicMeshColor = OffsetAllocateCpuGpuArrayWithTale64BytesAlign(
-    32/*mb*/ * 1024 * 1024,
-    &storage_cpu_upload, &storage_cpu_upload_mem_offset,
-    &storage_gpu_only,   &storage_gpu_only_mem_offset,
-    FF, LL
-  );
+  VfeReBARMallocShared imgui_dynamicMeshColorHandles = {0};
+  volatile ReiiVec4 * imgui_dynamicMeshColorPtr = (volatile ReiiVec4 *)vfeReBARMallocShared(ctx, 32/*mb*/ * 1024 * 1024, &imgui_dynamicMeshColorHandles);
 
   Red2Output imgui_mutableOutputsArray[100] = {0}; // NOTE(Constantine): Maybe need more?
-  imguiInit(
-    window, // GLFWwindow * window
-    ctx, // gpu_handle_context_t context
-    imgui_fontAtlasMemory, // ReiiHandleTextureMemory fontAtlasMemory
-    imgui_fontAtlas_upload_scratch_buffer, // ReiiCpuScratchBuffer fontAtlasScratchBuffer
-    100, // uint64_t maxNewBindingsSetsCount
-    imgui_dynamicMeshPosition, // gpu_extra_cpu_gpu_array dynamicMeshPosition
-    imgui_dynamicMeshColor, // gpu_extra_cpu_gpu_array dynamicMeshColor
-    100, // uint64_t mutableOutputsArrayMaxCapacity
-    imgui_mutableOutputsArray, // Red2Output * mutableOutputsArray
-    outputtex, // ReiiHandleTexture * outputTexture
-    &gpu_thread, // gpu_thread_t * gpuThread
-    0, // unsigned optionalQueueFamilyIndex
-    NULL // RedHandleQueue optionalQueue
+  np(imguiInit,
+    window, window,
+    context, ctx,
+    fontAtlasMemory, imgui_fontAtlasMemory,
+    fontAtlasScratchBuffer, imgui_fontAtlasUploadScratchHandles.storageRaw,
+    fontAtlasScratchBufferPtr, imgui_fontAtlasUploadScratchPtr,
+    maxNewBindingsSetsCount, 100,
+    dynamicMeshPosition, imgui_dynamicMeshPositionHandles.storageRaw,
+    dynamicMeshPositionPtr, imgui_dynamicMeshPositionPtr,
+    dynamicMeshColor, imgui_dynamicMeshColorHandles.storageRaw,
+    dynamicMeshColorPtr, imgui_dynamicMeshColorPtr,
+    mutableOutputsArrayMaxCapacity, 100,
+    mutableOutputsArray, imgui_mutableOutputsArray,
+    outputTexture, outputtex,
+    gpuThread, &gpu_thread,
+    optionalQueueFamilyIndex, 0,
+    optionalQueue, NULL
   );
 
   ImguiIO    * io    = (ImguiIO *)igGetIO();
@@ -394,7 +388,6 @@ int main() {
   Red2Output mutable_outputs_array[3]  = {0};
   list->mutable_outputs_array.items    = mutable_outputs_array;
   list->mutable_outputs_array.capacity = countof(mutable_outputs_array);
-  list->dynamic_mesh_position          = mesh_vertex_array;
 
   ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState gammaCorrectionStaticState = {0};
 
@@ -642,20 +635,12 @@ int main() {
     texture_slot_0.sampler = NULL; 
     texture_slot_0.texture = frame % 2 ? texture1Handle->texture : texture2Handle->texture;
     texture_slot_0.setTo1  = 1;
-    reiiCommandBindStorageRaw(ctx, list, 0, 1, &list->dynamic_mesh_position.gpu);
+    reiiCommandBindStorageRaw(ctx, list, 0, 1, &meshVertexHandles.storageRaw);
     reiiCommandBindTextureRO(ctx, list, 1, 1, &texture_slot_0);
     reiiCommandBindNewBindingsEnd(ctx, list);
-    reiiCommandMeshSet(ctx, list);
-
-    reiiCommandMeshPosition(ctx, list,-1, 1, 0, 1);
-    reiiCommandMeshPosition(ctx, list,-1,-1, 0, 1);
-    reiiCommandMeshPosition(ctx, list, 1,-1, 0, 1);
-
-    reiiCommandMeshPosition(ctx, list,-1, 1, 0, 1);
-    reiiCommandMeshPosition(ctx, list, 1,-1, 0, 1);
-    reiiCommandMeshPosition(ctx, list, 1, 1, 0, 1);
-
-    reiiCommandMeshEndWithTale64BytesAlign(ctx, list, NULL, outputmstex, outputmstex->texture);
+    reiiCommandRenderTargetSet(ctx, list, NULL, outputmstex, outputmstex->texture);
+    reiiCommandMeshLaunchThreads(ctx, list, 0, 6, 0, 1);
+    reiiCommandRenderTargetEnd(ctx, list);
     reiiCommandResolveMsaaColorTexture(ctx, list, outputmstex, outputtex);
     vfBatchEnd(ctx, batch, FF, LL);
     {
@@ -723,11 +708,13 @@ int main() {
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_MESH_STATE, &mesh_state);
   uint64_t ids[] = {
     batch,
-    storage_gpu_only.id,
-    storage_cpu_upload.id,
-    storage_cpu_readback.id,
   };
   vfIdDestroy(countof(ids), ids, FF, LL);
+  vfeReBARFreeShared(ctx, &meshVertexHandles);
+  vfeReBARFreeShared(ctx, &textureUploadScratchHandles);
+  vfeReBARFreeShared(ctx, &imgui_fontAtlasUploadScratchHandles);
+  vfeReBARFreeShared(ctx, &imgui_dynamicMeshPositionHandles);
+  vfeReBARFreeShared(ctx, &imgui_dynamicMeshColorHandles);
   vfContextDeinit(ctx, FF, LL);
   glfwTerminate();
 }
