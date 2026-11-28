@@ -299,6 +299,7 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
         if (clip_max.x > windowWidth)  { clip_max.x = (float)windowWidth;  }
         if (clip_max.y > windowHeight) { clip_max.y = (float)windowHeight; }
         if (clip_max.x <= clip_min.x || clip_max.y <= clip_min.y) {
+          pointerIndices += command->elementsCount; // NOTE(Constantine)(Nov 28, 2026): Oh wow, the lack of this line here was a tricky bug to find. :D
           continue;
         }
         reiiCommandSetScissor(globalImguiState->gpuContext, list, clip_min.x, clip_min.y, clip_max.x - clip_min.x, clip_max.y - clip_min.y);
