@@ -318,12 +318,12 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
         slots[2].count           = 1;
         slots[2].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT;
         reiiCommandBindNewBindingsSet(globalImguiState->gpuContext, list, countof(slots), slots);
-        RedStructMemberArray dynamicMeshPositionOffsetted = globalImguiState->gpuDynamicMeshPosition;
-        RedStructMemberArray dynamicMeshColorOffsetted    = globalImguiState->gpuDynamicMeshColor;
-        volatile ReiiVec4 * meshPosPtrOffsetted = imguiOffsetStorageRaw(&dynamicMeshPositionOffsetted, globalImguiState->gpuDynamicMeshPositionPtr, meshPosPtrOffset);
-        volatile ReiiVec4 * meshColPtrOffsetted = imguiOffsetStorageRaw(&dynamicMeshColorOffsetted, globalImguiState->gpuDynamicMeshColorPtr, meshColPtrOffset);
-        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 0, 1, &dynamicMeshPositionOffsetted);
-        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 1, 1, &dynamicMeshColorOffsetted);
+        RedStructMemberArray meshPosStorageRawOffsetted = globalImguiState->gpuDynamicMeshPosition;
+        RedStructMemberArray meshColStorageRawOffsetted = globalImguiState->gpuDynamicMeshColor;
+        volatile ReiiVec4 * meshPosPtrOffsetted = imguiOffsetStorageRaw(&meshPosStorageRawOffsetted, globalImguiState->gpuDynamicMeshPositionPtr, meshPosPtrOffset);
+        volatile ReiiVec4 * meshColPtrOffsetted = imguiOffsetStorageRaw(&meshColStorageRawOffsetted, globalImguiState->gpuDynamicMeshColorPtr, meshColPtrOffset);
+        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 0, 1, &meshPosStorageRawOffsetted);
+        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 1, 1, &meshColStorageRawOffsetted);
         RedStructMemberTexture texture = {0};
         texture.sampler = NULL;
         texture.texture = textureToBind->texture;
