@@ -107,7 +107,7 @@ int main() {
   mesh_state.compileInfo.state_multisample_count            = RED_MULTISAMPLE_COUNT_BITFLAG_1;
   mesh_state.compileInfo.output_depth_stencil_enable        = 0;
   mesh_state.compileInfo.output_depth_stencil_format        = RED_FORMAT_DEPTH_32_FLOAT;
-  mesh_state.compileInfo.output_color_format                = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
+  mesh_state.compileInfo.output_color_format                = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED;
 
   RedStructDeclarationMember slots[2] = {0};
   slots[0].slot            = 0;
@@ -143,7 +143,7 @@ int main() {
   reiiCreateTextureFromTextureMemory(ctx, &outputTexMemory, REII_TEXTURE_BINDING_2D, &houtputtex);
   reiiTextureSetStateMipmap(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0);
   reiiTextureSetStateMipmapLevelsCount(ctx, REII_TEXTURE_BINDING_2D, outputtex, 1);
-  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
+  reiiTextureDefineAndCopyFromCpu(ctx, REII_TEXTURE_BINDING_2D, outputtex, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED, window_w, window_h, REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED, REII_TEXTURE_TEXEL_TYPE_U8, 4, NULL, 1, &gpu_thread, array65536);
 
   float mesh_vertices[] = {
     #include "../../extra/3D Mesh Suzanne Head/3d_mesh_vertices_suzanne_head.h"
@@ -173,10 +173,10 @@ int main() {
       pos->y = mesh_vertices[i * 3 + 1] * scale;
       pos->z = mesh_vertices[i * 3 + 2] * scale;
       pos->w = 1;
-      col->x = i * 0.00025f;
-      col->y = 0;
-      col->z = 0.1f;
-      col->w = 1;
+      col->r = i * 0.00025f;
+      col->g = 0;
+      col->b = 0.1f;
+      col->a = 1;
     }
   }
 
@@ -186,8 +186,6 @@ int main() {
   Red2Output mutable_outputs_array[2]  = {0};
   list->mutable_outputs_array.items    = mutable_outputs_array;
   list->mutable_outputs_array.capacity = countof(mutable_outputs_array);
-
-  ReiiGammaCorrectColorTextureToTheInversePowerOf2StaticState gammaCorrectionStaticState = {0};
 
   while (vfWindowLoop(ctx)) {
     #if defined(_WIN32)
@@ -204,7 +202,12 @@ int main() {
     reiiCommandListReset(ctx, list);
     reiiCommandSetViewportEx(ctx, list, 0, 0, window_w, window_h, 0, 1);
     reiiCommandSetScissor(ctx, list, 0, 0, window_w, window_h);
-    reiiCommandClearTexture(ctx, list, outputdstex, outputtex, outputtex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, 0.f,0.f,0.05f,1.f);
+    ReiiVec4 clearC = (ReiiVec4){0.f, 0.f, 0.25f, 1.f};
+    clearC.r *= clearC.r;
+    clearC.g *= clearC.g;
+    clearC.b *= clearC.b;
+    //clearC.a *= clearC.a; // Do not gamma correct alpha
+    reiiCommandClearTexture(ctx, list, outputdstex, outputtex, outputtex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, clearC.b, clearC.g, clearC.r, clearC.a);
     reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
     reiiCommandBindNewBindingsSet(ctx, list, countof(slots), slots);
     reiiCommandBindStorageRaw(ctx, list, 0, 1, &posHandles.storageRaw);
@@ -214,7 +217,6 @@ int main() {
     reiiCommandMeshLaunchThreads(ctx, list, 0, mesh_vertices_count, 0, 1);
     reiiCommandRenderTargetEnd(ctx, list);
     vfBatchBarrierMemory(ctx, batch, FF, LL);
-    reiiCommandGammaCorrectColorTextureToTheInversePowerOf2(ctx, list, outputtex, doDoubleGammaCorrection, 1, &gammaCorrectionStaticState);
     vfBatchEnd(ctx, batch, FF, LL);
 
     RedHandleCalls batchRaw = vfBatchGetRawHandle(ctx, batch, FF, LL);
@@ -242,8 +244,6 @@ int main() {
   vfAllQueuesWaitIdle(ctx, FF, LL);
 
   vfGpuThreadDestroy(ctx, gpu_thread);
-  vfIdDestroy(1, &gammaCorrectionStaticState.programPipeline, FF, LL);
-  vfIdDestroy(1, &gammaCorrectionStaticState.programCompute, FF, LL);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, list);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputtex);
   reiiDestroyEx(ctx, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, outputdstex);
