@@ -35,10 +35,11 @@ typedef enum ReiiSamplerBehaviorOutsideTextureCoordinate {
 } ReiiSamplerBehaviorOutsideTextureCoordinate;
 
 typedef enum ReiiTextureTexelFormat {
-  REII_TEXTURE_TEXEL_FORMAT_A    = 0x1906,
-  REII_TEXTURE_TEXEL_FORMAT_RGB  = 0x1907,
-  REII_TEXTURE_TEXEL_FORMAT_RGBA = 0x1908,
-  REII_TEXTURE_TEXEL_FORMAT_DS   = 0x84F9, // NOTE(Constantine): Added for depth stencil textures in vkFast REII.
+  REII_TEXTURE_TEXEL_FORMAT_A                    = 0x1906,
+  REII_TEXTURE_TEXEL_FORMAT_RGB                  = 0x1907,
+  REII_TEXTURE_TEXEL_FORMAT_RGBA                 = 0x1908,
+  REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED = 0x8C43, // NOTE(Constantine): Added gamma-corrected textures in vkFast REII.
+  REII_TEXTURE_TEXEL_FORMAT_DS                   = 0x84F9, // NOTE(Constantine): Added for depth stencil textures in vkFast REII.
 } ReiiTextureTexelFormat;
 
 typedef enum ReiiTextureTexelType {

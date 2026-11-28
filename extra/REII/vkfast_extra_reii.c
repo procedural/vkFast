@@ -267,7 +267,8 @@ GPU_API_PRE void GPU_API_POST reiiMeshStateCompile(gpu_handle_context_t context,
   REDGPU_2_EXPECTWG(state->compileInfo.output_color_format != RED_FORMAT_UNDEFINED);
   // NOTE(Constantine): Check for the only supported texture formats for now.
   REDGPU_2_EXPECTWG(
-    state->compileInfo.output_color_format == RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1
+    state->compileInfo.output_color_format == RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1 ||
+    state->compileInfo.output_color_format == RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED
   );
 
   REDGPU_2_EXPECTWG(state->programPipelineInfoSamplersCount <= REII_INTERNAL_MAX_SAMPLERS_COUNT);
@@ -877,15 +878,29 @@ GPU_API_PRE void GPU_API_POST reiiTextureDefineEx(gpu_handle_context_t context, 
   ReiiBool32 formatHasStencil = 0;
   // NOTE(Constantine): Check for the only supported texture formats for now.
   if (textureType == GPU_EXTRA_REII_TEXTURE_TYPE_GENERAL) {
-    REDGPU_2_EXPECTWG(bindingTexelFormat == REII_TEXTURE_TEXEL_FORMAT_RGBA);
-    REDGPU_2_EXPECTWG(texelsFormat       == REII_TEXTURE_TEXEL_FORMAT_RGBA);
+    REDGPU_2_EXPECTWG(bindingTexelFormat == texelsFormat);
+    REDGPU_2_EXPECTWG(bindingTexelFormat == REII_TEXTURE_TEXEL_FORMAT_RGBA || bindingTexelFormat == REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED);
+    REDGPU_2_EXPECTWG(texelsFormat       == REII_TEXTURE_TEXEL_FORMAT_RGBA || texelsFormat       == REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED);
     REDGPU_2_EXPECTWG(texelsType         == REII_TEXTURE_TEXEL_TYPE_U8);
-    format = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
+    if (texelsFormat == REII_TEXTURE_TEXEL_FORMAT_RGBA) {
+      format = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
+    } else if (texelsFormat == REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED) {
+      format = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED;
+    } else {
+      REDGPU_2_EXPECT(0 || !"Invalid enum value");
+    }
   } else if (textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_COLOR || textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_COLOR_MSAA) {
-    REDGPU_2_EXPECTWG(bindingTexelFormat == REII_TEXTURE_TEXEL_FORMAT_RGBA);
-    REDGPU_2_EXPECTWG(texelsFormat       == REII_TEXTURE_TEXEL_FORMAT_RGBA);
+    REDGPU_2_EXPECTWG(bindingTexelFormat == texelsFormat);
+    REDGPU_2_EXPECTWG(bindingTexelFormat == REII_TEXTURE_TEXEL_FORMAT_RGBA || bindingTexelFormat == REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED);
+    REDGPU_2_EXPECTWG(texelsFormat       == REII_TEXTURE_TEXEL_FORMAT_RGBA || texelsFormat       == REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED);
     REDGPU_2_EXPECTWG(texelsType         == REII_TEXTURE_TEXEL_TYPE_U8);
-    format = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
+    if (texelsFormat == REII_TEXTURE_TEXEL_FORMAT_RGBA) {
+      format = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1;
+    } else if (texelsFormat == REII_TEXTURE_TEXEL_FORMAT_RGBA_GAMMA_CORRECTED) {
+      format = RED_FORMAT_RGBA_8_8_8_8_UINT_TO_FLOAT_0_1_GAMMA_CORRECTED;
+    } else {
+      REDGPU_2_EXPECT(0 || !"Invalid enum value");
+    }
   } else if (textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL || textureType == GPU_EXTRA_REII_TEXTURE_TYPE_OUTPUT_DEPTH_STENCIL_MSAA) {
     REDGPU_2_EXPECTWG(bindingTexelFormat == REII_TEXTURE_TEXEL_FORMAT_DS);
     REDGPU_2_EXPECTWG(texelsFormat       == REII_TEXTURE_TEXEL_FORMAT_DS);
