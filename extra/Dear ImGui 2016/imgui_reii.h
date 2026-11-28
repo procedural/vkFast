@@ -1,8 +1,8 @@
 #pragma once
 
 #include "cimgui.h"
-#ifdef VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3
-#include "../GLFW3 to SDL3/vkfast_extra_glfw3_to_sdl3.h"
+#if defined(VKFAST_EXTRA_INCLUDED_GLFW3_TO_SDL3)
+  #include "../GLFW3 to SDL3/vkfast_extra_glfw3_to_sdl3.h"
 #endif
 
 typedef enum ImguiKey {
@@ -207,14 +207,17 @@ typedef struct ImguiState {
   gpu_handle_context_t    gpuContext;
   ReiiMeshState           gpuMeshState;
   ReiiHandleTextureMemory gpuFontAtlasMemory;
-  ReiiCpuScratchBuffer    gpuFontAtlasScratchBuffer;
+  RedStructMemberArray    gpuFontAtlasScratchBuffer;
+  void *                  gpuFontAtlasScratchBufferPtr;
   ReiiHandleTexture       gpuFontAtlas;
   RedHandleSampler        gpuSampler;
   uint64_t                gpuBatch;
   ReiiHandleCommandList   gpuCommandList;
   uint64_t                gpuMaxNewBindingsSetsCount;
-  gpu_extra_cpu_gpu_array gpuDynamicMeshPosition;
-  gpu_extra_cpu_gpu_array gpuDynamicMeshColor;
+  RedStructMemberArray    gpuDynamicMeshPosition;
+  volatile ReiiVec4 *     gpuDynamicMeshPositionPtr;
+  RedStructMemberArray    gpuDynamicMeshColor;
+  volatile ReiiVec4 *     gpuDynamicMeshColorPtr;
   Red2Output *            gpuMutableOutputsArray;
   ReiiHandleTexture *     gpuOutputTexture;
   gpu_thread_t *          gpuThread;
@@ -236,6 +239,18 @@ ImVec4 imguiUnpackUnorm4x8(unsigned p) {
   color.z = ((p & 0x00FF0000) >> 16) / 255.f;
   color.w = ((p & 0xFF000000) >> 24) / 255.f;
   return color;
+}
+
+static void * imguiOffsetStorageRaw(RedStructMemberArray * storageRaw, volatile void * storageRawPtr, uint64_t bytesOffset) {
+  REDGPU_2_EXPECTFL(bytesOffset <= storageRaw->arrayRangeBytesCount);
+
+  storageRaw->arrayRangeBytesFirst += bytesOffset;
+  storageRaw->arrayRangeBytesCount -= bytesOffset;
+
+  volatile unsigned char * ptr = (volatile unsigned char *)storageRawPtr;
+  ptr += bytesOffset;
+
+  return (void *)ptr;
 }
 
 void imguiRenderDrawList(ImguiDrawData * drawData) {
@@ -264,6 +279,8 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
   reiiCommandSetViewportEx(globalImguiState->gpuContext, list, 0, 0, windowWidth, windowHeight, 0, 1);
   reiiCommandMeshSetState(globalImguiState->gpuContext, list, &globalImguiState->gpuMeshState, NULL);
   reiiCommandBindSamplers(globalImguiState->gpuContext, list, 1, &globalImguiState->gpuSampler);
+  uint64_t meshPosPtrOffset = 0;
+  uint64_t meshColPtrOffset = 0;
   for (int commandListIndex = 0; commandListIndex < drawData->commandListsCount; commandListIndex += 1) {
     struct ImDrawList * commandList     = drawData->commandLists[commandListIndex];
     ImguiDrawVertex   * pointerVertices = (ImguiDrawVertex *)((void *)ImDrawList_GetVertexPtr(commandList, 0));
@@ -279,7 +296,7 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
         // Clamp to viewport as vkCmdSetScissor() won't accept values that are off bounds
         if (clip_min.x < 0.0f) { clip_min.x = 0.0f; }
         if (clip_min.y < 0.0f) { clip_min.y = 0.0f; }
-        if (clip_max.x > windowWidth) { clip_max.x = (float)windowWidth; }
+        if (clip_max.x > windowWidth)  { clip_max.x = (float)windowWidth;  }
         if (clip_max.y > windowHeight) { clip_max.y = (float)windowHeight; }
         if (clip_max.x <= clip_min.x || clip_max.y <= clip_min.y) {
           continue;
@@ -300,30 +317,43 @@ void imguiRenderDrawList(ImguiDrawData * drawData) {
         slots[2].count           = 1;
         slots[2].visibleToStages = RED_VISIBLE_TO_STAGE_BITFLAG_FRAGMENT;
         reiiCommandBindNewBindingsSet(globalImguiState->gpuContext, list, countof(slots), slots);
-        gpu_extra_cpu_gpu_array dynamicMeshPositionOffsetted = list->dynamic_mesh_position;
-        gpu_extra_cpu_gpu_array dynamicMeshColorOffsetted    = list->dynamic_mesh_color;
-        vfeCpuGpuArrayOffset(&dynamicMeshPositionOffsetted, list->dynamicMeshPositionVec4Offset * sizeof(ReiiVec4));
-        vfeCpuGpuArrayOffset(&dynamicMeshColorOffsetted, list->dynamicMeshColorVec4Offset * sizeof(ReiiVec4));
-        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 0, 1, &dynamicMeshPositionOffsetted.gpu);
-        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 1, 1, &dynamicMeshColorOffsetted.gpu);
+        RedStructMemberArray dynamicMeshPositionOffsetted = globalImguiState->gpuDynamicMeshPosition;
+        RedStructMemberArray dynamicMeshColorOffsetted    = globalImguiState->gpuDynamicMeshColor;
+        volatile ReiiVec4 * meshPosPtrOffsetted = imguiOffsetStorageRaw(&dynamicMeshPositionOffsetted, globalImguiState->gpuDynamicMeshPositionPtr, meshPosPtrOffset);
+        volatile ReiiVec4 * meshColPtrOffsetted = imguiOffsetStorageRaw(&dynamicMeshColorOffsetted, globalImguiState->gpuDynamicMeshColorPtr, meshColPtrOffset);
+        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 0, 1, &dynamicMeshPositionOffsetted);
+        reiiCommandBindStorageRaw(globalImguiState->gpuContext, list, 1, 1, &dynamicMeshColorOffsetted);
         RedStructMemberTexture texture = {0};
         texture.sampler = NULL;
         texture.texture = textureToBind->texture;
         texture.setTo1  = 1;
         reiiCommandBindTextureRO(globalImguiState->gpuContext, list, 2, 1, &texture);
         reiiCommandBindNewBindingsEnd(globalImguiState->gpuContext, list);
-        reiiCommandMeshSet(globalImguiState->gpuContext, list);
+        reiiCommandRenderTargetSet(globalImguiState->gpuContext, list, NULL, globalImguiState->gpuOutputTexture, globalImguiState->gpuOutputTexture->texture);
         for (unsigned i = 0; i < command->elementsCount; i += 1) {
           unsigned index = pointerIndices[i];
-          ImVec4 color = imguiUnpackUnorm4x8(pointerVertices[index].color);
-          reiiCommandMeshColor(globalImguiState->gpuContext, list, color.x, color.y, color.z, color.w);
+
           float xformWidth  = 2.f / windowWidth;
           float xformHeight = 2.f /-windowHeight;
           float positionX   = pointerVertices[index].position.x * xformWidth  - 1.f;
           float positionY   = pointerVertices[index].position.y * xformHeight + 1.f;
-          reiiCommandMeshPosition(globalImguiState->gpuContext, list, positionX, positionY, pointerVertices[index].uv.x, pointerVertices[index].uv.y);
+
+          meshPosPtrOffsetted[i].x = positionX;
+          meshPosPtrOffsetted[i].y = positionY;
+          meshPosPtrOffsetted[i].z = pointerVertices[index].uv.x;
+          meshPosPtrOffsetted[i].w = pointerVertices[index].uv.y;
+          meshPosPtrOffset += 1 * sizeof(ReiiVec4);
+
+          ImVec4 color = imguiUnpackUnorm4x8(pointerVertices[index].color);
+
+          meshColPtrOffsetted[i].x = color.x;
+          meshColPtrOffsetted[i].y = color.y;
+          meshColPtrOffsetted[i].z = color.z;
+          meshColPtrOffsetted[i].w = color.w;
+          meshColPtrOffset += 1 * sizeof(ReiiVec4);
         }
-        reiiCommandMeshEndWithTale64BytesAlign(globalImguiState->gpuContext, list, NULL, globalImguiState->gpuOutputTexture, globalImguiState->gpuOutputTexture->texture);
+        reiiCommandMeshLaunchThreads(globalImguiState->gpuContext, list, 0, command->elementsCount, 0, 1);
+        reiiCommandRenderTargetEnd(globalImguiState->gpuContext, list);
       }
       pointerIndices += command->elementsCount;
     }
@@ -398,7 +428,7 @@ void imguiGLFW3CharCallback(GLFWwindow * window, unsigned int c) {
   }
 }
 
-static inline void imguiCreateFontTexture() {
+static void imguiCreateFontTexture() {
   ImguiIO * io = (ImguiIO *)igGetIO();
 
   unsigned char * data = NULL;
@@ -410,14 +440,14 @@ static inline void imguiCreateFontTexture() {
   reiiCreateTextureFromTextureMemory(globalImguiState->gpuContext, &globalImguiState->gpuFontAtlasMemory, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas);
   reiiTextureSetStateMipmap(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas, 0);
   reiiTextureSetStateMipmapLevelsCount(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas, 1);
-  memcpy(globalImguiState->gpuFontAtlasScratchBuffer.cpu_scratch_buffer_ptr, data, width * height * bpp);
+  memcpy(globalImguiState->gpuFontAtlasScratchBufferPtr, data, width * height * bpp);
   unsigned array65536[1] = {65536};
   reiiTextureDefineAndCopyFromCpu(globalImguiState->gpuContext, REII_TEXTURE_BINDING_2D, &globalImguiState->gpuFontAtlas, 0, REII_TEXTURE_TEXEL_FORMAT_RGBA, width, height, REII_TEXTURE_TEXEL_FORMAT_RGBA, REII_TEXTURE_TEXEL_TYPE_U8, 4, &globalImguiState->gpuFontAtlasScratchBuffer, 1, globalImguiState->gpuThread, array65536);
 
   ImFontAtlas_SetTexID(io->fonts, (void *)(intptr_t)&globalImguiState->gpuFontAtlas);
 }
 
-static inline void imguiCreateDeviceObjects() {
+static void imguiCreateDeviceObjects() {
   #include "imgui_shader.vs.h"
   #include "imgui_shader.fs.h"
   gpu_program_info_t vp = {0};
@@ -507,7 +537,7 @@ static inline void imguiCreateDeviceObjects() {
   imguiCreateFontTexture();
 }
 
-static inline void imguiNewFrame() {
+static void imguiNewFrame() {
   ImguiIO * io = (ImguiIO *)igGetIO();
 
   int w = 0;
@@ -553,14 +583,14 @@ static inline void imguiNewFrame() {
   igNewFrame();
 }
 
-static inline void imguiInvalidateFontTexture() {
+static void imguiInvalidateFontTexture() {
   ImguiIO * io = (ImguiIO *)igGetIO();
   reiiDestroyEx(globalImguiState->gpuContext, GPU_EXTRA_REII_DESTROY_TYPE_TEXTURE, &globalImguiState->gpuFontAtlas);
   reiiResetTextureMemory(globalImguiState->gpuContext, &globalImguiState->gpuFontAtlasMemory);
   ImFontAtlas_SetTexID(io->fonts, 0);
 }
 
-static inline void imguiInvalidateDeviceObjects() {
+static void imguiInvalidateDeviceObjects() {
   ImguiIO * io = (ImguiIO *)igGetIO();
   imguiInvalidateFontTexture();
   reiiDestroyEx(globalImguiState->gpuContext, GPU_EXTRA_REII_DESTROY_TYPE_COMMAND_LIST, &globalImguiState->gpuCommandList);
@@ -572,48 +602,52 @@ static inline void imguiInvalidateDeviceObjects() {
   vfIdDestroy(countof(ids), ids, __FILE__, __LINE__);
 }
 
-static inline void imguiDeinit() {
+static void imguiDeinit() {
   imguiInvalidateDeviceObjects();
   igShutdown();
   ImguiState defaults = {0};
   globalImguiState[0] = defaults;
 }
 
-static inline void imguiInit(
-  GLFWwindow *            window,
-  gpu_handle_context_t    context,
-  ReiiHandleTextureMemory fontAtlasMemory,
-  ReiiCpuScratchBuffer    fontAtlasScratchBuffer,
-  uint64_t                maxNewBindingsSetsCount,
-  gpu_extra_cpu_gpu_array dynamicMeshPosition,
-  gpu_extra_cpu_gpu_array dynamicMeshColor,
-  uint64_t                mutableOutputsArrayMaxCapacity,
-  Red2Output *            mutableOutputsArray,
-  ReiiHandleTexture *     outputTexture,
-  gpu_thread_t *          gpuThread,
-  unsigned                optionalQueueFamilyIndex,
-  RedHandleQueue          optionalQueue
+npf(static void, imguiInit,
+  GLFWwindow *            ,window,
+  gpu_handle_context_t    ,context,
+  ReiiHandleTextureMemory ,fontAtlasMemory,
+  RedStructMemberArray    ,fontAtlasScratchBuffer,
+  void *                  ,fontAtlasScratchBufferPtr,
+  uint64_t                ,maxNewBindingsSetsCount,
+  RedStructMemberArray    ,dynamicMeshPosition,
+  volatile ReiiVec4 *     ,dynamicMeshPositionPtr,
+  RedStructMemberArray    ,dynamicMeshColor,
+  volatile ReiiVec4 *     ,dynamicMeshColorPtr,
+  uint64_t                ,mutableOutputsArrayMaxCapacity,
+  Red2Output *            ,mutableOutputsArray,
+  ReiiHandleTexture *     ,outputTexture,
+  gpu_thread_t *          ,gpuThread,
+  unsigned                ,optionalQueueFamilyIndex,
+  RedHandleQueue          ,optionalQueue
 )
 {
   ImguiIO * io = (ImguiIO *)igGetIO();
 
-  globalImguiState->window                      = window;
-  globalImguiState->gpuContext                  = context;
-  globalImguiState->gpuFontAtlasMemory          = fontAtlasMemory;
-  globalImguiState->gpuFontAtlasScratchBuffer   = fontAtlasScratchBuffer;
-  globalImguiState->gpuMaxNewBindingsSetsCount  = maxNewBindingsSetsCount;
-  globalImguiState->gpuDynamicMeshPosition      = dynamicMeshPosition;
-  globalImguiState->gpuDynamicMeshColor         = dynamicMeshColor;
-  globalImguiState->gpuMutableOutputsArray      = mutableOutputsArray;
-  globalImguiState->gpuOutputTexture            = outputTexture;
-  globalImguiState->gpuThread                   = gpuThread;
-  globalImguiState->gpuOptionalQueueFamilyIndex = optionalQueueFamilyIndex;
-  globalImguiState->gpuOptionalQueue            = optionalQueue;
+  globalImguiState->window                       = window;
+  globalImguiState->gpuContext                   = context;
+  globalImguiState->gpuFontAtlasMemory           = fontAtlasMemory;
+  globalImguiState->gpuFontAtlasScratchBuffer    = fontAtlasScratchBuffer;
+  globalImguiState->gpuFontAtlasScratchBufferPtr = fontAtlasScratchBufferPtr;
+  globalImguiState->gpuMaxNewBindingsSetsCount   = maxNewBindingsSetsCount;
+  globalImguiState->gpuDynamicMeshPosition       = dynamicMeshPosition;
+  globalImguiState->gpuDynamicMeshPositionPtr    = dynamicMeshPositionPtr;
+  globalImguiState->gpuDynamicMeshColor          = dynamicMeshColor;
+  globalImguiState->gpuDynamicMeshColorPtr       = dynamicMeshColorPtr;
+  globalImguiState->gpuMutableOutputsArray       = mutableOutputsArray;
+  globalImguiState->gpuOutputTexture             = outputTexture;
+  globalImguiState->gpuThread                    = gpuThread;
+  globalImguiState->gpuOptionalQueueFamilyIndex  = optionalQueueFamilyIndex;
+  globalImguiState->gpuOptionalQueue             = optionalQueue;
 
   globalImguiState->gpuCommandList.mutable_outputs_array.items    = globalImguiState->gpuMutableOutputsArray;
   globalImguiState->gpuCommandList.mutable_outputs_array.capacity = mutableOutputsArrayMaxCapacity;
-  globalImguiState->gpuCommandList.dynamic_mesh_position          = globalImguiState->gpuDynamicMeshPosition;
-  globalImguiState->gpuCommandList.dynamic_mesh_color             = globalImguiState->gpuDynamicMeshColor;
 
   io->keyMap[IMGUI_KEY_TAB]       = GLFW_KEY_TAB;
   io->keyMap[IMGUI_KEY_LEFT]      = GLFW_KEY_LEFT;
@@ -651,7 +685,7 @@ void imguiSetProcessInputsState(ReiiBool32 enable) {
   globalImguiState->processInputs = enable;
 }
 
-static inline void imguiEasyTheming(ImVec3 colorText, ImVec3 colorHead, ImVec3 colorArea, ImVec3 colorBody, ImVec3 colorPops) {
+static void imguiEasyTheming(ImVec3 colorText, ImVec3 colorHead, ImVec3 colorArea, ImVec3 colorBody, ImVec3 colorPops) {
   ImguiStyle * style = (ImguiStyle *)igGetStyle();
 
   style->colors[IMGUI_COLOR_TEXT]                       = REDGPU_32_STRUCT(ImVec4, colorText.x, colorText.y, colorText.z, 1.00f);
