@@ -416,8 +416,8 @@ int main() {
     clearC.g *= clearC.g;
     clearC.b *= clearC.b;
     //clearC.a *= clearC.a; // Do not gamma correct alpha
-    reiiCommandClearTexture(ctx, list, outputdstex, outputmstex, outputmstex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, clearC.b, clearC.g, clearC.r, clearC.a);    reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
-    reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);    reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
+    reiiCommandClearTexture(ctx, list, outputdstex, outputmstex, outputmstex->texture, REII_CLEAR_DEPTH_BIT | REII_CLEAR_COLOR_BIT, 0.f, 0, clearC.b, clearC.g, clearC.r, clearC.a);
+    reiiCommandMeshSetState(ctx, list, &mesh_state, NULL);
     reiiCommandBindNewBindingsSet(ctx, list, countof(slots), slots);
     reiiCommandBindStorageRaw(ctx, list, 0, 1, &meshVertexPositionsHandles.storageRaw);
     reiiCommandBindStorageRaw(ctx, list, 1, 1, &instanceColorsHandles.storageRaw);
